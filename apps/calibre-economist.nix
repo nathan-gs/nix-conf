@@ -1,7 +1,7 @@
 {config, pkgs, lib, ...}:
 
 {
-  systemd.services.the_economist = {
+  systemd.services.calibre-economist = {
       description = "Weekly The Economist Download";
       after = [ "network-online.target" ];
       environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
