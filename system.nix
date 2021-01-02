@@ -39,9 +39,9 @@
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
     path = [ pkgs.wireguard pkgs.bash ];
-#    script = builtins.readFile ./wireguard-reresolve-dns.sh;
     script = ''
-      CONFIG_FILE="$(cat $(systemctl cat wg-quick-wg0.service | grep ExecStart | sed 's/ExecStart=//') | grep 'wg-quick up' | sed 's/wg-quick up //')"
+      SERVICE_NAME="$(systemctl list-units --type service --plain wg-quick* | grep wg-quick | awk '{print $1}' | head -n 1)"
+      CONFIG_FILE="$(cat $(systemctl cat $SERVICE_NAME | grep ExecStart | sed 's/ExecStart=//') | grep 'wg-quick up' | sed 's/wg-quick up //')"
       bash ${pkgs.fetchgit {
               url = git://github.com/WireGuard/wireguard-tools;
               rev = "d8230ea0dcb02d716125b2b3c076f2de40ebed99";
