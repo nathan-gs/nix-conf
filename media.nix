@@ -3,14 +3,13 @@
 {
 
   imports = [
-    ./apps/theEconomist.nix
+    ./apps/calibre-economist.nix
   ];
 #  services.calibre-server.enable = true;
 
   nixpkgs.config.allowUnfree = true;
 
   services.plex = {
-    #dataDir = "/media/apps/plex";
     enable = true;
     openFirewall = true;
     managePlugins = false;
