@@ -28,16 +28,50 @@
         echo $title
 	target_file="/media/media/Books/Magazines/$title.mobi"
         cp TheEconomist.mobi "$target_file"
+
+        hostPort="${config.services.ssmtp.hostName}"
+        relay="''${hostPort%%:*}"
+        port="''${hostPort##*:}"
      
         ${pkgs.calibre}/bin/calibre-smtp \
           --attachment "$target_file" \
-          --relay "${config.services.ssmtp.hostName}" \
-          --encryption-method NONE \
+          --relay "$relay" \
+          --encryption-method TLS \
+          --port $port \
+          --username="${config.services.ssmtp.authUser}" \
+          --password="${config.services.ssmtp.settings.AuthPass}" \
           --subject "$title" \
           --verbose \
           nathan@nathan.gs \
-          nathan@nathan.gs \
+          "${builtins.readFile ../secrets/kindle.npaperwhite.email}" \
           "Calibre download of $title"
+
+        ${pkgs.calibre}/bin/calibre-smtp \
+          --attachment "$target_file" \
+          --relay "$relay" \
+          --encryption-method TLS \
+          --port $port \
+          --username="${config.services.ssmtp.authUser}" \
+          --password="${config.services.ssmtp.settings.AuthPass}" \
+          --subject "$title" \
+          --verbose \
+          nathan@nathan.gs \
+          "${builtins.readFile ../secrets/kindle.nphone.email}" \
+          "Calibre download of $title"
+
+        ${pkgs.calibre}/bin/calibre-smtp \
+          --attachment "$target_file" \
+          --relay "$relay" \
+          --encryption-method TLS \
+          --port $port \
+          --username="${config.services.ssmtp.authUser}" \
+          --password="${config.services.ssmtp.settings.AuthPass}" \
+          --subject "$title" \
+          --verbose \
+          nathan@nathan.gs \
+          "${builtins.readFile ../secrets/kindle.nchromebook.email}" \
+          "Calibre download of $title"
+
         
         popd
         rm -rf $work_dir

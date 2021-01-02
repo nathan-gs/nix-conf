@@ -55,6 +55,19 @@
   # Cron
   services.cron.enable = false;
 
+  # Email
+  services.ssmtp = {
+    enable = true;
+    domain = "nathan.gs";
+    hostName = "smtp.sendgrid.net:587";
+    useSTARTTLS = true;
+    authUser = "apikey";
+    settings = {
+      AuthPass = builtins.readFile ./secrets/sendgrid.api.key;
+      FromLineOverride = "${config.networking.hostName}@nathan.gs";
+    };
+    root = "nathan@nathan.gs";
+   };
 
   # Select internationalisation properties.
   # i18n = {

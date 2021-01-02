@@ -94,13 +94,6 @@
     
   };
 
-  services.ssmtp = {
-      enable = true;
-      domain = "nathan.gs";
-      hostName = "relay.proximus.be";
-      root = "nathan@nathan.gs";    
-  };
-  
   services.cloudflare-dyndns = {
     enable = true;
     authEmail = "nathan@nathan.gs";
