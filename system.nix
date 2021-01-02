@@ -38,7 +38,7 @@
     description = "reresolve-dns"; 
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
-    path = [ pkgs.wireguard pkgs.bash ];
+    path = [ pkgs.wireguard pkgs.bash pkgs.gawk ];
     script = ''
       SERVICE_NAME="$(systemctl list-units --type service --plain wg-quick* | grep wg-quick | awk '{print $1}' | head -n 1)"
       CONFIG_FILE="$(cat $(systemctl cat $SERVICE_NAME | grep ExecStart | sed 's/ExecStart=//') | grep 'wg-quick up' | sed 's/wg-quick up //')"
