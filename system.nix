@@ -69,6 +69,12 @@
     root = "nathan@nathan.gs";
    };
 
+  # Prometheus
+  services.prometheus.exporters.node = {
+    enable = true;
+    openFirewall = true;
+  };
+   
   # Select internationalisation properties.
   # i18n = {
   #   consoleFont = "Lat2-Terminus16";

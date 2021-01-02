@@ -15,6 +15,7 @@
       ../apps/cloudflare-dyndns.nix
       ../onedrive.nix
       ../media.nix
+      ../monitoring.nix
     ];
 
   # Use the systemd-boot EFI boot loader.
