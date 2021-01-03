@@ -18,6 +18,24 @@
       }
     ];
   };
+
+  services.grafana = {
+    enable = true;
+    domain = "nathan.gs";
+    addr = "0.0.0.0";
+    provision.enable = true;
+    provision.datasources = [
+      {
+        name = "prometheus";
+        type = "prometheus";
+        url = "http://localhost:${toString config.services.prometheus.port}";
+      }
+    ];
+  };
   
-  networking.firewall.allowedTCPPorts = [ config.services.prometheus.port ];
+  networking.firewall.allowedTCPPorts = [ 
+   config.services.prometheus.port 
+   config.services.grafana.port 
+  ];
+
 }
