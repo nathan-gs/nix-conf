@@ -133,6 +133,21 @@ with lib;
 #DRIVER=="sd", SUBSYSTEM=="scsi", ENV{DEVTYPE}=="scsi_device", ATTR{timeout}="150"
 #    '';
 #  }; 
+
+  systemd.services.prometheus-btrfs = {
+    description = "Prometheus BTRFS device stats";
+    path = [ pkgs.btrfs-progs pkgs.bash pkgs.busybox ];
+    script = ''
+       mkdir -pm 0775 /var/lib/prometheus-node-exporter/text-files
+       F=/var/lib/prometheus-node-exporter/text-files/btrfs.prom
+       cat /dev/null > $F.next
+       ${concatStringsSep "\n" (lib.imap (n: v: ''
+         bash ${./bin/prometheus-btrfs.sh} /dev/disk/by-id/${v}-part1 ${v} >> $F.next
+       '') disks.data)}
+       mv $F.next $F
+      '';
+    startAt = "*:0/15";
+  };
   
   systemd.services.disks-smr = {
     description = "Disks: Set timeouts for SMR disks";
