@@ -22,7 +22,17 @@
       "directory mask" = "0777";
       "create mask" = "0777";
     };
+    
+    nathan = {
+      path = "/media/documents/nathan";
+      "valid users" = "nathan";
+    };
 
+    fn-fotos = {
+      path = "/media/documents/nathan/onedrive_nathan_personal/fn-fotos";
+      "valid users" = "@users";
+      "force user" = "nathan";
+    };
   };
 
         extraConfig = ''
