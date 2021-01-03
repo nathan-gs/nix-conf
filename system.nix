@@ -77,19 +77,6 @@
     extraFlags = [ "--collector.textfile.directory=/var/lib/prometheus-node-exporter/text-files" ];
   };
 
-  systemd.services.prometheus-smartd-exporter = {
-    description = "Prometheus Smartd Exporter";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    path = [ pkgs.smartmontools pkgs.bash pkgs.gawk pkgs.busybox ];
-    script = ''
-       mkdir -pm 0775 /var/lib/prometheus-node-exporter/text-files
-       bash ${./bin/smartmon.sh} > /var/lib/prometheus-node-exporter/text-files/smartd.prom.next
-       mv /var/lib/prometheus-node-exporter/text-files/smartd.prom.next /var/lib/prometheus-node-exporter/text-files/smartd.prom
-    '';
-    startAt = "*:0/15";
-  };
-   
   # Select internationalisation properties.
   # i18n = {
   #   consoleFont = "Lat2-Terminus16";

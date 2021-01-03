@@ -148,6 +148,17 @@ with lib;
       '';
     startAt = "*:0/15";
   };
+
+  systemd.services.prometheus-smartd = {
+    description = "Prometheus Smartd Exporter";
+    path = [ pkgs.smartmontools pkgs.bash pkgs.gawk pkgs.busybox ];
+    script = ''
+       mkdir -pm 0775 /var/lib/prometheus-node-exporter/text-files
+       bash ${./bin/prometheus-smartmon.sh} > /var/lib/prometheus-node-exporter/text-files/smartd.prom.next
+       mv /var/lib/prometheus-node-exporter/text-files/smartd.prom.next /var/lib/prometheus-node-exporter/text-files/smartd.prom
+    '';
+    startAt = "*:0/15";
+  };
   
   systemd.services.disks-smr = {
     description = "Disks: Set timeouts for SMR disks";
