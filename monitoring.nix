@@ -6,6 +6,7 @@
     scrapeConfigs = [
       {
         job_name = "node";
+        scrape_timeout = "40s"; # Deal with slow network of nnas
         static_configs = [
 	  { targets = 
             [ 
