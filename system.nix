@@ -5,6 +5,7 @@
   imports = [
     ./users.nix
     ./software.nix
+    ./smb.nix
   ];
 
   time.timeZone = "Europe/Brussels";
