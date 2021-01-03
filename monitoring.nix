@@ -31,6 +31,13 @@
         url = "http://localhost:${toString config.services.prometheus.port}";
       }
     ];
+    smtp = {
+      enable = true;
+      host = config.services.ssmtp.hostName;
+      user = config.services.ssmtp.authUser;
+      password = config.services.ssmtp.settings.AuthPass;
+      fromAddress = "nathan+grafana@nathan.gs";
+    };
   };
   
   networking.firewall.allowedTCPPorts = [ 
