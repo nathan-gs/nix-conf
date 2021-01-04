@@ -6,6 +6,7 @@
     ./users.nix
     ./software.nix
     ./smb.nix
+    ./ext/promtail.nix
   ];
 
   time.timeZone = "Europe/Brussels";

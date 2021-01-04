@@ -142,7 +142,7 @@ with lib;
        F=/var/lib/prometheus-node-exporter/text-files/btrfs.prom
        cat /dev/null > $F.next
        ${concatStringsSep "\n" (lib.imap (n: v: ''
-         bash ${./bin/prometheus-btrfs.sh} /dev/disk/by-id/${v}-part1 ${v} >> $F.next
+         bash ${./ext/prometheus-btrfs.sh} /dev/disk/by-id/${v}-part1 ${v} >> $F.next
        '') disks.data)}
        mv $F.next $F
       '';
@@ -154,7 +154,7 @@ with lib;
     path = [ pkgs.smartmontools pkgs.bash pkgs.gawk pkgs.busybox ];
     script = ''
        mkdir -pm 0775 /var/lib/prometheus-node-exporter/text-files
-       bash ${./bin/prometheus-smartmon.sh} > /var/lib/prometheus-node-exporter/text-files/smartd.prom.next
+       bash ${./ext/prometheus-smartmon.sh} > /var/lib/prometheus-node-exporter/text-files/smartd.prom.next
        mv /var/lib/prometheus-node-exporter/text-files/smartd.prom.next /var/lib/prometheus-node-exporter/text-files/smartd.prom
     '';
     startAt = "*:0/15";
