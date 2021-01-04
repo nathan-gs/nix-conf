@@ -28,6 +28,8 @@
     ];
   };
   
+  security.sudo.wheelNeedsPassword = false;  
+
   # Warning true is only valid when setting a hashedPassword.
   users.mutableUsers = true;
 
