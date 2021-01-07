@@ -7,6 +7,7 @@
      extraGroups = [ "wheel" "docker" ];
      openssh.authorizedKeys.keys = [
        "${builtins.readFile ./secrets/ssh.nathan.pub}"
+       "${builtins.readFile ./secrets/ssh.nathan.nchromebook.pub}"
      ];
   };
 
