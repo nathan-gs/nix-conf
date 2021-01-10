@@ -74,9 +74,12 @@
   # Prometheus
   services.prometheus.exporters.node = {
     enable = true;
-    openFirewall = true;
+    openFirewall = true; 
     enabledCollectors = [ "systemd" "textfile" ];
-    extraFlags = [ "--collector.textfile.directory=/var/lib/prometheus-node-exporter/text-files" ];
+    extraFlags = [ 
+      "--collector.textfile.directory=/var/lib/prometheus-node-exporter/text-files" 
+      "--no-collector.rapl" # BUG: https://github.com/prometheus/node_exporter/issues/1892
+    ];
   };
 
   # Promtail (Loki)
