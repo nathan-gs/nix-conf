@@ -55,7 +55,7 @@ vrt_search_and_download() {
   fi
 
   pushd "$path" > /dev/null
-  results=`curl --silent "https://search.vrt.be/search?i=video&q=$search&highlight=true" | jq -c '.results[] | {title, url, seasonTitle, episodeNumber, shortDescription}'`
+  results=`curl --silent "https://search.vrt.be/search?i=video&q=$search&highlight=true&size=100&available=true&" | jq -c '.results[] | {title, url, seasonTitle, episodeNumber, shortDescription}'`
 
   IFS=$'\n'
   for i in $results;

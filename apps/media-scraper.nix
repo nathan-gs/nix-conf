@@ -19,21 +19,7 @@
       
       script = ''
         source ${./media-scraper.functions.sh}
-        
-        vrt_search_and_download "/media/media/Series" "Fargo"
-
-        vrt_search_and_download "/media/media/Kids/Series" "Dropje"
-        vrt_search_and_download "/media/media/Kids/Series" "Andy's baby dieren"
-        vrt_search_and_download "/media/media/Kids/Series" "Andy's dino avonturen"
-        vrt_search_and_download "/media/media/Kids/Series" "Andy's prehistorische avonturen"
-        vrt_search_and_download "/media/media/Kids/Series" "Shaun het schaap"
-        vrt_search_and_download "/media/media/Kids/Series" "Masha en de Beer"
-        vrt_search_and_download "/media/media/Kids/Series" "Ridder Muis"
-        
-
-
-        nickjr "/media/media/Kids/Series" "Paw Patrol" http://www.nickjr.nl /paw-patrol/videos/        
-        nickjr "/media/media/Kids/Series" "Rusty Rivets" http://www.nickjr.nl /rusty-rivets/videos/
+        ${builtins.readFile ../secrets/media-scraper.list}
 
       '';
       startAt = "01:00:00";
