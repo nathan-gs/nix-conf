@@ -28,6 +28,18 @@
       "${builtins.readFile ./secrets/ssh.nhtpc-backup.pub}"
     ];
   };
+
+  users.users.mediaonly = {
+    uid = 2003;
+    group = "mediaonly";
+    home = "/media/media";
+    createHome = false;
+    extraGroups = [ "users" ];
+  };
+
+  users.groups.mediaonly = {
+    gid = 2000;
+  };  
   
   security.sudo.wheelNeedsPassword = false;  
 

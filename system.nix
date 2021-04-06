@@ -116,6 +116,15 @@
     };
   };
 
+  services.openssh.extraConfig = ''
+
+  Match Group mediaonly
+    ChrootDirectory /media/media
+    ForceCommand internal-sftp
+    AllowTcpForwarding no
+    X11Forwarding no
+  '';
+
   # Select internationalisation properties.
   # i18n = {
   #   consoleFont = "Lat2-Terminus16";
