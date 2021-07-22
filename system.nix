@@ -6,7 +6,6 @@
     ./users.nix
     ./software.nix
     ./smb.nix
-    ./ext/promtail.nix
   ];
 
   time.timeZone = "Europe/Brussels";
@@ -64,6 +63,7 @@
     hostName = "smtp.sendgrid.net:587";
     useSTARTTLS = true;
     authUser = "apikey";
+    useTLS = true;
     settings = {
       AuthPass = builtins.readFile ./secrets/sendgrid.api.key;
       FromLineOverride = "${config.networking.hostName}@nathan.gs";

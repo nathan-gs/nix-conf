@@ -35,6 +35,7 @@
     home = "/media/media";
     createHome = false;
     extraGroups = [ "users" ];
+    isSystemUser = true;
   };
 
   users.groups.mediaonly = {
