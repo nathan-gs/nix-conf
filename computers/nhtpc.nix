@@ -89,12 +89,12 @@
     address = [ "172.16.8.1/24" ];
     
     listenPort = 51820;
-    privateKey = builtins.readFile ../secrets/wireguard.nhtpc.private;
+    privateKey = builtins.readFile /etc/secrets/wireguard.nhtpc.private;
     
     peers = [
       {
         # NNAS
-        publicKey = builtins.readFile ../secrets/wireguard.nnas.public;
+        publicKey = builtins.readFile /etc/secrets/wireguard.nnas.public;
         allowedIPs = [ "172.16.8.0/24" ];
         persistentKeepalive = 25;
       }
@@ -106,7 +106,7 @@
   services.cloudflare-dyndns = {
     enable = true;
     authEmail = "nathan@nathan.gs";
-    authKey = builtins.readFile ../secrets/cloudflare.auth_key;
+    authKey = builtins.readFile /etc/secrets/cloudflare.auth_key;
     zoneId = "7f71decfc86e8bb13d756d903005bb42";
     recordId = "e5487e3b8afcc8b0768e4dedcd6b9ca4";
     recordName = "h.nathan.gs";
