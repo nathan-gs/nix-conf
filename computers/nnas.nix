@@ -77,12 +77,12 @@
   networking.wg-quick.interfaces.wg0 = {
     address = [ "172.16.8.2/24" ];
         
-    privateKey = builtins.readFile ../secrets/wireguard.nnas.private;
+    privateKey = builtins.readFile /etc/secrets/wireguard.nnas.private;
     
     peers = [
       {
         # NHTPC
-        publicKey = builtins.readFile ../secrets/wireguard.nhtpc.public;
+        publicKey = builtins.readFile /etc/secrets/wireguard.nhtpc.public;
         allowedIPs = [ "172.16.8.0/24" ];
         endpoint = "h.nathan.gs:51820";
         persistentKeepalive = 25;
@@ -97,7 +97,7 @@
   services.cloudflare-dyndns = {
     enable = true;
     authEmail = "nathan@nathan.gs";
-    authKey = builtins.readFile ../secrets/cloudflare.auth_key;
+    authKey = builtins.readFile /etc/secrets/cloudflare.auth_key;
     zoneId = "7f71decfc86e8bb13d756d903005bb42";
     recordId = "be166852584f230578f28fd50f29825e";
     recordName = "nnas.nathan.gs";

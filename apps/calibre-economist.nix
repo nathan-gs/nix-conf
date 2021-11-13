@@ -43,7 +43,7 @@
           --subject "$title" \
           --verbose \
           nathan@nathan.gs \
-          "${builtins.readFile ../secrets/kindle.npaperwhite.email}" \
+          "${builtins.readFile /etc/secrets/kindle.npaperwhite.email}" \
           "Calibre download of $title"
 
         ${pkgs.calibre}/bin/calibre-smtp \
@@ -56,7 +56,7 @@
           --subject "$title" \
           --verbose \
           nathan@nathan.gs \
-          "${builtins.readFile ../secrets/kindle.nphone.email}" \
+          "${builtins.readFile /etc/secrets/kindle.nphone.email}" \
           "Calibre download of $title"
 
         ${pkgs.calibre}/bin/calibre-smtp \
@@ -69,7 +69,7 @@
           --subject "$title" \
           --verbose \
           nathan@nathan.gs \
-          "${builtins.readFile ../secrets/kindle.nchromebook.email}" \
+          "${builtins.readFile /etc/secrets/kindle.nchromebook.email}" \
           "Calibre download of $title"
 
         

@@ -65,7 +65,7 @@
     authUser = "apikey";
     useTLS = true;
     settings = {
-      AuthPass = builtins.readFile ./secrets/sendgrid.api.key;
+      AuthPass = builtins.readFile /etc/secrets/sendgrid.api.key;
       FromLineOverride = "${config.networking.hostName}@nathan.gs";
     };
     root = "nathan@nathan.gs";
