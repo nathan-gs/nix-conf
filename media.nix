@@ -16,7 +16,7 @@
     managePlugins = false;
   };
  
-  users.groups.users.members = ["plex"];
+  users.groups.users.members = ["plex" "photoprism" ];
 
 
   systemd.services.plex = {
@@ -32,7 +32,14 @@
   services.photoprism = {
     enable = true;
     host = "0.0.0.0";
+    keyFile = true;
   };
+
+  fileSystems."/var/lib/photoprism/originals/fn-fotos" = {
+    device = "/media/documents/nathan/onedrive_nathan_personal/fn-fotos";
+    options = [ "bind" ];
+  };
+
 
   networking.firewall.allowedTCPPorts = [ 2342 ];
  
