@@ -29,5 +29,11 @@
   # Plex Monitoring
   services.tautulli.enable = false;
 
-  
+  services.photoprism = {
+    enable = true;
+    host = "0.0.0.0";
+  };
+
+  networking.firewall.allowedTCPPorts = [ 2342 ];
+ 
 }
