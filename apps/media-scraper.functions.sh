@@ -18,7 +18,7 @@ vrt() {
     url=$1
     file_clean=$2
 
-    youtube-dl \
+    yt-dlp \
             --no-progress \
             --ignore-errors \
             --ignore-config \
@@ -30,7 +30,8 @@ vrt() {
             --convert-subs srt \
             --add-metadata \
             --prefer-ffmpeg \
-            --external-downloader-args '-loglevel error' \
+            --downloader-args 'ffmpeg:-loglevel error' \
+            --windows-filenames \
             --sleep-interval 10 \
             --max-sleep-interval 120 \
             --restrict-filenames \
@@ -55,11 +56,12 @@ vrt_search_and_download() {
   fi
 
   pushd "$path" > /dev/null
-  results=`curl --silent "https://search.vrt.be/search?i=video&q=$search&highlight=true&size=100&available=true&" | jq -c '.results[] | {title, url, seasonTitle, episodeNumber, shortDescription}'`
+  results=`curl --silent "https://search.vrt.be/search?i=video&q=$search&highlight=true&size=100&available=true&" | jq -c '.results[] | {program, title, url, seasonTitle, episodeNumber, shortDescription}'`
 
   IFS=$'\n'
   for i in $results;
   do
+    program=`echo $i | jq -r ".program"`
     title=`echo $i | jq -r ".$titleSelector"`
     url=`echo $i | jq -r '.url'`
     season=$(( printf '%02d' `echo $i | jq -r '.seasonTitle'` ) || echo "NO_SEASON")
@@ -69,6 +71,12 @@ vrt_search_and_download() {
     then
 	echo "No season found in \"$i\", skipping."
 	continue
+    fi
+
+    if [[ $program != $series ]];
+    then
+      echo "The program doesn't match, $series != $program"
+      continue
     fi
 
     mkdir -p "$series"/"Season $seasonNumber"
@@ -136,7 +144,7 @@ nickjr() {
     season=`echo $title | grep -o -E 'S[0-9]{1,2}' | sed 's/S//'`
     episode=`echo $title | grep -o -E 'Ep[0-9]{3,4}' | sed "s/Ep${season}//"`
 
-    youtube-dl \
+    yt-dlp \
             --no-progress \
             --ignore-errors \
             --ignore-config \
