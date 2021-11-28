@@ -8,7 +8,16 @@
 
       environment.VRT_USERNAME=builtins.readFile /etc/secrets/media-scraper.vrt.username;
       environment.VRT_PASSWORD=builtins.readFile /etc/secrets/media-scraper.vrt.password;
-      path = [ pkgs.youtube-dl pkgs.curl pkgs.jq pkgs.pup ];
+      path = [ (pkgs.youtube-dl.overrideAttrs (oA: rec {
+	  patches = oA.patches ++ [
+	    (pkgs.fetchpatch {
+ 	       name = "fix-vrt-auth.patch";
+	       url = "https://github.com/ytdl-org/youtube-dl/pull/29614.patch";
+               sha256 = "sha256-+gzofNsbYvUtFDj5StLTLgJpRR1n2QdxBH8ef+jkGxw=";
+	    })
+	  ];
+	}))
+	pkgs.curl pkgs.jq pkgs.pup ];
       
       unitConfig = {
         RequiresMountsFor = "/media/media";
