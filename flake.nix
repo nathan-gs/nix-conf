@@ -1,15 +1,15 @@
 {
   inputs = {
-    photoprism.url = "github:GTrunSec/photoprism2nix";
+#    photoprism.url = "github:GTrunSec/photoprism2nix";
   };
   
 
-  outputs = { nixpkgs, photoprism, ... }: {
+  outputs = { nixpkgs, ... }: {
     nixosConfigurations.nhtpc = nixpkgs.lib.nixosSystem {
       modules = [
         # Point this to your original configuration.
         ./computers/nhtpc.nix
-        photoprism.nixosModules.photoprism
+#        photoprism.nixosModules.photoprism
       ];
 
       

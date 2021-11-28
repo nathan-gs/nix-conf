@@ -29,42 +29,64 @@
   # Plex Monitoring
   services.tautulli.enable = false;
 
-  services.photoprism = {
-    enable = true;
-    host = "0.0.0.0";
-    keyFile = true;
-  };
 
-  systemd.services.photoprism.serviceConfig.RestrictAddressFamilies = lib.mkForce "AF_UNIX AF_INET AF_INET6 AF_NETLINK";
-  systemd.services.photoprism.serviceConfig.SystemCallFilter = lib.mkForce [ "@system-service" "@network-io" "~@privileged" "~@resources" ];
-  systemd.services.photoprism.path = lib.mkForce [ pkgs.darktable pkgs.ffmpeg pkgs.exiftool ];
-  systemd.services.photoprism.environment.LD_LIBRARY_PATH=
-    (pkgs.libtensorflow-bin.overrideAttrs (oA: {
-       # 21.05 does not have libtensorflow-bin 1.x anymore & photoprism isn't compatible with tensorflow 2.x yet
-       # https://github.com/photoprism/photoprism/issues/222
-       src = pkgs.fetchurl {
-         url = "https://storage.googleapis.com/tensorflow/libtensorflow/libtensorflow-cpu-linux-x86_64-1.15.2.tar.gz";
-         sha256 = "04bi3ijq4sbb8c5vk964zlv0j9mrjnzzxd9q9knq3h273nc1a36k";
-       };
-       version = "1.15.2";
-     }));
+  virtualisation.docker.enable = true;
 
-  
-  systemd.services.photoprism.confinement.enable = lib.mkForce false;
+  systemd.services.photoprism-docker = {
+    # Make sure docker is started. 
+    after = [ "docker.service" "network-online.target" ];
+    # To avoid race conditions
+    requires = [ "docker.service" ];
+    wantedBy = [ "multi-user.target" ];
 
-  fileSystems."/var/lib/photoprism/originals" = {
-    device = "/media/documents/nathan/onedrive_nathan_personal/fn-fotos";
-    options = [ "bind" ];
-  };
+    serviceConfig = {
+        # Pulling an image might take a lot of time. 0 turns of the timeouts
+        TimeoutStartSec = "0";
+        # Restart policy, other relevant options are: 
+        # - no
+        # - on-failure 
+        # Look at the man page:
+        # man systemd.service
+        Restart = "always";
+    };
 
-  fileSystems."/var/lib/photoprism/import/femke-cameraroll" = {
-    device = "/media/documents/nathan/onedrive_nathan_personal/Camera Roll";
-    options = [ "bind" ];
-  };
+    # Let's stop the running container , remove the image.
+    # The "|| true" is used because systemd expects that a everything succeeds, 
+    # while failure is sometimes expected (eg. container was not running).  
+    # Pull the image, ideally a version would be specified.     
+    preStart = ''
+${pkgs.docker}/bin/docker stop photoprism || true;
+${pkgs.docker}/bin/docker rm photoprism || true;
+${pkgs.docker}/bin/docker pull photoprism/photoprism
+    '';
 
-  fileSystems."/var/lib/photoprism/import/nathan-cameraroll" = {
-    device = "/media/documents/nathan/onedrive_nathan_personal/Pictures/Camera Roll";
-    options = [ "bind" ];
+    # Start the container.
+    script = ''
+${pkgs.docker}/bin/docker run \
+  --name photoprism \
+  --user 2000:100 \
+  -p 2342:2342 \
+  --log-driver none \
+  -v /var/lib/photoprism:/photoprism/storage \
+  -v /var/lib/photoprism/sqlite3:/var/lib/photoprism/sqlite3 \
+  -v '/media/documents/nathan/onedrive_nathan_personal/fn-fotos-sidecar':/photoprism/sidecar \
+  -v '/media/documents/nathan/onedrive_nathan_personal/fn-fotos':/photoprism/originals \
+  -v '/media/documents/nathan/onedrive_nathan_personal/Camera Roll':/photoprism/import/femke-camera-roll \
+  -v '/media/documents/nathan/onedrive_nathan_personal/Pictures/Camera Roll':/photoprism/import/nathan-camera-roll \
+  --env-file /var/lib/photoprism/env \
+  -e PHOTOPRISM_WORKERS=8 \
+  -e PHOTOPRISM_SIDECAR_PATH=/photoprism/sidecar \
+  -e PHOTOPRISM_ORIGINALS_LIMIT=8000 \
+  -e PHOTOPRISM_BACKUP_PATH=/photoprism/storage/backup \
+  -e PHOTOPRISM_STORAGE_PATH=/photoprism/storage \
+  -e PHOTOPRISM_FACE_SCORE=8 \
+  photoprism/photoprism
+    '';
+
+     # When the systemd service stops, stop the docker container.
+    preStop = ''
+${pkgs.docker}/bin/docker kill photoprism
+    '';
   };
 
   networking.firewall.allowedTCPPorts = [ 2342 ];
