@@ -8,7 +8,7 @@
 
       environment.VRT_USERNAME=builtins.readFile /etc/secrets/media-scraper.vrt.username;
       environment.VRT_PASSWORD=builtins.readFile /etc/secrets/media-scraper.vrt.password;
-      path = [ pkgs.youtube-dl pkgs.curl pkgs.jq pkgs.pup ];
+      path = [ pkgs.yt-dlp pkgs.curl pkgs.jq pkgs.pup ];
       
       unitConfig = {
         RequiresMountsFor = "/media/media";
