@@ -55,8 +55,12 @@ vrt_search_and_download() {
     titleSelector="title"
   fi
 
+
   pushd "$path" > /dev/null
   results=`curl --silent "https://search.vrt.be/search?i=video&q=$search&highlight=true&size=100&available=true&" | jq -c '.results[] | {program, title, url, seasonTitle, episodeNumber, shortDescription}'`
+
+  echo ">> Searching & downloading: $series to $path"
+
 
   IFS=$'\n'
   for i in $results;
@@ -85,35 +89,26 @@ vrt_search_and_download() {
 
     filename="$series S${season}E${episode} $title"
     file_clean=`echo $filename | tr -cs "[ A-Za-z0-9\-]_" _ | sed 's/_$//'`
-    
-    echo $url 
-    echo $filename
 
-    
-    if [ `ls | grep -c "$file_clean"` -eq 0 ]
+#    echo $url 
+#    echo $filename
+
+
+    if [ `ls | grep -v '.part' | grep -c "$file_clean"` -eq 0 ]
     then
-      if [[ ${url} != *"marathonradio"* ]];
-      then  
-        if [[ ${url} != *"audiodescriptie"* ]];
-          then
-          echo "downloading $file_clean"
-
-          vrt $url $file_clean
-
-          chmod ugo+rw * || true
-          echo "downloaded $file_clean"
-        else
-          echo "Skipping audiodescriptie"
-        fi
-      else
-        echo "Skipping marathonradio"
-      fi
+      echo "downloading $file_clean"
+      vrt $url $file_clean
+      chmod ugo+rw * || true
+      echo "downloaded $file_clean"
     else
       echo "Already downloaded $file_clean, skipping"
     fi
 
     popd > /dev/null
   done
+
+  echo ">> Completed $series"
+
   popd > /dev/null
 }
 
@@ -124,7 +119,7 @@ vrt_search_and_download() {
 nickjr() {
   baseUrl="$3"
   basePath="$4"
-  
+
   selector="Hele aflevering"
   fsPath="$1"
   name="$2"
@@ -132,13 +127,13 @@ nickjr() {
   echo "nickjr: Searching for $name"
   url="${baseUrl}/${basePath}"
 
-  results=`curl --silent "${url}" | pup ":parent-of(:parent-of(:parent-of(:parent-of(:contains(\"${selector}\"))))) attr{href}"`    
-  
+  results=`curl --silent "${url}" | pup ":parent-of(:parent-of(:parent-of(:parent-of(:contains(\"${selector}\"))))) attr{href}"`
+
   for i in $results;
   do
-    
+
     vidUrl="${baseUrl}${i}"
-    
+
 
     title=`curl --silent "$vidUrl" | pup 'title text{}'`
     season=`echo $title | grep -o -E 'S[0-9]{1,2}' | sed 's/S//'`
