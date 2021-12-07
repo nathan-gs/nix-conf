@@ -79,7 +79,7 @@ ${pkgs.docker}/bin/docker run \
   -e PHOTOPRISM_ORIGINALS_LIMIT=8000 \
   -e PHOTOPRISM_BACKUP_PATH=/photoprism/storage/backup \
   -e PHOTOPRISM_STORAGE_PATH=/photoprism/storage \
-  -e PHOTOPRISM_FACE_SCORE=8 \
+  -e PHOTOPRISM_FACE_SCORE=5 \
   photoprism/photoprism
     '';
 
