@@ -1,6 +1,7 @@
 {
   inputs = {
 #    photoprism.url = "github:GTrunSec/photoprism2nix";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-21.11";
   };
   
 
