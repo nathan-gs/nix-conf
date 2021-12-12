@@ -95,4 +95,10 @@
    3100 # loki 
   ];
 
+  services.tuya-prometheus = {
+    enable = true;
+    clientId = builtins.readFile /etc/secrets/tuya.clientId;
+    secret = builtins.readFile /etc/secrets/tuya.secret;
+  };
+
 }
