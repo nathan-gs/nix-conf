@@ -1,2 +1,2 @@
 #!/bin/sh
-sudo nixos-rebuild --flake .#nhtpc switch --impure
+sudo nixos-rebuild --flake .#nhtpc switch

@@ -1,2 +1,3 @@
 #!/bin/sh
-sudo nixos-rebuild --flake .#nhtpc switch --upgrade --impure
+nix flake update
+sudo nixos-rebuild --flake .#nhtpc switch --upgrade
