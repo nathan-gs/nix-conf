@@ -49,6 +49,20 @@
     },
     "nixpkgs_2": {
       "locked": {
+        "lastModified": 1639239143,
+        "narHash": "sha256-9fFMUs6m3/4ZMflSqRgO4iEkBtFBnDyLWa3AB2tOvfs=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "e6df26a654b7fdd59a068c57001eab5736b1363c",
+        "type": "github"
+      },
+      "original": {
+        "id": "nixpkgs",
+        "type": "indirect"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
         "lastModified": 1639298432,
         "narHash": "sha256-pIxmw4BFWxZCJMoRIQllGTo9xLyOvt/ZSjz/Ot9ij7E=",
         "owner": "NixOS",
@@ -65,21 +79,36 @@
     "root": {
       "inputs": {
         "nixpkgs": "nixpkgs",
+        "secrets": "secrets",
         "tuya-cloud-bash": "tuya-cloud-bash"
+      }
+    },
+    "secrets": {
+      "inputs": {
+        "nixpkgs": "nixpkgs_2"
+      },
+      "locked": {
+        "narHash": "sha256-FjHSE3WW0OXx5kxyJ6bWlIzMLLuWWjL7rTmTmCF/0tI=",
+        "path": "/etc/nixos/secrets/",
+        "type": "path"
+      },
+      "original": {
+        "path": "/etc/nixos/secrets/",
+        "type": "path"
       }
     },
     "tuya-cloud-bash": {
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-utils": "flake-utils",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1639313472,
-        "narHash": "sha256-os54kgUJuvC+tZHy4AdedDJEvUz3kPettxujB859ifo=",
+        "lastModified": 1639321586,
+        "narHash": "sha256-XLBoRmaGD+JWXkIrFHlUvc/4Jrel9w7OPIFFjOrVk/I=",
         "owner": "nathan-gs",
         "repo": "tuya-cloud-bash",
-        "rev": "dca43c44a782c04ceadb634ca798b2d7af9e5c36",
+        "rev": "724fc309a87a18d038af68a474f2b82178f07aa7",
         "type": "github"
       },
       "original": {

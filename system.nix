@@ -65,10 +65,10 @@
     authUser = "apikey";
     useTLS = true;
     settings = {
-      AuthPass = builtins.readFile /etc/secrets/sendgrid.api.key;
+      AuthPass = config.secrets.sendgrid.api.key;
       FromLineOverride = "${config.networking.hostName}@nathan.gs";
     };
-    root = "nathan@nathan.gs";
+    root = config.secrets.email;
    };
 
   # Prometheus

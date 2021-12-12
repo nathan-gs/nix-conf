@@ -77,12 +77,12 @@
   networking.wg-quick.interfaces.wg0 = {
     address = [ "172.16.8.2/24" ];
         
-    privateKey = builtins.readFile /etc/secrets/wireguard.nnas.private;
+    privateKey = config.secrets.wireguard.nnas.private;
     
     peers = [
       {
         # NHTPC
-        publicKey = builtins.readFile /etc/secrets/wireguard.nhtpc.public;
+        publicKey = config.secrets.wireguard.nhtpc.public;
         allowedIPs = [ "172.16.8.0/24" ];
         endpoint = "h.nathan.gs:51820";
         persistentKeepalive = 25;
@@ -96,11 +96,11 @@
 
   services.cloudflare-dyndns = {
     enable = true;
-    authEmail = "nathan@nathan.gs";
-    authKey = builtins.readFile /etc/secrets/cloudflare.auth_key;
-    zoneId = "7f71decfc86e8bb13d756d903005bb42";
-    recordId = "be166852584f230578f28fd50f29825e";
-    recordName = "nnas.nathan.gs";
+    authEmail = config.secrets.cloudflare.authEmail;
+    authKey = config.secrets.cloudflare.authKey;
+    zoneId = config.secrets.cloudflare.zoneId;
+    recordId = config.secrets.cloudflare.nnas.recordId;
+    recordName = config.secrets.cloudflare.nnas.recordName;
   };   
 
   boot.initrd.availableKernelModules = [ "uhci_hcd" "ehci_pci" "ahci" "xhci_pci" "usb_storage" "sd_mod" ];

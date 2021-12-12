@@ -42,8 +42,8 @@
           --password="${config.services.ssmtp.settings.AuthPass}" \
           --subject "$title" \
           --verbose \
-          nathan@nathan.gs \
-          "${builtins.readFile /etc/secrets/kindle.npaperwhite.email}" \
+          ${config.secrets.email} \
+          "${config.secrets.kindle.npaperwhite.email}" \
           "Calibre download of $title"
 
         ${pkgs.calibre}/bin/calibre-smtp \
@@ -55,8 +55,8 @@
           --password="${config.services.ssmtp.settings.AuthPass}" \
           --subject "$title" \
           --verbose \
-          nathan@nathan.gs \
-          "${builtins.readFile /etc/secrets/kindle.nphone.email}" \
+          ${config.secrets.email} \
+          "${config.secrets.kindle.nphone.email}" \
           "Calibre download of $title"
 
         ${pkgs.calibre}/bin/calibre-smtp \
@@ -68,8 +68,8 @@
           --password="${config.services.ssmtp.settings.AuthPass}" \
           --subject "$title" \
           --verbose \
-          nathan@nathan.gs \
-          "${builtins.readFile /etc/secrets/kindle.nchromebook.email}" \
+          ${config.secrets.email} \
+          "${config.secrets.kindle.nchromebook.email}" \
           "Calibre download of $title"
 
         

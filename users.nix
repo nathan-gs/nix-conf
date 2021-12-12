@@ -6,9 +6,9 @@
      uid = 2000;
      extraGroups = [ "wheel" "docker" ];
      openssh.authorizedKeys.keys = [
-       "${builtins.readFile /etc/secrets/ssh.nathan.pub}"
-       "${builtins.readFile /etc/secrets/ssh.nathan-2021.pub}"
-       "${builtins.readFile /etc/secrets/ssh.nathan.nchromebook.pub}"
+       config.secrets.ssh.nathan.pub
+       config.secrets.ssh.nathan-2021.pub
+       config.secrets.ssh.nathan-nchromebook.pub
      ];
   };
 
@@ -26,7 +26,7 @@
     uid = 501;
     isNormalUser = true;
     openssh.authorizedKeys.keys = [
-      "${builtins.readFile /etc/secrets/ssh.nhtpc-backup.pub}"
+      config.secrets.ssh.nhtpc-backup.pub
     ];
   };
 

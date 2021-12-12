@@ -41,7 +41,7 @@
       host = config.services.ssmtp.hostName;
       user = config.services.ssmtp.authUser;
       password = config.services.ssmtp.settings.AuthPass;
-      fromAddress = "nathan+grafana@nathan.gs";
+      fromAddress = config.secrets.email;
     };
   };
 
@@ -97,8 +97,8 @@
 
   services.tuya-prometheus = {
     enable = true;
-    clientId = builtins.readFile /etc/secrets/tuya.clientId;
-    secret = builtins.readFile /etc/secrets/tuya.secret;
+    clientId = config.secrets.tuya.clientId;
+    secret = config.secrets.tuya.secret;
   };
 
 }
