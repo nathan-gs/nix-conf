@@ -88,7 +88,7 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "narHash": "sha256-FjHSE3WW0OXx5kxyJ6bWlIzMLLuWWjL7rTmTmCF/0tI=",
+        "narHash": "sha256-878MsWGKAKeZHqGEZzYWbm+XuMFy1ED63NVHFzRAids=",
         "path": "/etc/nixos/secrets/",
         "type": "path"
       },
@@ -104,11 +104,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "lastModified": 1639321586,
-        "narHash": "sha256-XLBoRmaGD+JWXkIrFHlUvc/4Jrel9w7OPIFFjOrVk/I=",
+        "lastModified": 1639484079,
+        "narHash": "sha256-nwe/kkqINQSOfpNUV17hlClOun70FH/gnImsaLTTarg=",
         "owner": "nathan-gs",
         "repo": "tuya-cloud-bash",
-        "rev": "724fc309a87a18d038af68a474f2b82178f07aa7",
+        "rev": "9538397b205005fde3564d74d2b8af07305c3238",
         "type": "github"
       },
       "original": {

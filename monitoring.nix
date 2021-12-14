@@ -99,6 +99,7 @@
     enable = true;
     clientId = config.secrets.tuya.clientId;
     secret = config.secrets.tuya.secret;
+    startAt = "*:0/5";
   };
 
 }
