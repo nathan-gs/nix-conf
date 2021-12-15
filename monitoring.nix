@@ -1,5 +1,4 @@
 { config, pkgs, ... }:
-
 {
   services.prometheus = {
     enable = true;
@@ -11,12 +10,20 @@
 	  { targets = 
             [ 
               "nhtpc.wg:${toString config.services.prometheus.exporters.node.port}" 
+              "nhtpc.wg:${toString config.services.prometheus.exporters.smokeping.port}"
               "nnas.wg:${toString config.services.prometheus.exporters.node.port}"
             ];
           }
         ];
       }
     ];
+    exporters = {
+      smokeping = {
+        enable = true;
+        hosts = ["192.168.1.1" "1.1.1.1" "8.8.8.8" "195.238.2.21"];
+        
+      };
+    };
   };
 
   services.grafana = {
@@ -101,5 +108,6 @@
     secret = config.secrets.tuya.secret;
     startAt = "*:0/5";
   };
+
 
 }
