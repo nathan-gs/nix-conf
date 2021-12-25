@@ -20,7 +20,7 @@
     exporters = {
       smokeping = {
         enable = true;
-        hosts = ["192.168.1.1" "1.1.1.1" "8.8.8.8" "195.238.2.21"];
+        hosts = ["192.168.1.1" "1.1.1.1" "8.8.8.8" "195.238.2.21" "nnas.wg"];
         
       };
     };
@@ -99,7 +99,7 @@
   networking.firewall.allowedTCPPorts = [ 
    config.services.prometheus.port 
    config.services.grafana.port 
-   3100 # loki 
+   config.services.loki.configuration.server.http_listen_port
   ];
 
   services.tuya-prometheus = {
