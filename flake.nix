@@ -11,6 +11,7 @@
       modules = [
         # Point this to your original configuration.
         ./computers/nhtpc.nix
+        ./computers/nnas.nix
         tuya-cloud-bash.nixosModules.tuya-prometheus
         secrets.nixosModules.secrets
 #        photoprism.nixosModules.photoprism
