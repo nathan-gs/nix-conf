@@ -2,12 +2,12 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, ... }:
+{ config, pkgs, modulesPath, ... }:
 
 {
   imports =
     [ # Include the results of the hardware scan.
-      <nixpkgs/nixos/modules/installer/scan/not-detected.nix>
+      (modulesPath + "/installer/scan/not-detected.nix")
       ../headless.nix
       ../system.nix
       ../disks.nix
