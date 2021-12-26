@@ -118,7 +118,6 @@
           }
         ];
       clients = [
-        { url = "http://nhtpc.wg:3100/loki/api/v1/push"; }
         { url = config.secrets.grafanaCloud.promtail.url; }        
       ];
     };
