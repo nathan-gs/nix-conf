@@ -1,2 +1,2 @@
 #!/bin/sh
-sudo nixos-rebuild --flake .#nhtpc switch
+sudo nixos-rebuild --flake .#$(hostname --short) switch
