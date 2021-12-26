@@ -25,14 +25,17 @@
       };
     };
 
-    remoteWrite.grafanaCloud = {
-      url = "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push";
-      basic_auth = {
-        username = config.secrets.grafanaCloud.api.username;
-        password = config.secrets.grafanaCloud.api.key;
-      };
+    remoteWrite = [
+      {
+        name = "grafana cloud";
+        url = "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push";
+        basic_auth = {
+          username = config.secrets.grafanaCloud.api.username;
+          password = config.secrets.grafanaCloud.api.key;
+        };
 
-    };
+      }
+    ];
   };
 
   services.grafana = {

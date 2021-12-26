@@ -119,7 +119,7 @@
         ];
       clients = [
         { url = "http://nhtpc.wg:3100/loki/api/v1/push"; }
-        { url = "https://${config.secrets.grafanaCloud.api.username}:${config.secrets.grafanaCloud.api.key}@https://logs-prod-eu-west-0.grafana.net/api/prom/push; }        
+        { url = config.secrets.grafanaCloud.promtail.url; }        
       ];
     };
   };
