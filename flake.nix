@@ -20,9 +20,9 @@
       # Select the target system here.
       system = "x86_64-linux";
     };
-  };
+  
 
-  nixosConfigurations.nnas = nixpkgs.lib.nixosSystem {
+    nixosConfigurations.nnas = nixpkgs.lib.nixosSystem {
       modules = [
         # Point this to your original configuration.
         ./computers/nnas.nix
