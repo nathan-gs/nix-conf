@@ -112,15 +112,19 @@ with lib;
           recipient = "nathan@nathan.gs";
         };
         test = true;
-        wall.enable = true;
+        wall.enable = false;
       };
     
       defaults.monitored = "-a -f -p -t -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,35,40";
       devices = smartdDevices;
     };
 
-    systemd.services.smartd.after = [ "network-online.target" ];
-    systemd.services.smartd.wants = [ "network-online.target" ];
+    systemd.services.smartd = {
+      environment.HOSTNAME=networking.hostname;
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+    };
+
     
 #    services.udev = {
 #      extraRules = ''
