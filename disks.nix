@@ -120,7 +120,7 @@ with lib;
     };
 
     systemd.services.smartd = {
-      environment.HOSTNAME=networking.hostname;
+      environment.HOSTNAME=config.networking.hostName;
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
     };
