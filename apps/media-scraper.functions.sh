@@ -94,7 +94,7 @@ vrt_search_and_download() {
 #    echo $filename
 
 
-    if [ `ls | grep -v '.part' | grep -c "$file_clean"` -eq 0 ]
+    if [ `ls | grep -v '.srt' | grep -v '.part' | grep -c "$file_clean"` -eq 0 ]
     then
       echo "downloading $file_clean"
       vrt $url $file_clean
