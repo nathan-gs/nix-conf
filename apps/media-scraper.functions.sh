@@ -28,6 +28,7 @@ vrt() {
             --sub-format srt \
             --all-subs \
             --convert-subs srt \
+            --check-formats \
             --add-metadata \
             --prefer-ffmpeg \
             --downloader-args 'ffmpeg:-loglevel error' \
