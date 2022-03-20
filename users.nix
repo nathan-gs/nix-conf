@@ -24,7 +24,7 @@
 
   users.extraUsers.nills = {
      isNormalUser = true;
-     uid = 2003;
+     uid = 2004;
      openssh.authorizedKeys.keys = [
        config.secrets.ssh.nills.pub.k0
        config.secrets.ssh.nills.pub.k1
