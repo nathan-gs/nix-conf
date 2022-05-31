@@ -94,7 +94,7 @@
   # The NixOS release to be compatible with for stateful data such as databases.
   system.stateVersion = "20.09";
 
-  services.cloudflare-dyndns = {
+  services.cloudflare-dyndns-nathan = {
     enable = true;
     authEmail = config.secrets.cloudflare.authEmail;
     authKey = config.secrets.cloudflare.authKey;

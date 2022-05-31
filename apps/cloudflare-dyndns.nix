@@ -3,11 +3,11 @@
 with lib;
 
 let 
-  cfg = config.services.cloudflare-dyndns;
+  cfg = config.services.cloudflare-dyndns-nathan;
 in
 {
   options = {
-    services.cloudflare-dyndns = {
+    services.cloudflare-dyndns-nathan = {
       enable = mkEnableOption "CloudFlare DynDNS";
       
       authEmail = mkOption {
