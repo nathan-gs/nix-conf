@@ -13,7 +13,6 @@
   services.plex = {
     enable = true;
     openFirewall = true;
-    managePlugins = false;
   };
  
   users.groups.users.members = ["plex" "photoprism" ];

@@ -29,17 +29,16 @@
 	target_file="/media/media/Books/Magazines/$title.mobi"
         cp TheEconomist.mobi "$target_file"
 
-        hostPort="${config.services.ssmtp.hostName}"
-        relay="''${hostPort%%:*}"
-        port="''${hostPort##*:}"
+        relay="${config.secrets.sendgrid.host}"
+        port="${toString config.secrets.sendgrid.port}"
      
         ${pkgs.calibre}/bin/calibre-smtp \
           --attachment "$target_file" \
           --relay "$relay" \
           --encryption-method TLS \
           --port $port \
-          --username="${config.services.ssmtp.authUser}" \
-          --password="${config.services.ssmtp.settings.AuthPass}" \
+          --username="${config.secrets.sendgrid.api.user}" \
+          --password="${config.secrets.sendgrid.api.key}" \
           --subject "$title" \
           --verbose \
           ${config.secrets.email} \
@@ -51,8 +50,8 @@
           --relay "$relay" \
           --encryption-method TLS \
           --port $port \
-          --username="${config.services.ssmtp.authUser}" \
-          --password="${config.services.ssmtp.settings.AuthPass}" \
+          --username="${config.secrets.sendgrid.api.user}" \
+          --password="${config.secrets.sendgrid.api.key}" \
           --subject "$title" \
           --verbose \
           ${config.secrets.email} \
@@ -64,8 +63,8 @@
           --relay "$relay" \
           --encryption-method TLS \
           --port $port \
-          --username="${config.services.ssmtp.authUser}" \
-          --password="${config.services.ssmtp.settings.AuthPass}" \
+          --username="${config.secrets.sendgrid.api.user}" \
+          --password="${config.secrets.sendgrid.api.key}" \
           --subject "$title" \
           --verbose \
           ${config.secrets.email} \

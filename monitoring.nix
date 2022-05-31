@@ -53,9 +53,9 @@
     ];
     smtp = {
       enable = true;
-      host = config.services.ssmtp.hostName;
-      user = config.services.ssmtp.authUser;
-      password = config.services.ssmtp.settings.AuthPass;
+      host = "${config.secrets.sendgrid.host}:${toString config.secrets.sendgrid.port}";
+      user = config.secrets.sendgrid.api.user;
+      password = config.secrets.sendgrid.api.key;
       fromAddress = config.secrets.email;
     };
   };

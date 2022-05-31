@@ -27,7 +27,7 @@ let
 SNAPSHOTS_TO_KEEP=40
 
 COUNT_SNAPSHOTS=0
-COUNT_SNAPSHOTS=`${pkgs.btrfsProgs}/bin/btrfs subvolume \
+COUNT_SNAPSHOTS=`${pkgs.btrfs-progs}/bin/btrfs subvolume \
   list \
   -r \
   --sort=path,gen \
@@ -39,7 +39,7 @@ COUNT_SNAPSHOTS=`${pkgs.btrfsProgs}/bin/btrfs subvolume \
 let "TO_DELETE=$COUNT_SNAPSHOTS - $SNAPSHOTS_TO_KEEP"
 if [ $TO_DELETE -gt 0 ]
 then
-  for i in `${pkgs.btrfsProgs}/bin/btrfs subvolume \
+  for i in `${pkgs.btrfs-progs}/bin/btrfs subvolume \
        list \
        -r \
        --sort=path,gen \
@@ -49,7 +49,7 @@ then
        | ${pkgs.gawk}/bin/gawk '{ print $9 }' \
        | head -n $TO_DELETE`;
   do
-    ${pkgs.btrfsProgs}/bin/btrfs subvolume delete -c /media/disks/$i;
+    ${pkgs.btrfs-progs}/bin/btrfs subvolume delete -c /media/disks/$i;
   done
 fi      
   '';
@@ -179,7 +179,7 @@ with lib;
       description = "btrfs monthly scrub";
       after = [ "local-fs.target" ];
       script = ''
-        ${pkgs.btrfsProgs}/bin/btrfs scrub start -c3 -B -d /media/${lib.head dataVolumes}
+        ${pkgs.btrfs-progs}/bin/btrfs scrub start -c3 -B -d /media/${lib.head dataVolumes}
       '';
       startAt = "*-*-08 23:00:00";
     };
@@ -203,7 +203,7 @@ with lib;
         fi
 
         ${concatStringsSep "\n" (lib.imap (n: v: "mkdir -p /media/disks/backup/${v}") dataVolumes)}
-        ${concatStringsSep "\n" (lib.imap (n: v: "${pkgs.btrfsProgs}/bin/btrfs subvolume snapshot -r /media/${v} /media/disks/backup/${v}/${v}_nightly_\$DT") dataVolumes)}
+        ${concatStringsSep "\n" (lib.imap (n: v: "${pkgs.btrfs-progs}/bin/btrfs subvolume snapshot -r /media/${v} /media/disks/backup/${v}/${v}_nightly_\$DT") dataVolumes)}
 
         ${concatStringsSep "\n" (lib.imap (n: v: removeBackup v) dataVolumes)}
 
@@ -234,7 +234,7 @@ with lib;
         fi
 
         ${concatStringsSep "\n" (lib.imap (n: v: "mkdir -p /media/disks/backup/${v}") monthlySnapshotVolumes)}
-        ${concatStringsSep "\n" (lib.imap (n: v: "${pkgs.btrfsProgs}/bin/btrfs subvolume snapshot -r /media/${v} /media/disks/backup/${v}/${v}_monthly_\$DT") monthlySnapshotVolumes)}
+        ${concatStringsSep "\n" (lib.imap (n: v: "${pkgs.btrfs-progs}/bin/btrfs subvolume snapshot -r /media/${v} /media/disks/backup/${v}/${v}_monthly_\$DT") monthlySnapshotVolumes)}
 
         if [ $IS_DISKS_MOUNTED -eq 0 ]; then
           ${pkgs.utillinux}/bin/umount /media/disks

@@ -46,7 +46,7 @@
     description = "reresolve-dns"; 
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
-    path = [ pkgs.wireguard pkgs.bash pkgs.gawk ];
+    path = [ pkgs.wireguard-tools pkgs.bash pkgs.gawk ];
     script = ''
       SERVICE_NAME="$(systemctl list-units --type service --plain wg-quick* | grep wg-quick | awk '{print $1}' | head -n 1)"
       CONFIG_FILE="$(cat $(systemctl cat $SERVICE_NAME | grep ExecStart | sed 's/ExecStart=//') | grep 'wg-quick up' | sed 's/wg-quick up //')"
@@ -64,20 +64,20 @@
   services.cron.enable = false;
 
   # Email
-  services.ssmtp = {
+  programs.msmtp = {
     enable = true;
-    domain = "nathan.gs";
-    hostName = "smtp.sendgrid.net:587";
-    useSTARTTLS = true;
-    authUser = "apikey";
-    useTLS = true;
-    settings = {
-      AuthPass = config.secrets.sendgrid.api.key;
-      FromLineOverride = "${config.networking.hostName}@nathan.gs";
+    accounts.default = {
+      auth = true;
+      host = config.secrets.sendgrid.host;
+      port = config.secrets.sendgrid.port;
+      user = config.secrets.sendgrid.api.user;
+      password = config.secrets.sendgrid.api.key;
+      maildomain = "nathan.gs";
+      auto_from = true;
     };
-    root = config.secrets.email;
-   };
-
+    setSendmail = true;
+  };
+  
   # Prometheus
   services.prometheus.exporters.node = {
     enable = true;
