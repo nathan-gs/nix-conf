@@ -11,7 +11,7 @@
       RequiresMountsFor = "/media/documents";
     };
     serviceConfig = {
-      ExecStart = "${pkgs.onedrive}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal";
+      ExecStart = "${pkgs.onedrive}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal --verbose";
       User = "nathan";
     };
     environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
