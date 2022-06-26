@@ -66,17 +66,29 @@
   # Email
   programs.msmtp = {
     enable = true;
-    accounts.default = {
-      auth = true;
-      host = config.secrets.sendgrid.host;
-      port = config.secrets.sendgrid.port;
-      user = config.secrets.sendgrid.api.user;
-      password = config.secrets.sendgrid.api.key;
-      maildomain = "nathan.gs";
-      auto_from = true;
-    };
+    extraConfig = ''
+      defaults
+      
+      account sendgrid
+      aliases /etc/aliases
+      auth on
+      auto_from on
+      user ${config.secrets.sendgrid.api.user}
+      host ${config.secrets.sendgrid.host}
+      maildomain nathan.gs
+      password ${config.secrets.sendgrid.api.key}
+      port ${toString config.secrets.sendgrid.port}
+      syslog on
+      tls on
+
+      account default : sendgrid
+    '';
     setSendmail = true;
   };
+
+  environment.etc.aliases.text = ''
+    default: ${config.secrets.email}
+  '';
   
   # Prometheus
   services.prometheus.exporters.node = {
