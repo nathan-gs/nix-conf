@@ -68,7 +68,7 @@ ${pkgs.docker}/bin/docker run \
   --log-driver none \
   -v /var/lib/photoprism:/photoprism/storage \
   -v /var/lib/photoprism/sqlite3:/var/lib/photoprism/sqlite3 \
-  -v '/media/documents/nathan/onedrive_nathan_personal/fn-fotos-sidecar':/photoprism/sidecar \
+  -v '/var/lib/photoprism/sidecar:/photoprism/sidecar' \
   -v '/media/documents/nathan/onedrive_nathan_personal/fn-fotos':/photoprism/originals \
   -v '/media/documents/nathan/onedrive_nathan_personal/Camera Roll':/photoprism/import/femke-camera-roll \
   -v '/media/documents/nathan/onedrive_nathan_personal/Pictures/Camera Roll':/photoprism/import/nathan-camera-roll \
@@ -86,6 +86,33 @@ ${pkgs.docker}/bin/docker run \
     preStop = ''
 ${pkgs.docker}/bin/docker kill photoprism
     '';
+  };
+
+  systemd.services.photoprism-backup = {
+    description = "Photoprism Backup";
+    path = [ pkgs.gnutar pkgs.gzip ];
+    unitConfig = {
+      RequiresMountsFor = "/media/documents";
+    };
+    serviceConfig = {
+      User = "nathan";
+    };
+    script = ''
+       mkdir -pm 0775 /media/documents/nathan/onedrive_nathan_personal/backup/
+       target='/media/documents/nathan/onedrive_nathan_personal/backup/photoprism-fn-fotos.tar.gz'
+       tar \
+         --exclude "import" \
+         --exclude "backup" \
+         --exclude "cache" \
+         --exclude "originals" \
+         -czf \
+         /tmp/photoprism-fn-fotos.tar.gz \
+         -C /var/lib \
+         photoprism
+
+       mv /tmp/photoprism-fn-fotos.tar.gz $target
+      '';
+    startAt = "*-*-* 01:00:00";
   };
 
   networking.firewall.allowedTCPPorts = [ 2342 ];
