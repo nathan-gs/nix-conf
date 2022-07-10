@@ -35,7 +35,7 @@
     # Make sure docker is started. 
     after = [ "docker.service" "network-online.target" ];
     # To avoid race conditions
-    requires = [ "docker.service" ];
+    requires = [ "docker.service" "network-online.target" ];
     wantedBy = [ "multi-user.target" ];
 
     serviceConfig = {
