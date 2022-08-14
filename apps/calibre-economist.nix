@@ -17,17 +17,15 @@
         work_dir=`mktemp -d`
         pushd $work_dir
         ${pkgs.calibre}/bin/ebook-convert \
-          "The Economist.recipe" "TheEconomist.mobi" \
-          --mobi-file-type new \
-          --output-profile kindle_pw3
+          "The Economist.recipe" "TheEconomist.epub"
         ${pkgs.calibre}/bin/ebook-convert \
-          "The Economist.recipe" TheEconomist.epub \
+          "The Economist.recipe" TheEconomist-short.epub \
           --test
-        ${pkgs.busybox}/bin/unzip TheEconomist.epub content.opf
+        ${pkgs.busybox}/bin/unzip TheEconomist-short.epub content.opf
         title=$(sed -rn "s/<dc:title>(.*)<\/dc:title>/\1/p" content.opf | xargs)       
         echo $title
-	target_file="/media/media/Books/Magazines/$title.mobi"
-        cp TheEconomist.mobi "$target_file"
+	target_file="/media/media/Books/Magazines/$title.epub"
+        cp TheEconomist.epub "$target_file"
 
         relay="${config.secrets.sendgrid.host}"
         port="${toString config.secrets.sendgrid.port}"
