@@ -34,6 +34,14 @@
      ];
   };
 
+  users.extraUsers.wesley = {
+     isNormalUser = true;
+     uid = 2005;
+     openssh.authorizedKeys.keys = [
+       config.secrets.ssh.wesley.pub.k0
+     ];
+  };
+
   
   users.extraUsers.nhtpc-backup = {
     uid = 501;
