@@ -4,7 +4,7 @@
   users.extraUsers.nathan = {
      isNormalUser = true;
      uid = 2000;
-     extraGroups = [ "wheel" "docker" ];
+     extraGroups = [ "wheel" "docker" "media" ];
      openssh.authorizedKeys.keys = [
        config.secrets.ssh.nathan.pub
        config.secrets.ssh.nathan-2021.pub
@@ -14,6 +14,7 @@
 
   users.extraUsers.femke = {
     uid = 2001;
+    extraGroups = [ "media" ];
     isNormalUser = true;
   };
 
@@ -40,6 +41,7 @@
      openssh.authorizedKeys.keys = [
        config.secrets.ssh.wesley.pub.k0
      ];
+     extraGroups = [ "media" ];
   };
 
   
@@ -63,6 +65,10 @@
   users.groups.mediaonly = {
     gid = 2000;
   };  
+
+  users.groups.media = {
+    gid = 2001;
+  };
   
   security.sudo.wheelNeedsPassword = false;  
 
