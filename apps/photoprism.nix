@@ -64,6 +64,8 @@ in
 
     # Start the container.
     script = ''
+    ${pkgs.docker}/bin/docker rm photoprism || true
+    
 ${pkgs.docker}/bin/docker run \
   --name photoprism \
   --user 2000:100 \
