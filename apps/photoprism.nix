@@ -4,8 +4,7 @@ let
     # https://dataswamp.org/~solene/2022-08-20-on-demand-minecraft-with-systemd.html
     port = 2342;
     dockerPort = 23420;
-    frequency-check-users = "*-*-* *:*:0/20";
-    minimum-server-lifetime = 300;
+
     # wait 60s for a TCP socket to be available
     # to wait in the proxifier
     # idea found in https://blog.developer.atlassian.com/docker-systemd-socket-activation/
@@ -22,18 +21,17 @@ in
 {
     virtualisation.docker.enable = true;
 
+    systemd.sockets.photoprism = {
+        socketConfig.ListenStream = port;
+        wantedBy = ["sockets.target"];
+    };
 
-  systemd.sockets.photoprism = {
-    socketConfig.ListenStream = port;
-    wantedBy = ["sockets.target"];
-  };
-
-  systemd.services.photoprism = {
-    path = with pkgs; [ systemd ];
-    requires = ["photoprism-docker.service"];
-    after = ["photoprism-docker.service"];
-    serviceConfig.ExecStart = "${pkgs.systemd.out}/lib/systemd/systemd-socket-proxyd 127.0.0.1:${toString dockerPort}";
-  };
+    systemd.services.photoprism = {
+        path = with pkgs; [ systemd ];
+        requires = ["photoprism-docker.service"];
+        after = ["photoprism-docker.service"];
+        serviceConfig.ExecStart = "${pkgs.systemd.out}/lib/systemd/systemd-socket-proxyd 127.0.0.1:${toString dockerPort}";
+    };
 
   systemd.services.photoprism-docker = {
     # Make sure docker is started. 
@@ -41,31 +39,12 @@ in
     # To avoid race conditions
     requires = [ "docker.service" "network-online.target" ];
 
-    serviceConfig = {
-        # Pulling an image might take a lot of time. 0 turns of the timeouts
-        TimeoutStartSec = "0";
-        # Restart policy, other relevant options are: 
-        # - no
-        # - on-failure 
-        # Look at the man page:
-        # man systemd.service
-        Restart = "always";
-    };
 
-    # Let's stop the running container , remove the image.
-    # The "|| true" is used because systemd expects that a everything succeeds, 
-    # while failure is sometimes expected (eg. container was not running).  
-    # Pull the image, ideally a version would be specified.     
-    preStart = ''
-#${pkgs.docker}/bin/docker stop photoprism || true;
-#${pkgs.docker}/bin/docker rm photoprism || true;
-#${pkgs.docker}/bin/docker pull photoprism/photoprism
-    '';
 
     # Start the container.
     script = ''
     ${pkgs.docker}/bin/docker rm photoprism || true
-    
+
 ${pkgs.docker}/bin/docker run \
   --name photoprism \
   --user 2000:100 \
@@ -93,6 +72,17 @@ ${pkgs.docker}/bin/docker run \
     preStop = ''
 ${pkgs.docker}/bin/docker kill photoprism
     '';
+  };
+
+  systemd.services.photoprism-docker-stop-and-upgrade = {
+    after = [ "docker.service" ];
+    # To avoid race conditions
+    requires = [ "docker.service" ];
+    script = ''
+        ${pkgs.docker}/bin/docker kill photoprism || true
+        ${pkgs.docker}/bin/docker pull photoprism/photoprism || true
+      '';
+    startAt = "23:10";
   };
 
   systemd.services.photoprism-backup = {
