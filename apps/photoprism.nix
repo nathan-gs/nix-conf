@@ -78,8 +78,9 @@ ${pkgs.docker}/bin/docker kill photoprism
     after = [ "docker.service" ];
     # To avoid race conditions
     requires = [ "docker.service" ];
+    # Stop photoprism-docker
+    conflicts = [ "photoprism-docker.service"];
     script = ''
-        ${pkgs.docker}/bin/docker kill photoprism || true
         ${pkgs.docker}/bin/docker pull photoprism/photoprism || true
       '';
     startAt = "23:10";
