@@ -16,6 +16,7 @@
       ../onedrive.nix
       ../media.nix
       ../monitoring.nix
+      ../smarthome.nix
     ];
 
 

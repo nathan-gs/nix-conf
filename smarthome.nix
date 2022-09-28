@@ -4,20 +4,32 @@
 {
     services.mosquitto = {
         enable = true;
-        listeners.smarthome = {
-            users = {
-                homeassistant = {
-                    acl = ["readwrite /#"];
-                    password = config.secrets.mosquitto.users.homeassistant.password;
-                };
-                zigbee2mqtt = {
-                    acl = ["readwrite zigbee2mqtt/#"];
-                    password = config.secrets.mosquitto.users.zigbee2mqtt.password;
-                };
-            };
-            port = 1883;
+        listeners = 
+        [
+	    {
+            	users = {
+                    homeassistant = {
+                    	acl = ["readwrite #"];
+                        password = config.secrets.mqtt.users.homeassistant.password;
+                    };
+                    zigbee2mqtt = {
+                        acl = ["readwrite zigbee2mqtt/#"];
+                        password = config.secrets.mqtt.users.zigbee2mqtt.password;
+                    };
+                    smartgatewayp1 = {
+		        acl = ["readwrite dsmr/#"];
+		        password = config.secrets.mqtt.users.smartgatewayp1.password;
+                    };
+                    smartgatewaywater = {
+		        acl = ["readwrite #"];
+		        password = config.secrets.mqtt.users.smartgatewaywater.password;
+		    };
+		};
             
-        };
+                port = 1883;
+            }
+            
+       ];
 
     };
 
@@ -26,25 +38,84 @@
     services.home-assistant = {
         enable  = true;
         openFirewall = true;
+        configWritable = false;
         config = {
-            name = "SXW";
-            latitude = config.secrets.home-assistant.latitude;
-            longitude = config.secrets.home-assistant.longitude;
-            unit_system = "metric";            
+            default_config = {};
+            met = {};
+            backup = {};
+            homeassistant = {
+              name = "SXW";
+              latitude = config.secrets.home-assistant.latitude;
+              longitude = config.secrets.home-assistant.longitude;
+              unit_system = "metric";            
+              time_zone = "Europe/Brussels";
+              packages = "!include_dir_named packages";
+
+            };
+/*            sensor = [
+              {
+		platform = "dsmr_reader";
+              }
+              {
+                platform = "mqtt";
+                name = "Gasverbruik per uur";
+	        state_topic = "dsmr/reading/gas_hourly_usage";
+                unit_of_measurement = "m3";
+              }
+              {
+                platform = "mqtt";
+                name = "Elektriciteitsverbruik per uur";
+	        state_topic = "dsmr/reading/electricity_hourly_usage";
+                unit_of_measurement = "kW";
+		
+              }           
+            ]; */
+            mqtt = {
+#              broker = "nhtpc";
+#              username = "homeassistant";
+#              password = config.secrets.mqtt.users.homeassistant.password;
+            };
+            lovelace = {
+              resources = [
+                {
+                  url = "/local/apexcharts-card.js?v=2.0.1";
+                  type = "module";
+                }
+              ];
+            };
         };
+
+        lovelaceConfig = {
+        };
+        
         extraComponents = [
-            "analytics"
-            "api"
-            "apple_tv"
-            "buienradar"
-            "command_line"
-            "default_config"
-            "dsmr"
-            "forecast_solar"
+#            "analytics"
+#            "api"
+             "apple_tv"
+#            "buienradar"
+             "backup"
+             "command_line"
+             "default_config"
+             "dsmr"
+	     "ffmpeg"
+#            "forecast_solar"
             "fritzbox"
-            "mqtt"
+            "my"            
+             "mqtt"
+             "plex"
+             "sensor"
             "sonos"
             "worxlandroid"
+ 	     "radio_browser"
+	     "utility_meter" 	     
+        ];
+
+        extraPackages = python3Packages: with python3Packages; [
+	  spotipy
+	  pyipp
+	  soco
+          pyatv
+          croniter
         ];
     };
 
@@ -56,10 +127,15 @@
             serial.port = "/dev/ttyACM1";
             frontend = true;
 
+            advanced = {
+		channel = 25;
+		network_key = config.secrets.zigbee2mqtt.networkKey;
+            };
+
             mqtt = {
                 server = "mqtt://localhost:1883";
                 user = "zigbee2mqtt";
-                password =  config.secrets.mosquitto.users.zigbee2mqtt.password;
+                password =  config.secrets.mqtt.users.zigbee2mqtt.password;
             };
         };
     };
