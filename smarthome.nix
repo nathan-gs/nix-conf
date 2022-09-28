@@ -52,6 +52,9 @@
               packages = "!include_dir_named packages";
 
             };
+            prometheus = {
+              namespace = "ha";
+            };
 /*            sensor = [
               {
 		platform = "dsmr_reader";
@@ -103,6 +106,7 @@
             "my"            
              "mqtt"
              "plex"
+             "prometheus"
              "sensor"
             "sonos"
             "worxlandroid"

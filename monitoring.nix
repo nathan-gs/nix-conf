@@ -17,6 +17,19 @@
           }
         ];
       }
+      {
+        job_name = "homeassistant";
+        scrape_timeout = "10s";
+        metrics_path = "/api/prometheus";
+        authorization.credentials = config.secrets.home-assistant.llat.prometheus;
+        static_configs = [
+	  { targets = 
+            [ 
+              "nhtpc.wg:${toString config.services.home-assistant.config.http.server_port}"
+            ];
+          }
+        ];
+      }
     ];
     exporters = {
       smokeping = {
