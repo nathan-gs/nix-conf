@@ -33,7 +33,7 @@
 
     };
 
-    networking.firewall.allowedTCPPorts = [ 1883 8080 ];
+    networking.firewall.allowedTCPPorts = [ 1400 1883 8080 ];
 
     services.home-assistant = {
         enable  = true;
