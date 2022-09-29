@@ -95,11 +95,11 @@
   
 
   services.zigbee2mqtt = {
-    enable = false;
+    enable = true;
     settings = {
       homeassistant =  config.services.home-assistant.enable;
       permit_join = true;
-      serial.port = "/dev/ttyACM1";
+      serial.port = "/dev/ttyUSB0";
       frontend = true;
       advanced = {
         channel = 25;
