@@ -2,6 +2,10 @@
 { config, pkgs, ... }:
 
 {
+  imports = [
+    ./smarthome/devices.nix
+  ];
+
   services.mosquitto = {
     enable = true;
     listeners = 
@@ -104,6 +108,7 @@
       advanced = {
         channel = 25;
         network_key = config.secrets.zigbee2mqtt.networkKey;
+        log_output = [ "console" ];
       };
       mqtt = {
         server = "mqtt://localhost:1883";
