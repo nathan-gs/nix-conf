@@ -83,18 +83,12 @@ let
     }
   ];
 
-  plugs = [
-    {
-      zone = "roaming";
-      name = "meter0";
-      ieee = "0xa4c138163459950e";
-      floor = "roaming";
-    }
+  lightPlugs = [
     {
       zone = "living";
       name = "kattenlamp";
       ieee = "0x0c4314fffee9dcd3";
-      floor = "floor0";
+      floor = "floor0";      
     }
     {
       zone = "living";
@@ -102,6 +96,15 @@ let
       ieee = "0x50325ffffe5ebbec";
       floor = "floor0";
     }
+  ];
+
+  plugs = [
+    {
+      zone = "roaming";
+      name = "meter0";
+      ieee = "0xa4c138163459950e";
+      floor = "roaming";
+    }    
     {
       zone = "garden";
       name = "laadpaal";
@@ -111,17 +114,38 @@ let
   ];
 
   zigbeeDevices = 
-    map (v: v // { type = "rtv";}) rtv 
-    ++ map (v: v //  { type = "window";}) windows 
-    ++ map (v: v // { type = "plug";}) plugs;
+    lightPlugDevices // zigbeeDevicesWithIeeeAsKey;
+
+  lightPlugDevices = 
+    builtins.listToAttrs ( 
+      map (v: { name = "${v.ieee}"; value = { 
+        friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
+        homeassistant = {
+          name = "${v.zone} Light ${v.name}";
+          switch = {
+            type = "light";
+            object_id = "light";            
+          };
+          light = {
+            name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
+            value_template = "";
+            state_value_template = "'{{ value_json.state }}'";
+          };
+        };
+      };}) 
+      map (v: v // { type = "light_plug";}) lightPlugs
+    );
 
   zigbeeDevicesWithIeeeAsKey = 
-    builtins.listToAttrs ( map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};}) zigbeeDevices);
-
-  zigbeeDevicesAsAttr = builtins.listToAttrs zigbeeDevicesWithIeeeAsKey;
+    builtins.listToAttrs ( 
+      map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};}) 
+      map (v: v // { type = "rtv";}) rtv 
+      ++ map (v: v //  { type = "window";}) windows 
+      ++ map (v: v // { type = "plug";}) plugs
+    );
 in 
 
 with lib;
 {
-  services.zigbee2mqtt.settings.devices = zigbeeDevicesWithIeeeAsKey;
+  services.zigbee2mqtt.settings.devices = zigbeeDevices;
 }
