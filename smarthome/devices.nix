@@ -75,6 +75,12 @@ let
       ieee = "0x847127fffeaf3190";
       floor = "floor1";
     }
+    {
+      zone = "roaming";
+      name = "sonoff0";
+      ieee = "0x00124b002397596e";
+      floor = "roaming";
+    }
   ];
 
   plugs = [

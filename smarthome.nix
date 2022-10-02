@@ -17,7 +17,7 @@
               password = config.secrets.mqtt.users.homeassistant.password;
             };
             zigbee2mqtt = {
-              acl = ["readwrite zigbee2mqtt/#"];
+              acl = ["readwrite zigbee2mqtt/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.zigbee2mqtt.password;
             };
             smartgatewayp1 = {
@@ -25,7 +25,7 @@
               password = config.secrets.mqtt.users.smartgatewayp1.password;
             };
             smartgatewaywater = {
-              acl = ["readwrite #"];
+              acl = ["readwrite watermeter/#"];
               password = config.secrets.mqtt.users.smartgatewaywater.password;
             };
         };
