@@ -51,7 +51,7 @@
         longitude = config.secrets.home-assistant.longitude;
         unit_system = "metric";            
         time_zone = "Europe/Brussels";
-        packages = "!include_dir_named packages";          
+        packages = "!include_dir_named packages";
       };
       prometheus = {
         namespace = "ha";
@@ -65,6 +65,7 @@
           }
         ];
       };
+      automation = "!include automations.yaml";
     };
 
     lovelaceConfig = {};
