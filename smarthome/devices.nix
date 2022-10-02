@@ -114,7 +114,7 @@ let
   ];
 
   zigbeeDevices = 
-    lightPlugDevices // zigbeeDevicesWithIeeeAsKey;
+    lightPlugDevices // rtvDevices // zigbeeDevicesWithIeeeAsKey;
 
   lightPlugDevices = 
     builtins.listToAttrs ( 
@@ -139,6 +139,30 @@ let
         map (v: v // { type = "light_plug";}) lightPlugs
       )
     );
+  
+  rtvDevices = builtins.listToAttrs ( 
+      (
+        map (v: { name = "${v.ieee}"; value = { 
+        friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
+        homeassistant = {
+         filtered_attributes = [
+            "comfort_temperature"
+            "eco_temperature"
+            "current_heating_setpoint_auto"
+            "local_temperature_calibration"
+            "detectwindow_temperature"
+            "detectwindow_timeminute"
+            "binary_one"
+            "binary_two"
+            "away_setting"
+          ];
+        };
+      };})
+      )
+      (
+        map (v: v // { type = "rtv";}) rtv 
+      )
+    );
 
   zigbeeDevicesWithIeeeAsKey = 
     builtins.listToAttrs ( 
@@ -146,8 +170,7 @@ let
         map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};})
       )
       (
-        map (v: v // { type = "rtv";}) rtv 
-        ++ map (v: v //  { type = "window";}) windows 
+        map (v: v //  { type = "window";}) windows 
         ++ map (v: v // { type = "plug";}) plugs
       )
     );
