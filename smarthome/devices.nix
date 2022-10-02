@@ -118,7 +118,8 @@ let
 
   lightPlugDevices = 
     builtins.listToAttrs ( 
-      map (v: { name = "${v.ieee}"; value = { 
+      (
+        map (v: { name = "${v.ieee}"; value = { 
         friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
         homeassistant = {
           name = "${v.zone} Light ${v.name}";
@@ -132,16 +133,23 @@ let
             state_value_template = "'{{ value_json.state }}'";
           };
         };
-      };}) 
-      map (v: v // { type = "light_plug";}) lightPlugs
+      };})
+      )
+      (
+        map (v: v // { type = "light_plug";}) lightPlugs
+      )
     );
 
   zigbeeDevicesWithIeeeAsKey = 
     builtins.listToAttrs ( 
-      map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};}) 
-      map (v: v // { type = "rtv";}) rtv 
-      ++ map (v: v //  { type = "window";}) windows 
-      ++ map (v: v // { type = "plug";}) plugs
+      (
+        map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};})
+      )
+      (
+        map (v: v // { type = "rtv";}) rtv 
+        ++ map (v: v //  { type = "window";}) windows 
+        ++ map (v: v // { type = "plug";}) plugs
+      )
     );
 in 
 
