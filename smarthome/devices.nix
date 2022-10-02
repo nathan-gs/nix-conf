@@ -156,4 +156,46 @@ in
 with lib;
 {
   services.zigbee2mqtt.settings.devices = zigbeeDevices;
+
+  services.home-assistant = {
+    config.binary_sensor = [
+      {
+        platform = "ping";
+        host = "ndesk";
+        name = "ndesk";
+        count = 2;
+        scan_interval = 30;
+      }
+      {
+        platform = "ping";
+        host = "flaptop-CP80173";
+        name = "flaptop";
+        count = 2;
+        scan_interval = 30;
+      }
+    ];
+
+    config.device_tracker = [
+      {
+        platform = "ping";
+        hosts = {
+          "fphone" = "fphone";
+          "nphone" = "nphone";
+        };
+      }
+    ];
+
+    config.person = [
+      {
+        name = "Femke";
+        id = "femke";
+        device_trackers = ["device_tracker.fphone"];
+      }
+      {
+        name = "Nathan";
+        id = "nathan";
+        device_trackers = ["device_tracker.nphone"];
+      }
+    ];
+  };
 }
