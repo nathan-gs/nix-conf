@@ -110,7 +110,7 @@ let
     ++ map (v: v // { type = "plug";}) plugs;
 
   zigbeeDevicesWithIeeeAsKey = 
-    builtins.listToAttrs map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};}) zigbeeDevices;
+    builtins.listToAttrs ( map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};}) zigbeeDevices);
 
   zigbeeDevicesAsAttr = builtins.listToAttrs zigbeeDevicesWithIeeeAsKey;
 in 
