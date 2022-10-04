@@ -175,7 +175,30 @@ let
       )
     );
 
-  windowAutomations = 
+  windowOpenAutomations = 
+    map (v: {
+      alias = "${v.floor}/${v.zone}/${v.type}/${v.name} opened";
+      trigger = [
+        {
+          type = "opened";
+          platform = "device";
+          entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
+          domain = "binary_sensor";
+        }
+      ];
+      condition = [];
+      action = [
+        {
+          service = "climate.turn_off";
+          target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
+        }
+      ];
+      mode = "single";
+    })
+  
+    (map (v: v //  { type = "window";}) windows);  
+
+  windowClosedAutomations = 
     map (v: {
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} closed";
       trigger = [
@@ -195,29 +218,7 @@ let
       ];
       mode = "single";
     })
-    (
-      map (v: {
-        alias = "${v.floor}/${v.zone}/${v.type}/${v.name} opened";
-        trigger = [
-          {
-            type = "opened";
-            platform = "device";
-            entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
-            domain = "binary_sensor";
-          }
-        ];
-        condition = [];
-        action = [
-          {
-            service = "climate.turn_off";
-            target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
-          }
-        ];
-        mode = "single";
-      })
-    
-      (map (v: v //  { type = "window";}) windows)
-    );
+    (map (v: v //  { type = "window";}) windows);  
 
 
 in 
@@ -227,7 +228,7 @@ with lib;
   services.zigbee2mqtt.settings.devices = zigbeeDevices;
 
   services.home-assistant = {
-    automations = windowAutomations;
+    automations = windowOpenAutomations ++ windowClosedAutomations;
 
     config.binary_sensor = [
       {
