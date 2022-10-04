@@ -228,7 +228,7 @@ with lib;
   services.zigbee2mqtt.settings.devices = zigbeeDevices;
 
   services.home-assistant = {
-    config.automations = windowOpenAutomations ++ windowClosedAutomations;
+    config.automation = windowOpenAutomations ++ windowClosedAutomations;
 
     config.binary_sensor = [
       {
@@ -248,7 +248,9 @@ with lib;
       {
         platform = "group";
         name = "floor1/windows_contact";
-        entities = ["binary_sensor.floor1_*_window_na_contact"];
+        entities = [
+          #"binary_sensor.floor1_*_window_na_contact"
+        ];
       }
     ];
 
