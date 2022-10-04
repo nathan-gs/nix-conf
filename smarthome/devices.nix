@@ -215,8 +215,10 @@ let
         ];
         mode = "single";
       })
-    )
-    (map (v: v //  { type = "window";}) windows);
+    
+      (map (v: v //  { type = "window";}) windows)
+    );
+
 
 in 
 
