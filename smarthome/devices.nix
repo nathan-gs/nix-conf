@@ -228,7 +228,7 @@ with lib;
   services.zigbee2mqtt.settings.devices = zigbeeDevices;
 
   services.home-assistant = {
-    automations = windowOpenAutomations ++ windowClosedAutomations;
+    config.automations = windowOpenAutomations ++ windowClosedAutomations;
 
     config.binary_sensor = [
       {
