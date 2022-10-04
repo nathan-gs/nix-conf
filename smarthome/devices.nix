@@ -183,7 +183,6 @@ let
           type = "opened";
           platform = "device";
           entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
-          domain = "binary_sensor";
         }
       ];
       condition = [];
@@ -206,7 +205,6 @@ let
           type = "closed";
           platform = "device";
           entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
-          domain = "binary_sensor";
         }
       ];
       condition = [];
