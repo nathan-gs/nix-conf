@@ -65,7 +65,7 @@
           }
         ];
       };
-      automation = "!include automations.yaml";
+      "automation ui" = "!include automations.yaml";
     };
 
     lovelaceConfig = {};
