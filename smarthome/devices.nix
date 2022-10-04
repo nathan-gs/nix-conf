@@ -180,8 +180,8 @@ let
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} opened";
       trigger = [
         {
-          type = "opened";
-          platform = "device";
+          to = "opened";
+          platform = "state";
           entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
         }
       ];
@@ -202,9 +202,9 @@ let
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} closed";
       trigger = [
         {
-          type = "closed";
-          platform = "device";
+          platform = "state";
           entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
+          to = "closed";
         }
       ];
       condition = [];
