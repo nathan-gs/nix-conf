@@ -182,7 +182,7 @@ let
         {
           type = "closed";
           platform = "device";
-          entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${name}_contact";
+          entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
           domain = "binary_sensor";
         }
       ];
@@ -202,7 +202,7 @@ let
           {
             type = "opened";
             platform = "device";
-            entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${name}_contact";
+            entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
             domain = "binary_sensor";
           }
         ];
