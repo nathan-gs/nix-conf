@@ -244,7 +244,7 @@ with lib;
       }
       {
         platform = "group";
-        name = "floor1/windows_contact"
+        name = "floor1/windows_contact";
         entities = ["binary_sensor.floor1_*_window_na_contact"];
       }
     ];
