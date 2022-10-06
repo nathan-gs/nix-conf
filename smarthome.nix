@@ -84,6 +84,7 @@
       "prometheus"
       "sensor"
       "sonos"
+      "scrape"
       "worxlandroid"
       "radio_browser"
       "utility_meter"
