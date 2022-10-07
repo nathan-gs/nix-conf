@@ -86,6 +86,7 @@
       "sonos"
       "scrape"
       "worxlandroid"
+      "volvooncall"
       "radio_browser"
       "utility_meter"
     ];
