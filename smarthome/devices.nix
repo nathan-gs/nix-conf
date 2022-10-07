@@ -211,10 +211,26 @@ let
       ];
       condition = [];
       action = [
+#        {
+#          service = "climate.turn_on";
+#          target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
+#        }
         {
-          service = "climate.turn_on";
+	  service = "climate.set_temperature";
           target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
+          data = {
+            hvac_mode = "auto";
+            temperature = "{{ states('number.${v.floor}_${v.zone}_rtv_${v.name}_current_heating_setpoint_auto') }}";
+          };
         }
+
+        {
+	  service = "climate.set_preset_mode";
+          target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
+          data.preset_mode = "schedule";
+        }
+        
+        
       ];
       mode = "single";
     })
