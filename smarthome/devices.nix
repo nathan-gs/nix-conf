@@ -247,13 +247,13 @@ let
         {
 	        service = "climate.set_preset_mode";
           target.entity_id = "climate.floor0_bureau_rtv_na";
-          data.preset_mode = "schedule";
+          data.preset_mode = "manual";
         }
         {
 	        service = "climate.set_temperature";
           target.entity_id = "climate.floor0_bureau_rtv_na";
           data = {
-            hvac_mode = "auto";
+            hvac_mode = "heat";
             temperature = 19.5;
           };
         }
@@ -275,13 +275,13 @@ let
         {
 	        service = "climate.set_preset_mode";
           target.entity_id = "climate.floor1_nikolai_rtv_na";
-          data.preset_mode = "schedule";
+          data.preset_mode = "manual";
         }
         {
 	        service = "climate.set_temperature";
           target.entity_id = "climate.floor0_nikolai_rtv_na";
           data = {
-            hvac_mode = "auto";
+            hvac_mode = "heat";
             temperature = 19.5;
           };
         }
