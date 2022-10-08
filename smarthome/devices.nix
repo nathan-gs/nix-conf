@@ -177,7 +177,7 @@ let
 
   windowOpenAutomations = 
     map (v: {
-      unique_id = "${v.floor}/${v.zone}/${v.type}/${v.name}.opened";
+      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.opened";
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} opened";
       trigger = [
         {
@@ -200,7 +200,7 @@ let
 
   windowClosedAutomations = 
     map (v: {
-      unique_id = "${v.floor}/${v.zone}/${v.type}/${v.name}.closed";
+      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.closed";
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} closed";
       trigger = [
         {
@@ -233,7 +233,7 @@ let
 
   workFromHomeAutomations = [
     {
-      unique_id = "ndesk_on_turn_on_heating_in_bureau";
+      id = "ndesk_on_turn_on_heating_in_bureau";
       alias = "ndesk:on turn on heating in bureau";
       trigger = [
         {
@@ -261,7 +261,7 @@ let
       mode = "single";
     }
     {
-      unique_id = "flaptop_on_turn_on_heating_in_nikolai";
+      id = "flaptop_on_turn_on_heating_in_nikolai";
       alias = "flaptop:on turn on heating in Nikolaï's room";
       trigger = [
         {
@@ -289,7 +289,7 @@ let
       mode = "single";
     }
     {
-      unique_id = "ndesk_off_heating_auto_in_bureau";
+      id = "ndesk_off_heating_auto_in_bureau";
       alias = "ndesk:off heating auto in bureau";
       trigger = [
         {
@@ -317,7 +317,7 @@ let
       mode = "single";
     }
     {
-      unique_id = "flaptop_off_heating_auto_in_nikolai";
+      id = "flaptop_off_heating_auto_in_nikolai";
       alias = "flaptop:off heating auto in nikolai's room";
       trigger = [
         {
