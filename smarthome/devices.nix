@@ -352,10 +352,9 @@ tvAutomations = [
     alias = "floor0/living/media/appletv:on";
     trigger = [
       {
-        platform = "device";
-        type = "turned_on";
-        entity_id = "remote.floor0_living_media_appletv";
-        domain = "remote";
+        platform = "state";
+        to = "on";        
+        entity_id = "remote.floor0_living_media_appletv";        
       }
     ];
     condition = [];
@@ -373,10 +372,9 @@ tvAutomations = [
     alias = "floor0/living/media/appletv:off";
     trigger = [
       {
-        platform = "device";
-        type = "turned_off";
-        entity_id = "remote.floor0_living_media_appletv";
-        domain = "remote";
+        platform = "state";
+        to = "off";        
+        entity_id = "remote.floor0_living_media_appletv";        
       }
     ];
     condition = [];
