@@ -366,6 +366,7 @@ tvAutomations = [
         domain = "switch";
       }
     ];
+    mode = "single";
   }
   {
     id = "floor0_living_media_appletv:off";
@@ -386,6 +387,7 @@ tvAutomations = [
         domain = "switch";
       }
     ];
+    mode = "single";
   }
 ];
 
