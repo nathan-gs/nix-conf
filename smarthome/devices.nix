@@ -177,6 +177,7 @@ let
 
   windowOpenAutomations = 
     map (v: {
+      unique_id = "${v.floor}/${v.zone}/${v.type}/${v.name}.opened";
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} opened";
       trigger = [
         {
@@ -199,6 +200,7 @@ let
 
   windowClosedAutomations = 
     map (v: {
+      unique_id = "${v.floor}/${v.zone}/${v.type}/${v.name}.closed";
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} closed";
       trigger = [
         {
@@ -227,8 +229,122 @@ let
       ];
       mode = "single";
     })
-    (map (v: v //  { type = "window";}) windows);  
+    (map (v: v //  { type = "window";}) windows);
 
+  workFromHomeAutomations = [
+    {
+      unique_id = "ndesk_on_turn_on_heating_in_bureau";
+      alias = "ndesk:on turn on heating in bureau";
+      trigger = [
+        {
+          platform = "state";
+          entity_id = "binary_sensor.ndesk";
+          to = "on";
+        }
+      ];
+      condition = [];
+      action = [
+        {
+	        service = "climate.set_preset_mode";
+          target.entity_id = "climate.floor0_bureau_rtv_na";
+          data.preset_mode = "schedule";
+        }
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.floor0_bureau_rtv_na";
+          data = {
+            hvac_mode = "auto";
+            temperature = 19.5;
+          };
+        }
+      ];
+      mode = "single";
+    }
+    {
+      unique_id = "flaptop_on_turn_on_heating_in_nikolai";
+      alias = "flaptop:on turn on heating in Nikolaï's room";
+      trigger = [
+        {
+          platform = "state";
+          entity_id = "binary_sensor.flaptop";
+          to = "on";
+        }
+      ];
+      condition = [];
+      action = [
+        {
+	        service = "climate.set_preset_mode";
+          target.entity_id = "climate.floor1_nikolai_rtv_na";
+          data.preset_mode = "schedule";
+        }
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.floor0_nikolai_rtv_na";
+          data = {
+            hvac_mode = "auto";
+            temperature = 19.5;
+          };
+        }
+      ];
+      mode = "single";
+    }
+    {
+      unique_id = "ndesk_off_heating_auto_in_bureau";
+      alias = "ndesk:off heating auto in bureau";
+      trigger = [
+        {
+          platform = "state";
+          entity_id = "binary_sensor.ndesk";
+          to = "off";
+        }
+      ];
+      condition = [];
+      action = [
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.floor0_bureau_rtv_na";
+          data = {
+            hvac_mode = "auto";
+            temperature = "{{ states('number.floor0_bureau_rtv_na_current_heating_setpoint_auto') }}";
+          };
+        }
+        {
+	        service = "climate.set_preset_mode";
+          target.entity_id = "climate.floor0_bureau_rtv_na";
+          data.preset_mode = "schedule";
+        }
+      ];
+      mode = "single";
+    }
+    {
+      unique_id = "flaptop_off_heating_auto_in_nikolai";
+      alias = "flaptop:off heating auto in nikolai's room";
+      trigger = [
+        {
+          platform = "state";
+          entity_id = "binary_sensor.flaptop";
+          to = "off";
+        }
+      ];
+      condition = [];
+      action = [
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.floor1_nikolai_rtv_na";
+          data = {
+            hvac_mode = "auto";
+            temperature = "{{ states('number.floor1_nikolai_rtv_na_current_heating_setpoint_auto') }}";
+          };
+        }
+        {
+	        service = "climate.set_preset_mode";
+          target.entity_id = "climate.floor1_nikolai_rtv_na";
+          data.preset_mode = "schedule";
+        }
+      ];
+      mode = "single";
+    }
+  ];
 
 in 
 
@@ -237,7 +353,7 @@ with lib;
   services.zigbee2mqtt.settings.devices = zigbeeDevices;
 
   services.home-assistant = {
-    config."automation manual" = windowOpenAutomations ++ windowClosedAutomations;
+    config."automation manual" = windowOpenAutomations ++ windowClosedAutomations ++ workFromHomeAutomations;
 
     config.binary_sensor = [
       {
