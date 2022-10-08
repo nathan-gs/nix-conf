@@ -361,9 +361,9 @@ tvAutomations = [
     condition = [];
     action = [
       {
-        type = "turn_on";
-        entity_id = "switch.floor0_living_plug_sonos_rear";
-        domain = "switch";
+        service = "switch.turn_on";
+        data = {};
+        target.entity_id = "switch.floor0_living_plug_sonos_rear";
       }
     ];
     mode = "single";
@@ -382,9 +382,9 @@ tvAutomations = [
     condition = [];
     action = [
       {
-        type = "turn_off";
-        entity_id = "switch.floor0_living_plug_sonos_rear";
-        domain = "switch";
+        service = "switch.turn_off";
+        data = {};
+        target.entity_id = "switch.floor0_living_plug_sonos_rear";
       }
     ];
     mode = "single";
