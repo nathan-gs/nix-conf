@@ -183,7 +183,6 @@ let
           to = "on";
           platform = "state";
           entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
-          #attribute = "contact";
         }
       ];
       condition = [];
@@ -206,17 +205,12 @@ let
           platform = "state";
           entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
           to = "off";
-          #attribute = "contact";
         }
       ];
       condition = [];
       action = [
-#        {
-#          service = "climate.turn_on";
-#          target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
-#        }
         {
-	  service = "climate.set_temperature";
+	        service = "climate.set_temperature";
           target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
           data = {
             hvac_mode = "auto";
@@ -225,11 +219,10 @@ let
         }
 
         {
-	  service = "climate.set_preset_mode";
+	        service = "climate.set_preset_mode";
           target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
           data.preset_mode = "schedule";
-        }
-        
+        }        
         
       ];
       mode = "single";
