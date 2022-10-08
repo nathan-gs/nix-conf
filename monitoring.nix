@@ -10,7 +10,7 @@
 	  { targets = 
             [ 
               "nhtpc.wg:${toString config.services.prometheus.exporters.node.port}" 
-              "nhtpc.wg:${toString config.services.prometheus.exporters.smokeping.port}"
+#              "nhtpc.wg:${toString config.services.prometheus.exporters.smokeping.port}"
               "nnas.wg:${toString config.services.prometheus.exporters.node.port}"
               "ndesk:4445"
             ];
@@ -33,7 +33,7 @@
     ];
     exporters = {
       smokeping = {
-        enable = true;
+        enable = false;
         hosts = ["192.168.1.1" "1.1.1.1" "8.8.8.8" "195.238.2.21" "nnas.wg"];
         
       };
@@ -53,7 +53,7 @@
   };
 
   services.grafana = {
-    enable = true;
+    enable = false;
     domain = "nathan.gs";
     addr = "0.0.0.0";
     provision.enable = true;
@@ -79,7 +79,7 @@
   ];
 
   services.tuya-prometheus = {
-    enable = true;
+    enable = false;
     clientId = config.secrets.tuya.clientId;
     secret = config.secrets.tuya.secret;
     startAt = "*:0/5";
