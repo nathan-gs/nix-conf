@@ -346,6 +346,49 @@ let
     }
   ];
 
+tvAutomations = [
+  {
+    id = "floor0_living_media_appletv:on";
+    alias = "floor0/living/media/appletv:on";
+    trigger = [
+      {
+        platform = "device";
+        type = "turned_on";
+        entity_id = "remote.floor0_living_media_appletv";
+        domain = "remote";
+      }
+    ];
+    condition = [];
+    action = [
+      {
+        type = "turn_on";
+        entity_id = "switch.floor0_living_plug_sonos_rear";
+        domain = "switch";
+      }
+    ];
+  }
+  {
+    id = "floor0_living_media_appletv:off";
+    alias = "floor0/living/media/appletv:off";
+    trigger = [
+      {
+        platform = "device";
+        type = "turned_off";
+        entity_id = "remote.floor0_living_media_appletv";
+        domain = "remote";
+      }
+    ];
+    condition = [];
+    action = [
+      {
+        type = "turn_off";
+        entity_id = "switch.floor0_living_plug_sonos_rear";
+        domain = "switch";
+      }
+    ];
+  }
+];
+
 in 
 
 with lib;
@@ -353,7 +396,11 @@ with lib;
   services.zigbee2mqtt.settings.devices = zigbeeDevices;
 
   services.home-assistant = {
-    config."automation manual" = windowOpenAutomations ++ windowClosedAutomations ++ workFromHomeAutomations;
+    config."automation manual" = 
+      windowOpenAutomations 
+      ++ windowClosedAutomations 
+      ++ workFromHomeAutomations
+      ++ tvAutomations;
 
     config.binary_sensor = [
       {
