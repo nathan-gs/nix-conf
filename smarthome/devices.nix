@@ -434,6 +434,7 @@ with lib;
         select = "table :has(> th:contains(Dagtarief)) td";
         unit_of_measurement = "€/kWh";
         value_template = "{{ (value | float) / 100 }}";
+        scan_interval = 3600;
       }
       {
         platform = "scrape";
@@ -442,6 +443,7 @@ with lib;
         select = "table :has(> th:contains(Nachttarief)) td";
         unit_of_measurement = "€/kWh";
         value_template = "{{ (value | float) / 100 }}";
+        scan_interval = 3600;
       }
       {
         platform = "scrape";
@@ -450,6 +452,7 @@ with lib;
         select = "table :has(> th:contains(per)) td";
         unit_of_measurement = "€/kWh";
         value_template = "{{ (value | float) / 100 }}";
+        scan_interval = 3600;
       }
     ];
     config.template = 
