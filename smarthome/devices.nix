@@ -250,11 +250,10 @@ let
           data.preset_mode = "manual";
         }
         {
-	        service = "climate.set_temperature";
+	        service = "climate.set_hvac_mode";
           target.entity_id = "climate.floor0_bureau_rtv_na";
           data = {
             hvac_mode = "heat";
-            temperature = 19.5;
           };
         }
         {
@@ -285,11 +284,10 @@ let
           data.preset_mode = "manual";
         }
         {
-	        service = "climate.set_temperature";
+	        service = "climate.set_hvac_mode";
           target.entity_id = "climate.floor0_nikolai_rtv_na";
           data = {
             hvac_mode = "heat";
-            temperature = 19.5;
           };
         }
         {
