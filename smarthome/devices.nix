@@ -250,11 +250,17 @@ let
           data.preset_mode = "manual";
         }
         {
+          delay = "0:00:01";
+        }
+        {
 	        service = "climate.set_hvac_mode";
           target.entity_id = "climate.floor0_bureau_rtv_na";
           data = {
             hvac_mode = "heat";
           };
+        }
+        {
+          delay = "0:00:01";
         }
         {
 	        service = "climate.set_temperature";
@@ -284,11 +290,17 @@ let
           data.preset_mode = "manual";
         }
         {
+          delay = "0:00:01";
+        }
+        {
 	        service = "climate.set_hvac_mode";
           target.entity_id = "climate.floor0_nikolai_rtv_na";
           data = {
             hvac_mode = "heat";
           };
+        }
+        {
+          delay = "0:00:01";
         }
         {
 	        service = "climate.set_temperature";
