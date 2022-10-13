@@ -254,6 +254,12 @@ let
           target.entity_id = "climate.floor0_bureau_rtv_na";
           data = {
             hvac_mode = "heat";
+          };
+        }
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.floor0_bureau_rtv_na";
+          data = {
             temperature = 19.5;
           };
         }
@@ -282,6 +288,12 @@ let
           target.entity_id = "climate.floor0_nikolai_rtv_na";
           data = {
             hvac_mode = "heat";
+          };
+        }
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.floor0_nikolai_rtv_na";
+          data = {
             temperature = 19.5;
           };
         }
