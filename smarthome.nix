@@ -108,6 +108,7 @@
 
   services.zigbee2mqtt = {
     enable = true;
+    package = pkgs.nixpkgs-unstable.zigbee2mqtt;
     settings = {
       homeassistant =  config.services.home-assistant.enable;
       permit_join = true;
