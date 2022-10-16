@@ -430,7 +430,7 @@ in
 with lib;
 {
   # Workaround for HG
-  system.userActivationScripts.lidl-HG08673-FR-converter.text = ''
+  system.activationScripts.lidl-HG08673-FR-converter.text = ''
     ln -sf "/var/lib/zigbee2mqtt/lidl-HG08673-FR-converter.js" "${./lidl-HG08673-FR-converter.js}"    
   '';
 
