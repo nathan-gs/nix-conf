@@ -111,6 +111,12 @@ let
       ieee = "0x842e14fffe3b8777";
       floor = "garden";
     }
+    {
+      zone = "keuken";
+      name = "oven";
+      ieee = "0xa4c1381f8ccf7230";
+      floor = "floor0";
+    }
   ];
 
   zigbeeDevices = 
