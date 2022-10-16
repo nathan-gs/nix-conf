@@ -429,7 +429,12 @@ in
 
 with lib;
 {
-  services.zigbee2mqtt.settings.devices = zigbeeDevices;
+  services.zigbee2mqtt.settings = {
+    devices = zigbeeDevices;
+    external_converters = [
+      ./lidl-HG08673-FR-converter.js
+    ];
+  };
 
   services.home-assistant = {
     config."automation manual" = 
