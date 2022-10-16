@@ -117,6 +117,12 @@ let
       ieee = "0xa4c1381f8ccf7230";
       floor = "floor0";
     }
+    {
+      zone = "living";
+      name = "sonos_rear";
+      ieee = "0x5c0272fffe88e39f";
+      floor = "floor0";
+    }
   ];
 
   zigbeeDevices = 
