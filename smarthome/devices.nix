@@ -528,7 +528,7 @@ with lib;
       {
         platform = "worxlandroid";
         host = "grasmaaier";
-        pin = config.secrets.worxlandroid.pin;
+        pin = config.secrets.landroid.pin;
       }
     ];
 
