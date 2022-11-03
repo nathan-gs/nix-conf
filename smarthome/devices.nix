@@ -390,7 +390,7 @@ tvAutomations = [
       {
         platform = "state";
         to = "on";        
-        entity_id = "remote.floor0_living_media_appletv";        
+        entity_id = "binary_sensor.floor0_living_appletv_woonkamer";        
       }
     ];
     condition = [];
@@ -410,7 +410,7 @@ tvAutomations = [
       {
         platform = "state";
         to = "off";        
-        entity_id = "remote.floor0_living_media_appletv";        
+        entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
       }
     ];
     condition = [];
@@ -460,6 +460,13 @@ with lib;
         platform = "ping";
         host = "flaptop-CP80173";
         name = "flaptop";
+        count = 2;
+        scan_interval = 30;
+      }
+      {
+        platform = "ping";
+        host = "appletv-woonkamer";
+        name = "floor0_living_appletv_woonkamer";
         count = 2;
         scan_interval = 30;
       }
