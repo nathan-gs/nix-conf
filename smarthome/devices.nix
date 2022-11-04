@@ -477,12 +477,31 @@ with lib;
           #"binary_sensor.floor1_*_window_na_contact"
         ];
       }
-      {
-        platform = "mqtt";
-        name = "watermeter_leak_detect";
-        state_topic = "watermeter/reading/water_used_last_minute";
-      }
     ];
+
+    config.mqtt = {
+      binary_sensor = [
+        {
+          name = "watermeter_leak_detect";
+          state_topic = "watermeter/reading/watermeter_leak_detect";
+        }
+      ];
+
+      sensor = [
+        {
+          name = "watermeter_total";
+          state_topic = "watermeter/reading/current_value";
+          unit_of_measurement = "L";
+          force_update = true;
+        }
+        {
+          name = "watermeter_usage_last_minute";
+          state_topic = "watermeter/reading/water_used_last_minute";
+          unit_of_measurement = "L";
+        }
+      ];
+
+    };
 
     config.sensor = [
       {
@@ -511,20 +530,7 @@ with lib;
         unit_of_measurement = "€/kWh";
         value_template = "{{ (value | float) / 100 }}";
         scan_interval = 3600;
-      }
-      {
-        name = "watermeter_total";
-        platform = "mqtt";
-        state_topic = "watermeter/reading/current_value";
-        unit_of_measurement = "L";
-        force_update = true;
-      }
-      {
-        name = "watermeter_usage_last_minute";
-        state_topic = "watermeter/reading/water_used_last_minute";
-        platform = "mqtt";
-        unit_of_measurement = "L";
-      }
+      }      
     ];
 
     config.utility_meter = {

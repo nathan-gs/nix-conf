@@ -56,10 +56,6 @@
       prometheus = {
         namespace = "ha";
       };
-      volvooncall = {
-        username = config.secrets.volvooncall.username;
-        password = config.secrets.volvooncall.password;
-      };
      
       mqtt = {};
       lovelace = {
