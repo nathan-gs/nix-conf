@@ -99,17 +99,27 @@ let
   ];
 
   plugs = [
-    {
-      zone = "roaming";
-      name = "meter0";
-      ieee = "0xa4c138163459950e";
-      floor = "roaming";
-    }    
+       
     {
       zone = "garden";
       name = "laadpaal";
       ieee = "0x842e14fffe3b8777";
       floor = "garden";
+    }    
+    {
+      zone = "living";
+      name = "sonos_rear";
+      ieee = "0x5c0272fffe88e39f";
+      floor = "floor0";
+    }
+  ] ++ metering_plugs;
+
+  metering_plugs = [
+    {
+      zone = "waskot";
+      name = "droogkast";
+      ieee = "0xa4c138163459950e";
+      floor = "floor1";
     }
     {
       zone = "keuken";
@@ -118,10 +128,16 @@ let
       floor = "floor0";
     }
     {
-      zone = "living";
-      name = "sonos_rear";
-      ieee = "0x5c0272fffe88e39f";
-      floor = "floor0";
+      zone = "basement";
+      name = "network";
+      ieee = "0xa4c138ae189cf8bd";
+      floor = "basement";
+    }
+    {
+      zone = "waskot";
+      name = "wasmachine";
+      ieee = "0xa4c1383c42598ec3";
+      floor = "floor1";
     }
   ];
 
