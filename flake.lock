@@ -105,11 +105,11 @@
         "nixpkgs": "nixpkgs_2"
       },
       "locked": {
-        "lastModified": 1665241400,
-        "narHash": "sha256-hN9O+fOdaFMqAmhfj8DHgWQQXKszdz+dfQ6IyiuE1/Q=",
+        "lastModified": 1667507942,
+        "narHash": "sha256-eSjnOMHPv1e9wL5mcAv26XQlGWvaRZRonrFG7VGuc28=",
         "ref": "main",
-        "rev": "430fae96ac280f12fa8c3b0934c0e199228408a2",
-        "revCount": 14,
+        "rev": "76afb27d584d2fb7957428050b7c6ffc168e6df1",
+        "revCount": 15,
         "type": "git",
         "url": "file:///etc/nixos/secrets"
       },
