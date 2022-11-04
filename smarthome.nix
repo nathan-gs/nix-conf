@@ -67,7 +67,8 @@
         ];
       };
       "automation ui" = "!include automations.yaml";
-    };    
+    };
+    lovelace = {};
         
     extraComponents = [
       "apple_tv"
