@@ -71,9 +71,7 @@
         ];
       };
       "automation ui" = "!include automations.yaml";
-    };
-
-    lovelaceConfig = {};
+    };    
         
     extraComponents = [
       "apple_tv"
@@ -102,6 +100,7 @@
       pyatv
       croniter
     ];
+
   };
   
 
