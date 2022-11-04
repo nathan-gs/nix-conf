@@ -425,6 +425,30 @@ tvAutomations = [
   }
 ];
 
+water.mqtt = {
+  binary_sensor = [
+    {
+      name = "watermeter_leak_detect";
+      state_topic = "watermeter/reading/watermeter_leak_detect";
+    }
+  ];
+
+  sensor = [
+    {
+      name = "watermeter_total";
+      state_topic = "watermeter/reading/current_value";
+      unit_of_measurement = "L";
+      force_update = true;
+    }
+    {
+      name = "watermeter_usage_last_minute";
+      state_topic = "watermeter/reading/water_used_last_minute";
+      unit_of_measurement = "L";
+    }
+  ];
+
+};
+
 in 
 
 with lib;
@@ -480,26 +504,11 @@ with lib;
     ];
 
     config.mqtt = {
-      binary_sensor = [
-        {
-          name = "watermeter_leak_detect";
-          state_topic = "watermeter/reading/watermeter_leak_detect";
-        }
-      ];
+      binary_sensor = [] 
+        ++ water.mqtt.binary_sensor;
 
-      sensor = [
-        {
-          name = "watermeter_total";
-          state_topic = "watermeter/reading/current_value";
-          unit_of_measurement = "L";
-          force_update = true;
-        }
-        {
-          name = "watermeter_usage_last_minute";
-          state_topic = "watermeter/reading/water_used_last_minute";
-          unit_of_measurement = "L";
-        }
-      ];
+      sensor = []
+        ++ water.mqtt.sensor;
 
     };
 
