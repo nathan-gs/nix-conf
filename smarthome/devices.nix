@@ -525,11 +525,6 @@ with lib;
         platform = "mqtt";
         unit_of_measurement = "L";
       }
-      {
-        platform = "worxlandroid";
-        host = "grasmaaier";
-        pin = config.secrets.landroid.pin;
-      }
     ];
 
     config.utility_meter = {
