@@ -29,16 +29,28 @@
   };
 
   utility_meter = {
-    water_usage = {
+    water_delivery = {
       source = "sensor.watermeter_total";
+    };    
+    water_delivery_hourly = {
+      source = "sensor.watermeter_total";
+      cycle = "hourly";
     };
-    water_usage_daily = {
+    water_delivery_daily = {
       source = "sensor.watermeter_total";
       cycle = "daily";
     };
-    water_usage_hourly = {
+    water_delivery_weekly = {
       source = "sensor.watermeter_total";
-      cycle = "hourly";
+      cycle = "weekly";
+    };
+    water_delivery_monthly = {
+      source = "sensor.watermeter_total";
+      cycle = "monthly";
+    };
+    water_delivery_yearly = {
+      source = "sensor.watermeter_total";
+      cycle = "yearly";
     };
   };
 }

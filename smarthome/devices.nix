@@ -296,6 +296,9 @@ with lib;
 
     };
 
+    config.customize = {} 
+      // energy.customize;
+
     config.sensor = []
       ++ energy.sensor;
 
