@@ -101,6 +101,8 @@
       croniter
     ];
 
+    package = pkgs.nixpkgs-unstable.home-assistant;
+
   };
   
 
