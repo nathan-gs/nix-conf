@@ -296,7 +296,7 @@ with lib;
 
     };
 
-    config.customize = {} 
+    config.homeassistant.customize = {} 
       // energy.customize;
 
     config.sensor = []
