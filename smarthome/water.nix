@@ -27,4 +27,18 @@
     ];
 
   };
+
+  utility_meter = {
+    water_usage = {
+      source = "sensor.watermeter_total";
+    };
+    water_usage_daily = {
+      source = "sensor.watermeter_total";
+      cycle = "daily";
+    };
+    water_usage_hourly = {
+      source = "sensor.watermeter_total";
+      cycle = "hourly";
+    };
+  };
 }
