@@ -112,7 +112,7 @@ let
       ieee = "0x5c0272fffe88e39f";
       floor = "floor0";
     }
-  ] ++ metering_plugs;
+  ];
 
   metering_plugs = [
     {
@@ -200,6 +200,7 @@ let
       (
         map (v: v //  { type = "window";}) windows 
         ++ map (v: v // { type = "plug";}) plugs
+        ++ map (v: v // { type = "metering_plug";}) metering_plugs
       )
     );
 
