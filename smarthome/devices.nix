@@ -426,13 +426,7 @@ with lib;
         count = 2;
         scan_interval = 30;
       }
-      {
-        platform = "ping";
-        host = "appletv-woonkamer";
-        name = "floor0_living_appletv_woonkamer";
-        count = 2;
-        scan_interval = 30;
-      }
+      
       {
         platform = "group";
         name = "floor1/windows_contact";
@@ -440,7 +434,8 @@ with lib;
           #"binary_sensor.floor1_*_window_na_contact"
         ];
       }
-    ];
+    ] 
+    ++ media.binary_sensor;
 
     config.mqtt = {
       binary_sensor = [] 

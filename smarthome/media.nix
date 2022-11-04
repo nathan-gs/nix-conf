@@ -41,4 +41,14 @@
       mode = "single";
     }
   ];
+
+  binary_sensor = [
+    {
+      platform = "ping";
+      host = "appletv-woonkamer";
+      name = "floor0_living_appletv_woonkamer";
+      count = 2;
+      scan_interval = 30;
+    }
+  ];
 }
