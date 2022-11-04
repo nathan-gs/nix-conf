@@ -45,7 +45,7 @@
   binary_sensor = [
     {
       platform = "ping";
-      host = "appletv-woonkamer";
+      host = "192.168.1.100"; # fritz.box issue with correctly resolving names...
       name = "floor0_living_appletv_woonkamer";
       count = 2;
       scan_interval = 30;
