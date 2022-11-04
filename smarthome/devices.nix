@@ -437,7 +437,7 @@ water.mqtt = {
     {
       name = "watermeter_total";
       state_topic = "watermeter/reading/current_value";
-      unique_id = name;
+      unique_id = "watermeter_total";
       state_class = "total_increasing";
       unit_of_measurement = "L";
       force_update = true;
@@ -448,7 +448,7 @@ water.mqtt = {
       state_topic = "watermeter/reading/water_used_last_minute";
       unit_of_measurement = "L";
       icon = "mdi:water";
-      unique_id = name;
+      unique_id = "watermeter_usage_last_minute";
     }
   ];
 
