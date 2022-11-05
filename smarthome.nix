@@ -109,13 +109,14 @@
     package = pkgs.nixpkgs-unstable.zigbee2mqtt;
     settings = {
       homeassistant =  config.services.home-assistant.enable;
-      permit_join = true;
+      permit_join = false;
       serial.port = "/dev/ttyUSB0";
       frontend = true;
       advanced = {
         channel = 25;
         network_key = config.secrets.zigbee2mqtt.networkKey;
         log_output = [ "console" ];
+        log_level = "warn";
       };
       mqtt = {
         server = "mqtt://localhost:1883";
