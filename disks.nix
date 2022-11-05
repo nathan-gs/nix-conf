@@ -109,7 +109,8 @@ with lib;
         mail = {
           enable = true;
           mailer = "/run/current-system/sw/bin/sendmail";
-          recipient = "nathan@nathan.gs";
+          recipient = config.secrets.email;
+          sender = "${config.networking.hostName}@nathan.gs";
         };
         test = true;
         wall.enable = false;
