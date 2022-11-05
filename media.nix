@@ -4,7 +4,7 @@
 
   imports = [
     ./apps/calibre-economist.nix
-    ./apps/media-scraper.nix
+    #./apps/media-scraper.nix
     ./apps/photoprism.nix
   ];
 #  services.calibre-server.enable = true;
