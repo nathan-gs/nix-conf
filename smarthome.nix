@@ -102,6 +102,16 @@
     package = pkgs.nixpkgs-unstable.home-assistant;
 
   };
+
+  systemd.services.home-assistant-backup = {
+    description = "home-assistant-backup"; 
+    path = [ ];
+    script = ''
+      mv /var/lib/hass/backups/* /media/documents/nathan/onedrive_nathan_personal/backup/homeassistant/
+      chown nathan:users /media/documents/nathan/onedrive_nathan_personal/backup/homeassistant/*
+    '';
+    startAt = "*-*-* 03:42:00";
+  };
   
 
   services.zigbee2mqtt = {
