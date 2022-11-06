@@ -2,7 +2,7 @@
 
 {
 
-  systemd.services.powersave = lib.mkIf true {
+  systemd.services.powersave = {
     description = "Power Save scripts";
     wantedBy = [ "multi-user.target" ];
 
