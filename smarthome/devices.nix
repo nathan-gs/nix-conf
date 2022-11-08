@@ -324,7 +324,8 @@ with lib;
       // water.utility_meter;
 
     config.template = [] 
-      ++ energy.template;
+      ++ energy.template
+      ++ water.template;
 
     config.device_tracker = [
       {
