@@ -14,6 +14,7 @@
         unique_id = "watermeter_total";
         state_class = "total_increasing";
         unit_of_measurement = "L";
+        device_class = "water";
         force_update = true;
         icon = "mdi:water";
       }
