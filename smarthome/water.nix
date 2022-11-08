@@ -61,6 +61,8 @@
           {
             name = "water_cost";
             unit_of_measurement = "€/L";
+            # https://www.farys.be/nl/watertarieven
+            # Discounted rate for the first 30m3 + 30m3 per person
             state = ''
 {% if states('sensor.water_delivery_yearly') | float > ((1 * 30 + 4 * 30) * 1000) %}
 {{ (9.6434 / 1000) * 1.06 }}
