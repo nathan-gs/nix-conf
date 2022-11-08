@@ -62,7 +62,7 @@
             name = "water_cost";
             unit_of_measurement = "€/L";
             state = ''
-{% if states('sensor.water_delivery_yearly') > ((1 * 30 + 4 * 30) * 1000) %}
+{% if states('sensor.water_delivery_yearly') | float > ((1 * 30 + 4 * 30) * 1000) %}
 {{ (9.6434 / 1000) * 1.06 }}
 {% else %}
 {{ (4.5451 / 1000) * 1.06 }}
