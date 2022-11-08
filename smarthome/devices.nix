@@ -321,7 +321,8 @@ with lib;
       ++ energy.sensor;
 
     config.utility_meter = { } 
-      // water.utility_meter;
+      // water.utility_meter
+      // energy.utility_meter;
 
     config.template = [] 
       ++ energy.template
