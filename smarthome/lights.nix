@@ -49,7 +49,7 @@ let
 in 
 {
   devices = lights;
-  zigbeeDevices = [] ++ lightPlugDevices;
+  zigbeeDevices = {} // lightPlugDevices;
   automations = [];
 
 }
