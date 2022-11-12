@@ -35,6 +35,7 @@
       mode = extra
     '';
     sshd-aggresive = ''
+      enabled = true
       filter = sshd[mode=aggressive]
     '';
   };
