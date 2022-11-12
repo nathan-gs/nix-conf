@@ -29,7 +29,15 @@
 
   # Fail 2 Ban  
   services.fail2ban.enable = true;
-  services.fail2ban.jails.sshd = "enabled = true";
+  services.fail2ban.jails = {
+    sshd = ''
+      enabled = true
+      mode = extra
+    '';
+    sshd-aggresive = ''
+      filter = sshd[mode=aggressive]
+    '';
+  };
 
   # Hosts
   networking.hosts = {
