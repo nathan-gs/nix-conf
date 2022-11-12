@@ -1,4 +1,4 @@
-{
+let
   lights = [
     {      
       zone = "bureau";
@@ -46,7 +46,8 @@
         map (v: v // { type = "light_plug";}) lightPlugs
       )
     );
-
+in 
+{
   devices = lights;
   zigbeeDevices = [] ++ lightPlugDevices;
   automations = [];
