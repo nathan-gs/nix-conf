@@ -142,7 +142,7 @@ let
   ];
 
   zigbeeDevices = 
-    lightPlugDevices // rtvDevices // zigbeeDevicesWithIeeeAsKey;
+    lightPlugDevices // rtvDevices // zigbeeDevicesWithIeeeAsKey // lights.zigbeeDevices;
 
   lightPlugDevices = 
     builtins.listToAttrs ( 
@@ -202,6 +202,7 @@ let
         map (v: v //  { type = "window";}) windows 
         ++ map (v: v // { type = "plug";}) plugs
         ++ map (v: v // { type = "metering_plug";}) metering_plugs
+        ++ map (v: v // {type = "lights";}) lights.devices
       )
     );
 
@@ -269,6 +270,7 @@ water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
 wfh = import ./wfh.nix;
+lights = import ./lights.nix;
 
 in 
 
