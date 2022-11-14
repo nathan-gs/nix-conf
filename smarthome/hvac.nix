@@ -91,7 +91,7 @@ let
         filtered_attributes = [
           "comfort_temperature"
           "eco_temperature"
-          "current_heating_setpoint_auto"
+          #"current_heating_setpoint_auto"
           "local_temperature_calibration"
           "detectwindow_temperature"
           "detectwindow_timeminute"
@@ -100,7 +100,8 @@ let
           "away_setting"
         ];
       };
-      optimistic = false;
+      #optimistic = true;
+      availability = true;
     };})
     )
     (
