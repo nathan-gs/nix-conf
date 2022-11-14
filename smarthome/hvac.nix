@@ -87,11 +87,11 @@ let
     (
       map (v: { name = "${v.ieee}"; value = { 
       friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-      availability = true;
       homeassistant = {
         filtered_attributes = [
           "comfort_temperature"
           "eco_temperature"
+          "current_heating_setpoint_auto"
           "local_temperature_calibration"
           "detectwindow_temperature"
           "detectwindow_timeminute"
@@ -100,7 +100,7 @@ let
           "away_setting"
         ];
       };
-      #optimistic = false;
+      optimistic = false;
     };})
     )
     (
