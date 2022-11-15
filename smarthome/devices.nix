@@ -79,10 +79,14 @@ with lib;
   system.activationScripts.lidl-HG08673-FR-converter.text = ''
     ln -sf "${./lidl-HG08673-FR-converter.js}" "${config.services.zigbee2mqtt.dataDir}/lidl-HG08673-FR-converter.js"
   '';
+  system.activationScripts.tuya.text = ''
+    ln -sf "${./tuya.js}" "${config.services.zigbee2mqtt.dataDir}/tuya.js"
+  '';
 
   services.zigbee2mqtt.settings = {
     devices = zigbeeDevices;
     external_converters = [
+      "tuya.js"
       "lidl-HG08673-FR-converter.js"
     ];
   };
