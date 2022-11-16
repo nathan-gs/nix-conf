@@ -86,9 +86,10 @@ with lib;
   services.zigbee2mqtt.settings = {
     devices = zigbeeDevices;
     external_converters = [
-      "tuya.js"
+      #"tuya.js"- not working for now
       "lidl-HG08673-FR-converter.js"
     ];
+    availability = true;
   };
 
   services.home-assistant = {
