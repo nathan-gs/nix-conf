@@ -87,7 +87,7 @@ with lib;
     devices = zigbeeDevices;
     external_converters = [
       #"tuya.js"- not working for now
-      #"lidl-368308_2010-converter.js"
+      "lidl-368308_2010-converter.js"
       "lidl-HG08673-FR-converter.js"
     ];
     availability = true;
