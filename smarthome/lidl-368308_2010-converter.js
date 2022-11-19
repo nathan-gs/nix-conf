@@ -393,7 +393,6 @@ module.exports = [
             // This device doesn't support current_heating_setpoint reporting.
             // Therefore we read the temperature every 30 min.
             if (type === 'stop') {
-                data.meta.logger.debug("current_heating_setpoint workaround:stopping");
                 clearInterval(globalStore.getValue(device, 'interval'));
                 globalStore.clearValue(device, 'interval');
             } else if (!globalStore.hasValue(device, 'interval')) {
