@@ -456,7 +456,7 @@ module.exports = [
                     expose.withFeature(exposes.enum(`${day}_minute_${i}`, ea.STATE_SET, ['00', '15', '30', '45'])
                         .withDescription(`Minute TO for temp ${i}`));*/
                 });
-                return expose;
+                //return expose;
             }),
         ],
     },
