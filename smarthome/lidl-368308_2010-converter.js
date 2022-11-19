@@ -434,20 +434,27 @@ module.exports = [
                 .withFeature(exposes.numeric('away_preset_day', ea.ALL).withUnit('day').withDescription('Start away day'))
                 .withFeature(exposes.numeric('away_preset_hour', ea.ALL).withUnit('hour').withDescription('Start away hours'))
                 .withFeature(exposes.numeric('away_preset_minute', ea.ALL).withUnit('min').withDescription('Start away minutes')),
-            exposes.numeric("monday_hour_1", ea.ALL),
-            exposes.numeric("monday_minute_1", ea.ALL),
-            exposes.numeric("monday_temp_1", ea.ALL),
-            ...['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {
-                const expose = exposes.composite(day, day);
+            
+            ...['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].map((day) => {            
+
+                //const expose = exposes.composite(day, day);
                 [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach((i) => {
-                    expose.withFeature(exposes.numeric(`${day}_temp_${i}`, ea.ALL).withValueMin(0.5)
+                    exposes.enum(`${day}_hour_${i}`, ea.STATE_SET,
+                        ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
+                            '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
+                            '20', '21', '22', '23', '24']).withDescription(`Hour TO for temp ${i}`);
+                    exposes.enum(`${day}_minute_${i}`, ea.STATE_SET, ['00', '15', '30', '45'])
+                        .withDescription(`Minute TO for temp ${i}`);    
+                    exposes.numeric(`${day}_temp_${i}`, ea.ALL).withValueMin(0.5)
+                        .withValueMax(29.5).withValueStep(0.5).withUnit('°C').withDescription(`Temperature ${i}`);
+                    /*expose.withFeature(exposes.numeric(`${day}_temp_${i}`, ea.ALL).withValueMin(0.5)
                         .withValueMax(29.5).withValueStep(0.5).withUnit('°C').withDescription(`Temperature ${i}`));
                     expose.withFeature(exposes.enum(`${day}_hour_${i}`, ea.STATE_SET,
                         ['00', '01', '02', '03', '04', '05', '06', '07', '08', '09',
                             '10', '11', '12', '13', '14', '15', '16', '17', '18', '19',
                             '20', '21', '22', '23', '24']).withDescription(`Hour TO for temp ${i}`));
                     expose.withFeature(exposes.enum(`${day}_minute_${i}`, ea.STATE_SET, ['00', '15', '30', '45'])
-                        .withDescription(`Minute TO for temp ${i}`));
+                        .withDescription(`Minute TO for temp ${i}`));*/
                 });
                 return expose;
             }),
