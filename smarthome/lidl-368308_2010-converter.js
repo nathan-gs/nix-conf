@@ -389,7 +389,7 @@ module.exports = [
                 return;
             }
 
-            // This device doesn't support current_heating_setpoint_auto & current_heating_setpoint reporting.
+            // This device doesn't support current_heating_setpoint reporting.
             // Therefore we read the temperature every 30 min.
             if (type === 'stop') {
                 clearInterval(globalStore.getValue(device, 'interval'));
@@ -397,9 +397,7 @@ module.exports = [
             } else if (!globalStore.hasValue(device, 'interval')) {
                 const interval = setInterval(async () => {
                     try {
-                        // Received Zigbee message from 'floor1/nikolai/rtv/na', type 'commandDataReport', cluster 'manuSpecificTuya', data '{"dpValues":[{"data":{"data":[0,0,0,169],"type":"Buffer"},"datatype":2,"dp":24}],"seq":6144}' from endpoint 1 with groupID 0
-
-                        await endpoint.read('manuSpecificTuya', ['commandDataReport']);
+                        await endpoint.read('hvacThermostat', ['occupiedHeatingSetpoint']);
                     } catch (error) {
                         // Do nothing
                     }
