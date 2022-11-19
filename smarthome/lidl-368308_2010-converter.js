@@ -393,20 +393,22 @@ module.exports = [
             // This device doesn't support current_heating_setpoint reporting.
             // Therefore we read the temperature every 30 min.
             if (type === 'stop') {
+                data.meta.logger.debug("current_heating_setpoint workaround:stopping");
                 clearInterval(globalStore.getValue(device, 'interval'));
                 globalStore.clearValue(device, 'interval');
             } else if (!globalStore.hasValue(device, 'interval')) {
                 const interval = setInterval(async () => {
                     try {
                         await endpoint.read('hvacThermostat', ['occupiedHeatingSetpoint']);
+                        data.meta.logger.debug("current_heating_setpoint querying hvacThermostat [occupiedHeatingSetpoint]");
                     } catch (error) {
                         // Do nothing
+                        data.meta.logger.debug("failed at current_heating_setpoint querying hvacThermostat [occupiedHeatingSetpoint]", e);
                     }
                 }, 1800000);
                 globalStore.putValue(device, 'interval', interval);
             }
         },
-        onEvent: tuya.onEventSetLocalTime,
         configure: async (device, coordinatorEndpoint, logger) => {
             const endpoint = device.getEndpoint(1);
             await reporting.bind(endpoint, coordinatorEndpoint, ['genBasic']);
