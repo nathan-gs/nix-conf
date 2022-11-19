@@ -375,7 +375,7 @@ module.exports = [
         model: '368308_2010',
         vendor: 'Lidl',
         description: 'Silvercrest radiator valve with thermostat',
-        fromZigbee: [fz.ignore_tuya_set_time, fzLocal.zs_thermostat],
+        fromZigbee: [fz.ignore_tuya_set_time, fzLocal.zs_thermostat, fz.battery],
         toZigbee: [tzLocal.zs_thermostat_current_heating_setpoint, tzLocal.zs_thermostat_child_lock,
             tzLocal.zs_thermostat_comfort_temp, tzLocal.zs_thermostat_eco_temp, tzLocal.zs_thermostat_preset_mode,
             tzLocal.zs_thermostat_system_mode, tzLocal.zs_thermostat_local_temperature_calibration,
@@ -410,9 +410,10 @@ module.exports = [
         configure: async (device, coordinatorEndpoint, logger) => {
             const endpoint = device.getEndpoint(1);
             await reporting.bind(endpoint, coordinatorEndpoint, ['genBasic']);
+            await reporting.batteryPercentageRemaining(endpoint);
         },
         exposes: [
-            e.child_lock(), e.comfort_temperature(), e.eco_temperature(), e.battery_voltage(), e.battery_low(),
+            e.child_lock(), e.comfort_temperature(), e.eco_temperature(), e.battery_voltage(), e.battery(),
             exposes.numeric('current_heating_setpoint_auto', ea.STATE_SET).withValueMin(0.5).withValueMax(29.5)
                 .withValueStep(0.5).withUnit('°C').withDescription('Temperature setpoint automatic'),
             exposes.climate().withSetpoint('current_heating_setpoint', 0.5, 29.5, 0.5, ea.STATE_SET)
