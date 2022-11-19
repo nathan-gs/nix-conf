@@ -411,7 +411,7 @@ module.exports = [
             await reporting.bind(endpoint, coordinatorEndpoint, ['genBasic']);
         },
         exposes: [
-            e.child_lock(), e.comfort_temperature(), e.eco_temperature(), e.battery_voltage(), tuya.exposes.errorStatus()
+            e.child_lock(), e.comfort_temperature(), e.eco_temperature(), e.battery_voltage(), tuya.exposes.errorStatus(),
             exposes.numeric('current_heating_setpoint_auto', ea.STATE_SET).withValueMin(0.5).withValueMax(29.5)
                 .withValueStep(0.5).withUnit('°C').withDescription('Temperature setpoint automatic'),
             exposes.climate().withSetpoint('current_heating_setpoint', 0.5, 29.5, 0.5, ea.STATE_SET)
