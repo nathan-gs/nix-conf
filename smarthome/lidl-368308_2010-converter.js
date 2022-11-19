@@ -400,10 +400,8 @@ module.exports = [
                 const interval = setInterval(async () => {
                     try {
                         await endpoint.read('hvacThermostat', ['occupiedHeatingSetpoint']);
-                        data.meta.logger.debug("current_heating_setpoint querying hvacThermostat [occupiedHeatingSetpoint]");
                     } catch (error) {
                         // Do nothing
-                        data.meta.logger.debug("failed at current_heating_setpoint querying hvacThermostat [occupiedHeatingSetpoint]", e);
                     }
                 }, 1800000);
                 globalStore.putValue(device, 'interval', interval);
