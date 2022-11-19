@@ -410,7 +410,6 @@ module.exports = [
         configure: async (device, coordinatorEndpoint, logger) => {
             const endpoint = device.getEndpoint(1);
             await reporting.bind(endpoint, coordinatorEndpoint, ['genBasic']);
-            await reporting.batteryPercentageRemaining(endpoint);
         },
         exposes: [
             e.child_lock(), e.comfort_temperature(), e.eco_temperature(), e.battery_voltage(), e.battery(),
