@@ -434,8 +434,8 @@ module.exports = [
                 .withFeature(exposes.numeric('away_preset_day', ea.ALL).withUnit('day').withDescription('Start away day'))
                 .withFeature(exposes.numeric('away_preset_hour', ea.ALL).withUnit('hour').withDescription('Start away hours'))
                 .withFeature(exposes.numeric('away_preset_minute', ea.ALL).withUnit('min').withDescription('Start away minutes')),
-            
-            ...['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].flatMap((day) => {            
+        ] +
+        ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].flatMap((day) => {            
 
                 //const expose = exposes.composite(day, day);
                 [1, 2, 3, 4, 5, 6, 7, 8, 9].forEach((i) => {
@@ -459,6 +459,5 @@ module.exports = [
                 });
                 //return expose;
             }),
-        ],
     },
 ];
