@@ -166,12 +166,43 @@ let
     })
     (map (v: v //  { type = "window";}) windows);
 
+  temperatureSetWorkaroundAutomations = 
+    map (v: {
+      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.temperature_set_workaround";
+      alias = "${v.floor}/${v.zone}/${v.type}/${v.name} temperature_set_workaround";
+      trigger = [
+        {
+          platform = "state";
+          entity_id = "number.${v.floor}_${v.zone}_${v.type}_${v.name}_current_heating_setpoint_auto";
+        }
+      ];
+      condition = [
+        {
+          platform = "state";
+          entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+          state = "auto";
+        }
+      ];
+      action = [
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+          data = {
+            temperature = "{{ states('number.${v.floor}_${v.zone}_${v.type}_${v.name}_current_heating_setpoint_auto') }}";
+          };
+        }        
+      ];
+      mode = "single";
+    })
+    (map (v: v //  { type = "rtv";}) rtvDevices);
+
 in
 {
   devices = [] ++ map (v: v //  { type = "window";}) windows;
   zigbeeDevices = {} // rtvDevices;
   automations = []
     ++ windowOpenAutomations
-    ++ windowClosedAutomations;
+    ++ windowClosedAutomations
+    ++ temperatureSetWorkaroundAutomations;
 
 }
