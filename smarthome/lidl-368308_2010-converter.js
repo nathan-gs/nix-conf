@@ -77,7 +77,9 @@ const fzLocal = {
                 return {local_temperature: (value / 10).toFixed(1)};
 
             case tuyaLocal.dataPoints.zsBatteryVoltage:
-                return {voltage: Math.round(value * 10)};
+                const voltage = Math.round(value * 10) * 2;
+                return {voltage: voltage, battery: utils.batteryVoltageToPercentage(voltage, '3V_2100')};
+
 
             case tuyaLocal.dataPoints.zsTempCalibration:
                 return {local_temperature_calibration: value > 55 ?
