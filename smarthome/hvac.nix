@@ -176,7 +176,7 @@ let
           entity_id = "number.${v.floor}_${v.zone}_${v.type}_${v.name}_current_heating_setpoint_auto";
         }
       ];
-      condition = "{{ ( states('climate.${v.floor}_${v.zone}_${v.type}_${v.name}') == "auto" ) }}";
+      condition = ''{{ ( states('climate.${v.floor}_${v.zone}_${v.type}_${v.name}') == "auto" ) }}'';
       action = [
         {
 	        service = "climate.set_temperature";
