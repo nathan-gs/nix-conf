@@ -194,7 +194,7 @@ let
       ];
       mode = "single";
     })
-    (map (v: v //  { type = "rtv";}) rtvDevices);
+    (map (v: v //  { type = "rtv";}) rtv);
 
 in
 {
