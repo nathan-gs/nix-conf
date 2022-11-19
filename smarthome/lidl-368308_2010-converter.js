@@ -320,7 +320,9 @@ const tzLocal = {
         },
     },
     zs_thermostat_local_schedule: {
-        key: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'],
+        key: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'].flatMap((day) => [
+            ...[1, 2, 3, 4, 5, 6, 7, 8, 9].flatMap((i) => [`${day}_temp_${i}`])
+        ]),
         convertSet: async (entity, key, value, meta) => {
             const daysMap = {'monday': 1, 'tuesday': 2, 'wednesday': 3, 'thursday': 4, 'friday': 5, 'saturday': 6, 'sunday': 7};
             const day = daysMap[key];
