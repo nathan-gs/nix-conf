@@ -63,6 +63,7 @@
   };   
 
   hardware.bluetooth.powerOnBoot = false;
+  hardware.bluetooth.enable = false;
 
   boot.blacklistedKernelModules = [ "bluetooth" "iwlwifi" ];
 #  services.thermald.enable = true;
