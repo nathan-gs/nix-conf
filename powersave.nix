@@ -27,7 +27,9 @@
           echo 'power' > $i || true
           current="$(cat $i)"
           echo "Changing $i from $original to $current"
-        done  
+        done
+
+        ${pkgs.cpupower}/bin/cpupower set --perf-bias 15
         '';
       serviceConfig.Type = "oneshot";
     };
