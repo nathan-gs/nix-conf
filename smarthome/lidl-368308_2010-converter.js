@@ -386,6 +386,7 @@ module.exports = [
             tzLocal.zs_thermostat_current_heating_setpoint_auto, tzLocal.zs_thermostat_openwindow_time,
             tzLocal.zs_thermostat_openwindow_temp, tzLocal.zs_thermostat_binary_one, tzLocal.zs_thermostat_binary_two,
             tzLocal.zs_thermostat_away_setting, tzLocal.zs_thermostat_local_schedule],
+        ota: ota.zigbeeOTA,
         onEvent: async (type, data, device) => {
             tuya.onEventSetLocalTime(type, data, device);
 
