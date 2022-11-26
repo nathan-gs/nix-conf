@@ -83,6 +83,21 @@ let
     }
   ];
 
+  tempSensors = [
+    {
+      zone = "living";
+      name = "na";
+      ieee = "0x00124b0029113b83";
+      floor = "floor0";
+    }
+    {
+      zone = "roaming";
+      name = "sonoff2";
+      ieee = "0x00124b0029113a29";
+      floor = "roaming";
+    }
+  ];
+
   rtvDevices = builtins.listToAttrs ( 
     (
       map (v: { name = "${v.ieee}"; value = { 
@@ -192,7 +207,9 @@ let
 
 in
 {
-  devices = [] ++ map (v: v //  { type = "window";}) windows;
+  devices = [] 
+    ++ map (v: v //  { type = "window";}) windows
+    ++ map (v: v //  { type = "temperature";}) tempSensors;
   zigbeeDevices = {} // rtvDevices;
   automations = []
     ++ windowOpenAutomations

@@ -6,6 +6,18 @@ let
       ieee = "0x842e14fffe674147";
       floor = "floor0";
     }
+    {      
+      zone = "roaming";
+      name = "closet";
+      ieee = "0x50325ffffeaca4be";
+      floor = "roaming";
+    }
+    {      
+      zone = "bureau";
+      name = "desk2";
+      ieee = "0x0c4314fffe98c59f";
+      floor = "floor0";
+    }
   ];
 
   lightPlugs = [
