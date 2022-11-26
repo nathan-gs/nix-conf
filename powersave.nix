@@ -7,16 +7,6 @@
     powertop.enable = true;
     scsiLinkPolicy = "med_power_with_dipm";
     cpuFreqGovernor = "powersave";
-    powerUpCommands = ''
-    # https://wiki.archlinux.org/title/Power_management
-    for i in $(find /sys/devices/system/cpu/cpufreq/policy? -name energy_performance_preference -writable);
-    do
-      original="$(cat $i)" 
-      echo 'power' > $i || true
-      current="$(cat $i)"
-      echo "Changing $i from $original to $current"
-    done    
-    '';
   };
 
   boot.kernel.sysctl = {
@@ -24,6 +14,23 @@
     "vm.dirty_writeback_centisecs" = 6000;
     "vm.swappiness" = 0;
   };
+
+    systemd.services.powersave = {
+      description = "Power Save scripts";
+      wantedBy = [ "multi-user.target" ];
+      script =
+        ''
+        # https://wiki.archlinux.org/title/Power_management
+        for i in $(find /sys/devices/system/cpu/cpufreq/policy? -name energy_performance_preference -writable);
+        do
+          original="$(cat $i)" 
+          echo 'power' > $i || true
+          current="$(cat $i)"
+          echo "Changing $i from $original to $current"
+        done  
+        '';
+      serviceConfig.Type = "oneshot";
+    };
 
 #  services.udev = {
 #    extraRules = ''
