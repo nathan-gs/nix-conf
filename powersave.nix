@@ -30,18 +30,19 @@
         done
 
         ${pkgs.cpupower}/bin/cpupower set --perf-bias 15
+
+        echo Y > /sys/module/snd_hda_intel/parameters/power_save_controller 
         '';
       serviceConfig.Type = "oneshot";
     };
 
-#  services.udev = {
-#    extraRules = ''
-#ACTION=="add", SUBSYSTEM=="pci", ATTR{power/control}="auto"
-#ACTION=="add", SUBSYSTEM=="usb", TEST=="power/control", ATTR{power/control}="auto"
-#ACTION=="add", SUBSYSTEM=="scsi_host", KERNEL=="host*", ATTR{link_power_management_policy}="min_power"
-#DRIVER=="sd", SUBSYSTEM=="scsi", ENV{DEVTYPE}=="scsi_device", ATTR{timeout}="150"
-#    '';
-#  };   
+  services.udev = {
+    extraRules = 
+      ''
+      SUBSYSTEM=="pci", ATTR{power/control}="auto"
+      SUBSYSTEM=="usb", TEST=="power/control", ATTR{power/control}="auto"
+      '';
+  };   
 
   hardware.bluetooth.powerOnBoot = false;
 
