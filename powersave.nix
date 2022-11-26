@@ -2,45 +2,20 @@
 
 {
 
-  systemd.services.powersave = {
-    description = "Power Save scripts";
-    wantedBy = [ "multi-user.target" ];
-
-    script = ''
-
-#for i in `ls /sys/class/net/ | grep -v lo`;
-#do
-#  ${pkgs.ethtool}/bin/ethtool -s $i wol d;
-#done
-echo '6000' > /proc/sys/vm/dirty_writeback_centisecs
-echo '0' > /proc/sys/vm/swappiness
-
-for i in $(find /sys/class/scsi_host/*/ -name link_power_management_policy -writable);
-do
-  original="$(cat $i)" 
-  echo 'min_power' > $i || true
-  current="$(cat $i)"
-  echo "Changing $i from $original to $current"
-done
-
-for i in $(find /sys/bus/*/devices/*/power -name control -writable);
-do 
-  original="$(cat $i)" 
-  echo 'auto' > $i || true
-  current="$(cat $i)"
-  echo "Changing $i from $original to $current"
-done
-
-for i in $(find /sys/module/*/ -name power_save -writable);
-do 
-  original="$(cat $i)" 
-  echo '1' > $i || true
-  current="$(cat $i)"
-  echo "Changing $i from $original to $current"
-
-done
-
-#echo '1' > /sys/module/snd_hda_intel/parameters/power_save
+  powerManagement = {
+    enable = true;
+    powertop.enable = true;
+    scsiLinkPolicy = "med_power_with_dipm";
+    cpuFreqGovernor = "powersave";
+    powerUpCommands = ''
+    # https://wiki.archlinux.org/title/Power_management
+    for i in $(find /sys/devices/system/cpu/cpufreq/policy? -name energy_performance_preference -writable);
+    do
+      original="$(cat $i)" 
+      echo 'power' > $i || true
+      current="$(cat $i)"
+      echo "Changing $i from $original to $current"
+    done    
     '';
   };
 
@@ -61,11 +36,7 @@ done
 
   hardware.bluetooth.powerOnBoot = false;
 
-  boot.blacklistedKernelModules = [ "bluetooth" ];
-
-#  powerManagement.scsiLinkPolicy = "min_power";
-
-  powerManagement.cpuFreqGovernor = "powersave";  
+  boot.blacklistedKernelModules = [ "bluetooth" "iwlwifi" ];
 #  services.thermald.enable = true;
 
 
