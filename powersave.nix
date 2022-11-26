@@ -20,18 +20,34 @@
       wantedBy = [ "multi-user.target" ];
       script =
         ''
+        set_and_echo() {
+          file="$1"
+          value="$2"
+
+          original="$(cat $file)" 
+          echo "$value" > $file || true
+          current="$(cat $file)"
+          echo "Changing $file from $original to $current"
+        }
+
         # https://wiki.archlinux.org/title/Power_management
         for i in $(find /sys/devices/system/cpu/cpufreq/policy? -name energy_performance_preference -writable);
         do
-          original="$(cat $i)" 
-          echo 'power' > $i || true
-          current="$(cat $i)"
-          echo "Changing $i from $original to $current"
+          set_and_echo $i power          
         done
 
-        ${pkgs.cpupower}/bin/cpupower set --perf-bias 15
+        # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_epb.html
+        for i in $(find /sys/devices/system/cpu/cpu*/power/ -name energy_perf_bias -writable);
+        do
+          set_and_echo $i 15          
+        done
 
-        echo Y > /sys/module/snd_hda_intel/parameters/power_save_controller 
+        # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
+        set_and_echo /sys/devices/system/cpu/intel_pstate/energy_efficiency 1
+        set_and_echo /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost 1
+        
+
+        set_and_echo /sys/module/snd_hda_intel/parameters/power_save_controller Y
         '';
       serviceConfig.Type = "oneshot";
     };
