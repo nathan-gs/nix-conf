@@ -112,7 +112,7 @@
 
   # Promtail (Loki)
   services.promtail = {
-    enable = true;
+    enable = false;
     configuration = {
       server = {
         http_listen_port = 3101;
