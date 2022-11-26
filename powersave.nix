@@ -24,10 +24,12 @@
           file="$1"
           value="$2"
 
-          original="$(cat $file)" 
-          echo "$value" > $file || true
-          current="$(cat $file)"
-          echo "Changing $file from $original to $current"
+          original="$(cat $file)"
+          if [ "$original" != "$value" ]; then 
+            echo "$value" > $file || true
+            current="$(cat $file)"
+            echo "Changed $file from $original to $current"
+          fi
         }
 
         # https://wiki.archlinux.org/title/Power_management
