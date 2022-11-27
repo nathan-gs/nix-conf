@@ -340,7 +340,7 @@ let
         trigger = {
           platform = "time_pattern";
           minutes = "/15";
-        }
+        };
         sensor = [
           {
             name = "electricity_delivery_power_15m";
