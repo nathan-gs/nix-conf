@@ -230,7 +230,6 @@ let
         state_characteristic = "value_max";
         max_age.hours = 24;
         sampling_size = 96;
-        unit_of_measurement = "kWh Max";
         precision = 1;
       }
       {
@@ -240,7 +239,6 @@ let
         state_characteristic = "value_max";
         max_age.hours = 744;
         sampling_size = 50000;
-        unit_of_measurement = "kWh Max";
         precision = 1;
       }
     ];
@@ -337,12 +335,8 @@ let
       }
       {
         trigger = {
-          platform = "time";
-          at = "0:00:00";
-          condition = {
-            condition = "template";
-            value_template = "{{ (now().day == 1) }}";
-          };
+          platform = "template";          
+          value_template = "{% if (now().day == 1) and (now().hour == 0) and (now().minute == 0) %}true{% else %}false{% endif %}";
         };
         sensor = [
           {
