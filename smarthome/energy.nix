@@ -229,8 +229,8 @@ let
           state_characteristic = "value_max";
           max_age.hours = 24;
           sampling_size = 96;
-          unit_of_measurement: "kWh Max";
-          precision: 1;
+          unit_of_measurement = "kWh Max";
+          precision = 1;
         }
         {
           platform = "statistics";
@@ -239,8 +239,8 @@ let
           state_characteristic = "value_max";
           max_age.hours = 744;
           sampling_size = 50000;
-          unit_of_measurement: "kWh Max";
-          precision: 1;
+          unit_of_measurement = "kWh Max";
+          precision = 1;
         }
       ];
     };
