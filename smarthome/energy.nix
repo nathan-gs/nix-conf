@@ -220,30 +220,30 @@ let
         source = "sensor.dsmr_reading_electricity_returned_2";
         cycle = "yearly";
       };
-
-      sensor = [
-        {
-          platform = "statistics";
-          name = "electricity_delivery_running_24h_15m_max";
-          entity_id = "sensor.electricity_delivery_15m";
-          state_characteristic = "value_max";
-          max_age.hours = 24;
-          sampling_size = 96;
-          unit_of_measurement = "kWh Max";
-          precision = 1;
-        }
-        {
-          platform = "statistics";
-          name = "electricity_delivery_running_31d_15m_max";
-          entity_id = "sensor.electricity_delivery_15m";
-          state_characteristic = "value_max";
-          max_age.hours = 744;
-          sampling_size = 50000;
-          unit_of_measurement = "kWh Max";
-          precision = 1;
-        }
-      ];
     };
+
+    sensor = [
+      {
+        platform = "statistics";
+        name = "electricity_delivery_running_24h_15m_max";
+        entity_id = "sensor.electricity_delivery_15m";
+        state_characteristic = "value_max";
+        max_age.hours = 24;
+        sampling_size = 96;
+        unit_of_measurement = "kWh Max";
+        precision = 1;
+      }
+      {
+        platform = "statistics";
+        name = "electricity_delivery_running_31d_15m_max";
+        entity_id = "sensor.electricity_delivery_15m";
+        state_characteristic = "value_max";
+        max_age.hours = 744;
+        sampling_size = 50000;
+        unit_of_measurement = "kWh Max";
+        precision = 1;
+      }
+    ];
 
     template = [
       {
