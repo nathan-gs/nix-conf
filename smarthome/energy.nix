@@ -311,7 +311,7 @@ let
           {
             name = "electricity_delivery_power_monthly_15m_max";
             state = ''
-              {% if ((now().day == 1) and (now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_monthly_15m_max') == "unknown") %}
+              {% if ((now().day == 1) and (now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_monthly_15m_max') in ["unknown", "unavailable"]) %}
                 {{ 0 | float }}
               {% elif (states('sensor.electricity_delivery_power_monthly_15m_max') | float < states('sensor.electricity_delivery_power_15m') | float) %}
                 {{ states('sensor.electricity_delivery_power_15m') | float }}
@@ -319,12 +319,12 @@ let
                 {{ states('sensor.electricity_delivery_power_monthly_15m_max') | float }} 
               {% endif %}
             '';
-            unit_of_measurement = "W";
+            unit_of_measurement = "kW";
           }
           {
             name = "electricity_delivery_power_daily_15m_max";
             state = ''
-              {% if ((now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_daily_15m_max') == "unknown") %}
+              {% if ((now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_daily_15m_max') in ["unknown", "unavailable"]) %}
                 {{ 0 | float }}
               {% elif (states('sensor.electricity_delivery_power_daily_15m_max') | float < states('sensor.electricity_delivery_power_15m') | float) %}
                 {{ states('sensor.electricity_delivery_power_15m') | float }}
@@ -332,7 +332,7 @@ let
                 {{ states('sensor.electricity_delivery_power_daily_15m_max') | float }} 
               {% endif %}
             '';
-            unit_of_measurement = "W";
+            unit_of_measurement = "kW";
           }
         ];
       }
@@ -345,7 +345,7 @@ let
           {
             name = "electricity_delivery_power_15m";
             state = "{{ states('sensor.electricity_delivery_power_rolling_15m') }}";
-            unit_of_measurement = "W";
+            unit_of_measurement = "kW";
           }
         ];
       }
