@@ -120,6 +120,10 @@ let
         source = "sensor.dsmr_reading_electricity_delivered_1";
         cycle = "hourly";
       };
+      electricity_peak_delivery_15m = {
+        source = "sensor.dsmr_reading_electricity_delivered_1";
+        cron = "*/15 * * * *";
+      };
       electricity_peak_delivery_weekly = {
         source = "sensor.dsmr_reading_electricity_delivered_1";
         cycle = "weekly";
@@ -139,6 +143,10 @@ let
       electricity_offpeak_delivery_daily = {
         source = "sensor.dsmr_reading_electricity_delivered_2";
         cycle = "daily";
+      };
+      electricity_offpeak_delivery_15m = {
+        source = "sensor.dsmr_reading_electricity_delivered_2";
+        cron = "*/15 * * * *";
       };
       electricity_offpeak_delivery_hourly = {
         source = "sensor.dsmr_reading_electricity_delivered_2";
@@ -163,6 +171,10 @@ let
       electricity_peak_return_daily = {
         source = "sensor.dsmr_reading_electricity_returned_1";
         cycle = "daily";
+      };
+      electricity_peak_return_15m = {
+        source = "sensor.dsmr_reading_electricity_returned_1";
+        cron = "*/15 * * * *";
       };
       electricity_peak_return_hourly = {
         source = "sensor.dsmr_reading_electricity_returned_1";
@@ -192,6 +204,10 @@ let
         source = "sensor.dsmr_reading_electricity_returned_2";
         cycle = "hourly";
       };
+      electricity_offpeak_return_15m = {
+        source = "sensor.dsmr_reading_electricity_returned_2";
+        cron = "*/15 * * * *";
+      };
       electricity_offpeak_return_weekly = {
         source = "sensor.dsmr_reading_electricity_returned_2";
         cycle = "weekly";
@@ -204,6 +220,29 @@ let
         source = "sensor.dsmr_reading_electricity_returned_2";
         cycle = "yearly";
       };
+
+      sensor = [
+        {
+          platform = "statistics";
+          name = "electricity_delivery_running_24h_15m_max";
+          entity_id = "sensor.electricity_delivery_15m";
+          state_characteristic = "value_max";
+          max_age.hours = 24;
+          sampling_size = 96;
+          unit_of_measurement: "kWh Max";
+          precision: 1;
+        }
+        {
+          platform = "statistics";
+          name = "electricity_delivery_running_31d_15m_max";
+          entity_id = "sensor.electricity_delivery_15m";
+          state_characteristic = "value_max";
+          max_age.hours = 744;
+          sampling_size = 50000;
+          unit_of_measurement: "kWh Max";
+          precision: 1;
+        }
+      ];
     };
 
     template = [
@@ -218,6 +257,11 @@ let
             name = "electricity_delivery_hourly";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_delivery_hourly') | float ) + ( states('sensor.electricity_offpeak_delivery_hourly') | float ) }}";
+          }
+          {
+            name = "electricity_delivery_15m";
+            unit_of_measurement = "kWh";
+            state = "{{ ( states('sensor.electricity_peak_delivery_15m') | float ) + ( states('sensor.electricity_offpeak_delivery_15m') | float ) }}";
           }
           {
             name = "electricity_delivery_daily";
@@ -251,6 +295,11 @@ let
             state = "{{ ( states('sensor.electricity_peak_return_hourly') | float ) + ( states('sensor.electricity_offpeak_return_hourly') | float ) }}";
           }
           {
+            name = "electricity_return_15m";
+            unit_of_measurement = "kWh";
+            state = "{{ ( states('sensor.electricity_peak_return_15m') | float ) + ( states('sensor.electricity_offpeak_return_15m') | float ) }}";
+          }
+          {
             name = "electricity_return_daily";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_return_daily') | float ) + ( states('sensor.electricity_offpeak_return_daily') | float ) }}";
@@ -273,6 +322,36 @@ let
 
         ];
       }
+      {
+        trigger = {
+          platform = "time";
+          at = "0:00:00";
+        };
+        sensor = [
+          {
+            name = "electricity_delivery_daily_15m_max";
+            state = "{{ state_attr('sensor.electricity_delivery_running_24h_15m_max') }}";
+            unit_of_measurement = "kWh Max";
+          }
+        ];
+      }
+      {
+        trigger = {
+          platform = "time";
+          at = "0:00:00";
+          condition = {
+            condition = "template";
+            value_template = "{{ (now().day == 1) }}"
+          };
+        };
+        sensor = [
+          {
+            name = "electricity_delivery_monthly_15m_max";
+            state = "{{ state_attr('sensor.electricity_delivery_running_31d_15m_max') }}";
+            unit_of_measurement = "kWh Max";
+          }
+        ];
+      }
     ];
 
   };
@@ -281,7 +360,7 @@ in
 {
 
   template = cost.template ++ gas.template ++ electricity.template;
-  sensor = cost.sensor;
+  sensor = cost.sensor ++ electricity.sensor;
   utility_meter = gas.utility_meter // electricity.utility_meter;
   customize = electricity.customize;
 }
