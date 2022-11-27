@@ -222,26 +222,7 @@ let
       };
     };
 
-    sensor = [
-      {
-        platform = "statistics";
-        name = "electricity_delivery_running_24h_15m_max";
-        entity_id = "sensor.electricity_delivery_15m";
-        state_characteristic = "value_max";
-        max_age.hours = 24;
-        sampling_size = 96;
-        precision = 1;
-      }
-      {
-        platform = "statistics";
-        name = "electricity_delivery_running_31d_15m_max";
-        entity_id = "sensor.electricity_delivery_15m";
-        state_characteristic = "value_max";
-        max_age.hours = 744;
-        sampling_size = 50000;
-        precision = 1;
-      }
-    ];
+    sensor = [];
 
     template = [
       {
@@ -317,31 +298,30 @@ let
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_return_yearly') | float ) + ( states('sensor.electricity_offpeak_return_yearly') | float ) }}";
           }
-
-        ];
-      }
-      {
-        trigger = {
-          platform = "time";
-          at = "0:00:00";
-        };
-        sensor = [
-          {
-            name = "electricity_delivery_daily_15m_max";
-            state = "{{ state_attr('sensor.electricity_delivery_running_24h_15m_max') }}";
-            unit_of_measurement = "kWh Max";
-          }
-        ];
-      }
-      {
-        trigger = {
-          platform = "template";          
-          value_template = "{% if (now().day == 1) and (now().hour == 0) and (now().minute == 0) %}true{% else %}false{% endif %}";
-        };
-        sensor = [
           {
             name = "electricity_delivery_monthly_15m_max";
-            state = "{{ state_attr('sensor.electricity_delivery_running_31d_15m_max') }}";
+            state = ''
+              {% if ((now().day == 1) and (now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_monthly_15m_max') == "unknown") %}
+                {{ 0 | float }}
+              {% elif (states('sensor.electricity_delivery_monthly_15m_max') | float < states('sensor.electricity_delivery_15m') | float) %}
+                {{ states('sensor.electricity_delivery_15m') | float }}
+              {% else %}
+                {{ states('sensor.electricity_delivery_monthly_15m_max') | float }} 
+              {% endif %}
+            '';
+            unit_of_measurement = "kWh Max";
+          }
+          {
+            name = "electricity_delivery_daily_15m_max";
+            state = ''
+              {% if ((now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_daily_15m_max') == "unknown") %}
+                {{ 0 | float }}
+              {% elif (states('sensor.electricity_delivery_daily_15m_max') | float < states('sensor.electricity_delivery_15m') | float) %}
+                {{ states('sensor.electricity_delivery_15m') | float }}
+              {% else %}
+                {{ states('sensor.electricity_delivery_daily_15m_max') | float }} 
+              {% endif %}
+            '';
             unit_of_measurement = "kWh Max";
           }
         ];
