@@ -35,7 +35,7 @@ let
         platform = "scrape";
         resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
         name = "electricity_cost_peak_kwh_energycomponent";
-        select = "table :has(> th:contains(Dagtarief)) td";
+        select = "table :has(> th:-soup-contains(Dagtarief)) td";
         unit_of_measurement = "€/kWh";
         value_template = "{{ (value | float) / 100 }}";
         scan_interval = 3600;
@@ -44,7 +44,7 @@ let
         platform = "scrape";
         resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
         name = "electricity_cost_offpeak_kwh_energycomponent";
-        select = "table :has(> th:contains(Nachttarief)) td";
+        select = "table :has(> th:-soup-contains(Nachttarief)) td";
         unit_of_measurement = "€/kWh";
         value_template = "{{ (value | float) / 100 }}";
         scan_interval = 3600;
@@ -53,7 +53,7 @@ let
         platform = "scrape";
         resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
         name = "gas_cost_kwh_energycomponent";
-        select = "table :has(> th:contains(per)) td";
+        select = "table :has(> th:-soup-contains(per)) td";
         unit_of_measurement = "€/kWh";
         value_template = "{{ (value | float) / 100 }}";
         scan_interval = 3600;
