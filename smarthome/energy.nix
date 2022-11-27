@@ -311,12 +311,12 @@ let
           {
             name = "electricity_delivery_power_monthly_15m_max";
             state = ''
-              {% if ((now().day == 1) and (now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_monthly_15m_max') in ["unknown", "unavailable"]) %}
-                {{ 0 | float }}
-              {% elif (states('sensor.electricity_delivery_power_monthly_15m_max') | float < states('sensor.electricity_delivery_power_15m') | float) %}
-                {{ states('sensor.electricity_delivery_power_15m') | float }}
+              {% if ((now().day == 1) and (now().hour == 1) and (now().minute < 15)) %}
+                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
+              {% elif (states('sensor.electricity_delivery_power_monthly_15m_max') or 0 | float < states('sensor.electricity_delivery_power_15m') or 0 | float) %}
+                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
               {% else %}
-                {{ states('sensor.electricity_delivery_power_monthly_15m_max') | float }} 
+                {{ states('sensor.electricity_delivery_power_monthly_15m_max') or 0 | float }} 
               {% endif %}
             '';
             unit_of_measurement = "kW";
@@ -324,12 +324,12 @@ let
           {
             name = "electricity_delivery_power_daily_15m_max";
             state = ''
-              {% if ((now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_daily_15m_max') in ["unknown", "unavailable"]) %}
-                {{ 0 | float }}
-              {% elif (states('sensor.electricity_delivery_power_daily_15m_max') | float < states('sensor.electricity_delivery_power_15m') | float) %}
-                {{ states('sensor.electricity_delivery_power_15m') | float }}
+              {% if ((now().hour == 1) and (now().minute < 15)) %}
+                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
+              {% elif (states('sensor.electricity_delivery_power_daily_15m_max') or 0 | float < states('sensor.electricity_delivery_power_15m') or 0 | float) %}
+                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
               {% else %}
-                {{ states('sensor.electricity_delivery_power_daily_15m_max') | float }} 
+                {{ states('sensor.electricity_delivery_power_daily_15m_max') or 0 | float }} 
               {% endif %}
             '';
             unit_of_measurement = "kW";
