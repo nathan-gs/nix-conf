@@ -341,7 +341,7 @@ let
           at = "0:00:00";
           condition = {
             condition = "template";
-            value_template = "{{ (now().day == 1) }}"
+            value_template = "{{ (now().day == 1) }}";
           };
         };
         sensor = [
