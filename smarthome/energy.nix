@@ -302,12 +302,18 @@ let
           {
             name = "electricity_delivery_power_monthly_15m_max";
             state = ''
-              {% if ((now().day == 1) and (now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_monthly_15m_max') in ["unavailable", "unknown"]) %}
-                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
-              {% elif ((states('sensor.electricity_delivery_power_monthly_15m_max') | float) < (states('sensor.electricity_delivery_power_15m') or 0) | float) %}
-                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
+              {% if is_number(states('sensor.electricity_delivery_power_monthly_15m_max')) %}
+                {% if ((now().hour == 1) and (now().minute < 15)) %}
+                  {{ states('sensor.electricity_delivery_power_15m') | float }}
+                {% else %}
+                  {% if ((states('sensor.electricity_delivery_power_monthly_15m_max') | float) < (states('sensor.electricity_delivery_power_15m')) | float) %}
+                    {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
+                  {% else %}
+                    {{ states('sensor.electricity_delivery_power_monthly_15m_max') | float }} 
+                  {% endif %}
+                {% endif %}
               {% else %}
-                {{ states('sensor.electricity_delivery_power_monthly_15m_max') or 0 | float }} 
+                0
               {% endif %}
             '';
             unit_of_measurement = "kW";
@@ -315,17 +321,31 @@ let
           {
             name = "electricity_delivery_power_daily_15m_max";
             state = ''
-              {% if ((now().hour == 1) and (now().minute < 15)) or (states('sensor.electricity_delivery_power_daily_15m_max') in ["unavailable", "unknown"]) %}
-                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
-              {% elif ((states('sensor.electricity_delivery_power_daily_15m_max') | float) < (states('sensor.electricity_delivery_power_15m') or 0) | float) %}
-                {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
+              {% if is_number(states('sensor.electricity_delivery_power_daily_15m_max')) %}
+                {% if ((now().hour == 1) and (now().minute < 15)) %}
+                  {{ states('sensor.electricity_delivery_power_15m') | float }}
+                {% else %}
+                  {% if ((states('sensor.electricity_delivery_power_daily_15m_max') | float) < (states('sensor.electricity_delivery_power_15m')) | float) %}
+                    {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
+                  {% else %}
+                    {{ states('sensor.electricity_delivery_power_daily_15m_max') | float }} 
+                  {% endif %}
+                {% endif %}
               {% else %}
-                {{ states('sensor.electricity_delivery_power_daily_15m_max') or 0 | float }} 
+                0
               {% endif %}
             '';
             unit_of_measurement = "kW";
           }
         ];
+      }
+      {
+        binary_sensor = {
+          name = "electricity_delivery_power_max_threshold_reached";
+          delay_on = "00:02:00";
+          delay_off = "00:01:00";
+          state = "{{ states('sensor.electricity_delivery') | float > 2800 }}";
+        };
       }
     ];
 
