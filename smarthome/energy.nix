@@ -120,10 +120,6 @@ let
         source = "sensor.dsmr_reading_electricity_delivered_1";
         cycle = "hourly";
       };
-      electricity_peak_delivery_15m = {
-        source = "sensor.dsmr_reading_electricity_delivered_1";
-        cron = "*/15 * * * *";
-      };
       electricity_peak_delivery_weekly = {
         source = "sensor.dsmr_reading_electricity_delivered_1";
         cycle = "weekly";
@@ -143,10 +139,6 @@ let
       electricity_offpeak_delivery_daily = {
         source = "sensor.dsmr_reading_electricity_delivered_2";
         cycle = "daily";
-      };
-      electricity_offpeak_delivery_15m = {
-        source = "sensor.dsmr_reading_electricity_delivered_2";
-        cron = "*/15 * * * *";
       };
       electricity_offpeak_delivery_hourly = {
         source = "sensor.dsmr_reading_electricity_delivered_2";
@@ -220,18 +212,13 @@ let
         source = "sensor.dsmr_reading_electricity_returned_2";
         cycle = "yearly";
       };
+      electricity_delivery_15m = {
+        source = "sensor.electricity_delivery";
+        cron = "*/15 * * * *";
+      };
     };
 
     sensor = [
-      {
-        platform = "statistics";
-        name = "electricity_delivery_power_rolling_15m";
-        entity_id = "sensor.dsmr_reading_electricity_currently_delivered";
-        state_characteristic = "average_linear";
-        max_age.minutes = 15;
-        sampling_size = 30;
-        precision = 3;
-      }
     ];
 
     template = [
@@ -246,11 +233,6 @@ let
             name = "electricity_delivery_hourly";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_delivery_hourly') | float ) + ( states('sensor.electricity_offpeak_delivery_hourly') | float ) }}";
-          }
-          {
-            name = "electricity_delivery_15m";
-            unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_delivery_15m') | float ) + ( states('sensor.electricity_offpeak_delivery_15m') | float ) }}";
           }
           {
             name = "electricity_delivery_daily";
@@ -284,11 +266,6 @@ let
             state = "{{ ( states('sensor.electricity_peak_return_hourly') | float ) + ( states('sensor.electricity_offpeak_return_hourly') | float ) }}";
           }
           {
-            name = "electricity_return_15m";
-            unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_return_15m') | float ) + ( states('sensor.electricity_offpeak_return_15m') | float ) }}";
-          }
-          {
             name = "electricity_return_daily";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_return_daily') | float ) + ( states('sensor.electricity_offpeak_return_daily') | float ) }}";
@@ -308,6 +285,20 @@ let
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_return_yearly') | float ) + ( states('sensor.electricity_offpeak_return_yearly') | float ) }}";
           }
+          
+          {
+            name = "electricity_delivery_power_15m";
+            state = "{{ (states('sensor.electricity_delivery_15m') | float(0)) * 4 | float }}";
+            unit_of_measurement = "kW";
+          }
+        ];
+      }
+      {
+        trigger = {
+          platform = "time_pattern";
+          minutes = "/15";
+        };
+        sensor = [
           {
             name = "electricity_delivery_power_monthly_15m_max";
             state = ''
@@ -332,19 +323,6 @@ let
                 {{ states('sensor.electricity_delivery_power_daily_15m_max') or 0 | float }} 
               {% endif %}
             '';
-            unit_of_measurement = "kW";
-          }
-        ];
-      }
-      {
-        trigger = {
-          platform = "time_pattern";
-          minutes = "/15";
-        };
-        sensor = [
-          {
-            name = "electricity_delivery_power_15m";
-            state = "{{ states('sensor.electricity_delivery_power_rolling_15m') }}";
             unit_of_measurement = "kW";
           }
         ];
