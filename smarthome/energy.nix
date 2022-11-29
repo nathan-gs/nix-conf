@@ -230,7 +230,7 @@ let
         state_characteristic = "average_linear";
         max_age.minutes = 15;
         sampling_size = 30;
-        precision = 1;
+        precision = 3;
       }
     ];
 
