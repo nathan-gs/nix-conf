@@ -55,6 +55,14 @@
       };
       prometheus = {
         namespace = "ha";
+        include_domains = [
+          "sensor"
+          "binary_sensor"
+          "switch"
+          "weather"
+          "sun"
+          "person"
+        ];
       };
      
       mqtt = {};
