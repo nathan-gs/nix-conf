@@ -1,7 +1,7 @@
 { config, pkgs, ... }:
 {
   services.prometheus.exporters = {
-    node = enable;
+    node.enable = true;
   };
 
   services.vmagent = {
