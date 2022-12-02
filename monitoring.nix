@@ -8,7 +8,7 @@
     enable = true;
     remoteWriteUrl = "https://${config.secrets.grafanaCloud.api.username}:${config.secrets.grafanaCloud.api.key}@prometheus-prod-01-eu-west-0.grafana.net/api/prom/push";
     prometheusConfig = {
-      scrapeConfigs = [
+      scrape_configs = [
         {
           job_name = "node";
           scrape_timeout = "40s"; # Deal with slow network of nnas
@@ -42,8 +42,11 @@
 
   services.grafana = {
     enable = false;
-    domain = "nathan.gs";
-    addr = "0.0.0.0";
+    settings.server = {
+      domain = "nathan.gs";
+      http_addr = "0.0.0.0";
+    };
+    
     provision.enable = true;
     provision.datasources = [
       {
@@ -55,8 +58,8 @@
   };
 
   networking.firewall.allowedTCPPorts = [ 
-   config.services.prometheus.port 
-   config.services.grafana.port 
+    config.services.prometheus.port 
+    config.services.settings.server.http_port 
   ];
 
   services.tuya-prometheus = {
