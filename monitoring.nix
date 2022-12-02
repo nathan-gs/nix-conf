@@ -59,7 +59,7 @@
 
   networking.firewall.allowedTCPPorts = [ 
     config.services.prometheus.port 
-    config.services.settings.server.http_port 
+    config.services.grafana.settings.server.http_port 
   ];
 
   services.tuya-prometheus = {
