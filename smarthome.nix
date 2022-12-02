@@ -55,7 +55,7 @@
       };
       prometheus = {
         namespace = "ha";
-        include_domains = [
+        filter.include_domains = [
           "sensor"
           "binary_sensor"
           "switch"
