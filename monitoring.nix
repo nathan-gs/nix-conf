@@ -2,9 +2,9 @@
 {
   services.prometheus.exporters = {
     node = enable;
-  }
+  };
 
-  services.vmaagent = {
+  services.vmagent = {
     enable = true;
     remoteWriteUrl = "https://${config.secrets.grafanaCloud.api.username}:${config.secrets.grafanaCloud.api.key}@prometheus-prod-01-eu-west-0.grafana.net/api/prom/push";
     prometheusConfig = {
