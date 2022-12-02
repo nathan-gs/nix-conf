@@ -10,7 +10,6 @@
   };
 
   boot.kernel.sysctl = {
-    "kernel.nmi_watchdog" = 0;
     "vm.dirty_writeback_centisecs" = 6000;
     "vm.swappiness" = 0;
   };
@@ -47,9 +46,7 @@
         # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
         set_and_echo /sys/devices/system/cpu/intel_pstate/energy_efficiency 1
         set_and_echo /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost 1
-        
-
-        set_and_echo /sys/module/snd_hda_intel/parameters/power_save_controller Y
+    
         '';
       serviceConfig.Type = "oneshot";
     };
