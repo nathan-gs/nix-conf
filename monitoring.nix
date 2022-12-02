@@ -1,55 +1,43 @@
 { config, pkgs, ... }:
 {
-  services.prometheus = {
+  services.prometheus.exporters = {
+    node = enable;
+  }
+
+  services.vmaagent = {
     enable = true;
-    scrapeConfigs = [
-      {
-        job_name = "node";
-        scrape_timeout = "40s"; # Deal with slow network of nnas
-        static_configs = [
-	  { targets = 
-            [ 
-              "nhtpc.wg:${toString config.services.prometheus.exporters.node.port}" 
-#              "nhtpc.wg:${toString config.services.prometheus.exporters.smokeping.port}"
-              "nnas.wg:${toString config.services.prometheus.exporters.node.port}"
-              "ndesk:4445"
-            ];
-          }
-        ];
-      }
-      {
-        job_name = "homeassistant";
-        scrape_timeout = "10s";
-        metrics_path = "/api/prometheus";
-        authorization.credentials = config.secrets.home-assistant.llat.prometheus;
-        static_configs = [
-	  { targets = 
-            [ 
-              "nhtpc.wg:${toString config.services.home-assistant.config.http.server_port}"
-            ];
-          }
-        ];
-      }
-    ];
-    exporters = {
-      smokeping = {
-        enable = false;
-        hosts = ["192.168.1.1" "1.1.1.1" "8.8.8.8" "195.238.2.21" "nnas.wg"];
-        
-      };
+    remoteWriteUrl = "https://${config.secrets.grafanaCloud.api.username}:${config.secrets.grafanaCloud.api.key}@prometheus-prod-01-eu-west-0.grafana.net/api/prom/push";
+    prometheusConfig = {
+      scrapeConfigs = [
+        {
+          job_name = "node";
+          scrape_timeout = "40s"; # Deal with slow network of nnas
+          static_configs = [
+            { targets = 
+              [ 
+                "nhtpc.wg:${toString config.services.prometheus.exporters.node.port}" 
+                # "nhtpc.wg:${toString config.services.prometheus.exporters.smokeping.port}"
+                "nnas.wg:${toString config.services.prometheus.exporters.node.port}"
+                "ndesk:4445"
+              ];
+            }
+          ];
+        }
+        {
+          job_name = "homeassistant";
+          scrape_timeout = "10s";
+          metrics_path = "/api/prometheus";
+          authorization.credentials = config.secrets.home-assistant.llat.prometheus;
+          static_configs = [
+            { targets = 
+              [ 
+                "nhtpc.wg:${toString config.services.home-assistant.config.http.server_port}"
+              ];
+            }
+          ];
+        }
+      ];
     };
-
-    remoteWrite = [
-      {
-        name = "grafana cloud";
-        url = "https://prometheus-prod-01-eu-west-0.grafana.net/api/prom/push";
-        basic_auth = {
-          username = config.secrets.grafanaCloud.api.username;
-          password = config.secrets.grafanaCloud.api.key;
-        };
-
-      }
-    ];
   };
 
   services.grafana = {
