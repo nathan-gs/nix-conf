@@ -17,7 +17,7 @@
               [ 
                 "nhtpc.wg:${toString config.services.prometheus.exporters.node.port}" 
                 # "nhtpc.wg:${toString config.services.prometheus.exporters.smokeping.port}"
-                "nnas.wg:${toString config.services.prometheus.exporters.node.port}"
+                # "nnas.wg:${toString config.services.prometheus.exporters.node.port}"
                 "ndesk:4445"
               ];
             }
