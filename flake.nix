@@ -1,7 +1,7 @@
 {
   inputs = {
     tuya-cloud-bash.url = "github:nathan-gs/tuya-cloud-bash";
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     secrets.url = "git+file:///etc/nixos/secrets";
   };

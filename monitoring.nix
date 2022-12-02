@@ -64,13 +64,6 @@
         url = "http://localhost:${toString config.services.prometheus.port}";
       }
     ];
-    smtp = {
-      enable = true;
-      host = "${config.secrets.sendgrid.host}:${toString config.secrets.sendgrid.port}";
-      user = config.secrets.sendgrid.api.user;
-      password = config.secrets.sendgrid.api.key;
-      fromAddress = config.secrets.email;
-    };
   };
 
   networking.firewall.allowedTCPPorts = [ 
