@@ -42,6 +42,7 @@ let
   ];
 
   automations = [
+    # Cirkel
     {
       id = "garden_voordeur_cirkel_on";
       alias = "garden_voordeur_cirkel_on";
@@ -52,10 +53,9 @@ let
           offset = "-00:30:00";          
         }
         {
-          platform = "sun";
-          event = "sunrise";
-          offset = "-00:30:00";          
-        }
+          platform = "time";
+          at = "07:00:00";    
+        } 
       ];
       condition = [];
       action = [
@@ -73,17 +73,138 @@ let
         {
           platform = "time";
           at = "23:00:00";    
-        }
+        }              
         {
-          platform = "time";
-          at = "09:00:00";    
-        }        
+          platform = "sun";
+          event = "sunrise";
+          offset = "00:30:00";          
+        } 
       ];
       condition = [];
       action = [
         {
           service = "switch.turn_off";
-          target.entity_id = "switch.garden_voordeur_light_plug_cirkel";	        
+          target.entity_id = "switch.garden_voordeur_light_plug_cirkel";
+        }
+      ];
+      mode = "single";
+    }
+    # Living
+    {
+      id = "floor0_living_lights_on";
+      alias = "floor0_living_lights_on";
+      trigger = [
+        {
+          platform = "sun";
+          event = "sunset";
+          offset = "-00:30:00";          
+        }
+      ];
+      condition = [];
+      action = [
+        {
+          service = "switch.turn_on";
+          target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
+        }
+        {
+          service = "switch.turn_on";
+          target.entity_id = "switch.floor0_living_light_plug_bollamp";
+        }
+      ];
+      mode = "single";
+    }
+    {
+      id = "floor0_living_lights_off";
+      alias = "floor0_living_lights_off";
+      trigger = [
+        {
+          platform = "time";
+          at = "23:00:00";    
+        }
+      ];
+      condition = [];
+      action = [
+        {
+          service = "switch.turn_off";
+          target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
+        }
+        {
+          service = "switch.turn_off";
+          target.entity_id = "switch.floor0_living_light_plug_bollamp";
+        }
+      ];
+      mode = "single";
+    }
+    # NDESK Light
+    {
+      id = "floor0_bureau_lights_on_before_sunrise";
+      alias = "floor0_living_lights_on";
+      trigger = [
+        {
+          platform = "state";
+          entity_id = ["binary_sensor.ndesk"];
+          to = "on";
+        }
+      ];
+      condition = [
+        {
+          condition = "sun";
+          before = "sunrise";
+        }
+      ];
+      action = [
+        {
+          service = "light.turn_on";
+          target.entity_id = "light.floor0_bureau_light_desk";
+        }
+      ];
+      mode = "single";
+    }
+    {
+      id = "floor0_bureau_lights_on_at_sunset";
+      alias = "floor0_living_lights_on";
+      trigger = [
+        {
+          platform = "sun";
+          event = "sunset";
+          offset = "-00:30:00";          
+        }
+      ];
+      condition = [
+        {
+          platform = "state";
+          entity_id = ["binary_sensor.ndesk"];
+          state = "on";
+        }
+      ];
+      action = [
+        {
+          service = "light.turn_on";
+          target.entity_id = "light.floor0_bureau_light_desk";
+        }
+      ];
+      mode = "single";
+    }
+    {
+      id = "floor0_bureau_lights_off";
+      alias = "floor0_bureau_lights_off";
+      trigger = [
+        {
+          platform = "sun";
+          event = "sunrise";
+          offset = "00:30:00";          
+        } 
+        {
+          platform = "state";
+          entity_id = ["binary_sensor.ndesk"];
+          to = "off";
+        }
+      ];
+      condition = [];
+      action = [
+        {
+          service = "light.turn_off";
+          target.entity_id = "light.floor0_bureau_light_desk";
         }
       ];
       mode = "single";
