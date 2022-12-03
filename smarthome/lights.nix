@@ -168,7 +168,7 @@ let
       ];
       condition = [
         {
-          platform = "state";
+          condition = "state";
           entity_id = ["binary_sensor.ndesk"];
           state = "on";
         }
