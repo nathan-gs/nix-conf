@@ -57,7 +57,6 @@ let
           at = "07:00:00";    
         } 
       ];
-      condition = [];
       action = [
         {
           service = "switch.turn_on";
@@ -80,7 +79,6 @@ let
           offset = "00:30:00";          
         } 
       ];
-      condition = [];
       action = [
         {
           service = "switch.turn_off";
@@ -100,7 +98,6 @@ let
           offset = "-00:30:00";          
         }
       ];
-      condition = [];
       action = [
         {
           service = "switch.turn_on";
@@ -122,7 +119,6 @@ let
           at = "23:00:00";    
         }
       ];
-      condition = [];
       action = [
         {
           service = "switch.turn_off";
