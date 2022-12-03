@@ -134,7 +134,7 @@ let
     # NDESK Light
     {
       id = "floor0_bureau_lights_on_before_sunrise";
-      alias = "floor0_living_lights_on";
+      alias = "floor0_bureau_lights_on_before_sunrise";
       trigger = [
         {
           platform = "state";
@@ -158,7 +158,7 @@ let
     }
     {
       id = "floor0_bureau_lights_on_at_sunset";
-      alias = "floor0_living_lights_on";
+      alias = "floor0_bureau_lights_on_at_sunset";
       trigger = [
         {
           platform = "sun";
