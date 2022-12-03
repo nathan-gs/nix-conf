@@ -35,6 +35,14 @@
               ];
             }
           ];
+          metric_relabel_configs = [
+            {
+              source_labels = ["__name__"];
+              regex = "ha_state_change_created|ha_state_change_total|ha_last_updated_time_seconds";
+              action = "drop";
+            }
+          ];
+
         }
       ];
     };
