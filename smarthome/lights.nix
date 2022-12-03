@@ -118,6 +118,6 @@ in
 {
   devices = [] ++ map (v: v // {type = "light";}) lights;
   zigbeeDevices = {} // lightPlugDevices;
-  automations = [];
+  automations = [] ++ automations;
 
 }
