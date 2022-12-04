@@ -344,7 +344,7 @@ let
           name = "electricity_delivery_power_max_threshold_reached";
           delay_on = "00:02:00";
           delay_off = "00:01:00";
-          state = "{{ states('sensor.electricity_delivery') | float > 2800 }}";
+          state = "{{ (states('sensor.dsmr_reading_electricity_currently_delivered') | float * 1000) > 2800 }}";
         };
       }
     ];
