@@ -237,7 +237,7 @@ let
                   {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_eco }}
-                {$ endif %}
+                {% endif %}
               {% else %}
                 {{ temperature_night }}
               {% endif %}
@@ -325,7 +325,7 @@ let
                   {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_eco }}
-                {$ endif %}
+                {% endif %}
               {% else %}
                 {{ temperature_eco }}
               {% endif %}
