@@ -140,6 +140,10 @@ let
       condition = [];
       action = [
         {
+          service = "input_boolean.turn_off";
+          data.entity_id = "input_boolean.${v.floor}_${v.zone}_rtv_is_auto";
+        }
+        {
           service = "climate.turn_off";
           target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
         }
@@ -163,20 +167,9 @@ let
       condition = [];
       action = [
         {
-	        service = "climate.set_temperature";
-          target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
-          data = {
-            hvac_mode = "auto";
-            temperature = "{{ states('number.${v.floor}_${v.zone}_rtv_${v.name}_current_heating_setpoint_auto') }}";
-          };
+          service = "input_boolean.turn_on";
+          data.entity_id = "input_boolean.${v.floor}_${v.zone}_rtv_is_auto";
         }
-
-        {
-	        service = "climate.set_preset_mode";
-          target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
-          data.preset_mode = "schedule";
-        }        
-        
       ];
       mode = "single";
     })
@@ -206,6 +199,53 @@ let
     })
     (map (v: v //  { type = "rtv";}) rtv);
   
+  temperatureRtvAutomations = 
+    map (v: {
+      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.temperature_sync";
+      alias = "${v.floor}/${v.zone}/${v.type}/${v.name} temperature_sync";
+      trigger = [
+        {
+          platform = "state";
+          entity_id = "sensor.${v.floor}_${v.zone}_temperature_auto_wanted";
+        }
+        {
+          platform = "state";
+          entity_id = "input_boolean.${v.floor}_${v.zone}_rtv_is_auto";
+          to = "on";
+        }
+      ];
+      condition = ''{{ states('input_boolean.${v.floor}_${v.zone}_rtv_is_auto') }}'';
+      action = [
+        {
+	        service = "climate.set_preset_mode";
+          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+          data.preset_mode = "manual";
+        }
+        {
+          delay = "0:00:01";
+        }
+        {
+	        service = "climate.set_hvac_mode";
+          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+          data = {
+            hvac_mode = "heat";
+          };
+        }
+        {
+          delay = "0:00:01";
+        }
+        {
+	        service = "climate.set_temperature";
+          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+          data = {
+            temperature = "{{ states('sensor.${v.floor}_${v.zone}_temperature_auto_wanted') }}";
+          };
+        }
+      ];
+      mode = "single";
+    })
+    (map (v: v //  { type = "rtv";}) rtv);
+  
   temperatureAutoWanted = [
     {
       trigger = {
@@ -214,7 +254,39 @@ let
       };
       sensor = [
         {
-          name = "floor1_bedrooms_kids_temperature_auto_wanted";
+          name = "floor1_nikolai_temperature_auto_wanted";
+          state = ''
+            {% set is_workday = states('binary_sensor.is_workday') %}
+            {% set is_anyone_home = states('binary_sensor.is_anyone_home') %}
+            {% set temperature_eco = states('input_number.temperature_eco') | float %}
+            {% set temperature_night = states('input_number.temperature_night') | float %}
+            {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
+            {% set temperature_comfort = states('input_number.temperature_comfort') | float %}
+
+            {% if is_workday %}
+              {% if now().hour >= 6 and now().hour < 17 %}
+                {{ temperature_eco }}
+              {% else %}
+                {{ temperature_night }}
+              {% endif %}
+            {% else %}
+              {% if now().hour >= 7 and now().hour < 9 %}
+                {{ temperature_eco }}
+              {% elif now().hour >= 9 and now().hour < 18 %}
+                {% if is_anyone_home %}
+                  {{ temperature_comfort_low }}
+                {% else %}
+                  {{ temperature_eco }}
+                {% endif %}
+              {% else %}
+                {{ temperature_night }}
+              {% endif %}
+            {% endif %}
+          '';
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "floor1_morgane_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') %}
             {% set is_anyone_home = states('binary_sensor.is_anyone_home') %}
@@ -372,7 +444,7 @@ in
   automations = []
     ++ windowOpenAutomations
     ++ windowClosedAutomations
-    ++ temperatureSetWorkaroundAutomations;
+    ++ temperatureRtvAutomations;
 
   template = [] ++ temperatureAutoWanted;
 

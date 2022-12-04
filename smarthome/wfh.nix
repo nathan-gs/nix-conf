@@ -35,7 +35,7 @@
 	        service = "climate.set_temperature";
           target.entity_id = "climate.floor0_bureau_rtv_na";
           data = {
-            temperature = 19.5;
+            temperature = "{{ states('input_number.temperature_comfort') | float }}";
           };
         }
       ];
@@ -75,7 +75,7 @@
 	        service = "climate.set_temperature";
           target.entity_id = "climate.floor0_nikolai_rtv_na";
           data = {
-            temperature = 19.5;
+            temperature = "{{ states('input_number.temperature_comfort') | float }}";
           };
         }
       ];
@@ -94,17 +94,8 @@
       condition = [];
       action = [
         {
-	        service = "climate.set_temperature";
-          target.entity_id = "climate.floor0_bureau_rtv_na";
-          data = {
-            hvac_mode = "auto";
-            temperature = "{{ states('number.floor0_bureau_rtv_na_current_heating_setpoint_auto') }}";
-          };
-        }
-        {
-	        service = "climate.set_preset_mode";
-          target.entity_id = "climate.floor0_bureau_rtv_na";
-          data.preset_mode = "schedule";
+          service = "input_boolean.turn_on";
+          data.entity_id = "input_boolean.floor0_bureau_rtv_is_auto";
         }
       ];
       mode = "single";
@@ -122,17 +113,8 @@
       condition = [];
       action = [
         {
-	        service = "climate.set_temperature";
-          target.entity_id = "climate.floor1_nikolai_rtv_na";
-          data = {
-            hvac_mode = "auto";
-            temperature = "{{ states('number.floor1_nikolai_rtv_na_current_heating_setpoint_auto') }}";
-          };
-        }
-        {
-	        service = "climate.set_preset_mode";
-          target.entity_id = "climate.floor1_nikolai_rtv_na";
-          data.preset_mode = "schedule";
+          service = "input_boolean.turn_on";
+          data.entity_id = "input_boolean.floor1_nikolai_rtv_is_auto";
         }
       ];
       mode = "single";
