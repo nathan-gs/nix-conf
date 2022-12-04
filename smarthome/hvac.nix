@@ -214,7 +214,7 @@ let
           to = "on";
         }
       ];
-      condition = ''{{ states('input_boolean.${v.floor}_${v.zone}_rtv_is_auto') }}'';
+      condition = ''{{ states('input_boolean.${v.floor}_${v.zone}_rtv_is_auto') | bool }}'';
       action = [
         {
 	        service = "climate.set_preset_mode";
