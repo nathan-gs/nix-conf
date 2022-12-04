@@ -70,6 +70,7 @@ media = import ./media.nix;
 wfh = import ./wfh.nix;
 lights = import ./lights.nix;
 hvac = import ./hvac.nix;
+general = import ./general.nix;
 
 in 
 
@@ -133,7 +134,9 @@ with lib;
 
     config.template = [] 
       ++ energy.template
-      ++ water.template;
+      ++ water.template
+      ++ general.template
+      ++ hvac.template;
 
     config.device_tracker = [
       {

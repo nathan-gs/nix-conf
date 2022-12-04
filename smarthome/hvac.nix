@@ -1,4 +1,9 @@
 let
+  temperaturEco = 15.5;
+  temperatureNight = 17.0;
+  temperatureComfortLow = 18;
+  temperatureComfort = 19.5;
+
   rtv = [
     {      
       zone = "living";
@@ -204,6 +209,130 @@ let
       mode = "single";
     })
     (map (v: v //  { type = "rtv";}) rtv);
+  
+  temperatureAutoWanted = [
+    {
+      trigger = {
+        platform = "time_pattern";
+        minutes = "/15";
+      };
+      sensor = [
+        {
+          name = "floor1_bedrooms_kids_temperature_auto_wanted";
+          state = ''
+            {% set is_workday = states('binary_sensor.is_workday') %}
+            {% set is_anyone_home = states('binary_sensor.is_anyone_home') %}
+
+            {% if is_workday %}
+              {% if now().hour >= 6 and now().hour < 17 %}
+                ${temperatureEco}
+              {% else %}
+                ${temperatureNight}
+              {% endif %}
+            {% else %}
+              {% if now().hour >= 7 and now().hour < 9 %}
+                ${temperatureEco}
+              {% elif now().hour >= 9 and now().hour < 18 %}
+                {% if is_anyone_home %}
+                  ${temperatureComfortLow}
+                {% else %}
+                  ${temperatureEco}
+                {$ endif %}
+              {% else %}
+                ${temperatureNight}
+              {% endif %}
+            {% endif %}
+          '';
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "floor1_fen_temperature_auto_wanted";
+          state = ''
+            {% set is_workday = states('binary_sensor.is_workday') %}
+
+            {% if is_workday %}
+              {% if now().hour >= 6 and now().hour < 17 %}
+                ${temperatureEco}
+              {% else %}
+                ${temperatureNight} 
+              {% endif %}
+            {% else %}
+              {% if now().hour >= 7 and now().hour < 9 %}
+                ${temperatureEco}        
+              {% else %}
+                ${temperatureNight}
+              {% endif %}
+            {% endif %}
+          '';
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "floor1_badkamer_temperature_auto_wanted";
+          state = ''
+            {% set is_workday = states('binary_sensor.is_workday') %}
+
+            {% if is_workday %}
+              {% if now().hour >= 6 and now().hour < 7 %}
+                ${temperatureComfort}
+              {% else %}
+                ${temperatureNight}
+              {% endif %}
+            {% else %}
+              ${temperatureNight}
+            {% endif %}
+          '';
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "floor0_keuken_temperature_auto_wanted";
+          state = "${temperatureEco}";
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "floor0_bureau_temperature_auto_wanted";
+          state = ''
+            {% set is_workday = states('binary_sensor.is_workday') %}
+
+            {% if is_workday %}
+              ${temperatureEco}
+            {% else %}
+              {% if now().hour >= 9 and now().hour < 18 %}
+                {% if is_anyone_home %}
+                  ${temperatureComfortLow}
+                {% else %}
+                  ${temperatureEco}
+                {$ endif %}
+              {% else %}
+                ${temperatureEco}
+              {% endif %}
+            {% endif %}
+          '';
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "floor0_living_temperature_auto_wanted";
+          state = ''
+            {% set is_workday = states('binary_sensor.is_workday') %}
+
+            {% if is_workday %}
+              {% if now().hour >= 17 and now().hour < 22 %}
+                ${temperatureComfort}
+              {% else %}
+                ${temperatureEco}
+              {% endif %}
+            {% else %}
+              {% if now().hour >= 7 and now().hour < 22 %}
+                ${temperatureComfort}
+              {% else %}
+                ${temperatureEco}
+              {% endif %}
+            {% endif %}
+          '';
+          unit_of_measurement = "°C";
+        }
+      ];
+    }
+  ];
 
 in
 {
@@ -215,5 +344,7 @@ in
     ++ windowOpenAutomations
     ++ windowClosedAutomations
     ++ temperatureSetWorkaroundAutomations;
+
+  template = [] ++ temperatureAutoWanted;
 
 }
