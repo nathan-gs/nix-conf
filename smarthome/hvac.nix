@@ -1,8 +1,4 @@
 let
-  temperaturEco = 15.5;
-  temperatureNight = 17.0;
-  temperatureComfortLow = 18;
-  temperatureComfort = 19.5;
 
   rtv = [
     {      
