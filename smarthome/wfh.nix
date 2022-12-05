@@ -14,6 +14,10 @@
       condition = [];
       action = [
         {
+          service = "input_boolean.turn_off";
+          data.entity_id = "input_boolean.floor0_bureau_rtv_is_auto";
+        }
+        {
 	        service = "climate.set_preset_mode";
           target.entity_id = "climate.floor0_bureau_rtv_na";
           data.preset_mode = "manual";
@@ -53,6 +57,10 @@
       ];
       condition = [];
       action = [
+        {
+          service = "input_boolean.turn_off";
+          data.entity_id = "input_boolean.floor1_nikolai_rtv_is_auto";
+        }
         {
 	        service = "climate.set_preset_mode";
           target.entity_id = "climate.floor1_nikolai_rtv_na";
