@@ -76,7 +76,7 @@ media = import ./media.nix;
 wfh = import ./wfh.nix;
 lights = import ./lights.nix;
 hvac = import ./hvac.nix;
-plugs = import ./plugs.nix;
+plugsFile = import ./plugs.nix;
 general = import ./general.nix;
 
 in 
@@ -107,7 +107,7 @@ with lib;
       ++ hvac.automations
       ++ wfh.automations
       ++ media.automations
-      ++ plugs.automations;
+      ++ plugsFile.automations;
 
     config.binary_sensor = [ ] 
     ++ media.binary_sensor
