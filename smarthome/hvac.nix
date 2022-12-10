@@ -213,6 +213,14 @@ let
           entity_id = "input_boolean.${v.floor}_${v.zone}_rtv_is_auto";
           to = "on";
         }
+        {
+          platform = "time";
+          at = "17:00:00";
+        }
+        {
+          platform = "time";
+          at = "08:00:00";
+        }
       ];
       condition = ''{{ states('input_boolean.${v.floor}_${v.zone}_rtv_is_auto') | bool }}'';
       action = [
