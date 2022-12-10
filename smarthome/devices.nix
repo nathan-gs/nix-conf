@@ -41,6 +41,12 @@ let
       ieee = "0xa4c1383c42598ec3";
       floor = "floor1";
     }
+    {
+      zone = "fen";
+      name = "deken";
+      ieee = "0xa4c138bd0cf23138";
+      floor = "floor1";
+    }
   ];
 
   zigbeeDevices = 
@@ -70,6 +76,7 @@ media = import ./media.nix;
 wfh = import ./wfh.nix;
 lights = import ./lights.nix;
 hvac = import ./hvac.nix;
+plugs = import ./plugs.nix;
 general = import ./general.nix;
 
 in 
@@ -99,17 +106,10 @@ with lib;
       lights.automations
       ++ hvac.automations
       ++ wfh.automations
-      ++ media.automations;
+      ++ media.automations
+      ++ plugs.automations;
 
-    config.binary_sensor = [
-      {
-        platform = "group";
-        name = "floor1/windows_contact";
-        entities = [
-          #"binary_sensor.floor1_*_window_na_contact"
-        ];
-      }
-    ] 
+    config.binary_sensor = [ ] 
     ++ media.binary_sensor
     ++ wfh.binary_sensor;
 
