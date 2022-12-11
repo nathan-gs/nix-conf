@@ -228,24 +228,24 @@ let
       ];
       condition = ''{{ states('input_boolean.${v.floor}_${v.zone}_rtv_is_auto') | bool }}'';
       action = [
-        {
-	        service = "climate.set_preset_mode";
-          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
-          data.preset_mode = "manual";
-        }
-        {
-          delay = "0:00:01";
-        }
-        {
-	        service = "climate.set_hvac_mode";
-          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
-          data = {
-            hvac_mode = "heat";
-          };
-        }
-        {
-          delay = "0:00:01";
-        }
+        # {
+	      #   service = "climate.set_preset_mode";
+        #   target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+        #   data.preset_mode = "manual";
+        # }
+        # {
+        #   delay = "0:00:01";
+        # }
+        # {
+	      #   service = "climate.set_hvac_mode";
+        #   target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+        #   data = {
+        #     hvac_mode = "heat";
+        #   };
+        # }
+        # {
+        #   delay = "0:00:01";
+        # }
         {
 	        service = "climate.set_temperature";
           target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
