@@ -77,7 +77,7 @@
       "automation ui" = "!include automations.yaml";
     };
 
-    lovelaceConfig = {};
+    #lovelaceConfig = {};
         
     extraComponents = [
       "apple_tv"
