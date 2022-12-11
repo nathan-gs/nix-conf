@@ -284,7 +284,7 @@ let
                 {% if is_anyone_home %}
                   {{ temperature_comfort_low }}
                 {% else %}
-                  {{ temperature_eco }}
+                  {{ temperature_night }}
                 {% endif %}
               {% else %}
                 {{ temperature_night }}
@@ -316,7 +316,7 @@ let
                 {% if is_anyone_home %}
                   {{ temperature_comfort_low }}
                 {% else %}
-                  {{ temperature_eco }}
+                  {{ temperature_night }}
                 {% endif %}
               {% else %}
                 {{ temperature_night }}
