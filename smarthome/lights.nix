@@ -7,10 +7,10 @@ let
       floor = "floor0";
     }
     {      
-      zone = "roaming";
-      name = "closet";
+      zone = "living";
+      name = "bollamp";
       ieee = "0x50325ffffeaca4be";
-      floor = "roaming";
+      floor = "floor0";
     }
     {      
       zone = "bureau";
@@ -29,7 +29,7 @@ let
     }
     {
       zone = "living";
-      name = "bollamp";
+      name = "kerstboom";
       ieee = "0x50325ffffe5ebbec";
       floor = "floor0";
     }
@@ -44,8 +44,8 @@ let
   automations = [
     # Cirkel
     {
-      id = "garden_voordeur_cirkel_on";
-      alias = "garden_voordeur_cirkel_on";
+      id = "kerstverlichting_on";
+      alias = "kerstverlichting_on";
       trigger = [
         {
           platform = "sun";
@@ -62,12 +62,16 @@ let
           service = "switch.turn_on";
           target.entity_id = "switch.garden_voordeur_light_plug_cirkel";	        
         }
+        {
+          service = "switch.turn_on";
+          target.entity_id = "switch.floor0_living_light_plug_kerstboom";
+        }
       ];
       mode = "single";
     }
     {
-      id = "garden_voordeur_cirkel_off";
-      alias = "garden_voordeur_cirkel_off";
+      id = "kerstverlichting_off";
+      alias = "kerstverlichting_off";
       trigger = [
         {
           platform = "time";
@@ -83,6 +87,10 @@ let
         {
           service = "switch.turn_off";
           target.entity_id = "switch.garden_voordeur_light_plug_cirkel";
+        }
+        {
+          service = "switch.turn_off";
+          target.entity_id = "switch.floor0_living_light_plug_kerstboom";
         }
       ];
       mode = "single";
@@ -104,8 +112,8 @@ let
           target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
         }
         {
-          service = "switch.turn_on";
-          target.entity_id = "switch.floor0_living_light_plug_bollamp";
+          service = "light.turn_on";
+          target.entity_id = "light.floor0_living_light_bollamp";
         }
       ];
       mode = "single";
@@ -125,8 +133,8 @@ let
           target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
         }
         {
-          service = "switch.turn_off";
-          target.entity_id = "switch.floor0_living_light_plug_bollamp";
+          service = "light.turn_off";
+          target.entity_id = "light.floor0_living_light_bollamp";
         }
       ];
       mode = "single";
