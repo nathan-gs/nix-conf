@@ -215,11 +215,15 @@ let
         }
         {
           platform = "time";
+          at = "08:00:00";
+        }
+        {
+          platform = "time";
           at = "17:00:00";
         }
         {
           platform = "time";
-          at = "08:00:00";
+          at = "23:00:00";
         }
       ];
       condition = ''{{ states('input_boolean.${v.floor}_${v.zone}_rtv_is_auto') | bool }}'';
