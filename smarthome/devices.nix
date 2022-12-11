@@ -83,10 +83,6 @@ in
 
 with lib;
 {
-  # Workaround for HG
-#  system.activationScripts.lidl-HG08673-FR-converter.text = ''
-#    ln -sf "${./lidl-HG08673-FR-converter.js}" "${config.services.zigbee2mqtt.dataDir}/lidl-HG08673-FR-converter.js"
-#  '';
   system.activationScripts.lidl-368308_2010-converter.text = ''
     ln -sf "${./lidl-368308_2010-converter.js}" "${config.services.zigbee2mqtt.dataDir}/lidl-368308_2010-converter.js"
   '';
@@ -96,7 +92,6 @@ with lib;
     external_converters = [
       #"tuya.js"- not working for now
       "lidl-368308_2010-converter.js"
-#      "lidl-HG08673-FR-converter.js"
     ];
     availability = true;
   };
