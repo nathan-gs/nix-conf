@@ -349,6 +349,31 @@ let
       }
     ];
 
+    automations = [
+      {
+        id = "electricity_delivery_power_max_threshold_reached_send_notification";
+        alias = "electricity_delivery_power_max_threshold_reached_send_notification";
+        trigger = [
+          {
+            platform = "state";
+            entity_id = "binary_sensor.electricity_delivery_power_max_threshold_reached";
+            to = "on";
+          }
+        ];
+        condition = [];
+        action = [
+          {
+            service = "notify.notify";
+            data = {
+              title = "Electricity Peak; ({{  (states('sensor.dsmr_reading_electricity_currently_delivered') | float * 1000) }}W (max 2800w)";
+              message = "Electricity Peak; ({{  (states('sensor.dsmr_reading_electricity_currently_delivered') | float * 1000) }}W (max 2800w)";
+            };
+          }
+        ];
+        mode = "single";
+      }
+    ];
+
   };
 
 in
@@ -358,4 +383,5 @@ in
   sensor = cost.sensor ++ electricity.sensor;
   utility_meter = gas.utility_meter // electricity.utility_meter;
   customize = electricity.customize;
+  automations = [] ++ electricity.automations;
 }

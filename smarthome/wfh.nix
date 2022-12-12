@@ -14,28 +14,6 @@
       condition = [];
       action = [
         {
-          service = "input_boolean.turn_off";
-          data.entity_id = "input_boolean.floor0_bureau_rtv_is_auto";
-        }
-        {
-	        service = "climate.set_preset_mode";
-          target.entity_id = "climate.floor0_bureau_rtv_na";
-          data.preset_mode = "manual";
-        }
-        {
-          delay = "0:00:01";
-        }
-        {
-	        service = "climate.set_hvac_mode";
-          target.entity_id = "climate.floor0_bureau_rtv_na";
-          data = {
-            hvac_mode = "heat";
-          };
-        }
-        {
-          delay = "0:00:01";
-        }
-        {
 	        service = "climate.set_temperature";
           target.entity_id = "climate.floor0_bureau_rtv_na";
           data = {
@@ -57,28 +35,6 @@
       ];
       condition = [];
       action = [
-        {
-          service = "input_boolean.turn_off";
-          data.entity_id = "input_boolean.floor1_nikolai_rtv_is_auto";
-        }
-        {
-	        service = "climate.set_preset_mode";
-          target.entity_id = "climate.floor1_nikolai_rtv_na";
-          data.preset_mode = "manual";
-        }
-        {
-          delay = "0:00:01";
-        }
-        {
-	        service = "climate.set_hvac_mode";
-          target.entity_id = "climate.floor0_nikolai_rtv_na";
-          data = {
-            hvac_mode = "heat";
-          };
-        }
-        {
-          delay = "0:00:01";
-        }
         {
 	        service = "climate.set_temperature";
           target.entity_id = "climate.floor0_nikolai_rtv_na";
