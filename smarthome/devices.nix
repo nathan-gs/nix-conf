@@ -102,7 +102,8 @@ with lib;
       ++ hvac.automations
       ++ wfh.automations
       ++ media.automations
-      ++ plugsFile.automations;
+      ++ plugsFile.automations
+      ++ energy.automations;
 
     config.binary_sensor = [ ] 
     ++ media.binary_sensor
