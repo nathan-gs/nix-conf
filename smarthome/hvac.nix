@@ -434,7 +434,7 @@ let
           };
         }
       ];
-      mode = "queue";
+      mode = "queued";
     })
     (map (v: v //  { type = "rtv";}) rtv);
   
