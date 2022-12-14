@@ -318,7 +318,7 @@ let
     (
       map (v: { name = "${v.ieee}"; value = { 
       friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-      homeassistant = { } // builtins.listToAttrs (map (v: { name = v; value = null}) rtvFilteredAttributes);
+      homeassistant = { } // builtins.listToAttrs (map (vf: { name = vf; value = null;}) rtvFilteredAttributes);
       filtered_attributes = rtvFilteredAttributes;      
       optimistic = false;
       availability = true;
