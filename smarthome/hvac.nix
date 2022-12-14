@@ -108,6 +108,8 @@ let
     "detectwindow_timeminute"
     "binary_one"
     "binary_two"
+    "switch_binary_one"
+    "switch_binary_two"
     "away_mode"
     "away_preset_days"
     "away_preset_temperature"
