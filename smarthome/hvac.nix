@@ -103,20 +103,200 @@ let
     (
       map (v: { name = "${v.ieee}"; value = { 
       friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-      homeassistant = {
-        filtered_attributes = [
-          "comfort_temperature"
-          "eco_temperature"
-          #"current_heating_setpoint_auto"
-          "local_temperature_calibration"
-          "detectwindow_temperature"
-          "detectwindow_timeminute"
-          "binary_one"
-          "binary_two"
-          "away_setting"
-        ];
-      };
-      #optimistic = true;
+      homeassistant = { };
+      filtered_attributes = [
+        "comfort_temperature"
+        "eco_temperature"
+        "voltage"
+        "detectwindow_temperature"
+        "detectwindow_timeminute"
+        "binary_one"
+        "binary_two"
+        "away_mode"
+        "away_preset_days"
+        "away_preset_temperature"
+        "away_preset_year"
+        "away_preset_month"
+        "away_preset_day"
+        "away_preset_hour"
+        "away_preset_minute"
+
+        "monday_hour_1"
+        "monday_hour_2"
+        "monday_hour_3"
+        "monday_hour_4"
+        "monday_hour_5"
+        "monday_hour_6"
+        "monday_hour_7"
+        "monday_hour_8"
+        "monday_minute_1"
+        "monday_minute_2"
+        "monday_minute_3"
+        "monday_minute_4"
+        "monday_minute_5"
+        "monday_minute_6"
+        "monday_minute_7"
+        "monday_minute_8"
+        "monday_temp_1"
+        "monday_temp_2"
+        "monday_temp_3"
+        "monday_temp_4"
+        "monday_temp_5"
+        "monday_temp_6"
+        "monday_temp_7"
+        "monday_temp_8"
+
+        "tuesday_hour_1"
+        "tuesday_hour_2"
+        "tuesday_hour_3"
+        "tuesday_hour_4"
+        "tuesday_hour_5"
+        "tuesday_hour_6"
+        "tuesday_hour_7"
+        "tuesday_hour_8"
+        "tuesday_minute_1"
+        "tuesday_minute_2"
+        "tuesday_minute_3"
+        "tuesday_minute_4"
+        "tuesday_minute_5"
+        "tuesday_minute_6"
+        "tuesday_minute_7"
+        "tuesday_minute_8"
+        "tuesday_temp_1"
+        "tuesday_temp_2"
+        "tuesday_temp_3"
+        "tuesday_temp_4"
+        "tuesday_temp_5"
+        "tuesday_temp_6"
+        "tuesday_temp_7"
+        "tuesday_temp_8"
+
+        "wednesday_hour_1"
+        "wednesday_hour_2"
+        "wednesday_hour_3"
+        "wednesday_hour_4"
+        "wednesday_hour_5"
+        "wednesday_hour_6"
+        "wednesday_hour_7"
+        "wednesday_hour_8"
+        "wednesday_minute_1"
+        "wednesday_minute_2"
+        "wednesday_minute_3"
+        "wednesday_minute_4"
+        "wednesday_minute_5"
+        "wednesday_minute_6"
+        "wednesday_minute_7"
+        "wednesday_minute_8"
+        "wednesday_temp_1"
+        "wednesday_temp_2"
+        "wednesday_temp_3"
+        "wednesday_temp_4"
+        "wednesday_temp_5"
+        "wednesday_temp_6"
+        "wednesday_temp_7"
+        "wednesday_temp_8"
+
+        "thursday_hour_1"
+        "thursday_hour_2"
+        "thursday_hour_3"
+        "thursday_hour_4"
+        "thursday_hour_5"
+        "thursday_hour_6"
+        "thursday_hour_7"
+        "thursday_hour_8"
+        "thursday_minute_1"
+        "thursday_minute_2"
+        "thursday_minute_3"
+        "thursday_minute_4"
+        "thursday_minute_5"
+        "thursday_minute_6"
+        "thursday_minute_7"
+        "thursday_minute_8"
+        "thursday_temp_1"
+        "thursday_temp_2"
+        "thursday_temp_3"
+        "thursday_temp_4"
+        "thursday_temp_5"
+        "thursday_temp_6"
+        "thursday_temp_7"
+        "thursday_temp_8"
+
+        "friday_hour_1"
+        "friday_hour_2"
+        "friday_hour_3"
+        "friday_hour_4"
+        "friday_hour_5"
+        "friday_hour_6"
+        "friday_hour_7"
+        "friday_hour_8"
+        "friday_minute_1"
+        "friday_minute_2"
+        "friday_minute_3"
+        "friday_minute_4"
+        "friday_minute_5"
+        "friday_minute_6"
+        "friday_minute_7"
+        "friday_minute_8"
+        "friday_temp_1"
+        "friday_temp_2"
+        "friday_temp_3"
+        "friday_temp_4"
+        "friday_temp_5"
+        "friday_temp_6"
+        "friday_temp_7"
+        "friday_temp_8"
+
+        "saturday_hour_1"
+        "saturday_hour_2"
+        "saturday_hour_3"
+        "saturday_hour_4"
+        "saturday_hour_5"
+        "saturday_hour_6"
+        "saturday_hour_7"
+        "saturday_hour_8"
+        "saturday_minute_1"
+        "saturday_minute_2"
+        "saturday_minute_3"
+        "saturday_minute_4"
+        "saturday_minute_5"
+        "saturday_minute_6"
+        "saturday_minute_7"
+        "saturday_minute_8"
+        "saturday_temp_1"
+        "saturday_temp_2"
+        "saturday_temp_3"
+        "saturday_temp_4"
+        "saturday_temp_5"
+        "saturday_temp_6"
+        "saturday_temp_7"
+        "saturday_temp_8"
+
+        "sunday_hour_1"
+        "sunday_hour_2"
+        "sunday_hour_3"
+        "sunday_hour_4"
+        "sunday_hour_5"
+        "sunday_hour_6"
+        "sunday_hour_7"
+        "sunday_hour_8"
+        "sunday_minute_1"
+        "sunday_minute_2"
+        "sunday_minute_3"
+        "sunday_minute_4"
+        "sunday_minute_5"
+        "sunday_minute_6"
+        "sunday_minute_7"
+        "sunday_minute_8"
+        "sunday_temp_1"
+        "sunday_temp_2"
+        "sunday_temp_3"
+        "sunday_temp_4"
+        "sunday_temp_5"
+        "sunday_temp_6"
+        "sunday_temp_7"
+        "sunday_temp_8"
+      ];      
+      optimistic = false;
       availability = true;
     };})
     )
@@ -228,24 +408,24 @@ let
       ];
       condition = ''{{ states('input_boolean.${v.floor}_${v.zone}_rtv_is_auto') | bool }}'';
       action = [
-        # {
-	      #   service = "climate.set_preset_mode";
-        #   target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
-        #   data.preset_mode = "manual";
-        # }
-        # {
-        #   delay = "0:00:01";
-        # }
-        # {
-	      #   service = "climate.set_hvac_mode";
-        #   target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
-        #   data = {
-        #     hvac_mode = "heat";
-        #   };
-        # }
-        # {
-        #   delay = "0:00:01";
-        # }
+        {
+	        service = "climate.set_preset_mode";
+          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+          data.preset_mode = "manual";
+        }
+        {
+          delay = "0:00:10";
+        }
+        {
+	        service = "climate.set_hvac_mode";
+          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
+          data = {
+            hvac_mode = "heat";
+          };
+        }
+        {
+          delay = "0:00:10";
+        }
         {
 	        service = "climate.set_temperature";
           target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
@@ -254,7 +434,7 @@ let
           };
         }
       ];
-      mode = "single";
+      mode = "queue";
     })
     (map (v: v //  { type = "rtv";}) rtv);
   

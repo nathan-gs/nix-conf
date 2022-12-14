@@ -20,6 +20,10 @@
             temperature = "{{ states('input_number.temperature_comfort') | float }}";
           };
         }
+        {
+          service = "input_boolean.turn_off";
+          data.entity_id = "input_boolean.floor0_bureau_rtv_is_auto";
+        }
       ];
       mode = "single";
     }
@@ -41,6 +45,10 @@
           data = {
             temperature = "{{ states('input_number.temperature_comfort') | float }}";
           };
+        }
+        {
+          service = "input_boolean.turn_on";
+          data.entity_id = "input_boolean.floor1_nikolai_rtv_is_auto";
         }
       ];
       mode = "single";
@@ -95,7 +103,7 @@
     }
     {
       platform = "ping";
-      host = "flaptop-CP80173";
+      host = "flaptop-CP113907";
       name = "flaptop";
       count = 2;
       scan_interval = 30;
