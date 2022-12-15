@@ -12,7 +12,4 @@ jobs:
         nix_path: nixpkgs=channel:nixos-22.11
     - uses: workflow/nix-shell-action@v3
       with:
-        packages: 
-        script: |
-          nix-build
-          nix-shell --run "echo OK"
+        run: nix flake check
