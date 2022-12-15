@@ -10,6 +10,9 @@ jobs:
     - uses: cachix/install-nix-action@v17
       with:
         nix_path: nixpkgs=channel:nixos-22.11
-    - uses: cachix/cachix-action@v11
-    - run: nixos-rebuild --flake .#nhtpc build
-    - run: nix-shell --run "echo OK"
+      - uses: workflow/nix-shell-action@v3
+        with:
+          packages: 
+          script: |
+            nixos-rebuild --flake .#nhtpc build
+            nix-shell --run "echo OK"
