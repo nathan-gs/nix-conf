@@ -14,5 +14,5 @@ jobs:
       with:
         packages: 
         script: |
-          nixos-rebuild --flake .#nhtpc build
+          nix-build
           nix-shell --run "echo OK"
