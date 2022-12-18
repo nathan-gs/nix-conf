@@ -212,4 +212,4 @@
   "sunday_temp_7"
   "sunday_temp_8"
   "sunday_temp_9"
-];
+]
