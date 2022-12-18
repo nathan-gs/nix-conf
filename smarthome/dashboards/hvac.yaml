@@ -26,19 +26,22 @@ views:
             graph_span: 24h
             show:
               last_updated: true
-            apex_config:
-              yaxis:
-                - id: temperature
-                  forceNiceScale: true
-                  decimalsInFloat: 1
             yaxis:
-              - id: temperature
-                min: 10
-                max: 24
-              - id: humidity
-                opposite: true
-                min: 20
-                max: 100
+            - id: temperature
+              min: 10
+              max: 24
+              apex_config:
+                forceNiceScale: true
+                decimalsInFloat: 0
+                tickAmount: 6
+            - id: humidity
+              opposite: true
+              min: 20
+              max: 100
+              apex_config:
+                forceNiceScale: false
+                decimalsInFloat: 0
+                tickAmount: 4
             color_list:
               - '#ff9800'
               - '#3498db'
@@ -125,13 +128,22 @@ views:
             graph_span: 24h
             show:
               last_updated: true
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 1
-                  min: 10
-                  max: 24
+            yaxis:
+            - id: temperature
+              min: 10
+              max: 24
+              apex_config:
+                forceNiceScale: true
+                decimalsInFloat: 0
+                tickAmount: 6
+            - id: humidity
+              opposite: true
+              min: 20
+              max: 100
+              apex_config:
+                forceNiceScale: false
+                decimalsInFloat: 0
+                tickAmount: 4
             header:
               show: false
             series:
@@ -143,6 +155,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 2
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: number.floor0_keuken_rtv_na_current_heating_setpoint_auto
@@ -153,6 +166,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: sensor.floor0_keuken_temperature_auto_wanted
@@ -162,6 +176,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: input_boolean.floor0_keuken_rtv_is_auto
@@ -174,6 +189,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   in_header: false
                   legend_value: false
@@ -194,13 +210,21 @@ views:
             show:
               last_updated: true
             yaxis:
-              - id: temperature
-                min: 10
-                max: 24
-              - id: humidity
-                min: 20
-                max: 100
-                opposite: true
+            - id: temperature
+              min: 10
+              max: 24
+              apex_config:
+                forceNiceScale: true
+                decimalsInFloat: 0
+                tickAmount: 6
+            - id: humidity
+              opposite: true
+              min: 20
+              max: 100
+              apex_config:
+                forceNiceScale: false
+                decimalsInFloat: 0
+                tickAmount: 4
             header:
               show: false
             series:
@@ -308,19 +332,22 @@ views:
             graph_span: 24h
             show:
               last_updated: true
-            apex_config:
-              yaxis:
-                - id: temperature
-                  forceNiceScale: true
-                  decimalsInFloat: 1
             yaxis:
-              - id: temperature
-                min: 10
-                max: 24
-              - id: humidity
-                opposite: true
-                min: 20
-                max: 100
+            - id: temperature
+              min: 10
+              max: 24
+              apex_config:
+                forceNiceScale: true
+                decimalsInFloat: 0
+                tickAmount: 6
+            - id: humidity
+              opposite: true
+              min: 20
+              max: 100
+              apex_config:
+                forceNiceScale: false
+                decimalsInFloat: 0
+                tickAmount: 4
             color_list:
               - '#ff9800'
               - '#3498db'
@@ -417,19 +444,22 @@ views:
             graph_span: 24h
             show:
               last_updated: true
-            apex_config:
-              yaxis:
-                - id: temperature
-                  forceNiceScale: true
-                  decimalsInFloat: 1
             yaxis:
-              - id: temperature
-                min: 10
-                max: 24
-              - id: humidity
-                opposite: true
-                min: 20
-                max: 100
+            - id: temperature
+              min: 10
+              max: 24
+              apex_config:
+                forceNiceScale: true
+                decimalsInFloat: 0
+                tickAmount: 6
+            - id: humidity
+              opposite: true
+              min: 20
+              max: 100
+              apex_config:
+                forceNiceScale: false
+                decimalsInFloat: 0
+                tickAmount: 4
             color_list:
               - '#ff9800'
               - '#3498db'
@@ -516,13 +546,22 @@ views:
             graph_span: 24h
             show:
               last_updated: true
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 1
-                  min: 10
-                  max: 24
+            yaxis:
+            - id: temperature
+              min: 10
+              max: 24
+              apex_config:
+                forceNiceScale: true
+                decimalsInFloat: 0
+                tickAmount: 6
+            - id: humidity
+              opposite: true
+              min: 20
+              max: 100
+              apex_config:
+                forceNiceScale: false
+                decimalsInFloat: 0
+                tickAmount: 4
             header:
               show: false
             series:
@@ -534,12 +573,14 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 2
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: number.floor1_nikolai_rtv_na_current_heating_setpoint_auto
                 attribute: local_temperature
                 name: Actual Temperature
                 type: line
+                yaxis_id: temperature
                 group_by:
                   func: last
                   duration: 5m
@@ -553,6 +594,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: input_boolean.floor1_nikolai_rtv_is_auto
@@ -565,6 +607,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   in_header: false
                   legend_value: false
@@ -581,13 +624,22 @@ views:
             graph_span: 24h
             show:
               last_updated: true
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 1
-                  min: 10
-                  max: 24
+            yaxis:
+            - id: temperature
+              min: 10
+              max: 24
+              apex_config:
+                forceNiceScale: true
+                decimalsInFloat: 0
+                tickAmount: 6
+            - id: humidity
+              opposite: true
+              min: 20
+              max: 100
+              apex_config:
+                forceNiceScale: false
+                decimalsInFloat: 0
+                tickAmount: 4
             header:
               show: false
             series:
@@ -599,6 +651,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 2
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: number.floor1_morgane_rtv_na_current_heating_setpoint_auto
@@ -609,6 +662,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: sensor.floor1_morgane_temperature_auto_wanted
@@ -618,6 +672,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   header_color_threshold: true
               - entity: input_boolean.floor1_morgane_rtv_is_auto
@@ -630,6 +685,7 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
+                yaxis_id: temperature
                 show:
                   in_header: false
                   legend_value: false
