@@ -92,10 +92,22 @@ let
       floor = "floor0";
     }
     {
-      zone = "roaming";
-      name = "sonoff2";
+      zone = "bureau";
+      name = "na";
       ieee = "0x00124b0029113a29";
-      floor = "roaming";
+      floor = "floor0";
+    }
+    {
+      ieee = "0x00124b002910edd6";
+      zone = "badkamer";
+      name = "na";
+      floor = "floor1";
+    }
+    {
+      ieee = "0x00124b002910f0ee";
+      zone = "fen";
+      name = "na";
+      floor = "floor1";
     }
   ];
 

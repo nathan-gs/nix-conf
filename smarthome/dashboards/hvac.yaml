@@ -1,0 +1,667 @@
+views:
+  - theme: Backend-selected
+    icon: mdi:radiator
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: thermostat
+            entity: climate.floor0_bureau_rtv_na
+            name: Bureau
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            apex_config:
+              yaxis:
+                - id: temperature
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+            yaxis:
+              - id: temperature
+                min: 10
+                max: 24
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+            color_list:
+              - '#ffbb00'
+              - '#00b383'
+              - '#bfd0ff'
+              - '#5a9b42'
+            header:
+              show: false
+            series:
+              - entity: number.floor0_bureau_rtv_na_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: number.floor0_bureau_rtv_na_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor0_bureau_temperature_auto_wanted
+                name: Auto Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor0_bureau_temperature_na_temperature
+                name: Actual Temperature (Sensor)
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: input_boolean.floor0_bureau_rtv_is_auto
+                name: Auto Temperature
+                type: column
+                transform: 'return x === ''on'' ? 11 : 0;'
+                color: '#afafaf'
+                opacity: 0.9
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  in_header: false
+                  legend_value: false
+                yaxis_id: temperature
+              - entity: sensor.floor0_bureau_temperature_na_humidity
+                name: Humidity
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+      - type: vertical-stack
+        cards:
+          - type: thermostat
+            entity: climate.floor0_keuken_rtv_na
+            name: Keuken
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+                  min: 10
+                  max: 24
+            header:
+              show: false
+            series:
+              - entity: number.floor0_keuken_rtv_na_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+              - entity: number.floor0_keuken_rtv_na_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+              - entity: sensor.floor0_keuken_temperature_auto_wanted
+                name: Auto Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+              - entity: input_boolean.floor0_keuken_rtv_is_auto
+                name: Auto Temperature
+                type: column
+                transform: 'return x === ''on'' ? 10 : 0;'
+                color: '#afafaf'
+                opacity: 0.9
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  in_header: false
+                  legend_value: false
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: thermostat
+                entity: climate.floor0_living_rtv_vooraan
+                name: Living Vooraan
+              - type: thermostat
+                entity: climate.floor0_living_rtv_achteraan
+                name: Living Achteraan
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            yaxis:
+              - id: temperature
+                min: 10
+                max: 24
+              - id: humidity
+                min: 20
+                max: 100
+                opposite: true
+            header:
+              show: false
+            series:
+              - entity: number.floor0_living_rtv_vooraan_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature (Vooraan)
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: temperature
+                color: '#ffbb00'
+                show:
+                  header_color_threshold: true
+              - entity: number.floor0_living_rtv_vooraan_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature (Vooraan)
+                color: '#00b383'
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: >-
+                  number.floor0_living_rtv_achteraan_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature (Achteraan)
+                type: line
+                color: '#b38300'
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: >-
+                  number.floor0_living_rtv_achteraan_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature (Achteraan)
+                type: line
+                color: '#80d1a1'
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor0_living_temperature_auto_wanted
+                name: Auto Temperature
+                type: line
+                color: '#bfd0ff'
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor0_living_temperature_na_temperature
+                name: Actual Temperature (Sensor)
+                type: line
+                color: '#5a9b42'
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor0_living_temperature_na_humidity
+                name: Humidity
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+      - type: vertical-stack
+        cards:
+          - type: thermostat
+            entity: climate.floor1_badkamer_rtv_na
+            name: Badkamer
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            apex_config:
+              yaxis:
+                - id: temperature
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+            yaxis:
+              - id: temperature
+                min: 10
+                max: 24
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+            color_list:
+              - '#ffbb00'
+              - '#00b383'
+              - '#bfd0ff'
+              - '#5a9b42'
+            header:
+              show: false
+            series:
+              - entity: number.floor1_badkamer_rtv_na_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: number.floor1_badkamer_rtv_na_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor1_badkamer_temperature_auto_wanted
+                name: Auto Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor1_badkamer_temperature_na_temperature
+                name: Actual Temperature (Sensor)
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: input_boolean.floor1_badkamer_rtv_is_auto
+                name: Auto Temperature
+                type: column
+                transform: 'return x === ''on'' ? 11 : 0;'
+                color: '#afafaf'
+                opacity: 0.9
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  in_header: false
+                  legend_value: false
+                yaxis_id: temperature
+              - entity: sensor.floor1_badkamer_temperature_na_humidity
+                name: Humidity
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+      - type: vertical-stack
+        cards:
+          - type: thermostat
+            entity: climate.floor1_fen_rtv_na
+            name: Slaapkamer FeN
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            apex_config:
+              yaxis:
+                - id: temperature
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+            yaxis:
+              - id: temperature
+                min: 10
+                max: 24
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+            color_list:
+              - '#ffbb00'
+              - '#00b383'
+              - '#bfd0ff'
+              - '#5a9b42'
+            header:
+              show: false
+            series:
+              - entity: number.floor1_fen_rtv_na_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: number.floor1_fen_rtv_na_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor1_fen_temperature_auto_wanted
+                name: Auto Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor1_fen_temperature_na_temperature
+                name: Actual Temperature (Sensor)
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: input_boolean.floor1_fen_rtv_is_auto
+                name: Auto Temperature
+                type: column
+                transform: 'return x === ''on'' ? 11 : 0;'
+                color: '#afafaf'
+                opacity: 0.9
+                group_by:
+                  func: last
+                  duration: 5m
+                yaxis_id: temperature
+                stroke_width: 1
+                show:
+                  in_header: false
+                  legend_value: false
+              - entity: sensor.floor1_fen_temperature_na_humidity
+                name: Humidity
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+      - type: vertical-stack
+        cards:
+          - type: thermostat
+            entity: climate.floor1_nikolai_rtv_na
+            name: Nikolaï
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+                  min: 10
+                  max: 24
+            header:
+              show: false
+            series:
+              - entity: number.floor1_nikolai_rtv_na_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+              - entity: number.floor1_nikolai_rtv_na_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+              - entity: sensor.floor1_nikolai_temperature_auto_wanted
+                name: Auto Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+              - entity: input_boolean.floor1_nikolai_rtv_is_auto
+                name: Auto Temperature
+                type: column
+                transform: 'return x === ''on'' ? 10 : 0;'
+                color: '#afafaf'
+                opacity: 0.9
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  in_header: false
+                  legend_value: false
+      - type: vertical-stack
+        cards:
+          - type: thermostat
+            entity: climate.floor1_morgane_rtv_na
+            name: Morgane
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+                  min: 10
+                  max: 24
+            header:
+              show: false
+            series:
+              - entity: number.floor1_morgane_rtv_na_current_heating_setpoint_auto
+                attribute: current_heating_setpoint
+                name: Wanted Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+              - entity: number.floor1_morgane_rtv_na_current_heating_setpoint_auto
+                attribute: local_temperature
+                name: Actual Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+              - entity: sensor.floor1_morgane_temperature_auto_wanted
+                name: Auto Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  header_color_threshold: true
+              - entity: input_boolean.floor1_morgane_rtv_is_auto
+                name: Auto Temperature
+                type: column
+                transform: 'return x === ''on'' ? 10 : 0;'
+                color: '#afafaf'
+                opacity: 0.9
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 1
+                show:
+                  in_header: false
+                  legend_value: false
+      - type: entities
+        entities:
+          - entity: number.floor0_bureau_rtv_na_current_heating_setpoint_auto
+          - entity: number.floor0_keuken_rtv_na_current_heating_setpoint_auto
+          - entity: number.floor0_living_rtv_vooraan_current_heating_setpoint_auto
+          - entity: number.floor0_living_rtv_achteraan_current_heating_setpoint_auto
+          - entity: number.floor1_badkamer_rtv_na_current_heating_setpoint_auto
+          - entity: number.floor1_fen_rtv_na_current_heating_setpoint_auto
+          - entity: number.floor1_morgane_rtv_na_current_heating_setpoint_auto
+          - entity: number.floor1_nikolai_rtv_na_current_heating_setpoint_auto
+        show_header_toggle: true
+        state_color: false
+  - theme: Backend-selected
+    title: wide
+    path: wide
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: custom:apexcharts-card
+                graph_span: 24h
+                show:
+                  last_updated: true
+                apex_config:
+                  yaxis:
+                    - id: first
+                      forceNiceScale: true
+                      decimalsInFloat: 1
+                      min: 10
+                      max: 24
+                header:
+                  show: false
+                series:
+                  - entity: >-
+                      number.floor0_living_rtv_vooraan_current_heating_setpoint_auto
+                    attribute: current_heating_setpoint
+                    name: Wanted Temperature (Vooraan)
+                    type: line
+                    group_by:
+                      func: last
+                      duration: 5m
+                    stroke_width: 2
+                    show:
+                      header_color_threshold: true
+                  - entity: >-
+                      number.floor0_living_rtv_achteraan_current_heating_setpoint_auto
+                    attribute: current_heating_setpoint
+                    name: Wanted Temperature (Achteraan)
+                    type: line
+                    group_by:
+                      func: last
+                      duration: 5m
+                    stroke_width: 2
+                    show:
+                      header_color_threshold: true
+                  - entity: >-
+                      number.floor0_living_rtv_vooraan_current_heating_setpoint_auto
+                    attribute: local_temperature
+                    name: Actual Temperature (Vooraan)
+                    type: line
+                    group_by:
+                      func: last
+                      duration: 5m
+                    stroke_width: 1
+                    show:
+                      header_color_threshold: true
+                  - entity: >-
+                      number.floor0_living_rtv_achteraan_current_heating_setpoint_auto
+                    attribute: local_temperature
+                    name: Actual Temperature (Achteraan)
+                    type: line
+                    group_by:
+                      func: last
+                      duration: 5m
+                    stroke_width: 1
+                    show:
+                      header_color_threshold: true
+                  - entity: sensor.floor0_living_temperature_na_temperature
+                    name: Actual Temperature (Sensor)
+                    type: line
+                    group_by:
+                      func: last
+                      duration: 5m
+                    stroke_width: 2
+                    show:
+                      header_color_threshold: true
+    badges: []
