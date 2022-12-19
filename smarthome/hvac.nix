@@ -298,7 +298,7 @@ let
               {% set sensor_temp = states('sensor.${v.floor}_${v.zone}_temperature_na_temperature') | float(0) %}
               {% set rtv_temp = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature') | float(0) %}
               {% set rtv_calibration = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature_calibration') | float(0) %}
-              { "local_temperature_calibration": {{ ((rtv_temp + rtv_calibration) - sensor_temp)  | round(1) }} }
+              { "local_temperature_calibration": {{ (sensor_temp - (rtv_temp - rtv_calibration))  | round(1) }} }
             '';
           };
         }        
