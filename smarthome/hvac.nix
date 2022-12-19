@@ -293,7 +293,7 @@ let
         {
 	        service = "mqtt.publish";
           data = {
-            topic = "${v.floor}/${v.zone}/${v.type}/${v.name}/set";
+            topic = "zigbee2mqtt/${v.floor}/${v.zone}/${v.type}/${v.name}/set";
             payload_template = ''
               {% set sensor_temp = states('sensor.${v.floor}_${v.zone}_temperature_na_temperature') | float(0) %}
               {% set rtv_temp = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature') | float(0) %}
