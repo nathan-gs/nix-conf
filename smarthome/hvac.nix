@@ -282,7 +282,7 @@ let
       alias = "${v.floor}/${v.zone}/${v.type}/${v.name} temperature_calibration";
       trigger = [        
         {
-          platform = "timepattern";
+          platform = "time_pattern";
           minutes = "/15";
         }
       ];
