@@ -275,6 +275,36 @@ let
       mode = "queued";
     })
     (map (v: v //  { type = "rtv";}) rtv);
+
+  temperatureCalibrationAutomations = 
+    map (v: {
+      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.temperature_calibration";
+      alias = "${v.floor}/${v.zone}/${v.type}/${v.name} temperature_calibration";
+      trigger = [        
+        {
+          platform = "timepattern";
+          minutes = "/15";
+        }
+      ];
+      condition = ''
+        {{ states('sensor.${v.floor}_${v.zone}_temperature_na_temperature') != "unknown" }}
+      '';
+      action = [
+        {
+	        service = "mqtt.publish";
+          data = {
+            topic = "${v.floor}/${v.zone}/${v.type}/${v.name}/set";
+            payload_template = ''
+              {% set sensor_temp = states('sensor.${v.floor}_${v.zone}_temperature_na_temperature') | float(0) %}
+              {% set rtv_temp = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature') | float(0) %}
+              {{ (sensor_temp - rtv_temp) | round(1) }}
+            '';
+          };
+        }        
+      ];
+      mode = "single";
+    })
+    (map (v: v //  { type = "rtv";}) rtv);
   
   temperatureAutoWanted = [
     {
@@ -474,7 +504,8 @@ in
   automations = []
     ++ windowOpenAutomations
     ++ windowClosedAutomations
-    ++ temperatureRtvAutomations;
+    ++ temperatureRtvAutomations
+    ++ temperatureCalibrationAutomations;
 
   template = [] ++ temperatureAutoWanted;
 
