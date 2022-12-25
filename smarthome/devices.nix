@@ -139,7 +139,7 @@ with lib;
         platform = "ping";
         hosts = {
           "fphone" = "fphone";
-          "nphone" = "nphone";
+          "nphone" = "nphone-s22";
         };
       }
     ];
