@@ -9,39 +9,39 @@ views:
             columns: 2
             type: grid
             cards:
-            - type: thermostat
-              entity: climate.floor0_bureau_rtv_na
-              name: Bureau
-            - show_name: false
-              show_icon: true
-              show_state: true
-              type: glance
-              state_color: false
-              columns: 1
-              entities:
-              - entity: sensor.floor0_bureau_temperature_na_temperature
-              - entity: sensor.floor0_bureau_temperature_na_humidity
-              - entity: input_boolean.floor0_bureau_rtv_is_auto
+              - type: thermostat
+                entity: climate.floor0_bureau_rtv_na
+                name: Bureau
+              - show_name: false
+                show_icon: true
+                show_state: true
+                type: glance
+                state_color: false
+                columns: 1
+                entities:
+                  - entity: sensor.floor0_bureau_temperature_na_temperature
+                  - entity: sensor.floor0_bureau_temperature_na_humidity
+                  - entity: input_boolean.floor0_bureau_rtv_is_auto
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
               last_updated: true
             yaxis:
-            - id: temperature
-              min: 10
-              max: 24
-              apex_config:
-                forceNiceScale: true
-                decimalsInFloat: 0
-                tickAmount: 6
-            - id: humidity
-              opposite: true
-              min: 20
-              max: 100
-              apex_config:
-                forceNiceScale: false
-                decimalsInFloat: 0
-                tickAmount: 4
+              - id: temperature
+                min: 10
+                max: 24
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 6
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
             color_list:
               - '#ff9800'
               - '#3498db'
@@ -120,30 +120,45 @@ views:
           - square: true
             columns: 2
             type: grid
-            cards:        
-            - type: thermostat
-              entity: climate.floor0_keuken_rtv_na
-              name: Keuken
+            cards:
+              - type: thermostat
+                entity: climate.floor0_keuken_rtv_na
+                name: Keuken
+              - show_name: false
+                show_icon: true
+                show_state: true
+                type: glance
+                state_color: false
+                columns: 1
+                entities:
+                  - entity: sensor.floor0_keuken_temperature_na_temperature
+                  - entity: sensor.floor0_keuken_temperature_na_humidity
+                  - entity: input_boolean.floor0_keuken_rtv_is_auto
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
               last_updated: true
             yaxis:
-            - id: temperature
-              min: 10
-              max: 24
-              apex_config:
-                forceNiceScale: true
-                decimalsInFloat: 0
-                tickAmount: 6
-            - id: humidity
-              opposite: true
-              min: 20
-              max: 100
-              apex_config:
-                forceNiceScale: false
-                decimalsInFloat: 0
-                tickAmount: 4
+              - id: temperature
+                min: 10
+                max: 24
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 6
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
+            color_list:
+              - '#ff9800'
+              - '#3498db'
+              - '#e74c3c'
+              - '#1a4c6e'
             header:
               show: false
             series:
@@ -155,9 +170,9 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
               - entity: number.floor0_keuken_rtv_na_current_heating_setpoint_auto
                 attribute: local_temperature
                 name: Actual Temperature
@@ -166,9 +181,9 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
               - entity: sensor.floor0_keuken_temperature_auto_wanted
                 name: Auto Temperature
                 type: line
@@ -176,23 +191,42 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor0_keuken_temperature_na_temperature
+                name: Actual Temperature (Sensor)
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
               - entity: input_boolean.floor0_keuken_rtv_is_auto
                 name: Auto Temperature
                 type: column
-                transform: 'return x === ''on'' ? 10 : 0;'
+                transform: 'return x === ''on'' ? 11 : 0;'
                 color: '#afafaf'
                 opacity: 0.9
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   in_header: false
                   legend_value: false
+                yaxis_id: temperature
+              - entity: sensor.floor0_keuken_temperature_na_humidity
+                name: Humidity
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
       - type: vertical-stack
         cards:
           - square: true
@@ -210,21 +244,21 @@ views:
             show:
               last_updated: true
             yaxis:
-            - id: temperature
-              min: 10
-              max: 24
-              apex_config:
-                forceNiceScale: true
-                decimalsInFloat: 0
-                tickAmount: 6
-            - id: humidity
-              opposite: true
-              min: 20
-              max: 100
-              apex_config:
-                forceNiceScale: false
-                decimalsInFloat: 0
-                tickAmount: 4
+              - id: temperature
+                min: 10
+                max: 24
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 6
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
             header:
               show: false
             series:
@@ -314,40 +348,40 @@ views:
           - square: true
             columns: 2
             type: grid
-            cards:        
-            - type: thermostat
-              entity: climate.floor1_badkamer_rtv_na
-              name: Badkamer
-            - show_name: false
-              show_icon: true
-              show_state: true
-              type: glance
-              state_color: false
-              columns: 1      
-              entities:
-              - entity: sensor.floor1_badkamer_temperature_na_temperature
-              - entity: sensor.floor1_badkamer_temperature_na_humidity
-              - entity: input_boolean.floor1_badkamer_rtv_is_auto        
+            cards:
+              - type: thermostat
+                entity: climate.floor1_badkamer_rtv_na
+                name: Badkamer
+              - show_name: false
+                show_icon: true
+                show_state: true
+                type: glance
+                state_color: false
+                columns: 1
+                entities:
+                  - entity: sensor.floor1_badkamer_temperature_na_temperature
+                  - entity: sensor.floor1_badkamer_temperature_na_humidity
+                  - entity: input_boolean.floor1_badkamer_rtv_is_auto
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
               last_updated: true
             yaxis:
-            - id: temperature
-              min: 10
-              max: 24
-              apex_config:
-                forceNiceScale: true
-                decimalsInFloat: 0
-                tickAmount: 6
-            - id: humidity
-              opposite: true
-              min: 20
-              max: 100
-              apex_config:
-                forceNiceScale: false
-                decimalsInFloat: 0
-                tickAmount: 4
+              - id: temperature
+                min: 10
+                max: 24
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 6
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
             color_list:
               - '#ff9800'
               - '#3498db'
@@ -426,40 +460,40 @@ views:
           - square: true
             columns: 2
             type: grid
-            cards:        
-            - type: thermostat
-              entity: climate.floor1_fen_rtv_na
-              name: Slaapkamer FeN
-            - show_name: false
-              show_icon: true
-              show_state: true
-              type: glance
-              state_color: false
-              columns: 1              
-              entities:
-              - entity: sensor.floor1_fen_temperature_na_temperature
-              - entity: sensor.floor1_fen_temperature_na_humidity
-              - entity: input_boolean.floor1_fen_rtv_is_auto         
+            cards:
+              - type: thermostat
+                entity: climate.floor1_fen_rtv_na
+                name: Slaapkamer FeN
+              - show_name: false
+                show_icon: true
+                show_state: true
+                type: glance
+                state_color: false
+                columns: 1
+                entities:
+                  - entity: sensor.floor1_fen_temperature_na_temperature
+                  - entity: sensor.floor1_fen_temperature_na_humidity
+                  - entity: input_boolean.floor1_fen_rtv_is_auto
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
               last_updated: true
             yaxis:
-            - id: temperature
-              min: 10
-              max: 24
-              apex_config:
-                forceNiceScale: true
-                decimalsInFloat: 0
-                tickAmount: 6
-            - id: humidity
-              opposite: true
-              min: 20
-              max: 100
-              apex_config:
-                forceNiceScale: false
-                decimalsInFloat: 0
-                tickAmount: 4
+              - id: temperature
+                min: 10
+                max: 24
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 6
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
             color_list:
               - '#ff9800'
               - '#3498db'
@@ -538,30 +572,45 @@ views:
           - square: true
             columns: 2
             type: grid
-            cards:        
-            - type: thermostat
-              entity: climate.floor1_nikolai_rtv_na
-              name: Nikolaï
+            cards:
+              - type: thermostat
+                entity: climate.floor1_nikolai_rtv_na
+                name: Nikolaï
+              - show_name: false
+                show_icon: true
+                show_state: true
+                type: glance
+                state_color: false
+                columns: 1
+                entities:
+                  - entity: sensor.floor1_nikolai_temperature_na_temperature
+                  - entity: sensor.floor1_nikolai_temperature_na_humidity
+                  - entity: input_boolean.floor1_nikolai_rtv_is_auto
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
               last_updated: true
             yaxis:
-            - id: temperature
-              min: 10
-              max: 24
-              apex_config:
-                forceNiceScale: true
-                decimalsInFloat: 0
-                tickAmount: 6
-            - id: humidity
-              opposite: true
-              min: 20
-              max: 100
-              apex_config:
-                forceNiceScale: false
-                decimalsInFloat: 0
-                tickAmount: 4
+              - id: temperature
+                min: 10
+                max: 24
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 6
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
+            color_list:
+              - '#ff9800'
+              - '#3498db'
+              - '#e74c3c'
+              - '#1a4c6e'
             header:
               show: false
             series:
@@ -573,20 +622,20 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
               - entity: number.floor1_nikolai_rtv_na_current_heating_setpoint_auto
                 attribute: local_temperature
                 name: Actual Temperature
                 type: line
-                yaxis_id: temperature
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 1
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
               - entity: sensor.floor1_nikolai_temperature_auto_wanted
                 name: Auto Temperature
                 type: line
@@ -594,52 +643,86 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor1_nikolai_temperature_na_temperature
+                name: Actual Temperature (Sensor)
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
               - entity: input_boolean.floor1_nikolai_rtv_is_auto
                 name: Auto Temperature
                 type: column
-                transform: 'return x === ''on'' ? 10 : 0;'
+                transform: 'return x === ''on'' ? 11 : 0;'
                 color: '#afafaf'
                 opacity: 0.9
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   in_header: false
                   legend_value: false
+                yaxis_id: temperature
+              - entity: sensor.floor1_nikolai_temperature_na_humidity
+                name: Humidity
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
       - type: vertical-stack
         cards:
           - square: true
             columns: 2
             type: grid
-            cards:        
-            - type: thermostat
-              entity: climate.floor1_morgane_rtv_na
-              name: Morgane
+            cards:
+              - type: thermostat
+                entity: climate.floor1_morgane_rtv_na
+                name: Morgane
+              - show_name: false
+                show_icon: true
+                show_state: true
+                type: glance
+                state_color: false
+                columns: 1
+                entities:
+                  - entity: sensor.floor1_morgane_temperature_na_temperature
+                  - entity: sensor.floor1_morgane_temperature_na_humidity
+                  - entity: input_boolean.floor1_morgane_rtv_is_auto
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
               last_updated: true
             yaxis:
-            - id: temperature
-              min: 10
-              max: 24
-              apex_config:
-                forceNiceScale: true
-                decimalsInFloat: 0
-                tickAmount: 6
-            - id: humidity
-              opposite: true
-              min: 20
-              max: 100
-              apex_config:
-                forceNiceScale: false
-                decimalsInFloat: 0
-                tickAmount: 4
+              - id: temperature
+                min: 10
+                max: 24
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 6
+              - id: humidity
+                opposite: true
+                min: 20
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
+            color_list:
+              - '#ff9800'
+              - '#3498db'
+              - '#e74c3c'
+              - '#1a4c6e'
             header:
               show: false
             series:
@@ -651,9 +734,9 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
               - entity: number.floor1_morgane_rtv_na_current_heating_setpoint_auto
                 attribute: local_temperature
                 name: Actual Temperature
@@ -662,9 +745,9 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
               - entity: sensor.floor1_morgane_temperature_auto_wanted
                 name: Auto Temperature
                 type: line
@@ -672,21 +755,130 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.floor1_morgane_temperature_na_temperature
+                name: Actual Temperature (Sensor)
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
               - entity: input_boolean.floor1_morgane_rtv_is_auto
                 name: Auto Temperature
                 type: column
-                transform: 'return x === ''on'' ? 10 : 0;'
+                transform: 'return x === ''on'' ? 11 : 0;'
                 color: '#afafaf'
                 opacity: 0.9
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 1
-                yaxis_id: temperature
                 show:
                   in_header: false
                   legend_value: false
+                yaxis_id: temperature
+              - entity: sensor.floor1_morgane_temperature_na_humidity
+                name: Humidity
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        show:
+          last_updated: true
+        yaxis:
+          - id: temperature
+            min: 10
+            max: 24
+            apex_config:
+              forceNiceScale: true
+              decimalsInFloat: 0
+              tickAmount: 6
+          - id: humidity
+            opposite: true
+            min: 20
+            max: 100
+            apex_config:
+              forceNiceScale: false
+              decimalsInFloat: 0
+              tickAmount: 4
+        color_list:
+          - '#1a4c6e'
+        header:
+          show: true
+          title: Basement
+        series:
+          - entity: sensor.basement_basement_temperature_na_temperature
+            name: Actual Temperature (Sensor)
+            type: line
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            yaxis_id: temperature
+          - entity: sensor.basement_basement_temperature_na_humidity
+            name: Humidity
+            type: line
+            color: black
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 2
+            yaxis_id: humidity
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        show:
+          last_updated: true
+        yaxis:
+          - id: temperature
+            min: 10
+            max: 24
+            apex_config:
+              forceNiceScale: true
+              decimalsInFloat: 0
+              tickAmount: 6
+          - id: humidity
+            opposite: true
+            min: 20
+            max: 100
+            apex_config:
+              forceNiceScale: false
+              decimalsInFloat: 0
+              tickAmount: 4
+        color_list:
+          - '#1a4c6e'
+        header:
+          show: true
+          title: Tuin (Noordkant)
+        series:
+          - entity: sensor.garden_garden_temperature_noordkant_temperature
+            name: Actual Temperature (Sensor)
+            type: line
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            yaxis_id: temperature
+          - entity: sensor.garden_garden_temperature_noordkant_humidity
+            name: Humidity
+            type: line
+            color: black
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 2
+            yaxis_id: humidity
 badges: []
