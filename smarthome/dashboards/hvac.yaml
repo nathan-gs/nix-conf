@@ -842,12 +842,12 @@ views:
           last_updated: true
         yaxis:
           - id: temperature
-            min: 10
-            max: 24
+            min: -5
+            max: 32
             apex_config:
               forceNiceScale: true
               decimalsInFloat: 0
-              tickAmount: 6
+              tickAmount: 7
           - id: humidity
             opposite: true
             min: 20
