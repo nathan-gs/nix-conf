@@ -890,6 +890,10 @@ views:
           - entity: sensor.floor0_living_rtv_vooraan_battery
           - entity: sensor.floor0_living_rtv_achteraan_battery
           - entity: sensor.floor0_living_temperature_na_battery
+        title: Battery
+        show_header_toggle: true
+      - type: entities
+        entities:
           - entity: sensor.floor1_badkamer_rtv_na_battery
           - entity: sensor.floor1_badkamer_temperature_na_battery
           - entity: sensor.floor1_fen_rtv_na_battery
@@ -898,6 +902,10 @@ views:
           - entity: sensor.floor1_morgane_temperature_na_battery
           - entity: sensor.floor1_nikolai_rtv_na_battery
           - entity: sensor.floor1_nikolai_temperature_na_battery
+        title: Battery
+        show_header_toggle: true
+      - type: entities
+        entities:
           - entity: sensor.basement_basement_temperature_na_battery
           - entity: sensor.garden_garden_temperature_noordkant_battery
         title: Battery
