@@ -881,4 +881,25 @@ views:
               duration: 5m
             stroke_width: 2
             yaxis_id: humidity
+      - type: entities
+        entities:
+          - entity: sensor.floor0_bureau_rtv_na_battery
+          - entity: sensor.floor0_bureau_temperature_na_battery
+          - entity: sensor.floor0_keuken_rtv_na_battery
+          - entity: sensor.floor0_keuken_temperature_na_battery
+          - entity: sensor.floor0_living_rtv_vooraan_battery
+          - entity: sensor.floor0_living_rtv_achteraan_battery
+          - entity: sensor.floor0_living_temperature_na_battery
+          - entity: sensor.floor1_badkamer_rtv_na_battery
+          - entity: sensor.floor1_badkamer_temperature_na_battery
+          - entity: sensor.floor1_fen_rtv_na_battery
+          - entity: sensor.floor1_fen_temperature_na_battery
+          - entity: sensor.floor1_morgane_rtv_na_battery
+          - entity: sensor.floor1_morgane_temperature_na_battery
+          - entity: sensor.floor1_nikolai_rtv_na_battery
+          - entity: sensor.floor1_nikolai_temperature_na_battery
+          - entity: sensor.basement_basement_temperature_na_battery
+          - entity: sensor.garden_garden_temperature_noordkant_battery
+        title: Battery
+        show_header_toggle: true
 badges: []
