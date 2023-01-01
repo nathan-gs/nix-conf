@@ -382,7 +382,7 @@ let
         platform = "statistics";
         name = "outside_temperature_avg";
         entity_id = "sensor.garden_garden_temperature_noordkant_temperature";
-        state_characteristic = "average_linear";
+        state_characteristic = "mean";
         max_age.hours = 24;
 
       }
