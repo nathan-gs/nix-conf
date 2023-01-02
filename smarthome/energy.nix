@@ -384,7 +384,7 @@ let
         entity_id = "sensor.garden_garden_temperature_noordkant_temperature";
         state_characteristic = "mean";
         max_age.hours = 24;
-
+        sampling_size = 60*24;
       }
     ];
 
