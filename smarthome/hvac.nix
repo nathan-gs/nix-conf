@@ -134,7 +134,7 @@ let
       floor = "basement";
     }
     {
-      ieee = "0x00124b002910ed8a";
+      ieee = "0x00124b002910ce57";
       zone = "garden";
       name = "noordkant";
       floor = "garden";
