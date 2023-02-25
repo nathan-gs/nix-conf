@@ -14,42 +14,50 @@
     "vm.swappiness" = 0;
   };
 
-    systemd.services.powersave = {
-      description = "Power Save scripts";
-      wantedBy = [ "multi-user.target" ];
-      script =
-        ''
-        set_and_echo() {
-          file="$1"
-          value="$2"
+  # https://www.reddit.com/r/linux/comments/lhgx9/how_can_i_reduce_my_power_consumption/
+  boot.kernelParams = [
+    "pcie_aspm=force"
+    "i915.i915_enable_rc6=1"
+    "i915.i915_enable_fbc=1"
+    "i915.lvds_downclock=1"
+  ];
 
-          original="$(cat $file)"
-          if [ "$original" != "$value" ]; then 
-            echo "$value" > $file || true
-            current="$(cat $file)"
-            echo "Changed $file from $original to $current"
-          fi
-        }
+  systemd.services.powersave = {
+    description = "Power Save scripts";
+    wantedBy = [ "multi-user.target" ];
+    script =
+      ''
+      set_and_echo() {
+        file="$1"
+        value="$2"
 
-        # https://wiki.archlinux.org/title/Power_management
-        for i in $(find /sys/devices/system/cpu/cpufreq/policy? -name energy_performance_preference -writable);
-        do
-          set_and_echo $i power          
-        done
+        original="$(cat $file)"
+        if [ "$original" != "$value" ]; then 
+          echo "$value" > $file || true
+          current="$(cat $file)"
+          echo "Changed $file from $original to $current"
+        fi
+      }
 
-        # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_epb.html
-        for i in $(find /sys/devices/system/cpu/cpu*/power/ -name energy_perf_bias -writable);
-        do
-          set_and_echo $i 15          
-        done
+      # https://wiki.archlinux.org/title/Power_management
+      for i in $(find /sys/devices/system/cpu/cpufreq/policy? -name energy_performance_preference -writable);
+      do
+        set_and_echo $i power          
+      done
 
-        # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
-        set_and_echo /sys/devices/system/cpu/intel_pstate/energy_efficiency 1
-        set_and_echo /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost 1
-    
-        '';
-      serviceConfig.Type = "oneshot";
-    };
+      # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_epb.html
+      for i in $(find /sys/devices/system/cpu/cpu*/power/ -name energy_perf_bias -writable);
+      do
+        set_and_echo $i 15          
+      done
+
+      # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
+      set_and_echo /sys/devices/system/cpu/intel_pstate/energy_efficiency 1
+      set_and_echo /sys/devices/system/cpu/intel_pstate/hwp_dynamic_boost 1
+  
+      '';
+    serviceConfig.Type = "oneshot";
+  };
 
   services.udev = {
     extraRules = 
