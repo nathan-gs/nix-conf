@@ -77,11 +77,8 @@ with lib;
         };
       };
       hdparm = {
-        options = mkOption {
-          default = ''-S 128 -B 1'';
-        };
         enable = mkOption {
-          default = false;
+          default = true;
         };
       };
 
@@ -151,7 +148,7 @@ with lib;
        '') disks.data)}
        mv $F.next $F
       '';
-    startAt = "*:0";
+    startAt = "0,3,6,9,12,15,18,21:0";
   };
 
   systemd.services.prometheus-smartd = {
@@ -162,7 +159,7 @@ with lib;
        bash ${./ext/prometheus-smartmon.sh} > /var/lib/prometheus-node-exporter/text-files/smartd.prom.next
        mv /var/lib/prometheus-node-exporter/text-files/smartd.prom.next /var/lib/prometheus-node-exporter/text-files/smartd.prom
     '';
-    startAt = "*:0";
+    startAt = "0,3,6,9,12,15,18,21:0";
   };
   
   systemd.services.disks-smr = {
@@ -263,7 +260,11 @@ with lib;
     systemd.services.hdparm-setup = mkIf hdparmEnabled {
       after = [ "local-fs.target"];
       wantedBy = ["multi-user.target"];
-      script = concatStringsSep "\n" (lib.imap (n: v: ''${pkgs.hdparm}/bin/hdparm ${hdparmOptions} ${v}'') dataDisks);
+      script = concatStringsSep "\n" 
+        (lib.imap (n: v: ''${pkgs.hdparm}/bin/hdparm -S12 ${v}'') dataDisks)
+        ++
+        (lib.imap (n: v: ''${pkgs.hdparm}/bin/hdparm -B16 ${v}'') dataDisks)
+        ;
     };
 
     fileSystems = 
