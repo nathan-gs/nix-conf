@@ -97,6 +97,7 @@
       "volvooncall"
       "radio_browser"
       "utility_meter"
+      "http"
     ];
 
     extraPackages = python3Packages: with python3Packages; [
@@ -107,7 +108,7 @@
       croniter
     ];
 
-    #package = pkgs.nixpkgs-unstable.home-assistant;
+    package = pkgs.nixpkgs-unstable.home-assistant;
 
   };
 
