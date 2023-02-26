@@ -100,7 +100,7 @@
       "http"
     ];
 
-    extraPackages = python3Packages: with python3Packages; [
+    extraPackages = python311Packages: with python311Packages; [
       spotipy
       pyipp
       soco
@@ -109,37 +109,7 @@
       aiohttp
     ];
 
-    package = (pkgs.nixpkgs-unstable.home-assistant.override {
-      extraPackages = python3Packages: with python3Packages; [
-        spotipy
-        pyipp
-        soco
-        pyatv
-        croniter
-        aiohttp
-      ];
-      extraComponents = [
-        "apple_tv"
-        "backup"
-        "command_line"
-        "default_config"
-        "dsmr"
-        "ffmpeg"      
-        "my"            
-        "mqtt"
-        "plex"
-        "ping"
-        "prometheus"
-        "sensor"
-        "sonos"
-        "scrape"
-        "volvooncall"
-        "radio_browser"
-        "utility_meter"
-        "http"
-      ];
-    });
-
+    package = pkgs.nixpkgs-unstable.home-assistant;
   };
 
   systemd.services.home-assistant-backup = {
