@@ -55,7 +55,10 @@ let
   zigbeeDevicesWithIeeeAsKey = 
     builtins.listToAttrs ( 
       (
-        map (v: { name = "${v.ieee}"; value = { friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";};})
+        map (v: { name = "${v.ieee}"; value = { 
+          friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
+          homeassistant.update.installed_version = null;
+        };})
       )
       (
         hvac.devices 
