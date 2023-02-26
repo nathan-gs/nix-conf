@@ -110,7 +110,10 @@
       aiohttp-cors
     ];
 
-    package = pkgs.nixpkgs-unstable.home-assistant;
+    package = pkgs.nixpkgs-unstable.home-assistant.override {
+      extraPackages = config.services.home-assistant.extraPackages;
+      extraComponents = config.services.home-assistant.extraComponents;
+    };
 
   };
 
