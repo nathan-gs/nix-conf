@@ -151,7 +151,7 @@ with lib;
        '') disks.data)}
        mv $F.next $F
       '';
-    startAt = "*:0/15";
+    startAt = "*:0";
   };
 
   systemd.services.prometheus-smartd = {
@@ -162,7 +162,7 @@ with lib;
        bash ${./ext/prometheus-smartmon.sh} > /var/lib/prometheus-node-exporter/text-files/smartd.prom.next
        mv /var/lib/prometheus-node-exporter/text-files/smartd.prom.next /var/lib/prometheus-node-exporter/text-files/smartd.prom
     '';
-    startAt = "*:0/15";
+    startAt = "*:0";
   };
   
   systemd.services.disks-smr = {
