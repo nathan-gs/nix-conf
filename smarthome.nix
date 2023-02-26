@@ -107,7 +107,6 @@
       pyatv
       croniter
       aiohttp
-      aiohttp-cors
     ];
 
     package = (pkgs.nixpkgs-unstable.home-assistant.override {
