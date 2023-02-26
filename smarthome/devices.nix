@@ -57,7 +57,7 @@ let
       (
         map (v: { name = "${v.ieee}"; value = { 
           friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-          homeassistant.update.installed_version = null;
+          homeassistant.update = null;
         };})
       )
       (
