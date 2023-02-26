@@ -98,6 +98,7 @@
       "radio_browser"
       "utility_meter"
       "http"
+      "api"
     ];
 
     extraPackages = python311Packages: with python311Packages; [
@@ -107,9 +108,10 @@
       pyatv
       croniter
       aiohttp
+      aiohttp-cors
     ];
 
-    package = pkgs.nixpkgs-unstable.home-assistant;
+    #package = pkgs.nixpkgs-unstable.home-assistant;
   };
 
   systemd.services.home-assistant-backup = {
