@@ -260,11 +260,10 @@ with lib;
     systemd.services.hdparm-setup = mkIf hdparmEnabled {
       after = [ "local-fs.target"];
       wantedBy = ["multi-user.target"];
-      script = concatStringsSep "\n" 
-        (lib.imap (n: v: ''${pkgs.hdparm}/bin/hdparm -S12 ${v}'') dataDisks)
-        ++
-        (lib.imap (n: v: ''${pkgs.hdparm}/bin/hdparm -B16 ${v}'') dataDisks)
-        ;
+      script = concatStringsSep "\n" (lib.imap (n: v: ''
+          ${pkgs.hdparm}/bin/hdparm -S12 ${v}
+          ${pkgs.hdparm}/bin/hdparm -B16 ${v}
+        '') dataDisks);
     };
 
     fileSystems = 
