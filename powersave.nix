@@ -42,7 +42,7 @@
       # https://wiki.archlinux.org/title/Power_management
       for i in $(find /sys/devices/system/cpu/cpufreq/policy? -name energy_performance_preference -writable);
       do
-        set_and_echo $i power          
+        set_and_echo $i balance_power          
       done
 
       # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_epb.html
