@@ -87,9 +87,7 @@ in
     requires = [ "docker.service" ];
     # Stop photoprism-docker
     conflicts = [ "photoprism-docker.service"];    
-    script = ''
-      ${photoprismDockerScript}
-      
+    script = ''      
       ${pkgs.docker}/bin/docker run \
         -p ${toString dockerPort}:2342 \
         ${photoprismDockerOptions} \
@@ -99,7 +97,7 @@ in
         -p ${toString dockerPort}:2342 \
         ${photoprismDockerOptions} \
         photoprism faces audit --fix
-              
+
       ${pkgs.docker}/bin/docker pull photoprism/photoprism || true
     '';
     startAt = "23:10";
