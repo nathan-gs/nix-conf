@@ -72,9 +72,8 @@ ${pkgs.docker}/bin/docker run \
 
      # When the systemd service stops, stop the docker container.
     preStop = ''
-    
-    ${pkgs.docker}/bin/docker exec -ti photoprism photoprism optimize
-    ${pkgs.docker}/bin/docker exec -ti photoprism photoprism facces audit --fix
+    ${pkgs.docker}/bin/docker exec photoprism photoprism optimize
+    ${pkgs.docker}/bin/docker exec photoprism photoprism faces audit --fix
     ${pkgs.docker}/bin/docker kill photoprism
     '';
   };
