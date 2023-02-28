@@ -37,7 +37,6 @@ let
     -e PHOTOPRISM_FACE_SCORE=5 \
     -e PHOTOPRISM_WAKEUP_INTERVAL=86400 \
     -e PHOTOPRISM_DISABLE_CLASSIFICATION=true \
-    photoprism/photoprism
   '';
 
 in
@@ -71,6 +70,7 @@ in
       ${pkgs.docker}/bin/docker run \
         -p ${toString dockerPort}:2342 \
         ${photoprismDockerOptions}
+        photoprism/photoprism
     '';
 
     postStart = "${wait-tcp.out}/bin/wait-tcp";
@@ -87,15 +87,21 @@ in
     requires = [ "docker.service" ];
     # Stop photoprism-docker
     conflicts = [ "photoprism-docker.service"];    
-    script = ''      
+    script = ''
+      ${pkgs.docker}/bin/docker rm photoprism || true
+
       ${pkgs.docker}/bin/docker run \
         -p ${toString dockerPort}:2342 \
-        ${photoprismDockerOptions} \
+        ${photoprismDockerOptions}
+        photoprism/photoprism \
         photoprism optimize
+
+      ${pkgs.docker}/bin/docker rm photoprism || true
       
       ${pkgs.docker}/bin/docker run \
         -p ${toString dockerPort}:2342 \
         ${photoprismDockerOptions} \
+        photoprism/photoprism \
         photoprism faces audit --fix
 
       ${pkgs.docker}/bin/docker pull photoprism/photoprism || true
