@@ -63,6 +63,8 @@ ${pkgs.docker}/bin/docker run \
   -e PHOTOPRISM_BACKUP_PATH=/photoprism/storage/backup \
   -e PHOTOPRISM_STORAGE_PATH=/photoprism/storage \
   -e PHOTOPRISM_FACE_SCORE=5 \
+  -e PHOTOPRISM_WAKEUP_INTERVAL=86400 \
+  -e PHOTOPRISM_DISABLE_CLASSIFICATION=true \
   photoprism/photoprism
     '';
 
@@ -70,7 +72,10 @@ ${pkgs.docker}/bin/docker run \
 
      # When the systemd service stops, stop the docker container.
     preStop = ''
-${pkgs.docker}/bin/docker kill photoprism
+    
+    ${pkgs.docker}/bin/docker exec -ti photoprism photoprism optimize
+    ${pkgs.docker}/bin/docker exec -ti photoprism photoprism facces audit --fix
+    ${pkgs.docker}/bin/docker kill photoprism
     '';
   };
 
