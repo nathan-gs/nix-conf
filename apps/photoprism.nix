@@ -68,9 +68,8 @@ in
       ${pkgs.docker}/bin/docker rm photoprism || true
 
       ${pkgs.docker}/bin/docker run \
-        -p ${toString dockerPort}:2342 \
-        ${photoprismDockerOptions}
-        photoprism/photoprism
+        -p ${toString dockerPort}:2342 \ 
+        ${photoprismDockerOptions} photoprism/photoprism
     '';
 
     postStart = "${wait-tcp.out}/bin/wait-tcp";
@@ -91,17 +90,13 @@ in
       ${pkgs.docker}/bin/docker rm photoprism || true
 
       ${pkgs.docker}/bin/docker run \
-        -p ${toString dockerPort}:2342 \
-        ${photoprismDockerOptions}
-        photoprism/photoprism \
+      ${photoprismDockerOptions} photoprism/photoprism \
         photoprism optimize
 
       ${pkgs.docker}/bin/docker rm photoprism || true
       
       ${pkgs.docker}/bin/docker run \
-        -p ${toString dockerPort}:2342 \
-        ${photoprismDockerOptions} \
-        photoprism/photoprism \
+        ${photoprismDockerOptions} photoprism/photoprism \
         photoprism faces audit --fix
 
       ${pkgs.docker}/bin/docker pull photoprism/photoprism || true
