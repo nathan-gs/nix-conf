@@ -87,19 +87,23 @@ in
     # Stop photoprism-docker
     conflicts = [ "photoprism-docker.service"];    
     script = ''
-      ${pkgs.docker}/bin/docker rm photoprism || true
+      # only run if the process has run before
+      if ${pkgs.docker}/bin/docker rm photoprism; then
 
-      ${pkgs.docker}/bin/docker run \
-      ${photoprismDockerOptions} photoprism/photoprism \
-        photoprism optimize
-
-      ${pkgs.docker}/bin/docker rm photoprism || true
-      
-      ${pkgs.docker}/bin/docker run \
+        ${pkgs.docker}/bin/docker run \
         ${photoprismDockerOptions} photoprism/photoprism \
-        photoprism faces audit --fix
+          photoprism optimize
 
-      ${pkgs.docker}/bin/docker pull photoprism/photoprism || true
+        ${pkgs.docker}/bin/docker rm photoprism || true
+        
+        ${pkgs.docker}/bin/docker run \
+          ${photoprismDockerOptions} photoprism/photoprism \
+          photoprism faces audit --fix
+
+        ${pkgs.docker}/bin/docker rm photoprism || true
+
+        ${pkgs.docker}/bin/docker pull photoprism/photoprism || true
+      fi
     '';
     startAt = "23:10";
   };
