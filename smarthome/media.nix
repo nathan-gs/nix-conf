@@ -47,8 +47,8 @@
       platform = "ping";
       host = "192.168.1.100"; # fritz.box issue with correctly resolving names...
       name = "floor0_living_appletv_woonkamer";
-      count = 10;
-      scan_interval = 45;
+      count = 5;
+      scan_interval = 60;
     }
   ];
 }
