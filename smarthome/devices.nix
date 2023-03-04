@@ -109,7 +109,6 @@ with lib;
       ++ energy.automations;
 
     config.binary_sensor = [ ] 
-    ++ media.binary_sensor
     ++ wfh.binary_sensor;
 
     config.mqtt = {
@@ -135,7 +134,8 @@ with lib;
       ++ energy.template
       ++ water.template
       ++ general.template
-      ++ hvac.template;
+      ++ hvac.template
+      ++ media.template;
 
     config.device_tracker = [
       {

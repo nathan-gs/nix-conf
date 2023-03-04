@@ -42,13 +42,15 @@
     }
   ];
 
-  binary_sensor = [
+  template = [
     {
-      platform = "ping";
-      host = "192.168.1.100"; # fritz.box issue with correctly resolving names...
-      name = "floor0_living_appletv_woonkamer";
-      count = 5;
-      scan_interval = 60;
+      binary_sensor = [
+        {
+          name = "floor0_living_appletv_woonkamer";
+          state = ''{{ states('media_player.floor0_living_media_appletv') in ["playing", "paused"] }}'';
+        }
+      ];
     }
   ];
+  
 }
