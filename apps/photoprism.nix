@@ -31,13 +31,13 @@ let
     -v '/media/documents/nathan/onedrive_nathan_personal/Camera Roll':/photoprism/import/femke-camera-roll \
     -v '/media/documents/nathan/onedrive_nathan_personal/Pictures/Camera Roll':/photoprism/import/nathan-camera-roll \
     --env-file /var/lib/photoprism/env \
-    -e PHOTOPRISM_WORKERS=8 \
+    -e PHOTOPRISM_WORKERS=2 \
     -e PHOTOPRISM_SIDECAR_PATH=/photoprism/sidecar \
     -e PHOTOPRISM_ORIGINALS_LIMIT=8000 \
     -e PHOTOPRISM_BACKUP_PATH=/photoprism/storage/backup \
     -e PHOTOPRISM_STORAGE_PATH=/photoprism/storage \
     -e PHOTOPRISM_FACE_SCORE=5 \
-    -e PHOTOPRISM_WAKEUP_INTERVAL=86400 \
+    -e PHOTOPRISM_WAKEUP_INTERVAL=3600 \
     -e PHOTOPRISM_DISABLE_CLASSIFICATION=true \
   '';
 
