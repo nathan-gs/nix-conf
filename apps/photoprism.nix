@@ -68,7 +68,7 @@ in
     script = ''
       ${pkgs.docker}/bin/docker rm photoprism || true
 
-      ${pkgs.docker}/bin/docker run \        
+      ${pkgs.docker}/bin/docker run \
       ${photoprismDockerOptions} photoprism/photoprism
     '';
 
