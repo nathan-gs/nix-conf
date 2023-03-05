@@ -19,6 +19,7 @@ let
     '';
 
   photoprismDockerOptions = ''
+  ${pkgs.docker}/bin/docker run
     --name photoprism \
     --user 2000:100 \
     -p ${toString dockerPort}:2342 \
@@ -68,7 +69,6 @@ in
     script = ''
       ${pkgs.docker}/bin/docker rm photoprism || true
 
-      ${pkgs.docker}/bin/docker run \
       ${photoprismDockerOptions} photoprism/photoprism
     '';
 
@@ -90,14 +90,12 @@ in
       # only run if the process has run before
       if ${pkgs.docker}/bin/docker rm photoprism; then
 
-        ${pkgs.docker}/bin/docker run \
         ${photoprismDockerOptions} photoprism/photoprism \
           photoprism optimize
 
         ${pkgs.docker}/bin/docker rm photoprism || true
         
-        ${pkgs.docker}/bin/docker run \
-          ${photoprismDockerOptions} photoprism/photoprism \
+        ${photoprismDockerOptions} photoprism/photoprism \
           photoprism faces audit --fix
 
         ${pkgs.docker}/bin/docker rm photoprism || true
