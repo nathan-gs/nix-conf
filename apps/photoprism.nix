@@ -19,7 +19,7 @@ let
     '';
 
   photoprismDockerOptions = ''
-  ${pkgs.docker}/bin/docker run
+  ${pkgs.docker}/bin/docker run \
     --name photoprism \
     --user 2000:100 \
     -p ${toString dockerPort}:2342 \
