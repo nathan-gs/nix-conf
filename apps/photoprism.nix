@@ -21,6 +21,7 @@ let
   photoprismDockerOptions = ''
     --name photoprism \
     --user 2000:100 \
+    -p ${toString dockerPort}:2342 \
     --log-driver none \
     -v /var/lib/photoprism:/photoprism/storage \
     -v /var/lib/photoprism/sqlite3:/var/lib/photoprism/sqlite3 \
@@ -67,9 +68,8 @@ in
     script = ''
       ${pkgs.docker}/bin/docker rm photoprism || true
 
-      ${pkgs.docker}/bin/docker run \
-        -p ${toString dockerPort}:2342 \ 
-        ${photoprismDockerOptions} photoprism/photoprism
+      ${pkgs.docker}/bin/docker run \        
+      ${photoprismDockerOptions} photoprism/photoprism
     '';
 
     postStart = "${wait-tcp.out}/bin/wait-tcp";
