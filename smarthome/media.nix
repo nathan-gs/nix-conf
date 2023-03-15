@@ -44,10 +44,28 @@
 
   template = [
     {
+      # trigger = [
+      #   {
+      #     platform = "state";
+      #     entity_id = "";
+      #     for = "";
+      #   }
+      #   {
+      #     platform = "homeassistant";
+      #     event = "start";          
+      #   }
+      #   {
+      #     platform = "event";
+      #     event_type = "event_template_reloaded";
+      #   }
+      # ];
+      ## 
+      # Detect if the AppleTV is on by checking if the Sonos is actually playing or not.
+      #
       binary_sensor = [
         {
           name = "floor0_living_appletv_woonkamer";
-          state = ''{{ states('media_player.floor0_living_media_appletv') in ["playing", "paused"] }}'';
+          state = ''{{ states('media_player.living') in ["playing"] }}'';
         }
       ];
     }
