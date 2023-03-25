@@ -60,7 +60,7 @@
       scan_interval = 30;
       username = "admin";
       password = config.secrets.solis.s3wifist.password;
-      value_template = "{{ value | striptags | trim }}";
+      value_template = ''{{ value | regex_replace ("[^A-Za-z0-9]","") }}'';
     }    
   ];
   utility_meter = {};
