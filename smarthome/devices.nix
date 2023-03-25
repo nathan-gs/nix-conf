@@ -109,7 +109,8 @@ with lib;
       ++ energy.automations;
 
     config.binary_sensor = [ ] 
-    ++ wfh.binary_sensor;
+    ++ wfh.binary_sensor
+    ++ solar.binary_sensor;
 
     config.mqtt = {
       binary_sensor = [] 
@@ -121,21 +122,25 @@ with lib;
     };
 
     config.homeassistant.customize = {} 
-      // energy.customize;
+      // energy.customize
+      // solar.customize;
 
     config.sensor = []
-      ++ energy.sensor;
+      ++ energy.sensor
+      ++ solar.sensor;
 
     config.utility_meter = { } 
       // water.utility_meter
-      // energy.utility_meter;
+      // energy.utility_meter
+      // solar.utility_meter;
 
     config.template = [] 
       ++ energy.template
       ++ water.template
       ++ general.template
       ++ hvac.template
-      ++ media.template;
+      ++ media.template
+      ++ solar.template;
 
     config.device_tracker = [
       {
