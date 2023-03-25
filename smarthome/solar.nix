@@ -13,6 +13,7 @@
           unit_of_measurement = "kW";
           device_class = "power";
           icon = "mdi:solar-panel";
+          state_class = "measurement";
         }
         {
           name = "solar_delivery_daily";
@@ -22,6 +23,7 @@
           unit_of_measurement = "kWh";
           device_class = "energy";
           icon = "mdi:solar-panel";
+          state_class = "total";
         }
         {
           name = "solar_delivery_total";
@@ -31,6 +33,7 @@
           unit_of_measurement = "kWh";
           device_class = "energy";
           icon = "mdi:solar-panel";
+          state_class = "total";
         }
       ];
     }
