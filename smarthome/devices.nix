@@ -72,7 +72,7 @@ let
   
 
 
-
+solar = import ./solar.nix;
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
