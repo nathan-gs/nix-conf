@@ -9,7 +9,7 @@
         {{ (( states('sensor.solar_solis_inverter_cgi').split(";")[4] | float ) / 1000 ) | float }}
       '';      
       unit_of_measurement = "kW";
-      device_class = "power";
+      #device_class = "power";
       icon = "mdi:solar-panel";
     }
     {
@@ -18,7 +18,7 @@
         {{ ( states('sensor.solar_solis_inverter_cgi').split(";")[5] | float ) }}
       '';      
       unit_of_measurement = "kWh";
-      device_class = "energy";
+      #device_class = "energy";
       icon = "mdi:solar-panel";
     }
     {
@@ -33,7 +33,7 @@
             {{ states('sensor.solar_delivery_total')| float(0) }}
           '';      
           unit_of_measurement = "kWh";
-          device_class = "energy";
+          #device_class = "energy";
           icon = "mdi:solar-panel";
         }
       ];
@@ -44,7 +44,7 @@
         {{ ( states('sensor.solar_delivery_total_till_yesterday') | float(0) ) + (states('sensor.solar_delivery_daily') | float(0) ) }}
       '';
       unit_of_measurement = "kWh";
-      device_class = "energy";
+      #device_class = "energy";
       icon = "mdi:solar-panel";
     }
   ];
