@@ -60,6 +60,7 @@
       scan_interval = 30;
       username = "admin";
       password = config.secrets.solis.s3wifist.password;
+      value_template = "{{ value | striptags | trim }}";
     }    
   ];
   utility_meter = {};
