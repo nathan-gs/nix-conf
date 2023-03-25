@@ -40,7 +40,7 @@
     {
       trigger = {
         platform = "time";
-        minutes = "23:59:00";
+        at = "23:59:00";
       };
       sensor = [
         {
