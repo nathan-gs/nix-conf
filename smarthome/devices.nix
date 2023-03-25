@@ -71,8 +71,7 @@ let
 
   
 
-
-solar = import ./solar.nix;
+solar = import ./solar.nix {config = config;};
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
