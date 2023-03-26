@@ -6,6 +6,7 @@
     ./users.nix
     ./software.nix
     ./smb.nix
+    ./hosts.nix
   ];
 
   # Install the flakes edition
