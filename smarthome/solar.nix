@@ -58,7 +58,7 @@
   sensor = [
     {
       platform = "rest";
-      resource = "http://192.168.1.24/inverter.cgi";
+      resource = "http://solis-s3wifi/inverter.cgi";
       name = "solar_solis_inverter_cgi";
       scan_interval = 30;
       username = "admin";
