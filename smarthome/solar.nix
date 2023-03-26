@@ -27,8 +27,13 @@
         }
         {
           name = "solar_delivery_total";
+          # Workaround for Solis occasionally reporting the previous total in the first minutes after midnight          
           state = ''
-            {{ ( states('sensor.solar_delivery_total_till_yesterday') | float(0) ) + (states('sensor.solar_delivery_daily') | float(0) ) }}
+            {% if (now().hour == 0) %}
+              {{ states('sensor.solar_delivery_total_till_yesterday') | float(0) }}
+            {% else %}
+              {{ ( states('sensor.solar_delivery_total_till_yesterday') | float(0) ) + (states('sensor.solar_delivery_daily') | float(0) ) }}
+            {% endif %}
           '';
           unit_of_measurement = "kWh";
           device_class = "energy";

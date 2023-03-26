@@ -99,6 +99,7 @@
       "utility_meter"
       "http"
       "api"
+      "forecast_solar"
     ];
 
     extraPackages = python311Packages: with python311Packages; [
