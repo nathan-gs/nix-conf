@@ -60,7 +60,7 @@
       platform = "rest";
       resource = "http://solis-s3wifi/inverter.cgi";
       name = "solar_solis_inverter_cgi";
-      scan_interval = 30;
+      scan_interval = 60;
       username = "admin";
       password = config.secrets.solis.s3wifist.password;
       value_template = ''{{ value | regex_replace ("[^A-Za-z0-9;\.]","") }}'';
