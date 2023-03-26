@@ -1,0 +1,594 @@
+views:
+  - theme: Backend-selected
+    title: Smart Gateways - Smart Meter Gateway
+    path: smart-gateways-p1-gateway
+    icon: mdi:lightning-bolt-circle
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: gauge
+            entity: sensor.dsmr_reading_electricity_currently_delivered
+            max: 5000
+            min: 0
+            needle: true
+            severity:
+              green: 0
+              yellow: 800
+              red: 1500
+            name: Huidige verbruik
+          - type: gauge
+            max: 5000
+            min: 0
+            needle: true
+            severity:
+              green: 0
+              yellow: 800
+              red: 1500
+            name: Huidige teruglevering
+            entity: sensor.dsmr_reading_electricity_currently_returned
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.dsmr_reading_electricity_delivered_2
+                icon: mdi:lightning-bolt
+                secondary_info: none
+              - entity: sensor.dsmr_reading_electricity_delivered_1
+              - entity: sensor.dsmr_reading_electricity_returned_1
+              - entity: sensor.dsmr_reading_electricity_returned_2
+              - entity: sensor.dsmr_consumption_gas_delivered
+                secondary_info: none
+                icon: mdi:fire
+              - entity: sensor.water_delivery
+                icon: mdi:water
+                name: Water usage
+              - entity: sensor.electricity_cost_peak_kwh
+              - entity: sensor.electricity_cost_offpeak_kwh
+              - entity: sensor.gas_cost_m3
+              - entity: sensor.water_cost
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 1h
+        show:
+          last_updated: true
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Verbruik per fase laatste uur
+        series:
+          - entity: sensor.dsmr_reading_phase_currently_delivered_l1
+            type: line
+            group_by:
+              func: last
+              duration: 10s
+            stroke_width: 2
+            unit: Watt
+          - entity: sensor.dsmr_reading_phase_currently_delivered_l2
+            type: line
+            group_by:
+              func: last
+              duration: 10s
+            stroke_width: 2
+            unit: Watt
+          - entity: sensor.dsmr_reading_phase_currently_delivered_l3
+            type: line
+            group_by:
+              func: last
+              duration: 10s
+            stroke_width: 2
+            unit: Watt
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 1h
+        show:
+          last_updated: true
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Teruglevering per fase laatste uur
+        series:
+          - entity: sensor.dsmr_reading_phase_currently_returned_l1
+            type: line
+            group_by:
+              func: last
+              duration: 10s
+            stroke_width: 2
+            unit: Watt
+          - entity: sensor.dsmr_reading_phase_currently_returned_l2
+            type: line
+            group_by:
+              func: last
+              duration: 10s
+            stroke_width: 2
+            unit: Watt
+          - entity: sensor.dsmr_reading_phase_currently_returned_l3
+            type: line
+            group_by:
+              func: last
+              duration: 10s
+            stroke_width: 2
+            unit: Watt
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        span:
+          start: day
+        header:
+          show: true
+          title: Verbruik laatste 24 uur
+        apex_config:
+          yaxis:
+            - id: first
+              forceNiceScale: true
+              decimalsInFloat: 2
+              opposite: false
+              name: Energie
+        series:
+          - entity: sensor.electricity_delivery
+            unit: kW
+            type: column
+            name: levering piektarief
+            color: '#EF810E'
+            group_by:
+              func: max
+            show:
+              datalabels: false
+              extremas: false
+      - type: custom:apexcharts-card
+        graph_span: 24h
+        span:
+          start: day
+        header:
+          show: true
+          title: Teruglevering laatste 24 uur
+        apex_config:
+          yaxis:
+            - id: first
+              forceNiceScale: true
+              decimalsInFloat: 0
+              opposite: false
+              name: Water
+        series:
+          - entity: sensor.electricity_peak_return
+            unit: kW
+            type: column
+            name: piek
+            color: '#EF810E'
+            group_by:
+              func: max
+            show:
+              datalabels: false
+              extremas: false
+          - entity: sensor.electricity_peak_return
+            unit: kW
+            type: column
+            name: daltarief
+            color: '#053752'
+            group_by:
+              func: max
+            show:
+              datalabels: false
+              extremas: false
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 24h
+        show:
+          last_updated: true
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Spanning per fase laatste 24 uur
+        span:
+          start: day
+        series:
+          - entity: sensor.dsmr_reading_phase_voltage_l1
+            type: line
+            group_by:
+              func: last
+              duration: 15m
+            stroke_width: 5
+          - entity: sensor.dsmr_reading_phase_voltage_l2
+            type: line
+            group_by:
+              func: last
+              duration: 15m
+            stroke_width: 5
+          - entity: sensor.dsmr_reading_phase_voltage_l3
+            type: line
+            group_by:
+              func: last
+              duration: 15m
+            stroke_width: 5
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 1h
+        show:
+          last_updated: true
+        apex_config:
+          yaxis:
+            - id: first
+              forceNiceScale: true
+              decimalsInFloat: 3
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Current power usage
+        series:
+          - entity: sensor.dsmr_reading_electricity_currently_delivered
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            color_threshold:
+              - value: 0
+                color: '#F8CFC9'
+              - value: 0.5
+                color: '#EE8E81'
+              - value: 0.8
+                color: '#E44D3A'
+              - value: 1.5
+                color: '#BC2C1A'
+              - value: 3
+                color: '#7E1E11'
+          - entity: sensor.dsmr_reading_electricity_currently_returned
+            type: line
+            group_by:
+              func: median
+              duration: 1m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            color_threshold:
+              - value: 0
+                color: '#D4ECE7'
+              - value: 0.5
+                color: '#9CD3C6'
+              - value: 0.8
+                color: '#71C1AE'
+              - value: 1.5
+                color: '#38806F'
+              - value: 3
+                color: '#19391'
+      - type: custom:apexcharts-card
+        experimental:
+          color_threshold: true
+        graph_span: 24h
+        show:
+          last_updated: true
+        header:
+          standard_format: false
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Stroom per fase vandaag
+        span:
+          start: day
+        series:
+          - entity: sensor.dsmr_reading_phase_power_current_l1
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+          - entity: sensor.dsmr_reading_phase_power_current_l2
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+          - entity: sensor.dsmr_reading_phase_power_current_l3
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.dsmr_reading_electricity_currently_delivered
+              - entity: sensor.electricity_delivery_power_15m
+              - entity: sensor.electricity_delivery_power_daily_15m_max
+              - entity: sensor.electricity_delivery_power_monthly_15m_max
+            state_color: false
+            title: Capacity Tariffs
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            span:
+              start: day
+            header:
+              show: true
+              title: Capacity Tariffs Peaks last day
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  opposite: false
+                  name: Energie
+            all_series_config:
+              stroke_width: 1
+            series:
+              - entity: sensor.electricity_delivery_power_15m
+                unit: W
+                type: column
+                name: 15m
+                stroke_width: 2
+                transform: return x * 1000;
+                group_by:
+                  duration: 15m
+                  func: last
+                show:
+                  datalabels: false
+                  extremas: true
+              - entity: sensor.electricity_delivery_power_monthly_15m_max
+                unit: W
+                type: line
+                name: monthly
+                transform: return x * 1000;
+                group_by:
+                  duration: 15m
+                  func: last
+                show:
+                  datalabels: false
+                  extremas: false
+          - type: custom:apexcharts-card
+            graph_span: 31d
+            span:
+              start: month
+            header:
+              show: true
+              title: Capacity Tariffs Peaks last month
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  opposite: false
+                  name: Energie
+            all_series_config:
+              stroke_width: 1
+            series:
+              - entity: sensor.electricity_delivery_power_daily_15m_max
+                unit: W
+                type: column
+                name: day
+                stroke_width: 4
+                transform: return x * 1000;
+                group_by:
+                  duration: 1d
+                  func: max
+                show:
+                  datalabels: false
+                  extremas: true
+              - entity: sensor.electricity_delivery_power_monthly_15m_max
+                unit: W
+                type: line
+                name: monthly
+                transform: return x * 1000;
+                group_by:
+                  duration: 15m
+                  func: last
+                show:
+                  datalabels: false
+                  extremas: false
+      - type: vertical-stack
+        cards:
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            span:
+              start: day
+            header:
+              show: true
+              title: Gasverbruik laatste 24 uur
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 3
+                  opposite: false
+                  name: Gas
+            series:
+              - entity: sensor.gas_delivery_hourly
+                unit: m3
+                type: column
+                name: gasverbruik
+                color: '#EF810E'
+                group_by:
+                  func: max
+                show:
+                  datalabels: false
+                  extremas: false
+          - type: custom:apexcharts-card
+            graph_span: 31d
+            span:
+              start: month
+            show:
+              last_updated: true
+            yaxis:
+              - id: dd
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+                  min: 0
+                  max: 15
+              - id: gas_per_dd
+                opposite: true
+                min: 0
+                max: 0.8
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 2
+                  tickAmount: 4
+            color_list:
+              - '#1a4c6e'
+            header:
+              show: true
+              title: Degree Days
+            series:
+              - entity: sensor.degree_day_daily
+                name: Degree Day
+                type: line
+                group_by:
+                  func: last
+                  duration: 1d
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: dd
+              - entity: sensor.gas_m3_per_degree_day
+                name: Gas m3 per DD
+                type: line
+                color: black
+                group_by:
+                  func: last
+                  duration: 1d
+                stroke_width: 2
+                yaxis_id: gas_per_dd
+  - theme: Backend-selected
+    title: Individual Devices
+    path: a
+    badges: []
+    cards:
+      - square: false
+        columns: 1
+        type: grid
+        cards:
+          - type: gauge
+            entity: sensor.basement_basement_metering_plug_network_power
+            unit: W
+            needle: false
+            severity:
+              green: 24
+              yellow: 30
+              red: 40
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            header:
+              show: false
+              title: Verbruik laatste 24 uur
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  opposite: false
+                  name: Energie
+            all_series_config:
+              stroke_width: 1
+            series:
+              - entity: sensor.basement_basement_metering_plug_network_power
+                unit: W
+                type: line
+                name: Power
+                group_by:
+                  func: median
+                  duration: 15m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true
+      - square: false
+        columns: 1
+        type: grid
+        cards:
+          - type: gauge
+            entity: sensor.floor1_waskot_metering_plug_wasmachine_power
+            unit: W
+            needle: false
+            severity:
+              green: 24
+              yellow: 28
+              red: 35
+          - type: gauge
+            entity: sensor.floor1_waskot_metering_plug_droogkast_power
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            header:
+              show: false
+              title: Verbruik laatste 24h
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  opposite: false
+                  name: Energie
+            all_series_config:
+              stroke_width: 1
+            series:
+              - entity: sensor.floor1_waskot_metering_plug_wasmachine_power
+                unit: W
+                type: line
+                name: Wasmachine
+                group_by:
+                  func: median
+                  duration: 15m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true
+              - entity: sensor.floor1_waskot_metering_plug_droogkast_power
+                unit: W
+                type: line
+                name: Droogkast
+                group_by:
+                  func: median
+                  duration: 15m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true
+      - square: false
+        columns: 1
+        type: grid
+        cards:
+          - type: gauge
+            entity: sensor.floor0_keuken_metering_plug_oven_power
+            unit: W
+            needle: false
+            severity:
+              green: 0
+              yellow: 1000
+              red: 2200
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            header:
+              show: false
+              title: Verbruik laatste 24 uur
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  opposite: false
+                  name: Energie
+            all_series_config:
+              stroke_width: 1
+            series:
+              - entity: sensor.floor0_keuken_metering_plug_oven_power
+                unit: W
+                type: line
+                name: Power
+                group_by:
+                  func: median
+                  duration: 15m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true
