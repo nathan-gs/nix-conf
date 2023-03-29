@@ -86,7 +86,7 @@ in
 with lib;
 {
   system.activationScripts.lidl-368308_2010-converter.text = ''
-    ln -sf "${./lidl-368308_2010-converter.js}" "${config.services.zigbee2mqtt.dataDir}/lidl-368308_2010-converter.js"
+    ln -sfn "${./lidl-368308_2010-converter.js}" "${config.services.zigbee2mqtt.dataDir}/lidl-368308_2010-converter.js"
   '';
 
   services.zigbee2mqtt.settings = {

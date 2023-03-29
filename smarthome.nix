@@ -127,7 +127,7 @@
   
   system.activationScripts.ha-solis.text = ''
     mkdir -p "/var/lib/hass/custom_components"
-    ln -sf "${(pkgs.callPackage ./apps/ha-solis-sensor.nix {})}" "/var/lib/hass/custom_components/solis"
+    ln -snf "${(pkgs.callPackage ./apps/ha-solis-sensor.nix {})}" "/var/lib/hass/custom_components/solis"
   '';  
 
   services.zigbee2mqtt = {
