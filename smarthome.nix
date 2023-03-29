@@ -1,6 +1,5 @@
 
-{ config, pkgs, ... }:
-
+{ config, pkgs, lib, ... }:
 {
   imports = [
     ./smarthome/devices.nix
@@ -124,7 +123,12 @@
     '';
     startAt = "*-*-* 03:42:00";
   };
+
   
+  system.activationScripts.ha-solis.text = ''
+    mkdir -p "/var/lib/hass/custom_components"
+    ln -sf "${(pkgs.callPackage ./apps/ha-solis-sensor.nix {})}" "/var/lib/hass/custom_components/solis"
+  '';  
 
   services.zigbee2mqtt = {
     enable = true;
