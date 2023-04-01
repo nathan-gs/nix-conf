@@ -291,6 +291,31 @@ let
             state = "{{ (states('sensor.electricity_delivery_15m') | float(0)) * 4 | float }}";
             unit_of_measurement = "kW";
           }
+          {
+            name = "electricity_grid_consumed_power";
+            state = "{{ states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000 }}";
+            unit_of_measurement = "W";
+          }
+          {
+            name = "electricity_grid_returned_power";
+            state = "{{ states('sensor.dsmr_reading_electricity_currently_returned') | float(0) * 1000 }}";
+            unit_of_measurement = "W";
+          }
+          {
+            name = "electricity_total_power";
+            state = "{{ states('sensor.solis_total_consumption_power') | float(0) }}";
+            unit_of_measurement = "W";
+          }
+          {
+            name = "electricity_battery_power";
+            state = "{{ states('sensor.solis_battery_power') | float(0) }}";
+            unit_of_measurement = "W";
+          }
+          {
+            name = "electricity_solar_power";
+            state = "{{ states('sensor.solar_currently_produced') | float(0) * 1000 }}";
+            unit_of_measurement = "W";
+          }
         ];
       }
       {
