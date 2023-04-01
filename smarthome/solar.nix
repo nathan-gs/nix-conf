@@ -29,7 +29,7 @@
           name = "solar_delivery_total";
           # Workaround for Solis occasionally reporting the previous total in the first minutes after midnight          
           state = ''
-            {% if (now().hour < 4)  %}
+            {% if now().hour < 4  %}
               {{ states('sensor.solar_delivery_total_till_yesterday') | float(0) }}
             {% else %}
               {{ ( states('sensor.solar_delivery_total_till_yesterday') | float(0) ) + (states('sensor.solar_delivery_daily') | float(0) ) }}
@@ -45,7 +45,7 @@
     {
       trigger = {
         platform = "time";
-        at = "23:59:59";
+        at = "00:00:00";
       };
       sensor = [
         {
