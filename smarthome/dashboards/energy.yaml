@@ -1,111 +1,62 @@
 views:
-  - title: Home
+  - theme: Backend-selected
+    title: Home
+    type: panel
+    badges: []
     cards:
-      - type: horizontal-stack
+      - square: false
+        columns: 1
+        type: grid
         cards:
-          - type: gauge
-            entity: sensor.dsmr_reading_electricity_currently_delivered
-            max: 5
-            min: 0
-            needle: true
-            severity:
-              green: 0
-              yellow: 0.8
-              red: 1.5
-            name: Huidige verbruik
-          - type: gauge
-            max: 5
-            min: 0
-            needle: true
-            severity:
-              green: 0
-              yellow: 0.8
-              red: 1.5
-            name: Huidige teruglevering
-            entity: sensor.dsmr_reading_electricity_currently_returned
-          - type: gauge
-            entity: sensor.solar_currently_produced
-            max: 5
-            min: 0
-            needle: true
-            severity:
-              red: 0
-              yellow: 0.5
-              green: 1.5
-            name: Zonnepanelen Productie
-      - type: vertical-stack
-        cards:
-          - type: entities
-            entities:
-              - entity: sensor.dsmr_reading_electricity_delivered_2
-                icon: mdi:lightning-bolt
-                secondary_info: none
-              - entity: sensor.dsmr_reading_electricity_delivered_1
-              - entity: sensor.dsmr_reading_electricity_returned_1
-              - entity: sensor.dsmr_reading_electricity_returned_2
-              - entity: sensor.dsmr_consumption_gas_delivered
-                secondary_info: none
-                icon: mdi:fire
-              - entity: sensor.water_delivery
-                icon: mdi:water
-                name: Water usage
-              - entity: sensor.electricity_cost_peak_kwh
-              - entity: sensor.electricity_cost_offpeak_kwh
-              - entity: sensor.gas_cost_m3
-              - entity: sensor.water_cost
-      - type: custom:apexcharts-card
-        experimental:
-          color_threshold: true
-        graph_span: 1h
-        show:
-          last_updated: true
-        apex_config:
-          yaxis:
-            - id: first
-              forceNiceScale: true
-              decimalsInFloat: 3
-        header:
-          standard_format: false
-          show: true
-          show_states: true
-          colorize_states: true
-          title: Current power usage
-        series:
-          - entity: sensor.dsmr_reading_electricity_currently_delivered
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            color_threshold:
-              - value: 0
-                color: '#F8CFC9'
-              - value: 0.5
-                color: '#EE8E81'
-              - value: 0.8
-                color: '#E44D3A'
-              - value: 1.5
-                color: '#BC2C1A'
-              - value: 3
-                color: '#7E1E11'
-          - entity: sensor.dsmr_reading_electricity_currently_returned
-            type: line
-            group_by:
-              func: median
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            color_threshold:
-              - value: 0
-                color: '#D4ECE7'
-              - value: 0.5
-                color: '#9CD3C6'
-              - value: 0.8
-                color: '#71C1AE'
-              - value: 1.5
-                color: '#38806F'
-              - value: 3
-                color: '#19391'
+          - type: horizontal-stack
+            cards:
+              - type: gauge
+                entity: sensor.electricity_grid_consumed_power
+                min: 0
+                max: 2500
+                needle: false
+                severity:
+                  green: 100
+                  yellow: 400
+                  red: 3000
+              - type: gauge
+                entity: sensor.electricity_grid_returned_power
+              - type: gauge
+                entity: sensor.electricity_total_power
+              - type: gauge
+                entity: sensor.electricity_battery_power
+              - type: gauge
+                entity: sensor.electricity_solar_power
+          - type: horizontal-stack
+            cards:
+              - show_name: false
+                show_icon: true
+                type: button
+                tap_action:
+                  action: toggle
+                entity: switch.garden_garden_plug_laadpaal
+                show_state: false
+                name: Laadpaal
+                icon: mdi:ev-station
+                icon_height: 80px
+              - type: entities
+                entities:
+                  - entity: sensor.2abn528_battery_level
+                  - entity: sensor.solis_remaining_battery_capacity
+                  - entity: sensor.electricity_cost_peak_kwh
+                  - entity: sensor.electricity_cost_offpeak_kwh
+                  - entity: sensor.gas_cost_kwh
+              - type: energy-distribution
+          - type: custom:apexcharts-card
+            header:
+              show: true
+              title: Power Source
+              show_states: true
+              colorize_states: true
+            series:
+              - entity: sensor.electricity_grid_consumed_power
+              - entity: sensor.electricity_grid_returned_power
+              - entity: sensor.electricity_battery_power
+              - entity: sensor.electricity_solar_power
+          - type: energy-usage-graph
+          - type: energy-solar-graph
