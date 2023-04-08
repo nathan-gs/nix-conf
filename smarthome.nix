@@ -129,6 +129,7 @@
     mkdir -p "/var/lib/hass/custom_components"
     ln -snf "${(pkgs.callPackage ./apps/ha-solis-sensor.nix {})}" "/var/lib/hass/custom_components/solis"
     ln -snf "${(pkgs.callPackage ./apps/ha-hon.nix {})}" "/var/lib/hass/custom_components/hon"
+    ln -snf "${(pkgs.callPackage ./apps/ha-electrolux-status.nix {})}" "/var/lib/hass/custom_components/electrolux_status"
   '';  
 
   services.zigbee2mqtt = {
