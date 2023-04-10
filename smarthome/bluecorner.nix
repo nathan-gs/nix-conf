@@ -13,9 +13,11 @@
       method = "POST";
       scan_interval = 900;
       headers = {
-        Authorization = "Bearer {{ state_attr('sensor.bluecorner_token', 'refresh_token')}}";
         Accept = "application/json";
       };
+      payload = ''
+        request_type=si%3As&refresh_token={{ state_attr('sensor.bluecorner_token', 'refresh_token')}}&grant_type=refresh_token&client_id=BCCP
+      '';
       json_attributes = ["refresh_token" "access_token"];
     }    
   ];
