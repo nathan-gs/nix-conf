@@ -15,13 +15,23 @@
             {{ states('sensor.bluecorner_total')|float(0) + ( states('sensor.bluecorner_last_charging_session') | float / 1000 ) }}
           '';
         }
+        {
+          name = "bluecorner_refresh_token"; 
+          state = '' 
+            {% if not is_state('sensor.bluecorner_token', 'unknown') %}
+              {{ states('sensor.bluecorner_token') }}
+            {% else %}
+              {{ states('sensor.bluecorner_refresh_token')}}
+            {% endif %}
+          '';
+        }
       ];
     }
   ];
   sensor = [
     {
       platform = "command_line";
-      command = ''${pkgs.curl}/bin/curl --silent 'https://oauth.bluecorner.be/connect/token' -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data-raw 'request_type=si%3As&refresh_token={{ states('sensor.bluecorner_token')}}&grant_type=refresh_token&client_id=BCCP' '';
+      command = ''${pkgs.curl}/bin/curl --silent 'https://oauth.bluecorner.be/connect/token' -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data-raw 'request_type=si%3As&refresh_token={{ states('sensor.bluecorner_refresh_token')}}&grant_type=refresh_token&client_id=BCCP' '';
       name = "bluecorner_token";
       scan_interval = 900;
       json_attributes = ["access_token"];
