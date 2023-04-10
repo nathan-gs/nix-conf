@@ -4,17 +4,19 @@
 
   template = [  
     {
-      sensors = {
-        bluecorner_total = {
-          unit_of_measurement = "kWh";
-          device_class = "energy";
-          icon = "mdi:car-electric";
-          state_class = "total";
-          value_template = ''
-            {{ states('sensor.bluecorner_total')|float(0) + states('sensor.bluecorner_last_charging_session')|float }}
-          '';
-        };
-      };
+      sensor = [
+        {
+          bluecorner_total = {
+            unit_of_measurement = "kWh";
+            device_class = "energy";
+            icon = "mdi:car-electric";
+            state_class = "total";
+            value_template = ''
+              {{ states('sensor.bluecorner_total')|float(0) + states('sensor.bluecorner_last_charging_session')|float }}
+            '';
+          };
+        }
+      ];
     }
   ];
   sensor = [
@@ -37,7 +39,7 @@
       };
       json_attributes_path = ''$.data.records[0]'';
       json_attributes = ["SessionId"];      
-      value_template = ''{{ value_json[data][records][0].Consumption | float}}'';
+      value_template = ''{{ value_json.data.records[0].Consumption | float | float}}'';
     }  
   ];
   utility_meter = {};
