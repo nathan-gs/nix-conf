@@ -6,15 +6,14 @@
     {
       sensor = [
         {
-          bluecorner_total = {
-            unit_of_measurement = "kWh";
-            device_class = "energy";
-            icon = "mdi:car-electric";
-            state_class = "total";
-            value_template = ''
-              {{ states('sensor.bluecorner_total')|float(0) + states('sensor.bluecorner_last_charging_session')|float }}
-            '';
-          };
+          name = "bluecorner_total";
+          unit_of_measurement = "kWh";
+          device_class = "energy";
+          icon = "mdi:car-electric";
+          state_class = "total";
+          value_template = ''
+            {{ states('sensor.bluecorner_total')|float(0) + states('sensor.bluecorner_last_charging_session')|float }}
+          '';
         }
       ];
     }
