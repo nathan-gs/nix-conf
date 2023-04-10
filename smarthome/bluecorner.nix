@@ -14,6 +14,7 @@
       scan_interval = 900;
       headers = {
         Accept = "application/json";
+        "Content-Type" = "application/x-www-form-urlencoded";
       };
       payload = ''
         request_type=si%3As&refresh_token={{ state_attr('sensor.bluecorner_token', 'refresh_token')}}&grant_type=refresh_token&client_id=BCCP
