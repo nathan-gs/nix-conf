@@ -38,7 +38,7 @@
       };
       json_attributes_path = ''$.data.records[0]'';
       json_attributes = ["SessionId"];      
-      value_template = ''{{ value_json.data.records[0].Consumption | float | float}}'';
+      value_template = ''{{ value_json.data.records[0].Consumption | float }}'';
     }  
   ];
   utility_meter = {};
