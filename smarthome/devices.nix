@@ -72,6 +72,7 @@ let
   
 
 solar = import ./solar.nix {config = config;};
+bluecorner = import ./bluecorner.nix {config = config;};
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
@@ -109,7 +110,9 @@ with lib;
 
     config.binary_sensor = [ ] 
     ++ wfh.binary_sensor
-    ++ solar.binary_sensor;
+    ++ solar.binary_sensor
+    ++ bluecorner.binary_sensor;
+
 
     config.mqtt = {
       binary_sensor = [] 
@@ -122,16 +125,19 @@ with lib;
 
     config.homeassistant.customize = {} 
       // energy.customize
-      // solar.customize;
+      // solar.customize
+      // bluecorner.customize;
 
     config.sensor = []
       ++ energy.sensor
-      ++ solar.sensor;
+      ++ solar.sensor
+      ++ bluecorner.sensor;
 
     config.utility_meter = { } 
       // water.utility_meter
       // energy.utility_meter
-      // solar.utility_meter;
+      // solar.utility_meter
+      // bluecorner.utility_meter;
 
     config.template = [] 
       ++ energy.template
@@ -139,7 +145,8 @@ with lib;
       ++ general.template
       ++ hvac.template
       ++ media.template
-      ++ solar.template;
+      ++ solar.template
+      ++ bluecorner.template;
 
     config.device_tracker = [
       {
