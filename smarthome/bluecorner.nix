@@ -13,7 +13,8 @@
       method = "POST";
       scan_interval = 900;
       headers = {
-        "Authorization" = "Bearer {{ state_attr('sensor.bluecorner_token', 'refresh_token')}}"
+        Authorization = "Bearer {{ state_attr('sensor.bluecorner_token', 'refresh_token')}}";
+        Accept = "application/json";
       };
       json_attributes = ["refresh_token", "access_token"];
     }    
