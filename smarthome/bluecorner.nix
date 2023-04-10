@@ -18,10 +18,10 @@
         {
           name = "bluecorner_refresh_token"; 
           state = '' 
-            {% if not is_state('sensor.bluecorner_token', 'unknown') %}
-              {{ states('sensor.bluecorner_token') }}
-            {% else %}
+            {% if is_state('sensor.bluecorner_token', 'unknown') or (states('sensor.bluecorner_token')|length == 0) %}
               {{ states('sensor.bluecorner_refresh_token')}}
+            {% else %}
+              {{ states('sensor.bluecorner_token') }}
             {% endif %}
           '';
         }
