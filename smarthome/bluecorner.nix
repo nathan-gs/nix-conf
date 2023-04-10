@@ -16,7 +16,7 @@
         Authorization = "Bearer {{ state_attr('sensor.bluecorner_token', 'refresh_token')}}";
         Accept = "application/json";
       };
-      json_attributes = ["refresh_token", "access_token"];
+      json_attributes = ["refresh_token" "access_token"];
     }    
   ];
   utility_meter = {};
