@@ -1,4 +1,4 @@
-{config, ...}:
+{config, pkgs, ...}:
 
 {
 
@@ -8,7 +8,7 @@
   sensor = [
     {
       platform = "command_line";
-      command = ''python3 -c "import httpx; print(httpx.post('https://oauth.bluecorner.be/connect/token', data={'request_type':'si:s', 'refresh_token':'{{ state_attr('sensor.bluecorner_token', 'refresh_token')}}', 'grant_type': 'refresh_token', 'client_id':'BCCP'}).json())"'';      
+      command = ''${pkgs.curl}/bin/curl --silent 'https://oauth.bluecorner.be/connect/token' -X POST -H 'Content-Type: application/x-www-form-urlencoded' --data-raw 'request_type=si%3As&refresh_token={{ state_attr('sensor.bluecorner_token', 'refresh_token')}}&grant_type=refresh_token&client_id=BCCP' '';
       name = "bluecorner_token";
       scan_interval = 900;
       json_attributes = ["refresh_token" "access_token"];
