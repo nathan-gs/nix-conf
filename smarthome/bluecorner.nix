@@ -4,6 +4,10 @@
 
   template = [  
     {
+      trigger = {
+        platform = "state";
+        entity_id = "sensor.bluecorner_last_charging_session";
+      };
       sensor = [
         {
           name = "bluecorner_total";
@@ -15,6 +19,10 @@
             {{ states('sensor.bluecorner_total')|float(0) + ( states('sensor.bluecorner_last_charging_session') | float / 1000 ) }}
           '';
         }
+      ];
+    }
+    {
+      sensor = [
         {
           name = "bluecorner_refresh_token"; 
           state = '' 
