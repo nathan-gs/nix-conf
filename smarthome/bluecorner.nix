@@ -53,7 +53,7 @@
         }
       ];
       condition = ''
-        {{ is_state('sensor.bluecorner_token', 'unknown') or (states('sensor.bluecorner_token')|length == 0) }}
+        {{ not is_state('sensor.bluecorner_token', 'unknown') and (states('sensor.bluecorner_token')|length > 0) }}
       '';
       action = [
         {
