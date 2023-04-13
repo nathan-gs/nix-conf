@@ -41,15 +41,15 @@
 
   utility_meter = {};
   customize = {};
-  
+
   automations = [
     {
       id = "bluecorner_token.save";
-      alias = "bluecorner_token.save";
+      alias = "bluecorner_token.save";      
       trigger = [        
         {
           platform = "state";
-          state = "sensor.bluecorner_token";
+          entity_id = "sensor.bluecorner_token";
         }
       ];
       condition = ''
