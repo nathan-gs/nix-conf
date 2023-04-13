@@ -106,7 +106,8 @@ with lib;
       ++ wfh.automations
       ++ media.automations
       ++ plugsFile.automations
-      ++ energy.automations;
+      ++ energy.automations
+      ++ bluecorner.automations;
 
     config.binary_sensor = [ ] 
     ++ wfh.binary_sensor
@@ -119,7 +120,8 @@ with lib;
         ++ water.mqtt.binary_sensor;
 
       sensor = []
-        ++ water.mqtt.sensor;
+        ++ water.mqtt.sensor
+        ++ bluecorner.mqtt_sensor;
 
     };
 
