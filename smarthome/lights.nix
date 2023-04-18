@@ -33,12 +33,6 @@ let
       ieee = "0x50325ffffe5ebbec";
       floor = "floor0";
     }
-    {
-      zone = "voordeur";
-      name = "cirkel";
-      ieee = "0xa4c138fd75fc9f62";
-      floor = "garden";
-    }
   ];
 
   automations = [

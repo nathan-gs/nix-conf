@@ -47,6 +47,12 @@ let
       ieee = "0xa4c138bd0cf23138";
       floor = "floor1";
     }
+    {
+      zone = "badkamer";
+      name = "verwarming";
+      ieee = "0xa4c138fd75fc9f62";
+      floor = "floor1";
+    }
   ];
 
   zigbeeDevices = 
