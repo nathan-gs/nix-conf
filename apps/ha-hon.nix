@@ -10,5 +10,5 @@ stdenv.mkDerivation rec {
   };
 
   
-  installPhase = ''cp -a . $out'';
+  installPhase = ''cp -a custom_components/hon $out'';
 }
