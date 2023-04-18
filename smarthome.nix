@@ -113,6 +113,7 @@
       hap-python
       pyqrcode
       bellows
+      zigpy-deconz
       (python311Packages.callPackage apps/pyelectroluxconnect.nix {})
     ];
 
