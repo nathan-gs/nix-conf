@@ -2,7 +2,26 @@
 
 {
 
-  template = [];
+  template = [
+    {
+      trigger = {
+        platform = "state";
+        entity_id = "sensor.bluecorner_last_charging_session";
+      };
+      sensor = [
+        {
+          name = "bluecorner_total";
+          unit_of_measurement = "kWh";
+          device_class = "energy";
+          icon = "mdi:car-electric";
+          state_class = "total";
+          state = ''
+            {{ states('sensor.bluecorner_total')|float(0) + ( states('sensor.bluecorner_last_charging_session') | float ) }}
+          '';
+        }
+      ];
+    }
+  ];
   sensor = [
     {
       platform = "command_line";
@@ -15,7 +34,7 @@
     {
       platform = "rest";
       resource = "https://api.bluecorner.be/blue/api//v3.1/session/BCO/sessionlist/filtered?pagesize=1&pagenumber=1&caching=0&filter=%7B%7D&type=0";
-      name = "bluecorner_total";
+      name = "bluecorner_last_charging_session";
       scan_interval = 900;
       headers = {
         Authorization = ''Bearer {{ state_attr('sensor.bluecorner_token', 'access_token')}} '';
@@ -27,7 +46,6 @@
       unit_of_measurement = "kWh";
       device_class = "energy";
       icon = "mdi:car-electric";
-      state_class = "total_increasing";
     }  
   ];
 
