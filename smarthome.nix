@@ -109,6 +109,11 @@
       croniter
       aiohttp
       aiohttp-cors
+      zha-quirks
+      hap-python
+      pyqrcode
+      bellows
+      (python311Packages.callPackage apps/pyelectroluxconnect.nix {})
     ];
 
     #package = pkgs.nixpkgs-unstable.home-assistant;
