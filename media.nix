@@ -16,7 +16,8 @@
     openFirewall = true;
   };
  
-  users.groups.users.members = ["plex" "photoprism" ];
+  users.groups.media.members = ["plex" "photoprism" ];
+  users.groups.users.members = ["photoprism" ];
 
 
   systemd.services.plex = {
