@@ -14,6 +14,12 @@ let
       ieee = "0x5c0272fffe88e39f";
       floor = "floor0";
     }
+    {
+      zone = "garden";
+      name = "pomp";
+      ieee = "0x9035eafffeb237bb";
+      floor = "garden";
+    }  
   ];
 
   metering_plugs = [
@@ -52,6 +58,18 @@ let
       name = "verwarming";
       ieee = "0xa4c138fd75fc9f62";
       floor = "floor1";
+    }
+    {
+      zone = "bureau";
+      name = "verwarming";
+      ieee = "0xa4c1388319da7258";
+      floor = "floor0";
+    }
+    {
+      zone = "living";
+      name = "verwarming";
+      ieee = "0xa4c138689a501455";
+      floor = "floor0";
     }
   ];
 
