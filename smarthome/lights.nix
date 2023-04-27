@@ -18,6 +18,12 @@ let
       ieee = "0x0c4314fffe98c59f";
       floor = "floor0";
     }
+    {
+      zone = "keuken";
+      name = "consumptionindicator";
+      ieee = "0x04cd15fffe629cbe";
+      floor = "floor0";
+    }
   ];
 
   lightPlugs = [
@@ -33,6 +39,7 @@ let
       ieee = "0x50325ffffe5ebbec";
       floor = "floor0";
     }
+    
   ];
 
   automations = [
