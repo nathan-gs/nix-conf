@@ -15,8 +15,8 @@
           device_class = "energy";
           icon = "mdi:car-electric";
           state_class = "total";
-          state = ''
-            {{ states('sensor.bluecorner_total')|float(0) + ( states('sensor.bluecorner_last_charging_session') | float ) }}
+          state = ''            
+            {{ states('sensor.bluecorner_total')|float(0) + ( states('sensor.bluecorner_last_charging_session') | float(0) ) }}
           '';
         }
       ];
@@ -89,4 +89,9 @@
     }
   ];
   binary_sensor = [];
+
+  recorder_excludes = [
+    "sensor.bluecorner_token"
+    "sensor.bluecorner_refresh_token"
+  ];
 }

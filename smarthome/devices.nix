@@ -174,6 +174,11 @@ with lib;
       ++ solar.template
       ++ bluecorner.template;
 
+    config.recorder.exclude.entity_globs []
+      ++ bluecorner.recorder_excludes
+      ++ hvac.recorder_excludes
+      ++ solar.recorder_excludes;
+
     config.device_tracker = [
       {
         platform = "ping";

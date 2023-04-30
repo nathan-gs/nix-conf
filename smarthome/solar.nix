@@ -75,4 +75,9 @@
   customize = {};
   automations = [];
   binary_sensor = [];
+
+  recorder_excludes = [
+    "sensor.solar_solis_inverter_cgi"
+  ];
+
 }

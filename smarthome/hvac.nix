@@ -526,6 +526,28 @@ let
     }
   ];
 
+  electricHeatingAutomations = [
+    # {
+    #   id = "heating_in_bureau_on_if_enough_solar";
+    #   alias = "heating_in_bureau_on_if_enough_solar";
+    #   trigger = [
+    #     {
+    #       platform = "state";
+    #       entity_id = "binary_sensor.ndesk";
+    #       to = "on";
+    #     }
+    #   ];
+    #   condition = [];
+    #   action = [
+    #     {
+	  #       service = "switch.turn_on";
+    #       target.entity_id = "switch.floor0_bureau_metering_plug_verwarming";          
+    #     }        
+    #   ];
+    #   mode = "single";
+    # }
+  ];
+
 in
 {
   devices = [] 
@@ -536,8 +558,14 @@ in
     ++ windowOpenAutomations
     ++ windowClosedAutomations
     ++ temperatureRtvAutomations
-    ++ temperatureCalibrationAutomations;
+    ++ temperatureCalibrationAutomations
+    ++ electricHeatingAutomations;
 
   template = [] ++ temperatureAutoWanted;
 
+
+  recorder_excludes = [
+    "binary_sensor.*_window_*_tamper"
+    "binary_sensor.*_rtv_*_away_mode"
+  ];
 }
