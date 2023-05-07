@@ -21,6 +21,7 @@ let
 
 solar = import ./solar.nix {config = config;};
 bluecorner = import ./bluecorner.nix {config = config; pkgs = pkgs;};
+garden = import ./garden.nix {config = config; pkgs = pkgs;};
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
@@ -55,12 +56,14 @@ with lib;
       ++ media.automations
       ++ plugs.automations
       ++ energy.automations
-      ++ bluecorner.automations;
+      ++ bluecorner.automations
+      ++ garden.automations;
 
     config.binary_sensor = [ ] 
     ++ wfh.binary_sensor
     ++ solar.binary_sensor
-    ++ bluecorner.binary_sensor;
+    ++ bluecorner.binary_sensor
+    ++ garden.binary_sensor;
 
 
     config.mqtt = {
@@ -69,25 +72,29 @@ with lib;
 
       sensor = []
         ++ water.mqtt.sensor
-        ++ bluecorner.mqtt_sensor;
+        ++ bluecorner.mqtt_sensor
+        ++ garden.mqtt_sensor;
 
     };
 
     config.homeassistant.customize = {} 
       // energy.customize
       // solar.customize
-      // bluecorner.customize;
+      // bluecorner.customize
+      // garden.customize;
 
     config.sensor = []
       ++ energy.sensor
       ++ solar.sensor
-      ++ bluecorner.sensor;
+      ++ bluecorner.sensor
+      ++ garden.sensor;
 
     config.utility_meter = { } 
       // water.utility_meter
       // energy.utility_meter
       // solar.utility_meter
-      // bluecorner.utility_meter;
+      // bluecorner.utility_meter
+      // garden.utility_meter;
 
     config.template = [] 
       ++ energy.template
@@ -96,12 +103,14 @@ with lib;
       ++ hvac.template
       ++ media.template
       ++ solar.template
-      ++ bluecorner.template;
+      ++ bluecorner.template
+      ++ garden.template;
 
     config.recorder.exclude.entity_globs = []
       ++ bluecorner.recorder_excludes
       ++ hvac.recorder_excludes
-      ++ solar.recorder_excludes;
+      ++ solar.recorder_excludes
+      ++ garden.recorder_excludes;
 
     config.device_tracker = [
       {
