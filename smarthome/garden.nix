@@ -13,7 +13,6 @@
       state_characteristic = "total";
       max_age.hours = 24 * 5;
       sampling_size = 60 * 24 * 5;
-      unit_of_measurement = "mm";
     }
   ];
 
