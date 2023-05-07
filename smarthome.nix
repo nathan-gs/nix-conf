@@ -99,6 +99,7 @@
       "http"
       "api"
       "forecast_solar"
+      "openweathermap"
     ];
 
     extraPackages = python311Packages: with python311Packages; [
