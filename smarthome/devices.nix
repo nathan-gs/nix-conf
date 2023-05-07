@@ -1,78 +1,6 @@
 { config, lib, pkgs, ... }:
 let
 
-  plugs = [     
-    {
-      zone = "garden";
-      name = "laadpaal";
-      ieee = "0x842e14fffe3b8777";
-      floor = "garden";
-    }    
-    {
-      zone = "living";
-      name = "sonos_rear";
-      ieee = "0x5c0272fffe88e39f";
-      floor = "floor0";
-    }
-    {
-      zone = "garden";
-      name = "pomp";
-      ieee = "0x9035eafffeb237bb";
-      floor = "garden";
-    }  
-  ];
-
-  metering_plugs = [
-    {
-      zone = "waskot";
-      name = "droogkast";
-      ieee = "0xa4c138163459950e";
-      floor = "floor1";
-    }
-    {
-      zone = "keuken";
-      name = "oven";
-      ieee = "0xa4c1381f8ccf7230";
-      floor = "floor0";
-    }
-    {
-      zone = "basement";
-      name = "network";
-      ieee = "0xa4c138ae189cf8bd";
-      floor = "basement";
-    }
-    {
-      zone = "waskot";
-      name = "wasmachine";
-      ieee = "0xa4c1383c42598ec3";
-      floor = "floor1";
-    }
-    {
-      zone = "fen";
-      name = "deken";
-      ieee = "0xa4c138bd0cf23138";
-      floor = "floor1";
-    }
-    {
-      zone = "badkamer";
-      name = "verwarming";
-      ieee = "0xa4c138fd75fc9f62";
-      floor = "floor1";
-    }
-    {
-      zone = "bureau";
-      name = "verwarming";
-      ieee = "0xa4c1388319da7258";
-      floor = "floor0";
-    }
-    {
-      zone = "living";
-      name = "verwarming";
-      ieee = "0xa4c138689a501455";
-      floor = "floor0";
-    }
-  ];
-
   zigbeeDevices = 
     hvac.zigbeeDevices // zigbeeDevicesWithIeeeAsKey // lights.zigbeeDevices;
   
@@ -87,8 +15,7 @@ let
       (
         hvac.devices 
         ++ lights.devices
-        ++ map (v: v // { type = "plug";}) plugs
-        ++ map (v: v // { type = "metering_plug";}) metering_plugs        
+        ++ plugs.devices
       )
     );
 
@@ -103,7 +30,7 @@ media = import ./media.nix;
 wfh = import ./wfh.nix;
 lights = import ./lights.nix;
 hvac = import ./hvac.nix;
-plugsFile = import ./plugs.nix;
+plugs = import ./plugs.nix;
 general = import ./general.nix;
 
 in 
@@ -129,7 +56,7 @@ with lib;
       ++ hvac.automations
       ++ wfh.automations
       ++ media.automations
-      ++ plugsFile.automations
+      ++ plugs.automations
       ++ energy.automations
       ++ bluecorner.automations;
 
