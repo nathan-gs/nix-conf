@@ -114,6 +114,7 @@
       pyqrcode
       bellows
       zigpy-deconz
+      zigpy-xbee
       (python311Packages.callPackage apps/pyelectroluxconnect.nix {})
     ];
 
