@@ -2,7 +2,7 @@
 { config, pkgs, lib, ... }:
 {
   imports = [
-    ./smarthome/devices.nix
+    ./smarthome/main.nix
   ];
 
   services.mosquitto = {

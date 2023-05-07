@@ -19,9 +19,6 @@ let
       )
     );
 
-
-  
-
 solar = import ./solar.nix {config = config;};
 bluecorner = import ./bluecorner.nix {config = config; pkgs = pkgs;};
 water = import ./water.nix;
