@@ -65,9 +65,9 @@
             # Discounted rate for the first 30m3 + 30m3 per person
             state = ''
 {% if states('sensor.water_delivery_yearly') | float > ((1 * 30 + 4 * 30) * 1000) %}
-{{ (10,6896 / 1000) * 1.06 }}
+{{ (10.6896 / 1000) * 1.06 }}
 {% else %}
-{{ (5,3448 / 1000) * 1.06 }}
+{{ (5.3448 / 1000) * 1.06 }}
             {% endif %}
             '';
           }
