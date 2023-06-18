@@ -111,6 +111,7 @@
       croniter
       aiohttp
       aiohttp-cors
+      aiohomekit
       zha-quirks
       hap-python
       pyqrcode

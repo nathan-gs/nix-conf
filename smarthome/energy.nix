@@ -30,35 +30,34 @@ let
       }
     ];
 
-    sensor = [
+    scrape = [
       {
-        platform = "scrape";
         resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
-        name = "electricity_cost_peak_kwh_energycomponent";
-        select = "table :has(> th:-soup-contains(Dagtarief)) td";
-        unit_of_measurement = "€/kWh";
-        value_template = "{{ (value | float) / 100 }}";
         scan_interval = 3600;
+        sensor = [
+          {
+            name = "electricity_cost_peak_kwh_energycomponent";
+            select = "table :has(> th:-soup-contains(Dagtarief)) td";
+            value_template = "{{ (value | float) / 100 }}";
+            unit_of_measurement = "€/kWh";
+          }
+          {
+            name = "electricity_cost_offpeak_kwh_energycomponent";
+            select = "table :has(> th:-soup-contains(Nachttarief)) td";
+            unit_of_measurement = "€/kWh";
+            value_template = "{{ (value | float) / 100 }}";
+          }
+          {
+            name = "gas_cost_kwh_energycomponent";
+            select = "table :has(> th:-soup-contains(per)) td";
+            unit_of_measurement = "€/kWh";
+            value_template = "{{ (value | float) / 100 }}";
+          }
+        ];
       }
-      {
-        platform = "scrape";
-        resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
-        name = "electricity_cost_offpeak_kwh_energycomponent";
-        select = "table :has(> th:-soup-contains(Nachttarief)) td";
-        unit_of_measurement = "€/kWh";
-        value_template = "{{ (value | float) / 100 }}";
-        scan_interval = 3600;
-      }
-      {
-        platform = "scrape";
-        resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
-        name = "gas_cost_kwh_energycomponent";
-        select = "table :has(> th:-soup-contains(per)) td";
-        unit_of_measurement = "€/kWh";
-        value_template = "{{ (value | float) / 100 }}";
-        scan_interval = 3600;
-      }      
     ];
+
+    sensor = [];
   };
 
   gas = {
@@ -462,7 +461,7 @@ let
 
 in
 {
-
+  scrape = cost.scrape;
   template = cost.template ++ gas.template ++ electricity.template ++ degreeDays.template;
   sensor = cost.sensor ++ electricity.sensor ++ degreeDays.sensor;
   utility_meter = gas.utility_meter // electricity.utility_meter;

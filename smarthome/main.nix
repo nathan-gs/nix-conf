@@ -89,6 +89,10 @@ with lib;
       ++ bluecorner.sensor
       ++ garden.sensor;
 
+    config.scrape = []
+      ++ energy.scrape
+      ++ garden.scrape;      
+
     config.utility_meter = { } 
       // water.utility_meter
       // energy.utility_meter

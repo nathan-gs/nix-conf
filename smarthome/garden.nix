@@ -2,6 +2,8 @@
 
 {
 
+  scrape = [];
+
   template = [
     
   ];
