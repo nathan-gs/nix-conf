@@ -2,12 +2,13 @@
 , buildPythonApplication
 , fetchPypi
 , requests
-, beautifulsoup4
+, beautifulsoup4,
+fetchFromGitHub
 }:
 
 buildPythonApplication rec {
   pname = "pyelectroluxconnect";
-  version = "0.13.4";
+  version = "0.13.9";
 
   src = fetchFromGitHub {
     owner = "tomeko12";
