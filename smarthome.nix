@@ -50,6 +50,7 @@
         longitude = config.secrets.home-assistant.longitude;
         unit_system = "metric";            
         time_zone = "Europe/Brussels";
+        country = "BE";
         #packages = "!include_dir_named packages";
       };
       prometheus = {
