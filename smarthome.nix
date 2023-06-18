@@ -103,7 +103,7 @@
       "openweathermap"
     ];
 
-    extraPackages = python311Packages: with python311Packages; [
+    extraPackages = python3Packages: with python3Packages; [
       spotipy
       pyipp
       soco
@@ -118,7 +118,8 @@
       bellows
       zigpy-deconz
       zigpy-xbee
-      (python311Packages.callPackage apps/pyelectroluxconnect.nix {})
+      zigpy-zigate
+      (python3Packages.callPackage apps/pyelectroluxconnect.nix {})
     ];
 
     #package = pkgs.nixpkgs-unstable.home-assistant;
