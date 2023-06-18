@@ -45,14 +45,6 @@
   };
 
   
-  users.extraUsers.nhtpc-backup = {
-    uid = 501;
-    isNormalUser = true;
-    openssh.authorizedKeys.keys = [
-      config.secrets.ssh.nhtpc-backup.pub
-    ];
-  };
-
   users.users.mediaonly = {
     uid = 2003;
     group = "mediaonly";

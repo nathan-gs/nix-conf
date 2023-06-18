@@ -24,7 +24,7 @@
   # Enable the OpenSSH daemon.
   services.openssh.enable = true;
 
-  services.openssh.permitRootLogin = "without-password";
+  services.openssh.settings.PermitRootLogin = "no";
   services.openssh.ports = [22 443];
 
 
