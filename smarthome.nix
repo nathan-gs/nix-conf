@@ -121,6 +121,7 @@
       zigpy-zigate
       (pkgs.callPackage apps/pyelectroluxconnect.nix {})
     ];
+  };
 
   systemd.services.home-assistant-backup = {
     description = "home-assistant-backup"; 
