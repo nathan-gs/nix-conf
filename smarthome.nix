@@ -119,7 +119,7 @@
       zigpy-deconz
       zigpy-xbee
       zigpy-zigate
-      (pkgs.callPackage apps/pyelectroluxconnect.nix {})
+      (callPackage apps/pyelectroluxconnect.nix {})
     ];
   };
 
