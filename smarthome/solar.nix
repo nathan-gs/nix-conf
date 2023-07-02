@@ -30,9 +30,9 @@
           # Workaround for Solis occasionally reporting the previous total in the first minutes after midnight          
           state = ''
 {% set hour = now().hour %}
-{% set delivery_daily = states('sensor.solar_delivery_daily') | float %}
-{% set delivery_till_yesterday = states('sensor.solar_delivery_total_till_yesterday') | float %}
-{% set delivery_total = states('sensor.solar_delivery_total') | float %}
+{% set delivery_daily = states('sensor.solar_delivery_daily') | float(0) %}
+{% set delivery_till_yesterday = states('sensor.solar_delivery_total_till_yesterday') | float(0) %}
+{% set delivery_total = states('sensor.solar_delivery_total') | float(0) %}
 {% if 3 < hour < 23  %}
   {{ delivery_till_yesterday + delivery_daily }}
 {% else %}
