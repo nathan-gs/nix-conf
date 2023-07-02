@@ -29,11 +29,15 @@
           name = "solar_delivery_total";
           # Workaround for Solis occasionally reporting the previous total in the first minutes after midnight          
           state = ''
-            {% if (now().hour > 3 or now().hour < 23)  %}
-              {{ ( states('sensor.solar_delivery_total_till_yesterday') | float(0) ) + (states('sensor.solar_delivery_daily') | float(0) ) }}
-            {% else %}
-              {{ states('sensor.solar_delivery_total') | float(0) }}
-            {% endif %}
+{% set hour = now().hour %}
+{% set delivery_daily = states('sensor.solar_delivery_daily') | float %}
+{% set delivery_till_yesterday = states('sensor.solar_delivery_total_till_yesterday') | float %}
+{% set delivery_total = states('sensor.solar_delivery_total') | float %}
+{% if 3 < hour < 23  %}
+  {{ delivery_till_yesterday + delivery_daily }}
+{% else %}
+  {{ delivery_total }}
+{% endif %}
           '';
           unit_of_measurement = "kWh";
           device_class = "energy";
