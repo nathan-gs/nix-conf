@@ -122,7 +122,26 @@
       (python3Packages.callPackage apps/pyelectroluxconnect.nix {})
     ];
 
-    #package = pkgs.nixpkgs-unstable.home-assistant;
+    package = pkgs.home-assistant.override {
+      extraPackages = python3Packages: with python3Packages; [
+        spotipy
+        pyipp
+        soco
+        pyatv
+        croniter
+        aiohttp
+        aiohttp-cors
+        aiohomekit
+        zha-quirks
+        hap-python
+        pyqrcode
+        bellows
+        zigpy-deconz
+        zigpy-xbee
+        zigpy-zigate
+        (python3Packages.callPackage apps/pyelectroluxconnect.nix {})
+      ];
+    };
   };
 
   systemd.services.home-assistant-backup = {
