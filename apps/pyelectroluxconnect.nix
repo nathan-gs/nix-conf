@@ -1,12 +1,12 @@
 { lib
-, buildPythonApplication
+, buildPythonPackage
 , fetchPypi
 , requests
 , beautifulsoup4,
 fetchFromGitHub
 }:
 
-buildPythonApplication rec {
+buildPythonPackage rec {
   pname = "pyelectroluxconnect";
   version = "0.13.9";
 
@@ -18,6 +18,10 @@ buildPythonApplication rec {
   };
 
   propagatedBuildInputs = [ requests beautifulsoup4 ];
+
+  doCheck = false;
+
+  pythonImportsCheck = [ "pyelectroluxconnect" ];
 
   meta = with lib; {
     description = "Python client package to communicate with the Electrolux Connectivity Platform";
