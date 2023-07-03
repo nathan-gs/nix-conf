@@ -80,27 +80,29 @@
     #lovelaceConfig = {};
         
     extraComponents = [
+      "api"
       "apple_tv"
       "backup"
       "command_line"
       "default_config"
       "dsmr"
       "ffmpeg"      
-      "my"            
+      "forecast_solar"
+      "homekit_controller"
+      "homekit"
+      "http"
       "mqtt"
-      "plex"
+      "my"            
+      "openweathermap"
       "ping"
+      "plex"
       "prometheus"
+      "radio_browser"
+      "scrape"
       "sensor"
       "sonos"
-      "scrape"
-      "volvooncall"
-      "radio_browser"
       "utility_meter"
-      "http"
-      "api"
-      "forecast_solar"
-      "openweathermap"
+      "volvooncall"
     ];
 
     extraPackages = ps: with ps; [
