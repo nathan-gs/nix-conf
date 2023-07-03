@@ -103,14 +103,12 @@
       "openweathermap"
     ];
 
-    extraPackages = python3Packages: with python3Packages; [
+    extraPackages = ps: with ps; [
       spotipy
       pyipp
       soco
-      pyatv
       croniter
       aiohttp
-      aiohttp-cors
       aiohomekit
       zha-quirks
       hap-python
