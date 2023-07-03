@@ -107,7 +107,7 @@
 
     extraPackages = ps: with ps; [
       (callPackage apps/pyelectroluxconnect.nix {})
-      (callPackage apps/pyworxcloud.nix {})
+      #(callPackage apps/pyworxcloud.nix {})
       spotipy
       pyipp
       soco
@@ -140,7 +140,7 @@
     ln -snf "${(pkgs.callPackage ./apps/ha-solis-sensor.nix {})}" "/var/lib/hass/custom_components/solis"
     ln -snf "${(pkgs.callPackage ./apps/ha-hon.nix {})}" "/var/lib/hass/custom_components/hon"
     ln -snf "${(pkgs.callPackage ./apps/ha-electrolux-status.nix {})}" "/var/lib/hass/custom_components/electrolux_status"
-    ln -snf "${(pkgs.callPackage ./apps/ha-landroid-cloud.nix {})}" "/var/lib/hass/custom_components/landroid_cloud"
+    # ln -snf "${(pkgs.callPackage ./apps/ha-landroid-cloud.nix {})}" "/var/lib/hass/custom_components/landroid_cloud"
   '';  
 
   services.zigbee2mqtt = {
