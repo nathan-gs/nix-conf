@@ -104,6 +104,7 @@
     ];
 
     extraPackages = ps: with ps; [
+      (callPackage apps/pyelectroluxconnect.nix {})
       spotipy
       pyipp
       soco
@@ -117,7 +118,6 @@
       zigpy-deconz
       zigpy-xbee
       zigpy-zigate
-      (callPackage apps/pyelectroluxconnect.nix {})
     ];
   };
 
