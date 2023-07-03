@@ -29,7 +29,7 @@ buildPythonPackage rec {
   meta = with lib; {
     description = "Python module for communicating with Worx Cloud mowers, primarily developed for use with Home Assistant";
     homepage = "https://github.com/MTrab/pyworxcloud";
-    license = licenses.gpl30;
+    license = licenses.gpl3Only;
     maintainers = with maintainers; [ nathan-gs ];
   };
 }
