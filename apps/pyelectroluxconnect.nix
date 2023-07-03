@@ -8,7 +8,7 @@ fetchFromGitHub
 
 buildPythonPackage rec {
   pname = "pyelectroluxconnect";
-  version = "0.13.9";
+  version = "0.3.19";
 
   src = fetchFromGitHub {
     owner = "tomeko12";
