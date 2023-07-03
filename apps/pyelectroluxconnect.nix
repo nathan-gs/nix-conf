@@ -12,8 +12,8 @@ buildPythonPackage rec {
 
   src = fetchFromGitHub {
     owner = "tomeko12";
-    repo = "pyelectroluxconnect ";
-    rev = "0.13.9";
+    repo = "pyelectroluxconnect";
+    rev = version;
     sha256 = "1jkbmaiwad5kmryqmm83jvab8vy6kxvj2v8vn0jggsa4xm7rzgwm";
   };
 
