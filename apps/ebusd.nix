@@ -22,8 +22,8 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [
     "-DCMAKE_INSTALL_PREFIX=$out"
-    "-DCMAKE_INSTALL_SYSCONFDIR=$out/etc"
-    "-DCMAKE_INSTALL_LOCALSTATEDIR=$out/var"
+    "-DCMAKE_INSTALL_SYSCONFDIR=$out"
+    "-DCMAKE_INSTALL_LOCALSTATEDIR=$out"
   ];
 
 
