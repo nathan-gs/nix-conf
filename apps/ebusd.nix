@@ -29,7 +29,7 @@ stdenv.mkDerivation rec {
 
   installPhase = ''
     DESTDIR=$out cmake --install build \
-      -DCMAKE_INSTALL_PREFIX=$out 
+      --prefix=$out
   '';
 
   meta = with lib; {
