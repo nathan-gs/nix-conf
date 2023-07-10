@@ -11,7 +11,8 @@
      powertop
      tmux
      tree
-     jq
+     jq     
+     (callPackage apps/ebusd.nix {})
   ];
 
   programs.bash.enableCompletion = true;
