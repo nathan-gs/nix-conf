@@ -23,6 +23,8 @@ stdenv.mkDerivation rec {
 
   configureFlags = [
     "--prefix=$out"
+    "--sysconfdir=$out/etc"
+    "--localstatedir=$out/var"
   ];
 
   meta = with lib; {
