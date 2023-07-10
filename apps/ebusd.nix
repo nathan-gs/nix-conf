@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto }:
+{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto, cmake, autoconf, pkg-config }:
 
 stdenv.mkDerivation rec {
   name = "ebusd";
@@ -8,6 +8,12 @@ stdenv.mkDerivation rec {
     rev = "23.2";
     sha256 = "2CkcTTxEzVrEPtUVVDxXPPkYqZT6+gsCcfTrt83sFv8=";
   };
+
+  nativeBuildInputs = [
+    cmake
+    autoconf
+    pkg-config
+  ];
 
   buildInputs = [
     argparse
