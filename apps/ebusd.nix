@@ -21,14 +21,8 @@ stdenv.mkDerivation rec {
   ];
 
 
-  configureFlags = [
-    "--prefix=$out"
-    "--sysconfdir=$out/etc"
-    "--localstatedir=$out/var"
-  ];
-
   installPhase = ''
-    cmake --install . --strip --prefix=$out
+    cmake SYSCONFDIR=$out/etc LOCALSTATEDIR=$out/var --install . --strip --prefix=$out
   '';
 
   meta = with lib; {
