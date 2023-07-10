@@ -28,7 +28,7 @@ stdenv.mkDerivation rec {
   ];
 
   installPhase = ''
-    make DESTDIR=$out install
+    cmake --install . --strip --prefix=$out
   '';
 
   meta = with lib; {
