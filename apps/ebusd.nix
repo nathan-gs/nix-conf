@@ -22,7 +22,7 @@ stdenv.mkDerivation rec {
 
 
   installPhase = ''
-    cmake SYSCONFDIR=$out/etc LOCALSTATEDIR=$out/var --install . --strip --prefix=$out
+    cmake --install . --prefix=$out SYSCONFDIR=$out/etc LOCALSTATEDIR=$out/var 
   '';
 
   meta = with lib; {
