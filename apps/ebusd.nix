@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto, autoconf, pkg-config }:
+{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto, cmake, autoconf, pkg-config }:
 
 stdenv.mkDerivation rec {
   name = "ebusd";
@@ -10,6 +10,7 @@ stdenv.mkDerivation rec {
   };
 
   nativeBuildInputs = [
+    cmake
     autoconf
     pkg-config
   ];
@@ -19,10 +20,12 @@ stdenv.mkDerivation rec {
     mosquitto
   ];
 
+  cmakeFlags = [
+    "-DCMAKE_INSTALL_PREFIX=$out"
+    "-DCMAKE_INSTALL_SYSCONFDIR=$out/etc"
+    "-DCMAKE_INSTALL_LOCALSTATEDIR=$out/var"
+  ];
 
-  installPhase = ''
-    make prefix=$out sysconfdir=$out/etc install
-  '';
 
   meta = with lib; {
    description = "ebusd";
