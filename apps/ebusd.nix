@@ -27,6 +27,11 @@ stdenv.mkDerivation rec {
     "--localstatedir=$out/var"
   ];
 
+  installPhase = ''
+    DESTDIR=$out cmake --install build \
+      -DCMAKE_INSTALL_PREFIX=$out 
+  '';
+
   meta = with lib; {
    description = "ebusd";
    homepage = "https://github.com/john30/ebusd";
