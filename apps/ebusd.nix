@@ -21,6 +21,10 @@ stdenv.mkDerivation rec {
   ];
 
 
+  configureFlags = [
+    "--prefix=$out"
+  ];
+
   meta = with lib; {
    description = "ebusd";
    homepage = "https://github.com/john30/ebusd";
