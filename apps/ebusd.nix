@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto, cmake, autoconf, pkg-config }:
+{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto, cmake, autoconf, automake, libtool, pkg-config }:
 
 stdenv.mkDerivation rec {
   name = "ebusd";
@@ -12,6 +12,8 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     cmake
     autoconf
+    automake
+    libtool
     pkg-config
   ];
 
