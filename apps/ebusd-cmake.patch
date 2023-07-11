@@ -1,0 +1,14 @@
+186a187,191
+> if(EXISTS "${ROOT}/etc/debian_version")
+>   install(FILES ${CMAKE_SOURCE_DIR}/contrib/debian/default/ebusd DESTINATION /etc/default/)
+>   install(FILES ${CMAKE_SOURCE_DIR}/contrib/debian/init.d/ebusd DESTINATION /etc/init.d/)
+>   install(FILES ${CMAKE_SOURCE_DIR}/contrib/debian/systemd/ebusd.service DESTINATION /lib/systemd/system/)
+> endif()
+189c194
+<   install(FILES ${MQTT_CFG_FILES} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/ebusd/)
+---
+>   install(FILES ${MQTT_CFG_FILES} DESTINATION /etc/ebusd/)
+193c198
+<   install(FILES ${KNX_CFG_FILES} DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/ebusd/)
+---
+>   install(FILES ${KNX_CFG_FILES} DESTINATION /etc/ebusd/)

@@ -22,25 +22,14 @@ stdenv.mkDerivation rec {
     mosquitto
   ];
 
-  configureFlags = [
-    "--sysconfdir=\${out}/etc"
-    "--localstatedir=\${out}/var"
+  patches = [
+    ./ebusd-cmake.patch
   ];
 
-  preConfigure = ''
-    ./autogen.sh --prefix="$out"
-  '';
-
-  installFlags = [
-    "sysconfdir=\${out}/etc"
-    "localstatedir=\${out}/var"
+  cmakeFlags = [
+    "-DCMAKE_INSTALL_SYSCONFDIR=${placeholder "out"}/etc"
+    "-DCMAKE_INSTALL_LOCALSTATEDIR=${placeholder "TMPDIR"}"
   ];
-
-  #cmakeFlags = [
-  #  "-DCMAKE_INSTALL_PREFIX=$out"
-  #  "-DCMAKE_INSTALL_SYSCONFDIR=$out"
-  #  "-DCMAKE_INSTALL_LOCALSTATEDIR=$out"
-  #];
 
 
   meta = with lib; {
