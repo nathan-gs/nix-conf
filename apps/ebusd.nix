@@ -21,14 +21,17 @@ stdenv.mkDerivation rec {
   ];
 
   configureFlags = [
-    "--sysconfdir=${placeholder "out"}/etc"
-    "--localstatedir=${placeholder "out"}/var"
+    "--sysconfdir=\${out}/etc"
+    "--localstatedir=\${out}/var"
   ];
 
+  preConfigure = ''
+    ./autogen.sh --prefix="$out"
+  '';
 
   installFlags = [
-    "sysconfdir=${placeholder "out"}/etc"
-    "localstatedir=${placeholder "out"}/var"
+    "sysconfdir=\${out}/etc"
+    "localstatedir=\${out}/var"
   ];
 
   #cmakeFlags = [
