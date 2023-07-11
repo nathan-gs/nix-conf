@@ -31,11 +31,10 @@ stdenv.mkDerivation rec {
   #  "-DCMAKE_INSTALL_LOCALSTATEDIR=$out"
   #];
 
-  installPhase = ''
-    cmake --build . --target=install --config=Release --prefix=$out --sysconfdir=$out/etc --localstatedir=$out/var
+  configurePhase = ''
+    ./autogen.sh --prefix=$out --sysconfdir=$out/etc --localstatedir=$out/var
 
   '';
-
 
   meta = with lib; {
    description = "ebusd";
