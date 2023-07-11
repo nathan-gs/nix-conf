@@ -28,6 +28,7 @@ stdenv.mkDerivation rec {
 
   cmakeFlags = [
     "-DCMAKE_INSTALL_SYSCONFDIR=${placeholder "out"}/etc"
+    "-DCMAKE_INSTALL_BINDIR=${placeholder "out"}/bin"
     "-DCMAKE_INSTALL_LOCALSTATEDIR=${placeholder "TMPDIR"}"
   ];
 
