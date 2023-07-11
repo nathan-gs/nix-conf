@@ -21,8 +21,8 @@ stdenv.mkDerivation rec {
   ];
 
   configureFlags = [
-    "--sysconfdir=${out}/etc"
-    "--localstatedir=${out}/var"
+    "--sysconfdir=\${out}/etc"
+    "--localstatedir=\${out}/var"
   ];
 
   #cmakeFlags = [
