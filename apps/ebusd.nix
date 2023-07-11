@@ -20,6 +20,11 @@ stdenv.mkDerivation rec {
     mosquitto
   ];
 
+  configureFlags = [
+    "--sysconfdir=$out"
+    "--localstatedir=$out"
+  ];
+
   cmakeFlags = [
     "-DCMAKE_INSTALL_PREFIX=$out"
     "-DCMAKE_INSTALL_SYSCONFDIR=$out"
