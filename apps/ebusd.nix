@@ -20,16 +20,21 @@ stdenv.mkDerivation rec {
     mosquitto
   ];
 
-  configureFlags = [
-    "--sysconfdir=$out"
-    "--localstatedir=$out"
-  ];
+  #configureFlags = [
+  #  "--sysconfdir=$out"
+  #  "--localstatedir=$out"
+  #];
 
-  cmakeFlags = [
-    "-DCMAKE_INSTALL_PREFIX=$out"
-    "-DCMAKE_INSTALL_SYSCONFDIR=$out"
-    "-DCMAKE_INSTALL_LOCALSTATEDIR=$out"
-  ];
+  #cmakeFlags = [
+  #  "-DCMAKE_INSTALL_PREFIX=$out"
+  #  "-DCMAKE_INSTALL_SYSCONFDIR=$out"
+  #  "-DCMAKE_INSTALL_LOCALSTATEDIR=$out"
+  #];
+
+  installPhase = ''
+    cmake --build . --target=install --config=Release --prefix=$out --sysconfdir=$out/etc --localstatedir=$out/var
+
+  '';
 
 
   meta = with lib; {
