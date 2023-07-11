@@ -20,10 +20,10 @@ stdenv.mkDerivation rec {
     mosquitto
   ];
 
-  #configureFlags = [
-  #  "--sysconfdir=$out"
-  #  "--localstatedir=$out"
-  #];
+  configureFlags = [
+    "--sysconfdir=${out}/etc"
+    "--localstatedir=${out}/var"
+  ];
 
   #cmakeFlags = [
   #  "-DCMAKE_INSTALL_PREFIX=$out"
@@ -31,10 +31,6 @@ stdenv.mkDerivation rec {
   #  "-DCMAKE_INSTALL_LOCALSTATEDIR=$out"
   #];
 
-  configurePhase = ''
-    ./autogen.sh --prefix=$out --sysconfdir=$out/etc --localstatedir=$out/var
-
-  '';
 
   meta = with lib; {
    description = "ebusd";
