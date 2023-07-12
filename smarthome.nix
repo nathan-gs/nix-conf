@@ -165,7 +165,7 @@
     wants = [ "network-online.target" ];    
     serviceConfig = {
       ExecStart = ''
-        ${pkgs.ebusd}/bin/ebusd \
+        ${pkgs.callPackage apps/ebusd.nix {}}/bin/ebusd \
         --device ebus:3333 \
         --scanconfig=full \
         --foreground
