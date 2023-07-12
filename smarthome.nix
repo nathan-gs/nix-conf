@@ -27,6 +27,10 @@
               acl = ["readwrite watermeter/#"];
               password = config.secrets.mqtt.users.smartgatewaywater.password;
             };
+            ebus = {
+              acl = ["readwrite ebus/#"];
+              password = config.secrets.mqtt.users.ebus.password;
+            }
         };
         
         port = 1883;
@@ -168,6 +172,12 @@
         ${pkgs.callPackage apps/ebusd.nix {}}/bin/ebusd \
         --device ebus:3333 \
         --scanconfig=full \
+        --mqtthost=localhost \
+        --mqttport=1883 \
+        --mqtttopic=ebusd/%circuit/%name \
+        --mqttretain=true \
+        --mqttuser=ebus \
+        --mqttpass=${config.secrets.mqtt.users.ebus.password} \
         --foreground
       '';
     };
