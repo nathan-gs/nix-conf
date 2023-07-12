@@ -32,6 +32,11 @@ stdenv.mkDerivation rec {
     "-DCMAKE_INSTALL_LOCALSTATEDIR=${placeholder "TMPDIR"}"
   ];
 
+  postInstall = ''
+    mv $out/usr/bin $out
+    rmdir $out/usr
+  '';
+
 
   meta = with lib; {
    description = "ebusd";
