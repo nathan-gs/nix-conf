@@ -174,7 +174,7 @@
         --scanconfig=full \
         --mqtthost=localhost \
         --mqttport=1883 \
-        --mqtttopic='ebus/\%circuit/\%name' \
+        --mqtttopic='ebus/%circuit/%name' \
         --mqttretain \
         --mqttuser=ebus \
         --mqttpass=${config.secrets.mqtt.users.ebus.password} \
