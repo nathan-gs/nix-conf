@@ -28,7 +28,7 @@
               password = config.secrets.mqtt.users.smartgatewaywater.password;
             };
             ebus = {
-              acl = ["readwrite ebusd/#"];
+              acl = ["readwrite ebusd/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.ebus.password;
             };
         };
@@ -176,6 +176,7 @@
         --mqttport=1883 \
         --mqttretain \
         --mqttuser=ebus \
+        --mqttint=${pkgs.callPackage apps/ebusd.nix {}}/etc/ebusd/mqtt-hassio.cfg \
         --mqttpass=${config.secrets.mqtt.users.ebus.password} \
         --foreground
       '';
