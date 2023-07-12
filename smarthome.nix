@@ -177,6 +177,7 @@
         --mqttretain \
         --mqttuser=ebus \
         --mqttint=${pkgs.callPackage apps/ebusd.nix {}}/etc/ebusd/mqtt-hassio.cfg \
+        --mqttjson \
         --mqttpass=${config.secrets.mqtt.users.ebus.password} \
         --foreground
       '';
