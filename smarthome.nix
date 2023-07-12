@@ -175,7 +175,7 @@
         --mqtthost=localhost \
         --mqttport=1883 \
         --mqtttopic='ebus/\%circuit/\%name' \
-        --mqttretain=true \
+        --mqttretain \
         --mqttuser=ebus \
         --mqttpass=${config.secrets.mqtt.users.ebus.password} \
         --foreground
