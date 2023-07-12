@@ -67,6 +67,8 @@
         time_zone = "Europe/Brussels";
         country = "BE";
         #packages = "!include_dir_named packages";
+        external_url = "https://ha.nathan.gs";
+        internal_url = "https://ha.nathan.gs";
       };
       prometheus = {
         namespace = "ha";
