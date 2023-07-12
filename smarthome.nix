@@ -30,7 +30,7 @@
             ebus = {
               acl = ["readwrite ebus/#"];
               password = config.secrets.mqtt.users.ebus.password;
-            }
+            };
         };
         
         port = 1883;
