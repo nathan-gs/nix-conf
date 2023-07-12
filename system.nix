@@ -25,7 +25,7 @@
   services.openssh.enable = true;
 
   services.openssh.settings.PermitRootLogin = "no";
-  services.openssh.ports = [22 80];
+  services.openssh.ports = [22];
 
 
   # Fail 2 Ban  

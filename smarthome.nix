@@ -37,7 +37,7 @@
   networking.firewall.allowedTCPPorts = [ 1400 1883 8080 ];
 
   services.nginx.virtualHosts."ha.nathan.gs" = {
-    onlySSL = true;
+    forceSSL = true;
     enableACME = true;
     locations."/" = {
       proxyPass = "http://127.0.0.1:8123";
@@ -157,6 +157,22 @@
       chown nathan:users /media/documents/nathan/onedrive_nathan_personal/backup/homeassistant/*
     '';
     startAt = "*-*-* 03:42:00";
+  };
+
+  systemd.services.ebusd = {
+    description = "ebusd";
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];    
+    serviceConfig = {
+      ExecStart = ''
+        ${pkgs.ebusd}/bin/ebusd \
+        --device ebus:3333 \
+        --scanconfig=full \
+        --foreground
+      '';
+    };
+    environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+    wantedBy = ["multi-user.target"];
   };
 
   
