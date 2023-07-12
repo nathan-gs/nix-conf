@@ -30,7 +30,6 @@
       # Quite an ugly regex workaround due to 0 not being findable...
       mode_state_template = ''
         {% set values = { 'auto':'auto', 'on':'heat',  'night':'cool', 'summer':'off'} %}
-        {% s %}
         {% set v = value | regex_findall_index( '"value"\s?:\s?"(.*)"')  %}
         {{ values[v] if v in values.keys() else 'auto' }}
       '';
