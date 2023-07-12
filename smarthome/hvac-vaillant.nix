@@ -27,9 +27,11 @@
       precision = 0.1;
       temp_step = 0.5;
       modes = [ "auto" "heat" "cool" "off"];
+      # Quite an ugly regex workaround due to 0 not being findable...
       mode_state_template = ''
         {% set values = { 'auto':'auto', 'on':'heat',  'night':'cool', 'summer':'off'} %}
-        {% set v = value_json.0.value %}
+        {% s %}
+        {% set v = value | regex_findall_index( '"value"\s?:\s?"(.*)"')  %}
         {{ values[v] if v in values.keys() else 'auto' }}
       '';
       mode_state_topic = "ebusd/370/Hc1OPMode";
@@ -48,9 +50,23 @@
       temperature_low_state_topic = "ebusd/370/Hc1NightTemp";
       temperature_low_state_template = "{{ value_json.temp1.value }}";
       temperature_high_state_topic = "ebusd/370/Hc1DayTemp";
-      temperature_high_state_template = "{{ value_json.temp.value }}";
+      temperature_high_state_template = "{{ value_json.temp1.value }}";
       temperature_low_command_topic = "ebusd/370/Hc1NightTemp/set";
-      temperature_high_command_topic = "ebusd/370/Hc1DayTemp/set";      
+      temperature_low_command_template = ''
+        {
+         "temp1": {
+            "value": {{ value }}
+          }
+        }
+      '';
+      temperature_high_command_topic = "ebusd/370/Hc1DayTemp/set";
+      temperature_high_command_template = ''
+        {
+         "temp1": {
+            "value": {{ value }}
+          }
+        }
+      '';
       current_temperature_topic = "ebusd/370/DisplayedRoomTemp";
       current_temperature_template = "{{ value_json.temp.value }}";
     }
