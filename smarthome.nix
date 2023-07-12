@@ -39,7 +39,6 @@
   services.nginx.virtualHosts."ha.nathan.gs" = {
     onlySSL = true;
     enableACME = true;
-    forceSSL = true;
     locations."/" = {
       proxyPass = "http://127.0.0.1:8123";
       proxyWebsockets = true; # needed if you need to use WebSocket
