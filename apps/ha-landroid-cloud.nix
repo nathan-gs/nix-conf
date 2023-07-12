@@ -3,7 +3,7 @@
 stdenv.mkDerivation rec {
   name = "ha-landroid-cloud";
   src = fetchFromGitHub {
-    owner = "MTran";
+    owner = "MTrab";
     repo = "landroid_cloud";
     rev = "v3.0.5";
     sha256 = "wcp155ZUGVZK5KpWLfBsx4tQrrClOt7xWJs7JpMOWn4=";
