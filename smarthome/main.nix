@@ -66,7 +66,7 @@ with lib;
 
     config.mqtt = {
       binary_sensor = [] 
-        ++ water.mqtt.binary_sensor
+        ++ water.mqtt.binary_sensor;
 
       sensor = []
         ++ water.mqtt.sensor
