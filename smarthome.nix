@@ -36,6 +36,22 @@
   
   networking.firewall.allowedTCPPorts = [ 1400 1883 8080 ];
 
+  services.nginx.virtualHosts."ha.nathan.gs" = {
+    onlySSL = true;
+    enableACME = true;
+    forceSSL = true;
+    locations."/" = {
+      proxyPass = "http://127.0.0.1:8123";
+      proxyWebsockets = true; # needed if you need to use WebSocket
+      extraConfig =
+        # required when the target is also TLS server with multiple hosts
+        "proxy_ssl_server_name on;" +
+        # required when the server wants to use HTTP Authentication
+        "proxy_pass_header Authorization;"
+        ;
+    };
+  };
+
   services.home-assistant = {
     enable  = true;
     openFirewall = true;

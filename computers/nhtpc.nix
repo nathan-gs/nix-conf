@@ -17,6 +17,7 @@
       ../media.nix
       ../monitoring.nix
       ../smarthome.nix
+      ../servers.nix
     ];
 
 
