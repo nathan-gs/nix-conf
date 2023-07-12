@@ -44,7 +44,7 @@
 
   security.acme = {
     acceptTerms = true;
-    email = config.secrets.email;
+    defaults.email = config.secrets.email;
   };
 
 }
