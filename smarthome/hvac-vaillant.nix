@@ -19,7 +19,7 @@
 
 
   # https://fromeijn.nl/connected-vaillant-to-home-assistant/
-  climate = [
+  mqtt.climate = [
     {
       platform = "mqtt";
       name = "CV";
@@ -47,5 +47,7 @@
     }
   ];
 
+  climate = [];
+  
   recorder_excludes = [ ];
 }

@@ -72,6 +72,10 @@ with lib;
         ++ water.mqtt.sensor
         ++ bluecorner.mqtt_sensor
         ++ garden.mqtt_sensor;
+      
+      climate = []
+        ++ hvac-vaillant.mqtt.climate;
+
 
     };
 
