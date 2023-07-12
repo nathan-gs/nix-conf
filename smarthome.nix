@@ -28,7 +28,7 @@
               password = config.secrets.mqtt.users.smartgatewaywater.password;
             };
             ebus = {
-              acl = ["readwrite ebus/#"];
+              acl = ["readwrite ebusd/#"];
               password = config.secrets.mqtt.users.ebus.password;
             };
         };
@@ -174,7 +174,6 @@
         --scanconfig=full \
         --mqtthost=localhost \
         --mqttport=1883 \
-        --mqtttopic=ebus/\%circuit/\%name \
         --mqttretain \
         --mqttuser=ebus \
         --mqttpass=${config.secrets.mqtt.users.ebus.password} \
