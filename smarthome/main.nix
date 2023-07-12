@@ -22,6 +22,7 @@ let
 solar = import ./solar.nix {config = config;};
 bluecorner = import ./bluecorner.nix {config = config; pkgs = pkgs;};
 garden = import ./garden.nix {config = config; pkgs = pkgs;};
+hvac-vaillant = import ./hvac-vaillant.nix {config = config; pkgs = pkgs;};
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
@@ -47,6 +48,7 @@ with lib;
     config."automation manual" = 
       lights.automations
       ++ hvac.automations
+      ++ hvac-vaillant.automations
       ++ wfh.automations
       ++ media.automations
       ++ plugs.automations
@@ -58,12 +60,13 @@ with lib;
     ++ wfh.binary_sensor
     ++ solar.binary_sensor
     ++ bluecorner.binary_sensor
-    ++ garden.binary_sensor;
+    ++ garden.binary_sensor
+    ++ hvac-vaillant.binary_sensor;
 
 
     config.mqtt = {
       binary_sensor = [] 
-        ++ water.mqtt.binary_sensor;
+        ++ water.mqtt.binary_sensor
 
       sensor = []
         ++ water.mqtt.sensor
@@ -109,7 +112,11 @@ with lib;
       ++ bluecorner.recorder_excludes
       ++ hvac.recorder_excludes
       ++ solar.recorder_excludes
-      ++ garden.recorder_excludes;
+      ++ garden.recorder_excludes
+      ++ hvac-vaillant.recorder_excludes;
+
+    config.climate = []
+      ++ hvac-vaillant.climate;
 
     config.device_tracker = [
       {
