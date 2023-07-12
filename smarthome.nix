@@ -70,6 +70,12 @@
         external_url = "https://ha.nathan.gs";
         internal_url = "https://ha.nathan.gs";
       };
+      http = {
+        use_x_forwarded_for = true;
+        trusted_proxies = [ "127.0.0.1" ];
+        ip_ban_enabled = true;
+        login_attempts_threshold = 5;
+      }
       prometheus = {
         namespace = "ha";
         filter.include_domains = [
