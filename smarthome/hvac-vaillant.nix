@@ -46,7 +46,7 @@
       temperature_state_topic = "ebusd/370/DisplayedHc1RoomTempDesired";
       temperature_state_template = = "{{ value_json.temp1.value }}";
       temperature_low_state_topic = "ebusd/370/Hc1NightTemp";
-      temperature_low_state_template = = "{{ value_json.temp1.value }}";
+      temperature_low_state_template = "{{ value_json.temp1.value }}";
       temperature_high_state_topic = "ebusd/370/Hc1DayTemp";
       temperature_high_state_template = "{{ value_json.temp.value }}";
       temperature_low_command_topic = "ebusd/370/Hc1NightTemp/set";
