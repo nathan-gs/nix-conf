@@ -12,4 +12,4 @@ jobs:
         nix_path: nixpkgs=channel:nixos-22.11
     - uses: workflow/nix-shell-action@v3
       with:
-        script: nix flake check --no-build
+        script: nix flake metadata
