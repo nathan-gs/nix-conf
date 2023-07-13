@@ -36,12 +36,7 @@
       mode_state_topic = "ebusd/370/Hc1OPMode";
       mode_command_template = ''
         {% set values = { 'auto':'auto', 'heat':'on',  'cool':'night', 'off':'summer'} %}
-        { 
-          "0": {
-            "name": "",
-            "value": "{{ values[value] if value in values.keys() else 'off' }}"
-          }
-        }
+        {{ values[value] if value in values.keys() else 'off' }}
       '';
       mode_command_topic = "ebusd/370/Hc1OPMode/set";
       temperature_state_topic = "ebusd/370/DisplayedHc1RoomTempDesired";
@@ -52,19 +47,11 @@
       temperature_high_state_template = "{{ value_json.temp1.value }}";
       temperature_low_command_topic = "ebusd/370/Hc1NightTemp/set";
       temperature_low_command_template = ''
-        {
-         "temp1": {
-            "value": {{ value }}
-          }
-        }
+        {{ value }}
       '';
       temperature_high_command_topic = "ebusd/370/Hc1DayTemp/set";
       temperature_high_command_template = ''
-        {
-         "temp1": {
-            "value": {{ value }}
-          }
-        }
+        {{ value }}
       '';
       current_temperature_topic = "ebusd/370/DisplayedRoomTemp";
       current_temperature_template = "{{ value_json.temp.value }}";
