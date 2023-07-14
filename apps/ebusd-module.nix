@@ -218,7 +218,7 @@ in
 
         # Hardening
         CapabilityBoundingSet = "";
-        DeviceAllow = lib.optionals hasPrefix "/" config.services.ebusd.device [
+        DeviceAllow = lib.optionals {hasPrefix "/" config.services.ebusd.device} [
           config.services.ebusd.device
         ] ;
         DevicePolicy = "closed";
