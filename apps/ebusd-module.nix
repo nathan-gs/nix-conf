@@ -11,6 +11,7 @@ let
     "--foreground"
     "--updatecheck=off"
     "--device=${cfg.device}"
+    "--port=${cfg.port}"
     "--configpath=${cfg.configpath}"
     "--scanconfig=${cfg.scanconfig}"
     "--log=main:${cfg.logs.main}"
@@ -37,6 +38,8 @@ let
 
   usesDev = hasPrefix "/" cfg.device;
 
+  command = concatStringsSep " " ["${package}/bin/ebusd"] ++ arguments;
+
 in
 {
   meta.maintainers = with maintainers; [ nathan-gs ];
@@ -57,6 +60,14 @@ in
           DEVICE for serial device (normal speed, for all other serial adapters like adapter v2 as well as adapter v3 in non-enhanced mode), or
           [udp:]IP:PORT for network device.
         https://github.com/john30/ebusd/wiki/2.-Run#device-options
+      '';
+    };
+
+    port = mkOption {
+      default = 8888;
+      type = types.port;
+      description = lib.mdDoc ''
+        The port on which to listen on
       '';
     };
 
@@ -214,7 +225,7 @@ in
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = concatStringsSep " " ["${package}/bin/ebusd"] ++ arguments;
+        ExecStart = command;
         DynamicUser="yes";
         Restart = "on-failure";
 
