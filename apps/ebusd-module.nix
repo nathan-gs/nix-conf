@@ -35,6 +35,8 @@ let
     cfg.extraArguments
   ];
 
+  usesDev = hasPrefix "/" cfg.device;
+
 in
 {
   meta.maintainers = with maintainers; [ nathan-gs ];
@@ -218,8 +220,8 @@ in
 
         # Hardening
         CapabilityBoundingSet = "";
-        DeviceAllow = lib.optionals {hasPrefix "/" config.services.ebusd.device} [
-          config.services.ebusd.device
+        DeviceAllow = lib.optionals usesDev [
+          cfg.device
         ] ;
         DevicePolicy = "closed";
         LockPersonality = true;
