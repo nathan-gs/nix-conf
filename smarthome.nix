@@ -173,7 +173,7 @@
       user = "ebus";
       password = config.secrets.mqtt.users.ebus.password;
       home-assistant = true;
-    
+      retain = true;
     };
   };
 
