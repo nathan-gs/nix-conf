@@ -7,7 +7,7 @@ let
 
   package = (pkgs.callPackage ./ebusd.nix {});
 
-  argumentsWithCommand = [
+  arguments = [
     "${package}/bin/ebusd"
     "--foreground"
     "--updatecheck=off"
