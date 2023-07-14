@@ -3,6 +3,7 @@
 {
   imports = [
     ./smarthome/main.nix
+    ./apps/ebusd-module.nix
   ];
 
   services.mosquitto = {
@@ -163,27 +164,17 @@
     startAt = "*-*-* 03:42:00";
   };
 
-  systemd.services.ebusd = {
-    description = "ebusd";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];    
-    serviceConfig = {
-      ExecStart = ''
-        ${pkgs.callPackage apps/ebusd.nix {}}/bin/ebusd \
-        --device ebus:3333 \
-        --scanconfig=full \
-        --mqtthost=localhost \
-        --mqttport=1883 \
-        --mqttretain \
-        --mqttuser=ebus \
-        --mqttint=${pkgs.callPackage apps/ebusd.nix {}}/etc/ebusd/mqtt-hassio.cfg \
-        --mqttjson \
-        --mqttpass=${config.secrets.mqtt.users.ebus.password} \
-        --foreground
-      '';
+  services.ebusd = {
+    enable = true;
+    device = "ebus:3333";
+    mqtt = {
+      enable = true;
+      host = "localhost";
+      user = "ebus";
+      password = config.secrets.mqtt.users.ebus.password;
+      home-assistant = true;
+    
     };
-    environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-    wantedBy = ["multi-user.target"];
   };
 
   
