@@ -5,7 +5,7 @@ with lib;
 let
   cfg = config.services.ebusd;
 
-  package = (pkgs.callPackage ebusd.nix {});
+  package = (pkgs.callPackage ./ebusd.nix {});
 
   arguments = [
     "--foreground"
