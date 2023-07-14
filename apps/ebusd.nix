@@ -1,4 +1,4 @@
-{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto, cmake, autoconf, automake, libtool, pkg-config }:
+{ lib, stdenv, pkgs, fetchFromGitHub, argparse, mosquitto, cmake, autoconf, automake, libtool, pkg-config, ssl }:
 
 stdenv.mkDerivation rec {
   name = "ebusd";
@@ -20,6 +20,7 @@ stdenv.mkDerivation rec {
   buildInputs = [
     argparse
     mosquitto
+    ssl
   ];
 
   patches = [
