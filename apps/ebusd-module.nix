@@ -22,10 +22,10 @@ let
   ] ++ lib.optionals cfg.readonly [
     "--readonly"
   ] ++ lib.optionals cfg.mqtt.enable [
-    "--mqtthost=${cfg.mqtt.host}";
-    "--mqttport=${cfg.mqtt.port}";
-    "--mqttuser=${cfg.mqtt.user}";
-    "--mqttpass=${cfg.mqtt.password}";
+    "--mqtthost=${cfg.mqtt.host}"
+    "--mqttport=${cfg.mqtt.port}"
+    "--mqttuser=${cfg.mqtt.user}"
+    "--mqttpass=${cfg.mqtt.password}"
   ] ++ lib.optionals cfg.mqtt.home-assistant [
     "--mqttint=${package}/etc/ebusd/mqtt-hassio.cfg"
     "--mqttjson"
