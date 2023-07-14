@@ -8,6 +8,7 @@ let
   package = (pkgs.callPackage ./ebusd.nix {});
 
   arguments = [
+    "${package}/bin/ebusd"
     "--foreground"
     "--updatecheck=off"
     "--device=${cfg.device}"
@@ -38,7 +39,7 @@ let
 
   usesDev = hasPrefix "/" cfg.device;
 
-  command = concatStringsSep " " ["${package}/bin/ebusd"] ++ arguments;
+  command = concatStringsSep " " arguments;
 
 in
 {
