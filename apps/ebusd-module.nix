@@ -7,12 +7,12 @@ let
 
   package = (pkgs.callPackage ./ebusd.nix {});
 
-  arguments = [
+  argumentsWithCommand = [
     "${package}/bin/ebusd"
     "--foreground"
     "--updatecheck=off"
     "--device=${cfg.device}"
-    "--port=${cfg.port}"
+    "--port=${toString cfg.port}"
     "--configpath=${cfg.configpath}"
     "--scanconfig=${cfg.scanconfig}"
     "--log=main:${cfg.logs.main}"
@@ -25,13 +25,13 @@ let
     "--readonly"
   ] ++ lib.optionals cfg.mqtt.enable [
     "--mqtthost=${cfg.mqtt.host}"
-    "--mqttport=${cfg.mqtt.port}"
+    "--mqttport=${toString cfg.mqtt.port}"
     "--mqttuser=${cfg.mqtt.user}"
     "--mqttpass=${cfg.mqtt.password}"
   ] ++ lib.optionals cfg.mqtt.home-assistant [
     "--mqttint=${package}/etc/ebusd/mqtt-hassio.cfg"
     "--mqttjson"
-  ] ++ lib.optionals cfg.mqtt.home-assistant [
+  ] ++ lib.optionals cfg.mqtt.retain [
     "--mqttretain"
   ] ++ [
     cfg.extraArguments
