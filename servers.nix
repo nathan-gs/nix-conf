@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 {
 
-  networking.firewall.allowedTCPPorts = [ 80 443 ];
+  networking.firewall.allowedTCPPorts = [ 80 443 3000 ];
   services.nginx = {
     enable = true;
 
@@ -49,7 +49,6 @@
     defaults.email = config.secrets.email;
   };
 
-  networking.firewall.allowedTCPPorts = [ 3000 ];
 
   services.openvscode-server = {
     enable = true;
