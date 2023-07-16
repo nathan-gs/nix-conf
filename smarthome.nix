@@ -181,7 +181,7 @@
         update = "error";
         other = "notice";
         all = "error";
-      }
+      };
     };
   };
 
