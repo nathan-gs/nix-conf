@@ -49,7 +49,7 @@
     defaults.email = config.secrets.email;
   };
 
-  networking.firewall.allowedTCPPorts [ 3000 ];
+  networking.firewall.allowedTCPPorts = [ 3000 ];
 
   services.openvscode-server = {
     enable = true;
