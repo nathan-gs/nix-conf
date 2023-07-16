@@ -49,4 +49,13 @@
     defaults.email = config.secrets.email;
   };
 
+  networking.firewall.allowedTCPPorts [ 3000 ];
+
+  services.openvscode-server = {
+    enable = true;
+    user = "nathan";
+    userDataDir = "/home/nathan/.vscode_server";
+    host = "0.0.0.0";
+  }
+
 }
