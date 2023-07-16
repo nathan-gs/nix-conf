@@ -174,6 +174,14 @@
       password = config.secrets.mqtt.users.ebus.password;
       home-assistant = true;
       retain = true;
+      logs = {
+        main = "info";
+        network = "notice";
+        bus = "error";
+        update = "error";
+        other = "notice";
+        all = "error";
+      }
     };
   };
 
