@@ -45,14 +45,23 @@ views:
                     entities:
                       - entity: sensor.2abn528_battery_level
                       - entity: sensor.2abn528_battery_range
-              - type: entities
-                entities:
-                  - entity: sensor.solis_remaining_battery_capacity
-                  - entity: sensor.electricity_cost_peak_kwh
-                  - entity: sensor.electricity_cost_offpeak_kwh
-                  - entity: sensor.gas_cost_kwh
-                  - entity: sensor.openweathermap_condition
-                  - entity: sensor.openweathermap_forecast_condition
+                  - type: entities
+                    entities:
+                      - entity: sensor.openweathermap_condition
+                      - entity: sensor.openweathermap_forecast_condition
+              - type: vertical-stack
+                cards:
+                  - type: entities
+                    entities:
+                      - entity: sensor.solis_dc_power_pv1
+                      - entity: sensor.solis_dc_power_pv2
+                      - entity: sensor.solis_remaining_battery_capacity
+                  - type: entities
+                    entities:
+                      - entity: sensor.electricity_cost_peak_kwh
+                      - entity: sensor.electricity_cost_offpeak_kwh
+                      - entity: sensor.gas_cost_kwh
+                      - entity: sensor.water_cost
               - type: energy-distribution
           - type: energy-solar-graph
           - type: energy-usage-graph
