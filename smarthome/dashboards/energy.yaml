@@ -29,34 +29,30 @@ views:
                 entity: sensor.electricity_solar_power
           - type: horizontal-stack
             cards:
-              - show_name: false
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.garden_garden_plug_laadpaal
-                show_state: false
-                name: Laadpaal
-                icon: mdi:ev-station
-                icon_height: 80px
+              - type: vertical-stack
+                cards:
+                  - show_name: false
+                    show_icon: true
+                    type: button
+                    tap_action:
+                      action: toggle
+                    entity: switch.garden_garden_plug_laadpaal
+                    show_state: false
+                    name: Laadpaal
+                    icon: mdi:ev-station
+                    icon_height: 80px
+                  - type: entities
+                    entities:
+                      - entity: sensor.2abn528_battery_level
+                      - entity: sensor.2abn528_battery_range
               - type: entities
                 entities:
-                  - entity: sensor.2abn528_battery_level
                   - entity: sensor.solis_remaining_battery_capacity
                   - entity: sensor.electricity_cost_peak_kwh
                   - entity: sensor.electricity_cost_offpeak_kwh
                   - entity: sensor.gas_cost_kwh
+                  - entity: sensor.openweathermap_condition
+                  - entity: sensor.openweathermap_forecast_condition
               - type: energy-distribution
-          - type: custom:apexcharts-card
-            header:
-              show: true
-              title: Power Source
-              show_states: true
-              colorize_states: true
-            series:
-              - entity: sensor.electricity_grid_consumed_power
-              - entity: sensor.electricity_grid_returned_power
-              - entity: sensor.electricity_battery_power
-              - entity: sensor.electricity_solar_power
-          - type: energy-usage-graph
           - type: energy-solar-graph
+          - type: energy-usage-graph
