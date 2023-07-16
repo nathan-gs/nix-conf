@@ -57,4 +57,8 @@
     host = "0.0.0.0";
   };
 
+  # TODO remove
+  nixpkgs.config.permittedInsecurePackages = [
+    "nodejs-16.20.1"
+  ];
 }
