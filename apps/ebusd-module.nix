@@ -15,12 +15,12 @@ let
     "--port=${toString cfg.port}"
     "--configpath=${cfg.configpath}"
     "--scanconfig=${cfg.scanconfig}"
-    "--log=main\:${cfg.logs.main}"
-    "--log=network\:${cfg.logs.network}"
-    "--log=bus\:${cfg.logs.bus}"
-    "--log=update\:${cfg.logs.update}"
-    "--log=other\:${cfg.logs.other}"
-    "--log=all\:${cfg.logs.all}"
+    "--log=main:${cfg.logs.main}"
+    "--log=network:${cfg.logs.network}"
+    "--log=bus:${cfg.logs.bus}"
+    "--log=update:${cfg.logs.update}"
+    "--log=other:${cfg.logs.other}"
+    "--log=all:${cfg.logs.all}"
   ] ++ lib.optionals cfg.readonly [
     "--readonly"
   ] ++ lib.optionals cfg.mqtt.enable [
@@ -33,9 +33,7 @@ let
     "--mqttjson"
   ] ++ lib.optionals cfg.mqtt.retain [
     "--mqttretain"
-  ] ++ [
-    cfg.extraArguments
-  ];
+  ] ++ cfg.extraArguments;
 
   usesDev = hasPrefix "/" cfg.device;
 
@@ -79,7 +77,7 @@ in
          Only read from device, never write to it
       '';
     };
-    
+
     configpath = mkOption {
       type = types.str;
       default = "https://cfg.ebusd.eu/";
@@ -93,7 +91,7 @@ in
       default = "full";
       description = lib.mdDoc ''
         Pick CSV config files matching initial scan ("none" or empty for no initial scan message, "full" for full scan, or a single hex address to scan, default is to send a broadcast ident message).
-        If combined with --checkconfig, you can add scan message data as arguments for checking a particular scan configuration, e.g. "FF08070400/0AB5454850303003277201". For further details on this option, 
+        If combined with --checkconfig, you can add scan message data as arguments for checking a particular scan configuration, e.g. "FF08070400/0AB5454850303003277201". For further details on this option,
         see [Automatic configuration](https://github.com/john30/ebusd/wiki/4.7.-Automatic-configuration).
       '';
     };
@@ -149,7 +147,7 @@ in
     };
 
     mqtt = {
-      
+
       enable = mkOption {
         type = types.bool;
         default = false;
@@ -195,7 +193,7 @@ in
         description = lib.mdDoc ''
           The MQTT user to use
         '';
-      }; 
+      };
 
       password = mkOption {
         type = types.str;
@@ -209,13 +207,13 @@ in
     };
 
     extraArguments = mkOption {
-      type = types.str;
+      type = types.listOf types.str;
       default = "";
       description = lib.mdDoc ''
         Extra arguments to the ebus daemon
       '';
     };
-    
+
   };
 
   config = mkIf (cfg.enable) {
@@ -227,7 +225,7 @@ in
       after = [ "network.target" ];
       serviceConfig = {
         ExecStart = command;
-        DynamicUser="yes";
+        DynamicUser = true;
         Restart = "on-failure";
 
         # Hardening
