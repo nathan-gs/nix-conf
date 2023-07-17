@@ -202,13 +202,11 @@ in
         '';
       };
 
-
-
     };
 
     extraArguments = mkOption {
       type = types.listOf types.str;
-      default = "";
+      default = [];
       description = lib.mdDoc ''
         Extra arguments to the ebus daemon
       '';
