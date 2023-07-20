@@ -110,6 +110,7 @@
     extraComponents = [
       "api"
       "apple_tv"
+      "auth"
       "backup"
       "command_line"
       "default_config"
@@ -140,6 +141,7 @@
       #(callPackage apps/pyworxcloud.nix {})
       spotipy
       pyipp
+      pyotp
       soco
       croniter
       aiohttp
