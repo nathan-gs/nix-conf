@@ -48,7 +48,7 @@
       # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_epb.html
       for i in $(find /sys/devices/system/cpu/cpu*/power/ -name energy_perf_bias -writable);
       do
-        set_and_echo $i 15          
+        set_and_echo $i balance-power        
       done
 
       # https://www.kernel.org/doc/html/latest/admin-guide/pm/intel_pstate.html
