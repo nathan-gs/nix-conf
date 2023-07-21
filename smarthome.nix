@@ -139,17 +139,18 @@
     extraPackages = ps: with ps; [
       (callPackage apps/pyelectroluxconnect.nix {})
       #(callPackage apps/pyworxcloud.nix {})
-      spotipy
+      aiohomekit
+      aiohttp
+      bellows
+      croniter
+      getmac
+      hap-python
       pyipp
       pyotp
-      soco
-      croniter
-      aiohttp
-      aiohomekit
-      zha-quirks
-      hap-python
       pyqrcode
-      bellows
+      soco
+      spotipy
+      zha-quirks
       zigpy-deconz
       zigpy-xbee
       zigpy-zigate
