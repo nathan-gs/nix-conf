@@ -159,11 +159,36 @@
 
   systemd.services.home-assistant-backup = {
     description = "home-assistant-backup"; 
-    path = [ ];
+    path = [ pkgs.gnutar pkgs.gzip pkgs.sqlite ];
+    unitConfig = {
+      RequiresMountsFor = "/media/documents";
+    };
     script = ''
-      mv /var/lib/hass/backups/* /media/documents/nathan/onedrive_nathan_personal/backup/homeassistant/
-      chown nathan:users /media/documents/nathan/onedrive_nathan_personal/backup/homeassistant/*
-    '';
+      mkdir -pm 0775 /media/documents/nathan/onedrive_nathan_personal/backup/
+      target='/media/documents/nathan/onedrive_nathan_personal/backup/'
+      
+      tar \
+        --exclude automations.yaml \
+        --exclude backups \
+        --exclude blueprints \
+        --exclude configuration.yaml \
+        --exclude custom_components \
+        --exclude 'home-assistant_v2*' \
+        --exclude ui-lovelace.yaml \
+        -czf \
+        /tmp/hass.tar.gz \
+        -C /var/lib \
+        hass
+      
+      chown nathan /tmp/hass.tar.gz
+      mv /tmp/hass.tar.gz "$target/hass.tar.gz"
+
+      sqlite3 /var/lib/hass/home-assistant_v2.db .dump | gzip -c > /tmp/home-assistant_v2.db.gz
+      
+      chown nathan /tmp/home-assistant_v2.db.gz
+      mv /tmp/home-assistant_v2.db.gz "$target/home-assistant_v2.db.gz"
+      '';
+
     startAt = "*-*-* 03:42:00";
   };
 

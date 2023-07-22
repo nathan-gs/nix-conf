@@ -87,9 +87,10 @@
     Group = lib.mkOverride 0 "media";
   };
 
+  # https://docs.photoprism.app/user-guide/backups/restore/
   systemd.services.photoprism-backup = {
     description = "Photoprism Backup";
-    path = [ pkgs.gnutar pkgs.gzip ];
+    path = [ pkgs.gnutar pkgs.gzip pkgs.sqlite ];
     unitConfig = {
       RequiresMountsFor = "/media/documents";
     };
@@ -98,18 +99,11 @@
     };
     script = ''
        mkdir -pm 0775 /media/documents/nathan/onedrive_nathan_personal/backup/
-       target='/media/documents/nathan/onedrive_nathan_personal/backup/photoprism-fn-fotos.tar.gz'
-       tar \
-         --exclude "import" \
-         --exclude "backup" \
-         --exclude "cache" \
-         --exclude "originals" \
-         -czf \
-         /tmp/photoprism-fn-fotos.tar.gz \
-         -C /var/lib \
-         photoprism
+       target='/media/documents/nathan/onedrive_nathan_personal/backup/photoprism-index.db.gz'
+       
+       sqlite3 /var/lib/photoprism/index.db .dump | gzip -c > /tmp/photoprism-index.db.gz
 
-       mv /tmp/photoprism-fn-fotos.tar.gz $target
+       mv /tmp/photoprism-index.db.gz $target
       '';
     startAt = "*-*-* 01:00:00";
   };
