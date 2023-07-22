@@ -70,12 +70,4 @@
     config.services.grafana.settings.server.http_port 
   ];
 
-  services.tuya-prometheus = {
-    enable = false;
-    clientId = config.secrets.tuya.clientId;
-    secret = config.secrets.tuya.secret;
-    startAt = "*:0/5";
-  };
-
-
 }

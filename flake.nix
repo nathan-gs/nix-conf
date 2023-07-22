@@ -1,13 +1,12 @@
 {
   inputs = {
-    tuya-cloud-bash.url = "github:nathan-gs/tuya-cloud-bash";
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     secrets.url = "git+file:///etc/nixos/secrets";
   };
   
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, tuya-cloud-bash, secrets, ... }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, secrets, ... }:
     let 
       unstableOverlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.system}; };
       unstableModule = ({ config, pkgs, ...}: { nixpkgs.overlays = [ unstableOverlay ]; });
@@ -19,9 +18,7 @@
           modules = [
             # Point this to your original configuration.
             ./computers/nhtpc.nix
-            tuya-cloud-bash.nixosModules.tuya-prometheus
             secrets.nixosModules.secrets
-#           photoprism.nixosModules.photoprism
             unstableModule
           ];
 
@@ -35,7 +32,6 @@
           modules = [
             # Point this to your original configuration.
             ./computers/nnas.nix
-            tuya-cloud-bash.nixosModules.tuya-prometheus
             secrets.nixosModules.secrets
           ];
 
