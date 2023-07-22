@@ -81,6 +81,8 @@
     user = "nathan";
     userDataDir = "/home/nathan/.vscode_server";
     host = "0.0.0.0";
+    extraPackages = [ pkgs.sqlite ];
+    withoutConnectionToken = true;
   };
 
   # TODO remove
