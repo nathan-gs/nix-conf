@@ -79,6 +79,26 @@
           auth_pam_service_name nginx;
         '';
     };
+    locations."/slideshow" = {
+      proxyPass = "http://127.0.0.1:${toString config.services.photoprism-slideshow.port}";
+      extraConfig =
+        ''
+          # required when the target is also TLS server with multiple hosts
+          proxy_ssl_server_name on;
+          # required when the server wants to use HTTP Authentication
+          proxy_pass_header Authorization;
+          # PAM Auth
+          auth_pam "Password Required";
+          auth_pam_service_name nginx;
+        '';
+    };
+  };
+
+  services.photoprism-slideshow.enable = true;
+  systemd.services.photoprism-slideshow.serviceConfig = {
+    DynamicUser = lib.mkOverride 0 false;
+    User = lib.mkOverride 0 "nathan";
+    Group = lib.mkOverride 0 "media";
   };
 
   systemd.services.photoprism.serviceConfig = {

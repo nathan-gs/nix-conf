@@ -3,10 +3,11 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     secrets.url = "git+file:///etc/nixos/secrets";
+    photoprism-slideshow.url = "github:nathan-gs/photoprism-slideshow";
   };
   
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, secrets, ... }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, ... }:
     let 
       unstableOverlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.system}; };
       unstableModule = ({ config, pkgs, ...}: { nixpkgs.overlays = [ unstableOverlay ]; });
@@ -19,6 +20,7 @@
             # Point this to your original configuration.
             ./computers/nhtpc.nix
             secrets.nixosModules.secrets
+            photoprism-slideshow.nixosModules.photoprism-slideshow
             unstableModule
           ];
 
