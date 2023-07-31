@@ -94,11 +94,9 @@
     };
   };
 
-  services.photoprism-slideshow.enable = true;
-  systemd.services.photoprism-slideshow.serviceConfig = {
-    DynamicUser = lib.mkOverride 0 false;
-    User = lib.mkOverride 0 "nathan";
-    Group = lib.mkOverride 0 "media";
+  services.photoprism-slideshow = {
+    enable = true;
+    preload = true;
   };
 
   systemd.services.photoprism.serviceConfig = {
