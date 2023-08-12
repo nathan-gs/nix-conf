@@ -154,6 +154,7 @@
       zigpy-deconz
       zigpy-xbee
       zigpy-zigate
+      zigpy-znp
     ];
   };
 
