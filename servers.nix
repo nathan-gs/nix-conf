@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 {
 
-  networking.firewall.allowedTCPPorts = [ 80 443 3000 ];
+  networking.firewall.allowedTCPPorts = [ 80 443 3000 3001 ];
   services.nginx = {
     enable = true;
 
@@ -81,7 +81,7 @@
     user = "nathan";
     userDataDir = "/home/nathan/.vscode_server";
     host = "0.0.0.0";
-    extraPackages = [ pkgs.sqlite ];
+    extraPackages = [ pkgs.sqlite pkgs.nodejs ];
     withoutConnectionToken = true;
   };
 
