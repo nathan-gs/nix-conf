@@ -35,11 +35,11 @@
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1690470004,
-        "narHash": "sha256-l57RmPhPz9r1LGDg/0v8bYgJO8R+GGTQZtkIxE7negU=",
+        "lastModified": 1692025715,
+        "narHash": "sha256-tsRiiopGT7HA8d/cuk5xYBRXgdnnvD+JhUGUe3x7vmY=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "9462344318b376e157c94fa60c20a25b913b2381",
+        "rev": "09a137528c3aea3780720d19f99cd706f52c3823",
         "type": "github"
       },
       "original": {
@@ -51,11 +51,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1690367991,
-        "narHash": "sha256-2VwOn1l8y6+cu7zjNE8MgeGJNNz1eat1HwHrINeogFA=",
+        "lastModified": 1691990649,
+        "narHash": "sha256-gMbKOiX1HwClRP9lADaaV/lnZr93NEaOFe4ApDx/zd8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "c9cf0708f00fbe553319258e48ca89ff9a413703",
+        "rev": "6e287913f7b1ef537c97aa301b67c34ea46b640f",
         "type": "github"
       },
       "original": {
@@ -101,11 +101,11 @@
         "sbt": "sbt"
       },
       "locked": {
-        "lastModified": 1690571101,
-        "narHash": "sha256-BJNjpklv92gdssCmTs7QCKOjp6Dnd8jnGWJ+B1j9b3w=",
+        "lastModified": 1690815464,
+        "narHash": "sha256-TzJO4ztrcMzXwCOOIrXt3/+7uuK56NnNpOzQlYVJFJI=",
         "owner": "nathan-gs",
         "repo": "photoprism-slideshow",
-        "rev": "a60e6f5f35cf624624057752c86f3232d7140c59",
+        "rev": "5c634209a77bc8fff3fbcf6764d97df7b4ffe008",
         "type": "github"
       },
       "original": {
