@@ -38,6 +38,7 @@
           '';
           unit_of_measurement = "kWh";
           device_class = "energy";
+          state_class = "total";
           icon = "mdi:car-electric";
         }
       ];
@@ -64,6 +65,7 @@
       value_template = ''{{ value_json.data[-1].value | float / 1000 }}'';
       unit_of_measurement = "kWh";
       device_class = "energy";
+      state_class = "total";
       icon = "mdi:car-electric";
     }
   ];
