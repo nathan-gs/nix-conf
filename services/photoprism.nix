@@ -2,6 +2,9 @@
 
 {
 
+  users.groups.media.members = [ "photoprism" ];
+  users.groups.users.members = ["photoprism" ];
+
   services.photoprism = {
     enable = true;
     storagePath = "/var/lib/photoprism";

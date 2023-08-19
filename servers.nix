@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 {
 
-  networking.firewall.allowedTCPPorts = [ 80 443 3000 3001 ];
+  networking.firewall.allowedTCPPorts = [ 80 443 ];
   services.nginx = {
     enable = true;
 
@@ -61,17 +61,5 @@
     enabled = true
   '';
 
-  services.openvscode-server = {
-    enable = true;
-    user = "nathan";
-    userDataDir = "/home/nathan/.vscode_server";
-    host = "0.0.0.0";
-    extraPackages = [ pkgs.sqlite pkgs.nodejs ];
-    withoutConnectionToken = true;
-  };
 
-  # TODO remove
-  nixpkgs.config.permittedInsecurePackages = [
-    "nodejs-16.20.2"
-  ];
 }

@@ -13,8 +13,10 @@
       ../system.nix
       ../powersave.nix
       ../apps/cloudflare-dyndns.nix
-      ../onedrive.nix
-      ../media.nix
+      ../services/onedrive.nix
+      ../services/photoprism.nix
+      ../services/plex.nix
+      ../services/vscode.nix
       ../monitoring.nix
       ../smarthome.nix
       ../servers.nix

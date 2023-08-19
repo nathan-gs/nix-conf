@@ -2,14 +2,6 @@
 
 {
 
-  imports = [
-    ./apps/calibre-economist.nix
-    #./apps/media-scraper.nix
-    #./apps/photoprism.nix
-    ./services/photoprism.nix
-  ];
-#  services.calibre-server.enable = true;
-
   nixpkgs.config.allowUnfree = true;
 
   services.plex = {
@@ -17,8 +9,7 @@
     openFirewall = true;
   };
  
-  users.groups.media.members = ["plex" "photoprism" ];
-  users.groups.users.members = ["photoprism" ];
+  users.groups.media.members = ["plex" ];
 
 
   systemd.services.plex = {
