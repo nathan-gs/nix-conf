@@ -17,9 +17,9 @@
       ../services/photoprism.nix
       ../services/plex.nix
       ../services/vscode.nix
+      ../services/nginx.nix
       ../monitoring.nix
       ../smarthome.nix
-      ../servers.nix
     ];
 
 
