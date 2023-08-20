@@ -18,6 +18,7 @@
       ../services/plex.nix
       ../services/vscode.nix
       ../services/nginx.nix
+      ../services/smb.nix
       ../monitoring.nix
       ../smarthome.nix
     ];

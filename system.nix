@@ -4,8 +4,7 @@
 
   imports = [
     ./users.nix
-    ./software.nix
-    ./smb.nix
+    ./software.nix    
     ./hosts.nix
   ];
 
