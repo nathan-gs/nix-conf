@@ -26,6 +26,10 @@
               acl = ["readwrite ebusd/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.ebus.password;
             };
+            tasmota = {
+              acl = ["readwrite tasmota/#"];
+              password = config.secrets.mqtt.users.tasmota.password;
+            };
         };
         
         port = 1883;
