@@ -23,6 +23,7 @@ solar = import ./solar.nix {config = config;};
 bluecorner = import ./bluecorner.nix {config = config; pkgs = pkgs;};
 garden = import ./garden.nix {config = config; pkgs = pkgs;};
 hvac-vaillant = import ./hvac-vaillant.nix {config = config; pkgs = pkgs;};
+hvac-wtw = import ./hvac-wtw.nix {config = config; pkgs = pkgs;};
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
@@ -49,6 +50,7 @@ with lib;
       lights.automations
       ++ hvac.automations
       ++ hvac-vaillant.automations
+      ++ hvac-wtw.automations
       ++ wfh.automations
       ++ media.automations
       ++ plugs.automations
@@ -61,7 +63,8 @@ with lib;
     ++ solar.binary_sensor
     ++ bluecorner.binary_sensor
     ++ garden.binary_sensor
-    ++ hvac-vaillant.binary_sensor;
+    ++ hvac-vaillant.binary_sensor
+    ++ hvac-wtw.binary_sensor;
 
 
     config.mqtt = {
@@ -89,7 +92,9 @@ with lib;
       ++ energy.sensor
       ++ solar.sensor
       ++ bluecorner.sensor
-      ++ garden.sensor;
+      ++ garden.sensor        
+      ++ hvac-vaillant.sensor
+      ++ hvac-wtw.sensor;
 
     config.scrape = []
       ++ energy.scrape
@@ -110,17 +115,22 @@ with lib;
       ++ media.template
       ++ solar.template
       ++ bluecorner.template
-      ++ garden.template;
+      ++ garden.template
+      ++ hvac-wtw.template 
+      ++ hvac-vaillant.template;
 
     config.recorder.exclude.entity_globs = []
       ++ bluecorner.recorder_excludes
       ++ hvac.recorder_excludes
       ++ solar.recorder_excludes
       ++ garden.recorder_excludes
-      ++ hvac-vaillant.recorder_excludes;
+      ++ hvac-vaillant.recorder_excludes
+      ++ hvac-wtw.recorder_excludes;
 
     config.climate = []
-      ++ hvac-vaillant.climate;
+      ++ hvac-vaillant.climate
+      ++ hvac-wtw.climate;
+
 
     config.device_tracker = [
       {
