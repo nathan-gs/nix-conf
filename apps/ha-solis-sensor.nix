@@ -5,8 +5,8 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "hultenvp";
     repo = "solis-sensor";
-    rev = "v3.3.3";
-    sha256 = "0l6ddvx15f3nz02qqzs79xh9y03dddjqpsi4ny03hbzdczf9grr9";
+    rev = "v3.4.3";
+    sha256 = "cpBqL9kMMGaCSTXAHCjGd3N9yYvuzTO5GPyPr8ht4jQ=";
   };
 
   
