@@ -7,7 +7,8 @@
     package = pkgs.zigbee2mqtt;
     settings = {
       homeassistant =  {
-        legacy_entity_attributes = false;
+        # otherwise RTVs don't report temp + calibration 
+        legacy_entity_attributes = true;
         legacy_triggers = false;
       };
       permit_join = false;
