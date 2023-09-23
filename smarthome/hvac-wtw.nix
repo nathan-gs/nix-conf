@@ -1,5 +1,18 @@
 {config, pkgs, ...}:
 
+let
+  aqSensors = [
+    {      
+      name = "inlet";
+      ieee = "0xbc026efffea63649";
+    }
+    {      
+      name = "to_house";
+      ieee = "0x3425b4fffe974ccd";
+    }
+  ];
+
+in
 {
 
   scrape = [];
@@ -76,11 +89,18 @@
   ];
   binary_sensor = [];
 
-
+  zigbeeDevices = { };
   
   mqtt.climate = [
     
   ];
+
+  devices = []
+    ++ map (v: v // { 
+      type = "air_quality";
+      zone = "wtw";
+      floor = "system";
+    }) aqSensors;
 
   climate = [];
 

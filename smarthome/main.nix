@@ -16,6 +16,7 @@ let
         hvac.devices 
         ++ lights.devices
         ++ plugs.devices
+        ++ hvac-wtw.devices
       )
     );
 
