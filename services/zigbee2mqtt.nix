@@ -4,9 +4,12 @@
   
   services.zigbee2mqtt = {
     enable = true;
-    package = pkgs.nixpkgs-unstable.zigbee2mqtt;
+    package = pkgs.zigbee2mqtt;
     settings = {
-      homeassistant =  config.services.home-assistant.enable;
+      homeassistant =  {
+        legacy_entity_attributes = false;
+        legacy_triggers = false;
+      };
       permit_join = false;
       serial.port = "/dev/ttyUSB0";
       frontend = true;

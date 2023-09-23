@@ -10,6 +10,10 @@ let
       name = "to_house";
       ieee = "0x3425b4fffe974ccd";
     }
+    {
+      name = "outlet";
+      ieee = "0x3425b4fffe970e3d";
+    }
   ];
 
 in

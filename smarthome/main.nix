@@ -9,7 +9,12 @@ let
       (
         map (v: { name = "${v.ieee}"; value = { 
           friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-          homeassistant.update = null;
+          homeassistant = {
+            update = null;
+            expire_after = 3600;
+            object_id = "${v.floor}_${v.zone}_${v.type}_${v.name}";
+            device.suggested_area = "${v.floor}/${v.zone}";
+          };
         };})
       )
       (
