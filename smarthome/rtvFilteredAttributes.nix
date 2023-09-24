@@ -16,7 +16,9 @@
   "away_preset_day"
   "away_preset_hour"
   "away_preset_minute"
+  "child_lock"
 
+  "monday"
   "monday_hour_1"
   "monday_hour_2"
   "monday_hour_3"
@@ -45,6 +47,7 @@
   "monday_temp_8"
   "monday_temp_9"
 
+  "tuesday"
   "tuesday_hour_1"
   "tuesday_hour_2"
   "tuesday_hour_3"
@@ -73,6 +76,7 @@
   "tuesday_temp_8"
   "tuesday_temp_9"
 
+  "wednesday"
   "wednesday_hour_1"
   "wednesday_hour_2"
   "wednesday_hour_3"
@@ -101,6 +105,7 @@
   "wednesday_temp_8"
   "wednesday_temp_9"
 
+  "thursday"
   "thursday_hour_1"
   "thursday_hour_2"
   "thursday_hour_3"
@@ -129,6 +134,7 @@
   "thursday_temp_8"
   "thursday_temp_9"
 
+  "friday"
   "friday_hour_1"
   "friday_hour_2"
   "friday_hour_3"
@@ -157,6 +163,7 @@
   "friday_temp_8"
   "friday_temp_9"
 
+  "saturday"
   "saturday_hour_1"
   "saturday_hour_2"
   "saturday_hour_3"
@@ -185,6 +192,7 @@
   "saturday_temp_8"
   "saturday_temp_9"
 
+  "sunday"
   "sunday_hour_1"
   "sunday_hour_2"
   "sunday_hour_3"

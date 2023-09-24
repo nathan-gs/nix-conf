@@ -110,7 +110,7 @@ let
       floor = "floor1";
     }
     {
-      ieee = "0x00124b002910f0ee";
+      ieee = "0x00124b002910d106";
       zone = "fen";
       name = "na";
       floor = "floor1";
