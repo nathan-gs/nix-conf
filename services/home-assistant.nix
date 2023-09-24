@@ -94,6 +94,7 @@
       "sensor"
       "smartthings"
       "sonos"
+      "tasmota"
       "utility_meter"
       "volvooncall"
     ];
