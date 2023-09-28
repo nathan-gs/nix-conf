@@ -38,20 +38,20 @@ let
           {
             name = "electricity_cost_peak_kwh_energycomponent";
             select = "table :has(> th:-soup-contains(Dagtarief)) td";
-            value_template = "{{ (value | float) / 100 }}";
+            value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
             unit_of_measurement = "€/kWh";
           }
           {
             name = "electricity_cost_offpeak_kwh_energycomponent";
             select = "table :has(> th:-soup-contains(Nachttarief)) td";
             unit_of_measurement = "€/kWh";
-            value_template = "{{ (value | float) / 100 }}";
+            value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
           }
           {
             name = "gas_cost_kwh_energycomponent";
             select = "table :has(> th:-soup-contains(per)) td";
             unit_of_measurement = "€/kWh";
-            value_template = "{{ (value | float) / 100 }}";
+            value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
           }
         ];
       }
