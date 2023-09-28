@@ -30,6 +30,10 @@
               acl = ["readwrite tasmota/#"];
               password = config.secrets.mqtt.users.tasmota.password;
             };
+            itho = {
+              acl = ["readwrite itho/#" "readwrite homeassistant/#" ];
+              password = config.secrets.mqtt.users.itho.password;
+            };
         };
         
         port = 1883;

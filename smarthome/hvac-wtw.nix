@@ -27,7 +27,7 @@ in
         {
           name = "wtw_target_fan";
           state = ''
-            {% set is_home = states('binary_sensor.is_anyone_home') %}
+            {% set is_home = states('binary_sensor.is_anyone_home') | bool %}
             {% set is_cooking = false %}
             {% set is_using_sanitary = false %}
             {% set is_very_moist = (states('sensor.indoor_humidity_max') | float > 70) %}
@@ -48,6 +48,23 @@ in
               low
             {% endif %}
           '';
+          attributes = {
+            is_cooking = ''false'';
+            is_home = ''{{ states('binary_sensor.is_anyone_home') | bool }}'';
+            is_using_sanitary = ''false'';
+            is_very_moist = ''{{ (states('sensor.indoor_humidity_max') | float > 70) }}'';
+            is_using_dryer = ''{{ (states('sensor.floor1_waskot_metering_plug_droogkast_power') | float > 100) }}'';
+            house_needs_cooling_and_temp_outside_lower = ''
+              {% set indoor_temperature = states('sensor.indoor_temperature_mean') | float %}
+              {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float %}
+              {% set house_needs_cooling = indoor_temperature > 24 %}
+              {% set house_needs_cooling_and_temp_outside_lower = false %}
+              {% if house_needs_cooling and outdoor_temperature < indoor_temperature %}
+                {% set house_needs_cooling_and_temp_outside_lower = true %}
+              {% endif %}
+              {{ house_needs_cooling_and_temp_outside_lower }}
+            '';
+          };
         }
       ];
     }
