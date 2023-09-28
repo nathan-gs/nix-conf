@@ -75,15 +75,20 @@ with lib;
 
     config.mqtt = {
       binary_sensor = [] 
-        ++ water.mqtt.binary_sensor;
+        ++ water.mqtt.binary_sensor
+        ++ hvac-wtw.mqtt.binary_sensor;
 
       sensor = []
         ++ water.mqtt.sensor
         ++ bluecorner.mqtt_sensor
-        ++ garden.mqtt_sensor;
+        ++ garden.mqtt_sensor
+        ++ hvac-wtw.mqtt.sensor;
       
       climate = []
         ++ hvac-vaillant.mqtt.climate;
+
+      fan = []
+        ++ hvac-wtw.mqtt.fan;
 
 
     };

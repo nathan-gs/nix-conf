@@ -106,15 +106,147 @@ in
   utility_meter = {};
   customize = {};
 
-  automations = [   
+  automations = [
+    {
+      id = "itho_wtw_target";
+      alias = "itho_wtw_target";      
+      trigger = [        
+        {
+          platform = "state";
+          entity_id = "sensor.wtw_target_fan";
+        }
+      ];
+      action = [
+        {
+	        service = "fan.set_preset_mode";
+          data = {
+            preset_mode = ''{{ states('sensor.wtw_target_fan') }}'';
+          };
+          target = {
+            entity_id = "fan.itho_wtw_fan";
+          };
+        }        
+      ];
+      mode = "single";
+    }
   ];
+
   binary_sensor = [];
 
   zigbeeDevices = { };
   
-  mqtt.climate = [
-    
-  ];
+  mqtt = {
+    fan = [
+      {
+        name = "itho_wtw_fan";
+        unique_id = "itho_wtw_fan";
+        state_topic = "itho/lwt";
+        state_value_template = "{% if value == 'online' %}ON{% else %}OFF{% endif %}";
+        command_topic = "itho/cmd";
+        preset_mode_state_topic = "itho/ithostatus";
+        preset_mode_command_template = "{ vremote: '{{ value }}'}";
+        preset_mode_value_template = ''
+          {% set am = value_json['Actual Mode'] | int %}
+          {% if am == 1 %}
+            low
+          {% elif am == 2 %}
+            medium 
+          {% elif am == 3 %}
+            high
+          {% elif am == 13 %}
+             timer
+          {% elif am == 24 %}
+            auto
+          {% elif am == 25 %}
+            autonight
+          {% else %}
+            {{ am }}
+          {% endif %}
+        '';
+        preset_mode_command_topic = "itho/cmd";
+        preset_modes = [
+          "low"
+          "medium"
+          "high"
+          "auto"
+          "autonight"
+          "timer1"
+          "timer2"
+          "timer3"
+          "timer"
+        ];
+      }
+    ];
+
+    binary_sensor = [
+      {
+        name = "itho_wtw_bypass";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Bypass position'] }}";
+        unique_id = "itho_wtw_bypass_status";
+        device_class = "opening";
+        payload_on = "1";
+        payload_off = "0";
+        icon = "mdi:valve";
+      }
+    ];
+
+    sensor = [
+      {
+        name = "itho_wtw_inlet_fan";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Supply fan (RPM)'] }}";
+        unit_of_measurement = "rpm";
+        unique_id = "itho_wtw_inlet_fan";
+        state_class = "measurement";
+      }
+      {
+        name = "itho_wtw_outlet_fan";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Exhaust fan (RPM)'] }}";
+        unit_of_measurement = "rpm";
+        unique_id = "itho_wtw_outlet_fan";
+        state_class = "measurement";
+      }
+      {
+        name = "itho_wtw_inlet_temperature";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Supply temp (°C)'] }}";
+        unit_of_measurement = "°C";
+        unique_id = "itho_wtw_inlet_temperature";
+        state_class = "measurement";
+      }
+      {
+        name = "itho_wtw_outlet_temperature";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Exhaust temp (°C)'] }}";
+        unit_of_measurement = "°C";
+        unique_id = "itho_wtw_outlet_temperature";
+        state_class = "measurement";
+      }
+      {
+        name = "itho_wtw_actual_mode";
+        state_topic = "itho/ithostatus";
+        value_template = ''
+          {% set am = value_json['Actual Mode'] | int %}
+          {% if am == 1 %}
+             low
+           {% elif am == 2 %}
+             medium 
+           {% elif am == 3 %}
+             high
+          {% elif am == 25 %}
+            autonight
+           {% elif am == 24 %}
+             auto
+           {% else %}
+             {{ am }}
+           {% endif %}
+        '';
+        unique_id = "itho_wtw_actual_mode";
+      }
+    ];
+  };
 
   devices = []
     ++ map (v: v // { 
