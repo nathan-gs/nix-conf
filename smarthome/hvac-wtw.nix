@@ -27,20 +27,22 @@ in
         {
           name = "wtw_target_fan";
           state = ''
-            {% set is_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set is_home = states('binary_sensor.is_anyone_home') | bool(true) %}
             {% set is_cooking = false %}
             {% set is_using_sanitary = false %}
-            {% set is_very_moist = (states('sensor.indoor_humidity_max') | float > 70) %}
-            {% set is_using_dryer = (states('sensor.floor1_waskot_metering_plug_droogkast_power') | float > 100)  %}
-            {% set indoor_temperature = states('sensor.indoor_temperature_mean') | float %}
-            {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float %}
+            {% set is_very_humid = (states('sensor.indoor_humidity_max') | float(100) > 70) %}
+            {% set is_using_dryer = (states('sensor.floor1_waskot_metering_plug_droogkast_power') | float(0) > 100)  %}
+            {% set indoor_temperature = states('sensor.indoor_temperature_mean') | float(19) %}
+            {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float(19) %}
             {% set house_needs_cooling = indoor_temperature > 24 %}
             {% set house_needs_cooling_and_temp_outside_lower = false %}
             {% if house_needs_cooling and outdoor_temperature < indoor_temperature %}
               {% set house_needs_cooling_and_temp_outside_lower = true %}
             {% endif %}
+            {% set dewpoint_outdoor_smaller_then_indoor = (states('sensor.outdoor_dewpoint') | float) < (states('sensor.indoor_dewpoint') | float) %}
+            {% set is_humid_and_dewpoint_outdoor_smaller_then_indoor = (is_very_humid and dewpoint_outdoor_smaller_then_indoor) | bool %}
 
-            {% if is_cooking or is_using_sanitary or is_very_moist or is_using_dryer or house_needs_cooling_and_temp_outside_lower %}
+            {% if is_cooking or is_using_sanitary or is_humid_and_dewpoint_outdoor_smaller_then_indoor or is_using_dryer or house_needs_cooling_and_temp_outside_lower %}
               high
             {% elif is_home %}
               medium
@@ -50,10 +52,14 @@ in
           '';
           attributes = {
             is_cooking = ''false'';
-            is_home = ''{{ states('binary_sensor.is_anyone_home') | bool }}'';
+            is_home = ''{{ states('binary_sensor.is_anyone_home') | bool(true) }}'';
             is_using_sanitary = ''false'';
-            is_very_moist = ''{{ (states('sensor.indoor_humidity_max') | float > 70) }}'';
-            is_using_dryer = ''{{ (states('sensor.floor1_waskot_metering_plug_droogkast_power') | float > 100) }}'';
+            is_using_dryer = ''{{ (states('sensor.floor1_waskot_metering_plug_droogkast_power') | float(0) > 100) }}'';
+            is_humid_and_dewpoint_outdoor_smaller_then_indoor = ''
+              {% set is_very_humid = (states('sensor.indoor_humidity_max') | float(100) > 70) %}
+              {% set dewpoint_outdoor_smaller_then_indoor = (states('sensor.outdoor_dewpoint') | float) < (states('sensor.indoor_dewpoint') | float) %}
+              {{ (is_very_humid and dewpoint_outdoor_smaller_then_indoor) }}
+            '';
             house_needs_cooling_and_temp_outside_lower = ''
               {% set indoor_temperature = states('sensor.indoor_temperature_mean') | float %}
               {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float %}
@@ -66,6 +72,39 @@ in
             '';
           };
         }
+        {
+          name = "indoor_dewpoint";
+          state = ''
+            {% set rh = states('sensor.indoor_humidity_max') | float(60) / 100 %}
+            {% set temp = states('sensor.indoor_temperature_mean') | float(20) %}
+            {{ temp - ((100 - (rh * 100)) / 5) }}
+          '';
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "outdoor_dewpoint";
+          state = ''
+            {% set rh1 = states('sensor.system_wtw_air_quality_inlet_humidity') | float(60) / 100 %}
+            {% set rh2 = states('sensor.openweathermap_humidity') | float(60) / 100 %}
+            {% set rh = (rh1 + rh2) / 2 %}
+            {% set temp = states('sensor.outdoor_temperature') | float(16) %}
+            {{ temp - ((100 - (rh * 100)) / 5) }}
+          '';
+          unit_of_measurement = "°C";
+        }
+        {
+          name = "outdoor_temperature";
+          state = ''
+            {% set itho_wtw = states('sensor.itho_wtw_inlet_temperature') | float(16) %}
+            {% set inlet = states('sensor.system_wtw_air_quality_inlet_temperature') | float(16) %}
+            {% set garden = states('sensor.garden_garden_temperature_noordkant_temperature') | float(16) %}
+            {% set openweather = states('sensor.openweathermap_temperature') | float(itho_wtw) %}
+            {% set sum = itho_wtw + garden + openweather %}
+            {{ sum / 3 }}
+          '';
+          unit_of_measurement = "°C";
+        }
+
       ];
     }
   ];
@@ -99,6 +138,7 @@ in
         "sensor.floor1_fen_temperature_na_temperature"
         "sensor.floor1_morgane_temperature_na_temperature"
         "sensor.floor1_nikolai_temperature_na_temperature"
+        "sensor.ebusd_370_displayedroomtemp_temp"
       ];
     }
   ];
@@ -114,6 +154,7 @@ in
         {
           platform = "state";
           entity_id = "sensor.wtw_target_fan";
+          for.minutes = 2;
         }
       ];
       action = [
@@ -189,6 +230,15 @@ in
         payload_off = "0";
         icon = "mdi:valve";
       }
+      {
+        name = "itho_wtw_is_summerday";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Summerday (K_min)'] }}";
+        unique_id = "itho_wtw_is_summerday";
+        payload_on = "1";
+        payload_off = "0";
+        icon = "mdi:weather-sunny";
+      }
     ];
 
     sensor = [
@@ -222,6 +272,14 @@ in
         value_template = "{{ value_json['Exhaust temp (°C)'] }}";
         unit_of_measurement = "°C";
         unique_id = "itho_wtw_outlet_temperature";
+        state_class = "measurement";
+      }
+      {
+        name = "itho_wtw_airfilter";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Airfilter counter'] }}";
+        unit_of_measurement = "min";
+        unique_id = "itho_wtw_airfilter";
         state_class = "measurement";
       }
       {
