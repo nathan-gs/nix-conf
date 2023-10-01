@@ -62,6 +62,10 @@
             url = "/local/apexcharts-card.js?v=2.0.1";
             type = "module";
           }
+          {
+            url = "/local/fan-mode-button-row.js";
+            type = "module";
+          }
         ];
       };
       "automation ui" = "!include automations.yaml";
@@ -166,4 +170,10 @@
     ln -snf "${(pkgs.callPackage ../apps/ha-indego.nix {})}" "/var/lib/hass/custom_components/indego"
   '';  
 
+  # needs copy, HA does not follow symlinks
+  # https://github.com/home-assistant/core/pull/42295
+  system.activationScripts.ha-www.text = ''
+    mkdir -p "/var/lib/hass/www"
+    cp "${(pkgs.callPackage ../apps/home-assistant/fan-mode-button-row.nix {})}" "/var/lib/hass/www/fan-mode-button-row.js"
+  '';
 }
