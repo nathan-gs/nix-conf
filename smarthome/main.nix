@@ -26,7 +26,8 @@ let
     );
 
 solar = import ./solar.nix {config = config;};
-bluecorner = import ./bluecorner.nix {config = config; pkgs = pkgs;};
+charger-bluecorner = import ./charger-bluecorner.nix {config = config; pkgs = pkgs;};
+charger = import ./charger.nix {config = config; pkgs = pkgs;};
 garden = import ./garden.nix {config = config; pkgs = pkgs;};
 hvac-vaillant = import ./hvac-vaillant.nix {config = config; pkgs = pkgs;};
 hvac-wtw = import ./hvac-wtw.nix {config = config; pkgs = pkgs;};
@@ -61,13 +62,15 @@ with lib;
       ++ media.automations
       ++ plugs.automations
       ++ energy.automations
-      ++ bluecorner.automations
+      ++ charger-bluecorner.automations
+      ++ charger.automations
       ++ garden.automations;
 
     config.binary_sensor = [ ] 
     ++ wfh.binary_sensor
     ++ solar.binary_sensor
-    ++ bluecorner.binary_sensor
+    ++ charger-bluecorner.binary_sensor
+    ++ charger.binary_sensor
     ++ garden.binary_sensor
     ++ hvac-vaillant.binary_sensor
     ++ hvac-wtw.binary_sensor;
@@ -80,7 +83,7 @@ with lib;
 
       sensor = []
         ++ water.mqtt.sensor
-        ++ bluecorner.mqtt_sensor
+        ++ charger-bluecorner.mqtt_sensor
         ++ garden.mqtt_sensor
         ++ hvac-wtw.mqtt.sensor;
       
@@ -96,13 +99,15 @@ with lib;
     config.homeassistant.customize = {} 
       // energy.customize
       // solar.customize
-      // bluecorner.customize
+      // charger-bluecorner.customize
+      // charger.customize
       // garden.customize;
 
     config.sensor = []
       ++ energy.sensor
       ++ solar.sensor
-      ++ bluecorner.sensor
+      ++ charger-bluecorner.sensor
+      ++ charger.sensor
       ++ garden.sensor        
       ++ hvac-vaillant.sensor
       ++ hvac-wtw.sensor;
@@ -115,7 +120,7 @@ with lib;
       // water.utility_meter
       // energy.utility_meter
       // solar.utility_meter
-      // bluecorner.utility_meter
+      // charger-bluecorner.utility_meter
       // garden.utility_meter;
 
     config.template = [] 
@@ -125,13 +130,15 @@ with lib;
       ++ hvac.template
       ++ media.template
       ++ solar.template
-      ++ bluecorner.template
+      ++ charger-bluecorner.template
+      ++ charger.template
       ++ garden.template
       ++ hvac-wtw.template 
       ++ hvac-vaillant.template;
 
     config.recorder.exclude.entity_globs = []
-      ++ bluecorner.recorder_excludes
+      ++ charger-bluecorner.recorder_excludes
+      ++ charger.recorder_excludes
       ++ hvac.recorder_excludes
       ++ solar.recorder_excludes
       ++ garden.recorder_excludes

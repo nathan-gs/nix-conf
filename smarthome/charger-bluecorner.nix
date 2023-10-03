@@ -51,7 +51,14 @@
       name = "bluecorner_token";
       scan_interval = 1800;
       json_attributes = ["access_token"];
-      value_template = ''{{ value_json.refresh_token }}''; # https://community.home-assistant.io/t/rest-sensor-state-max-length-is-255-characters/31807/10
+      # https://community.home-assistant.io/t/rest-sensor-state-max-length-is-255-characters/31807/10
+      value_template = ''
+        {% if value_json.refresh_token is defined %}
+          {{ value_json.refresh_token }}
+        {% else %}
+          {{ states('sensor.bluecorner_refresh_token') }}
+        {% endif %}
+      ''; 
     }    
     {
       platform = "rest";
