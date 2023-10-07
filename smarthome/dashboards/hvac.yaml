@@ -1,4 +1,299 @@
 views:
+  - title: WTW
+    icon: mdi:fan
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: entities
+            title: WTW
+            show_header_toggle: false
+            entities:
+              - entity: fan.itho_wtw_fan
+                name: WTW Unit
+                type: custom:fan-mode-button-row
+            state_color: false
+          - type: history-graph
+            entities:
+              - entity: sensor.itho_wtw_actual_mode
+            hours_to_show: 24
+          - type: entities
+            entities:
+              - type: attribute
+                name: house needs cooling and temp outside lower
+                entity: sensor.wtw_target_fan
+                attribute: house_needs_cooling_and_temp_outside_lower
+              - type: attribute
+                name: dew point over 17°C and outdoor lower
+                entity: sensor.wtw_target_fan
+                attribute: dewpoint_over_17_and_dewpoint_outdoor_lower
+              - type: attribute
+                name: humidity max over 80%
+                entity: sensor.wtw_target_fan
+                attribute: humidity_max_over_80
+              - type: attribute
+                name: is cooking
+                entity: sensor.wtw_target_fan
+                attribute: is_cooking
+              - type: attribute
+                name: is using sanitary
+                entity: sensor.wtw_target_fan
+                attribute: is_using_sanitary
+              - type: attribute
+                name: is using dryer
+                entity: sensor.wtw_target_fan
+                attribute: is_using_dryer
+          - type: entities
+            show_header_toggle: false
+            entities:
+              - entity: sensor.itho_wtw_inlet_fan
+              - entity: sensor.itho_wtw_outlet_fan
+              - entity: binary_sensor.itho_wtw_bypass
+              - entity: binary_sensor.itho_wtw_is_summerday
+              - entity: sensor.itho_wtw_airfilter
+      - type: vertical-stack
+        cards:
+          - type: weather-forecast
+            entity: weather.openweathermap
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            yaxis:
+              - id: dewpoint
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 7
+              - id: humidity
+                opposite: true
+                min: 40
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
+            color_list:
+              - '#ff9800'
+              - '#3498db'
+              - '#e74c3c'
+              - '#1a4c6e'
+              - '#f3721e'
+            header:
+              show: false
+            series:
+              - entity: sensor.indoor_dewpoint
+                name: Indoor Dewpoint
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: dewpoint
+              - entity: sensor.outdoor_dewpoint
+                name: Outdoor Dewpoint
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: dewpoint
+              - entity: sensor.indoor_humidity
+                name: Indoor Humidity
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+              - entity: sensor.outdoor_humidity
+                name: Outdoor Humidity
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+              - entity: sensor.indoor_humidity_max
+                name: Indoor Humidity (max)
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            yaxis:
+              - id: temperature
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 7
+              - id: humidity
+                opposite: true
+                min: 40
+                max: 100
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 4
+            color_list:
+              - '#f3721e'
+              - '#2772a5'
+              - '#e74c3c'
+              - '#1a4c6e'
+              - '#f3721e'
+            header:
+              show: false
+            series:
+              - entity: sensor.indoor_temperature
+                name: Indoor Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.outdoor_temperature
+                name: Outdoor Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.indoor_humidity
+                name: Indoor Humidity
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+              - entity: sensor.outdoor_humidity
+                name: Outdoor Humidity
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+              - entity: sensor.indoor_humidity_max
+                name: Indoor Humidity (max)
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: humidity
+      - type: vertical-stack
+        cards:
+          - type: markdown
+            content: ' '
+            title: Air Quality
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            yaxis:
+              - id: pm25
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 7
+            color_list:
+              - '#ff9800'
+              - '#3498db'
+              - '#e74c3c'
+              - '#1a4c6e'
+            header:
+              show: false
+            series:
+              - entity: sensor.system_wtw_air_quality_inlet_pm25
+                name: Inlet PM2.5
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: pm25
+              - entity: sensor.system_wtw_air_quality_to_house_pm25
+                name: To House PM2.5
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: pm25
+              - entity: sensor.system_wtw_air_quality_outlet_pm25
+                name: Outlet PM2.5
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: pm25
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            yaxis:
+              - id: tvoc
+                min: 0
+                max: 500
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 0
+                  tickAmount: 10
+            color_list:
+              - '#ff9800'
+              - '#3498db'
+              - '#e74c3c'
+              - '#1a4c6e'
+            header:
+              show: false
+            series:
+              - entity: sensor.system_wtw_air_quality_inlet_voc_index
+                name: Inlet VOC
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: tvoc
+              - entity: sensor.system_wtw_air_quality_to_house_voc_index
+                name: To House VOC
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: tvoc
+              - entity: sensor.system_wtw_air_quality_outlet_voc_index
+                name: Outlet VOC
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: tvoc
   - theme: Backend-selected
     icon: mdi:radiator
     badges: []
@@ -921,4 +1216,5 @@ views:
           - entity: sensor.garden_garden_temperature_noordkant_battery
         title: Battery
         show_header_toggle: true
-badges: []
+      - type: thermostat
+        entity: climate.cv
