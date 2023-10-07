@@ -61,7 +61,7 @@ in
               {% set dewpoint_outdoor_smaller_then_indoor = ((states('sensor.outdoor_dewpoint') | float) +1) < (states('sensor.indoor_dewpoint') | float) %}
               {{ (dewpoint_over_17 and dewpoint_outdoor_smaller_then_indoor) | bool }}
             '';
-            humidity_max_over_80 = ''{{ (states('sensor.indoor_humidity') | float(100) > 80) }}'';
+            humidity_max_over_80 = ''{{ (states('sensor.indoor_humidity_max') | float(100) > 80) }}'';
             house_needs_cooling_and_temp_outside_lower = ''
               {% set indoor_temperature = states('sensor.indoor_temperature') | float %}
               {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float %}
