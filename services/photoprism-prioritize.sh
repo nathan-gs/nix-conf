@@ -32,8 +32,7 @@ function ts() {
 }
 
 function get_last_log() {
-  tail -n 20 /var/log/nginx/access.log |
-    grep 'photoprism' |
+  grep 'photoprism' /var/log/nginx/access.log |
     grep -v '/slideshow' |
     tail -n 1
 }
@@ -59,13 +58,13 @@ while true; do
 
   last_log=$(get_last_log)
 
-  if [ "$last_log" == "" ]; then
+  if [ "${#last_log}" -eq 0 ]; then
     photoprism_deprioritize
     sleep 10
     continue
   fi
 
-  ts_from_log=$(ts $last_log)
+  ts_from_log=$(ts "$last_log")
   current_timestamp=$(date '+%s')
 
   # Calculate the difference in seconds
