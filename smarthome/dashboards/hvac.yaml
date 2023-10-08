@@ -250,6 +250,16 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: pm25
+              - entity: sensor.system_wtw_air_quality_inlet_pm25
+                type: line
+                transform: return 10
+                color: black
+                stroke_width: 1
+                show:
+                  in_header: false
+                  name_in_header: false
+                  legend_value: false
+                name: ' '
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
