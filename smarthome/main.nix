@@ -36,7 +36,7 @@ energy = import ./energy.nix;
 media = import ./media.nix;
 wfh = import ./wfh.nix;
 lights = import ./lights.nix;
-hvac = import ./hvac.nix;
+hvac = import ./hvac.nix {config = config; pkgs = pkgs; lib = lib;};
 plugs = import ./plugs.nix;
 general = import ./general.nix;
 

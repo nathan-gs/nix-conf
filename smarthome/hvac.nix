@@ -1,3 +1,5 @@
+{config, pkgs, lib, ...}:
+
 let
 
   rtv = [
@@ -339,10 +341,6 @@ let
   
   temperatureAutoWanted = [
     {
-      trigger = {
-        platform = "time_pattern";
-        minutes = "/5";
-      };
       sensor = [
         {
           name = "floor1_nikolai_temperature_auto_wanted";
@@ -548,6 +546,73 @@ let
     # }
   ];
 
+  roomTemperatureDifferenceWanted = map (v: 
+    {
+      name = "${v.floor}_${v.zone}_rtv_${v.name}_temperature_diff_wanted";
+      unit_of_measurement = "°C";
+      device_class = "temperature";
+      state = ''
+        {% set temperature_wanted = state_attr("climate.${v.floor}_${v.zone}_rtv_${v.name}", "temperature") | float(15.5) %}
+        {% set temperature_actual = states("sensor.${v.floor}_${v.zone}_temperature_na_temperature") | float(15.5) %}
+        {{ (temperature_wanted - temperature_actual) | round(2) }}
+      '';
+      icon = "mdi:thermometer-auto";
+    }) rtv;
+  
+  heatingNeededRtvSensors = map(v: "states('sensor.${v.floor}_${v.zone}_rtv_${v.name}_temperature_diff_wanted')") rtv;
+
+  heatingNeeded = [
+    {
+      name = "heating_temperature_diff_wanted";
+      unit_of_measurement = "°C";
+      device_class = "temperature";
+      state = ''
+        {% 
+        set v = (
+          ${builtins.concatStringsSep "," heatingNeededRtvSensors}
+        )
+        %}
+        {% set valid_temp = v | select('!=','unknown') | map('float') | list %}
+        {{ max(valid_temp) | round(2) }}
+      '';
+      icon = "mdi:thermometer-auto";
+    }
+    {
+      name = "heating_temperature_desired";
+      unit_of_measurement = "°C";
+      device_class = "temperature";
+      state = ''
+        {% set desired_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
+        {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
+        {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
+        {% set max_desired_temp = 21 %}
+        {% set min_desired_temp = 15.5 %}
+        {% set target_temp = current_temp + temperature_diff_wanted %}
+        {% set new_temp = target_temp %}
+
+        {% if target_temp > (current_temp + 0.5) %}
+          {% if temperature_diff_wanted > 0.5 %}
+            {# Gradually increase temperature #}
+            {% set new_temp = (((current_temp + 0.5) * 2) | round(0) / 2) %}
+            {% set new_temp = min(new_temp, max_desired_temp) %}
+          {% endif %}
+        {% elif target_temp < current_temp %}
+          {% set new_temp = ((target_temp * 2) | round(0) / 2) %}
+          {% set new_temp = max(new_temp, min_desired_temp) %}
+        {% endif %}
+        {{ new_temp }}
+      '';
+      icon = ''
+        {% if (state_attr("climate.cv", "current_temperature") | float(19.5)) < (state('sensor.heating_temperature_desired') | float(19.5)) %}
+          mdi:thermometer-chevron-up
+        {% else %}
+          mdi:thermometer-chevron-down
+        {% endif %}
+      '';
+    }
+    
+  ];
+
 in
 {
   devices = [] 
@@ -561,7 +626,10 @@ in
     ++ temperatureCalibrationAutomations
     ++ electricHeatingAutomations;
 
-  template = [] ++ temperatureAutoWanted;
+  template = []
+   ++ temperatureAutoWanted 
+   ++ [{ sensor = roomTemperatureDifferenceWanted; }]
+   ++ [{ sensor = heatingNeeded; }];
 
 
   recorder_excludes = [
