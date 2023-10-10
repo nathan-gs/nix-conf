@@ -6,7 +6,7 @@
 
   services.ebusd = {
     enable = true;
-    device = "ebus:3333";
+    device = "enh:ebus:3335";
     mqtt = {
       enable = true;
       host = "localhost";
@@ -23,6 +23,13 @@
       other = "notice";
       all = "error";
     };
+    extraArguments = [
+      "--latency=100" 
+      "--acquiretimeout=100" 
+      "--acquireretries=3" 
+      "--receivetimeout=100"
+      "--sendretries=3"
+      "--pollinterval=50" ];
   };
 
 }
