@@ -27,7 +27,7 @@ in
         {
           name = "wtw_target_fan";
           state = ''
-            {% set is_home = states('binary_sensor.is_anyone_home') | bool(true) %}
+            {% set is_home = states('binary_sensor.anyone_home') | bool(true) %}
             {% set is_cooking = false %}
             {% set is_using_sanitary = false %}
             {% set dewpoint_over_17 = (states('sensor.indoor_dewpoint') | float(17.0) > 17.0) %}
@@ -53,7 +53,7 @@ in
           '';
           attributes = {
             is_cooking = ''false'';
-            is_home = ''{{ states('binary_sensor.is_anyone_home') | bool(true) }}'';
+            is_home = ''{{ states('binary_sensor.anyone_home') | bool(true) }}'';
             is_using_sanitary = ''false'';
             is_using_dryer = ''{{ (states('sensor.floor1_waskot_metering_plug_droogkast_power') | float(0) > 100) }}'';
             dewpoint_over_17_and_dewpoint_outdoor_lower = ''

@@ -346,7 +346,7 @@ let
           name = "floor1_nikolai_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') | bool %}
-            {% set is_anyone_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set anyone_home = states('binary_sensor.anyone_home') | bool %}
             {% set temperature_eco = states('input_number.temperature_eco') | float %}
             {% set temperature_night = states('input_number.temperature_night') | float %}
             {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
@@ -362,7 +362,7 @@ let
               {% if now().hour >= 7 and now().hour < 9 %}
                 {{ temperature_eco }}
               {% elif now().hour >= 9 and now().hour < 18 %}
-                {% if is_anyone_home %}
+                {% if anyone_home %}
                   {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_night }}
@@ -378,7 +378,7 @@ let
           name = "floor1_morgane_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') | bool %}
-            {% set is_anyone_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set anyone_home = states('binary_sensor.anyone_home') | bool %}
             {% set temperature_eco = states('input_number.temperature_eco') | float %}
             {% set temperature_night = states('input_number.temperature_night') | float %}
             {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
@@ -394,7 +394,7 @@ let
               {% if now().hour >= 7 and now().hour < 9 %}
                 {{ temperature_eco }}
               {% elif now().hour >= 9 and now().hour < 18 %}
-                {% if is_anyone_home %}
+                {% if anyone_home %}
                   {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_night }}
@@ -410,7 +410,7 @@ let
           name = "floor1_fen_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') | bool %}
-            {% set is_anyone_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set anyone_home = states('binary_sensor.anyone_home') | bool %}
             {% set temperature_eco = states('input_number.temperature_eco') | float %}
             {% set temperature_night = states('input_number.temperature_night') | float %}
             {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
@@ -436,7 +436,7 @@ let
           name = "floor1_badkamer_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') | bool %}
-            {% set is_anyone_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set anyone_home = states('binary_sensor.anyone_home') | bool %}
             {% set temperature_eco = states('input_number.temperature_eco') | float %}
             {% set temperature_night = states('input_number.temperature_night') | float %}
             {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
@@ -458,7 +458,7 @@ let
           name = "floor0_keuken_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') | bool %}
-            {% set is_anyone_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set anyone_home = states('binary_sensor.anyone_home') | bool %}
             {% set temperature_eco = states('input_number.temperature_eco') | float %}
             {% set temperature_night = states('input_number.temperature_night') | float %}
             {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
@@ -472,7 +472,7 @@ let
           name = "floor0_bureau_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') | bool %}
-            {% set is_anyone_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set anyone_home = states('binary_sensor.anyone_home') | bool %}
             {% set temperature_eco = states('input_number.temperature_eco') | float %}
             {% set temperature_night = states('input_number.temperature_night') | float %}
             {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
@@ -482,7 +482,7 @@ let
               {{ temperature_eco }}
             {% else %}
               {% if now().hour >= 9 and now().hour < 18 %}
-                {% if is_anyone_home %}
+                {% if anyone_home %}
                   {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_eco }}
@@ -498,7 +498,7 @@ let
           name = "floor0_living_temperature_auto_wanted";
           state = ''
             {% set is_workday = states('binary_sensor.is_workday') | bool %}
-            {% set is_anyone_home = states('binary_sensor.is_anyone_home') | bool %}
+            {% set anyone_home = states('binary_sensor.anyone_home') | bool %}
             {% set temperature_eco = states('input_number.temperature_eco') | float %}
             {% set temperature_night = states('input_number.temperature_night') | float %}
             {% set temperature_comfort_low = states('input_number.temperature_comfort_low') | float %}
