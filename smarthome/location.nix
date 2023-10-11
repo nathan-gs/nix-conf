@@ -61,7 +61,7 @@
           {
             name = "anyone_home_or_coming_home";
             state = ''
-              {{ states('anyone_home') | bool(true) or states('is_anyone_coming_home') | bool(false) }}
+              {{ states('binary_sensor.anyone_home') | bool(true) or states('binary_sensor.is_anyone_coming_home') | bool(false) }}
             '';
             device_class = "occupancy";            
           }
@@ -73,6 +73,16 @@
             device_class = "occupancy";
             delay_on.minutes = 10;
             delay_off.minutes = 10;
+          }
+          {
+            name = "floor0_bureau_in_use";
+            state = "{{ states('binary_sensor.ndesk') | bool(false) }}";
+            device_class = "occupancy";            
+          }
+          {
+            name = "floor0_nikolai_in_use";
+            state = "{{ states('binary_sensor.flaptop') | bool(false) }}";
+            device_class = "occupancy";            
           }
         ];
       }

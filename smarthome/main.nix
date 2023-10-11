@@ -45,7 +45,7 @@ with lib;
 {
 
   imports = [
-    ./people.nix
+    ./location.nix
     ./calendar.nix
   ];
 
