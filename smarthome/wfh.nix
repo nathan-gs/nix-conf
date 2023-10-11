@@ -93,20 +93,5 @@
     }
   ];
 
-  binary_sensor = [
-    {
-      platform = "ping";
-      host = "ndesk";
-      name = "ndesk";
-      count = 2;
-      scan_interval = 30;
-    }
-    {
-      platform = "ping";
-      host = "flaptop-CP113907";
-      name = "flaptop";
-      count = 2;
-      scan_interval = 30;
-    }
-  ];
+  binary_sensor = [];
 }

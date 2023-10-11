@@ -38,12 +38,15 @@ wfh = import ./wfh.nix;
 lights = import ./lights.nix;
 hvac = import ./hvac.nix {config = config; pkgs = pkgs; lib = lib;};
 plugs = import ./plugs.nix;
-general = import ./general.nix;
 
 in 
 
 with lib;
 {
+
+  imports = [
+    ./people.nix
+  ];
 
   services.zigbee2mqtt.settings = {
     devices = zigbeeDevices;
@@ -126,7 +129,6 @@ with lib;
     config.template = [] 
       ++ energy.template
       ++ water.template
-      ++ general.template
       ++ hvac.template
       ++ media.template
       ++ solar.template
@@ -150,27 +152,6 @@ with lib;
       ++ hvac-wtw.climate;
 
 
-    config.device_tracker = [
-      {
-        platform = "ping";
-        hosts = {
-          "fphone" = "fphone";
-          "nphone" = "nphone-s22";
-        };
-      }
-    ];
 
-    config.person = [
-      {
-        name = "Femke";
-        id = "femke";
-        device_trackers = ["device_tracker.fphone"];
-      }
-      {
-        name = "Nathan";
-        id = "nathan";
-        device_trackers = ["device_tracker.nphone"];
-      }
-    ];
   };
 }

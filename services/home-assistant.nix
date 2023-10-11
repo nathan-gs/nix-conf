@@ -93,6 +93,7 @@
       "ping"
       "plex"
       "prometheus"
+      "proximity"
       "radio_browser"
       "scrape"
       "sensor"
