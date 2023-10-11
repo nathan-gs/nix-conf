@@ -603,7 +603,7 @@ let
         {{ new_temp }}
       '';
       icon = ''
-        {% if (state_attr("climate.cv", "current_temperature") | float(19.5)) < (state('sensor.heating_temperature_desired') | float(19.5)) %}
+        {% if (state_attr("climate.cv", "current_temperature") | float(19.5)) < (states('sensor.heating_temperature_desired') | float(19.5)) %}
           mdi:thermometer-chevron-up
         {% else %}
           mdi:thermometer-chevron-down
