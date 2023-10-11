@@ -44,10 +44,6 @@
       {
         binary_sensor = [
           {
-            name = "is_workday";
-            state = "{{ (now().weekday() < 5) }}";
-          }
-          {
             name = "anyone_home";
             state = "{{ states.person | selectattr('state','eq','home') | list | count > 0 }}";
             device_class = "occupancy";

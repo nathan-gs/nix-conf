@@ -46,6 +46,7 @@ with lib;
 
   imports = [
     ./people.nix
+    ./calendar.nix
   ];
 
   services.zigbee2mqtt.settings = {
