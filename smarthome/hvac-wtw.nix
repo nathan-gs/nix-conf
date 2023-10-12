@@ -63,7 +63,7 @@ in
             '';
             humidity_max_over_80 = ''{{ (states('sensor.indoor_humidity_max') | float(100) > 80) }}'';
             house_needs_cooling_and_temp_outside_lower = ''
-              {% set indoor_temperature = states('sensor.indoor_temperature') | float %}
+              {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
               {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float %}
               {% set house_needs_cooling = indoor_temperature > 25 %}
               {% set house_needs_cooling_and_temp_outside_lower = false %}

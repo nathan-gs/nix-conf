@@ -29,7 +29,6 @@ solar = import ./solar.nix {config = config;};
 charger-bluecorner = import ./charger-bluecorner.nix {config = config; pkgs = pkgs;};
 charger = import ./charger.nix {config = config; pkgs = pkgs;};
 garden = import ./garden.nix {config = config; pkgs = pkgs;};
-hvac-vaillant = import ./hvac-vaillant.nix {config = config; pkgs = pkgs;};
 hvac-wtw = import ./hvac-wtw.nix {config = config; pkgs = pkgs;};
 water = import ./water.nix;
 energy = import ./energy.nix;
@@ -47,6 +46,7 @@ with lib;
   imports = [
     ./location.nix
     ./calendar.nix
+    ./hvac-vaillant.nix
   ];
 
   services.zigbee2mqtt.settings = {
@@ -60,7 +60,6 @@ with lib;
     config."automation manual" = 
       lights.automations
       ++ hvac.automations
-      ++ hvac-vaillant.automations
       ++ hvac-wtw.automations
       ++ wfh.automations
       ++ media.automations
@@ -76,7 +75,6 @@ with lib;
     ++ charger-bluecorner.binary_sensor
     ++ charger.binary_sensor
     ++ garden.binary_sensor
-    ++ hvac-vaillant.binary_sensor
     ++ hvac-wtw.binary_sensor;
 
 
@@ -90,9 +88,6 @@ with lib;
         ++ charger-bluecorner.mqtt_sensor
         ++ garden.mqtt_sensor
         ++ hvac-wtw.mqtt.sensor;
-      
-      climate = []
-        ++ hvac-vaillant.mqtt.climate;
 
       fan = []
         ++ hvac-wtw.mqtt.fan;
@@ -113,7 +108,6 @@ with lib;
       ++ charger-bluecorner.sensor
       ++ charger.sensor
       ++ garden.sensor        
-      ++ hvac-vaillant.sensor
       ++ hvac-wtw.sensor;
 
     config.scrape = []
@@ -136,8 +130,7 @@ with lib;
       ++ charger-bluecorner.template
       ++ charger.template
       ++ garden.template
-      ++ hvac-wtw.template 
-      ++ hvac-vaillant.template;
+      ++ hvac-wtw.template;
 
     config.recorder.exclude.entity_globs = []
       ++ charger-bluecorner.recorder_excludes
@@ -145,14 +138,10 @@ with lib;
       ++ hvac.recorder_excludes
       ++ solar.recorder_excludes
       ++ garden.recorder_excludes
-      ++ hvac-vaillant.recorder_excludes
       ++ hvac-wtw.recorder_excludes;
 
     config.climate = []
-      ++ hvac-vaillant.climate
       ++ hvac-wtw.climate;
-
-
 
   };
 }
