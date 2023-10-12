@@ -47,6 +47,7 @@ with lib;
     ./location.nix
     ./calendar.nix
     ./hvac-vaillant.nix
+    ./hvac/temperature.nix
   ];
 
   services.zigbee2mqtt.settings = {

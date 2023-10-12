@@ -1152,7 +1152,7 @@ views:
           show: true
           title: Tuin (Noordkant)
         series:
-          - entity: sensor.garden_garden_temperature_noordkant_temperature
+          - entity: sensor.outside_temperature
             name: Actual Temperature (Sensor)
             type: line
             group_by:
@@ -1162,7 +1162,7 @@ views:
             show:
               header_color_threshold: true
             yaxis_id: temperature
-          - entity: sensor.garden_garden_temperature_noordkant_humidity
+          - entity: sensor.outside_humidity
             name: Humidity
             type: line
             color: black
@@ -1171,7 +1171,7 @@ views:
               duration: 5m
             stroke_width: 2
             yaxis_id: humidity
-          - entity: sensor.outside_temperature_avg
+          - entity: sensor.outside_temperature_24h_avg
             name: Average
             type: line
             group_by:

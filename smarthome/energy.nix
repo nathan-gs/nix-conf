@@ -402,14 +402,7 @@ let
 
   degreeDays = {
     sensor = [
-      {
-        platform = "statistics";
-        name = "outside_temperature_avg";
-        entity_id = "sensor.garden_garden_temperature_noordkant_temperature";
-        state_characteristic = "mean";
-        max_age.hours = 24;
-        sampling_size = 60*24;
-      }
+      
     ];
 
     template = [
@@ -423,7 +416,7 @@ let
             name = "degree_day_daily";
             state = ''
               {% set regularized_temp = 18.0 | float %}
-              {% set average_outside_temp = states('sensor.outside_temperature_avg') | float %}
+              {% set average_outside_temp = states('sensor.outside_temperature_24h_avg') | float %}
               {% set dd = regularized_temp - average_outside_temp %}
               {% if dd > 0 %}
                 {{ dd }}
