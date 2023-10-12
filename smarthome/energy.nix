@@ -416,7 +416,7 @@ let
             name = "degree_day_daily";
             state = ''
               {% set regularized_temp = 18.0 | float %}
-              {% set average_outside_temp = states('sensor.outside_temperature_24h_avg') | float %}
+              {% set average_outside_temp = states('sensor.outdoor_temperature_24h_avg') | float %}
               {% set dd = regularized_temp - average_outside_temp %}
               {% if dd > 0 %}
                 {{ dd }}

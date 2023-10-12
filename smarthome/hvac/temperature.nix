@@ -136,7 +136,7 @@
       }
       {
         platform = "statistics";
-        name = "outside_temperature_24h_avg";
+        name = "outdoor_temperature_24h_avg";
         entity_id = "sensor.outdoor_temperature_raw";
         state_characteristic = "mean";
         max_age.hours = 24;
