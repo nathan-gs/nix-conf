@@ -12,7 +12,10 @@
             state = ''
               {% set rh = states('sensor.indoor_humidity') | float(60) / 100 %}
               {% set temp = states('sensor.indoor_temperature') | float(20) %}
-              {{ (temp - ((100 - (rh * 100)) / 5)) | round(2) }}
+              {% set a = 17.27 %}
+              {% set b = 237.7 %}
+              {% set alpha = ((a * temp) / (b + temp)) + ((rh | log) * 2.30259) %}
+              {{ ((b * alpha) / (a - alpha)) | round(2) }}
             '';
             unit_of_measurement = "°C";
             icon = "mdi:water-percent";
@@ -22,7 +25,10 @@
             state = ''
               {% set rh = states('sensor.outdoor_humidity') | float(60) / 100 %}
               {% set temp = states('sensor.outdoor_temperature') | float(16) %}
-              {{ (temp - ((100 - (rh * 100)) / 5)) | round(2) }}
+              {% set a = 17.27 %}
+              {% set b = 237.7 %}
+              {% set alpha = ((a * temp) / (b + temp)) + ((rh | log) * 2.30259) %}
+              {{ ((b * alpha) / (a - alpha)) | round(2) }}
             '';
             unit_of_measurement = "°C";
             icon = "mdi:water-percent";
@@ -39,14 +45,16 @@
             icon = "mdi:water-percent";
           }
           {
-            name = "outdoor_temperature_raw";
+            name = "outdoor_temperature";
             state = ''
+              {#
               {% set itho_wtw = states('sensor.itho_wtw_inlet_temperature') | float(16) %}
               {% set inlet = states('sensor.system_wtw_air_quality_inlet_temperature') | float(16) %}
+              #}
               {% set garden = states('sensor.garden_garden_temperature_noordkant_temperature') | float(16) %}
-              {% set openweather = states('sensor.openweathermap_temperature') | float(itho_wtw) %}
-              {% set sum = itho_wtw + inlet + garden + openweather %}
-              {{ (sum / 4) | round(2) }}
+              {% set openweather = states('sensor.openweathermap_temperature') | float(garden) %}
+              {% set sum = garden + openweather %}
+              {{ (sum / 2) | round(2) }}
             '';
             unit_of_measurement = "°C";
             icon = "mdi:home-thermometer-outline";
@@ -128,14 +136,6 @@
     sensor = [
       {
         platform = "statistics";
-        name = "outdoor_temperature";
-        entity_id = "sensor.outdoor_temperature_raw";
-        state_characteristic = "mean";
-        max_age.minutes = 6;
-        sampling_size = 10;
-      }
-      {
-        platform = "statistics";
         name = "outdoor_temperature_24h_avg";
         entity_id = "sensor.outdoor_temperature_raw";
         state_characteristic = "mean";
@@ -144,7 +144,6 @@
       }
     ];
   };
-
 
 }
 
