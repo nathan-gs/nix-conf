@@ -35,7 +35,7 @@
   networking.wireless.enable = false;  # Enables wireless support via wpa_supplicant.
   
   disks = {
-    root = "nvme-Force_MP300_1822818000012437015A";
+    root = "nvme-CT1000P5PSSD8_221036718144";
     data = [
      "ata-ST5000LM000-2AN170_WCJ0NK0L"
      "ata-ST5000LM000-2AN170_WCJ19YAA"
@@ -59,19 +59,19 @@
   };
   
   fileSystems."/" = {
-    device = "/dev/disk/by-id/nvme-Force_MP300_1822818000012437015A-part2";
+    device = "/dev/disk/by-label/nixos";
     fsType = "ext4";
     options = ["noatime" "discard" ];
   };
   
   fileSystems."/boot" = {
-    device = "/dev/disk/by-id/nvme-Force_MP300_1822818000012437015A-part1";
+    device = "/dev/disk/by-label/boot";
     fsType = "vfat";
   };
 
   
   swapDevices = [
-    { device = "/dev/disk/by-id/nvme-Force_MP300_1822818000012437015A-part3"; }
+    { device = "/dev/disk/by-label/swap"; }
   ];  
 
   # The global useDHCP flag is deprecated, therefore explicitly set to false here.
