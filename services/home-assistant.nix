@@ -69,6 +69,9 @@
         ];
       };
       "automation ui" = "!include automations.yaml";
+      recorder = {
+        purge_keep_days = 365;
+      };
     };
 
     #lovelaceConfig = {};
