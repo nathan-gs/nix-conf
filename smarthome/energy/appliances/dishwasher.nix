@@ -5,7 +5,7 @@
   services.home-assistant.config = {
     powercalc.sensors = [
       {
-        name = "dishwasher_energy";
+        name = "dishwasher";
         entity_id = "binary_sensor.dishwasher_status";
         power_sensor_id = "sensor.dishwasher_power";
         force_energy_sensor_creation = true;
