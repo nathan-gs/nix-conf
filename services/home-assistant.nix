@@ -170,6 +170,7 @@
     ln -snf "${(pkgs.callPackage ../apps/ha-hon.nix {})}" "/var/lib/hass/custom_components/hon"
     ln -snf "${(pkgs.callPackage ../apps/ha-electrolux-status.nix {})}" "/var/lib/hass/custom_components/electrolux_status"
     ln -snf "${(pkgs.callPackage ../apps/ha-indego.nix {})}" "/var/lib/hass/custom_components/indego"
+    ln -snf "${(pkgs.callPackage ../apps/home-assistant/powercalc.nix {})}" "/var/lib/hass/custom_components/powercalc"
   '';  
 
   # needs copy, HA does not follow symlinks

@@ -48,6 +48,9 @@ with lib;
     ./calendar.nix
     ./hvac-vaillant.nix
     ./hvac/temperature.nix
+    ./energy/powercalc.nix
+    ./energy/car_charger/volvo.nix
+    ./energy/appliances/dishwasher.nix
   ];
 
   services.zigbee2mqtt.settings = {
