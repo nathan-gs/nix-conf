@@ -59,7 +59,7 @@
       lovelace = {
         resources = [
           {
-            url = "/local/apexcharts-card.js?v=2.0.1";
+            url = "/local/apexcharts-card.js?v=2.0.4";
             type = "module";
           }
           {
@@ -177,5 +177,6 @@
   system.activationScripts.ha-www.text = ''
     mkdir -p "/var/lib/hass/www"
     cp "${(pkgs.callPackage ../apps/home-assistant/fan-mode-button-row.nix {})}" "/var/lib/hass/www/fan-mode-button-row.js"
+    cp "${(pkgs.callPackage ../apps/home-assistant/apexcharts-card.nix {})}" "/var/lib/hass/www/apexcharts-card.js"
   '';
 }
