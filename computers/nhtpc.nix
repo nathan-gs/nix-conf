@@ -101,7 +101,7 @@
   };
 
   services.cloudflare-dyndns-nathan = {
-    enable = true;
+    enable = false;
     authEmail = config.secrets.cloudflare.authEmail;
     authKey = config.secrets.cloudflare.authKey;
     zoneId = config.secrets.cloudflare.zoneId;
