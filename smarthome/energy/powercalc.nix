@@ -1,4 +1,4 @@
-{config, pkgs, lib, ...}:
+{ config, pkgs, lib, ... }:
 
 {
 
@@ -7,7 +7,7 @@
       enable_autodiscovery = false;
       energy_sensor_naming = "{}_energy";
       power_sensor_naming = "{}_power";
-
+      force_update_frequency = "00:01:00";
       sensors = [
       ];
     };
