@@ -103,7 +103,7 @@ in
         {
           platform = "state";
           entity_id = "sensor.wtw_target_fan";
-          for.minutes = 2;
+          for.minutes = 1;
         }
       ];
       action = [

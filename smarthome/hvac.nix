@@ -171,80 +171,6 @@ let
     )
   );
 
-
-  windowOpenAutomations = 
-    map (v: {
-      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.opened";
-      alias = "${v.floor}/${v.zone}/${v.type}/${v.name} opened";
-      trigger = [
-        {
-          to = "on";
-          platform = "state";
-          entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
-        }
-      ];
-      condition = [];
-      action = [
-        {
-          service = "input_boolean.turn_off";
-          data.entity_id = "input_boolean.${v.floor}_${v.zone}_rtv_is_auto";
-        }
-        {
-          service = "climate.turn_off";
-          target.entity_id = "climate.${v.floor}_${v.zone}_rtv_${v.name}";
-        }
-      ];
-      mode = "single";
-    })
-  
-    (map (v: v //  { type = "window";}) windows);  
-
-  windowClosedAutomations = 
-    map (v: {
-      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.closed";
-      alias = "${v.floor}/${v.zone}/${v.type}/${v.name} closed";
-      trigger = [
-        {
-          platform = "state";
-          entity_id = "binary_sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_contact";
-          to = "off";
-        }
-      ];
-      condition = [];
-      action = [
-        {
-          service = "input_boolean.turn_on";
-          data.entity_id = "input_boolean.${v.floor}_${v.zone}_rtv_is_auto";
-        }
-      ];
-      mode = "single";
-    })
-    (map (v: v //  { type = "window";}) windows);
-
-  temperatureSetWorkaroundAutomations = 
-    map (v: {
-      id = "${v.floor}/${v.zone}/${v.type}/${v.name}.temperature_set_workaround";
-      alias = "${v.floor}/${v.zone}/${v.type}/${v.name} temperature_set_workaround";
-      trigger = [
-        {
-          platform = "state";
-          entity_id = "number.${v.floor}_${v.zone}_${v.type}_${v.name}_current_heating_setpoint_auto";
-        }
-      ];
-      condition = ''{{ ( states('climate.${v.floor}_${v.zone}_${v.type}_${v.name}') == "auto" ) }}'';
-      action = [
-        {
-	        service = "climate.set_temperature";
-          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
-          data = {
-            temperature = "{{ states('number.${v.floor}_${v.zone}_${v.type}_${v.name}_current_heating_setpoint_auto') }}";
-          };
-        }        
-      ];
-      mode = "single";
-    })
-    (map (v: v //  { type = "rtv";}) rtv);
-  
   temperatureRtvAutomations = 
     map (v: {
       id = "${v.floor}/${v.zone}/${v.type}/${v.name}.temperature_sync";
@@ -281,24 +207,6 @@ let
         }}
       '';
       action = [
-        {
-	        service = "climate.set_preset_mode";
-          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
-          data.preset_mode = "manual";
-        }
-        {
-          delay = "0:00:10";
-        }
-        {
-	        service = "climate.set_hvac_mode";
-          target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
-          data = {
-            hvac_mode = "heat";
-          };
-        }
-        {
-          delay = "0:00:10";
-        }
         {
 	        service = "climate.set_temperature";
           target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
@@ -349,24 +257,29 @@ let
           name = "floor1_nikolai_temperature_auto_wanted";
           state = ''
             ${autoWantedHeader}
-            {% if workday %}
-              {% if now().hour >= 6 and now().hour < 17 %}
-                {{ temperature_eco }}
-              {% else %}
-                {{ temperature_night }}
-              {% endif %}
-            {% else %}
-              {% if now().hour >= 7 and now().hour < 9 %}
-                {{ temperature_eco }}
-              {% elif now().hour >= 9 and now().hour < 18 %}
-                {% if anyone_home %}
-                  {{ temperature_comfort_low }}
+            {% set is_window_closed = states('binary_sensor.floor1_nikolai_window_na_contact') | bool(false) == false %}
+            {% if is_window_closed %}
+              {% if workday %}
+                {% if now().hour >= 6 and now().hour < 17 %}
+                  {{ temperature_eco }}
                 {% else %}
                   {{ temperature_night }}
                 {% endif %}
               {% else %}
-                {{ temperature_night }}
+                {% if now().hour >= 7 and now().hour < 9 %}
+                  {{ temperature_eco }}
+                {% elif now().hour >= 9 and now().hour < 18 %}
+                  {% if anyone_home %}
+                    {{ temperature_comfort_low }}
+                  {% else %}
+                    {{ temperature_night }}
+                  {% endif %}
+                {% else %}
+                  {{ temperature_night }}
+                {% endif %}
               {% endif %}
+            {% else %}
+              {{ temperature_minimal }}
             {% endif %}
           '';
           unit_of_measurement = "°C";
@@ -375,24 +288,29 @@ let
           name = "floor1_morgane_temperature_auto_wanted";
           state = ''
             ${autoWantedHeader}
-            {% if workday %}
-              {% if now().hour >= 6 and now().hour < 17 %}
-                {{ temperature_eco }}
-              {% else %}
-                {{ temperature_night }}
-              {% endif %}
-            {% else %}
-              {% if now().hour >= 7 and now().hour < 9 %}
-                {{ temperature_eco }}
-              {% elif now().hour >= 9 and now().hour < 18 %}
-                {% if anyone_home %}
-                  {{ temperature_comfort_low }}
+            {% set is_window_closed = states('binary_sensor.floor1_morgane_window_na_contact') | bool(false) == false %}
+            {% if is_window_closed %}
+              {% if workday %}
+                {% if now().hour >= 6 and now().hour < 17 %}
+                  {{ temperature_eco }}
                 {% else %}
                   {{ temperature_night }}
                 {% endif %}
               {% else %}
-                {{ temperature_night }}
+                {% if now().hour >= 7 and now().hour < 9 %}
+                  {{ temperature_eco }}
+                {% elif now().hour >= 9 and now().hour < 18 %}
+                  {% if anyone_home %}
+                    {{ temperature_comfort_low }}
+                  {% else %}
+                    {{ temperature_night }}
+                  {% endif %}
+                {% else %}
+                  {{ temperature_night }}
+                {% endif %}
               {% endif %}
+            {% else %}
+              {{ temperature_minimal }}
             {% endif %}
           '';
           unit_of_measurement = "°C";
@@ -401,18 +319,19 @@ let
           name = "floor1_fen_temperature_auto_wanted";
           state = ''
             ${autoWantedHeader}
-            {% if workday %}
-              {% if now().hour >= 6 and now().hour < 17 %}
-                {{ temperature_eco }}
-              {% else %}
-                {{ temperature_night }} 
-              {% endif %}
-            {% else %}
-              {% if now().hour >= 7 and now().hour < 9 %}
-                {{ temperature_eco }}        
-              {% else %}
+            {% set is_window_closed = states('binary_sensor.floor1_fen_window_na_contact') | bool(false) == false %}
+            {% if is_window_closed %}
+              {% if workday %}
+                {% if now().hour >= 6 and now().hour < 17 %}
+                  {{ temperature_comfort_low }}
+                {% else %}
+                  {{ temperature_night }} 
+                {% endif %}
+              {% else %}                
                 {{ temperature_night }}
               {% endif %}
+            {% else %}
+              {{ temperature_minimal }}
             {% endif %}
           '';
           unit_of_measurement = "°C";
@@ -421,14 +340,19 @@ let
           name = "floor1_badkamer_temperature_auto_wanted";
           state = ''
             ${autoWantedHeader}
-            {% if workday %}
-              {% if now().hour >= 6 and now().hour < 7 %}
-                {{ temperature_comfort }}
+            {% set is_window_closed = states('binary_sensor.floor1_badkamer_window_na_contact') | bool(false) == false %}
+            {% if is_window_closed %}
+              {% if workday %}
+                {% if now().hour >= 6 and now().hour < 7 %}
+                  {{ temperature_comfort }}
+                {% else %}
+                  {{ temperature_night }}
+                {% endif %}
               {% else %}
                 {{ temperature_night }}
               {% endif %}
             {% else %}
-              {{ temperature_night }}
+              {{ temperature_minimal }}
             {% endif %}
           '';
           unit_of_measurement = "°C";
@@ -488,28 +412,6 @@ let
         }
       ];
     }
-  ];
-
-  electricHeatingAutomations = [
-    # {
-    #   id = "heating_in_bureau_on_if_enough_solar";
-    #   alias = "heating_in_bureau_on_if_enough_solar";
-    #   trigger = [
-    #     {
-    #       platform = "state";
-    #       entity_id = "binary_sensor.ndesk";
-    #       to = "on";
-    #     }
-    #   ];
-    #   condition = [];
-    #   action = [
-    #     {
-	  #       service = "switch.turn_on";
-    #       target.entity_id = "switch.floor0_bureau_metering_plug_verwarming";          
-    #     }        
-    #   ];
-    #   mode = "single";
-    # }
   ];
 
   roomTemperatureDifferenceWanted = map (v: 
@@ -593,11 +495,8 @@ in
     ++ map (v: v //  { type = "temperature";}) tempSensors;
   zigbeeDevices = {} // rtvDevices;
   automations = []
-    ++ windowOpenAutomations
-    ++ windowClosedAutomations
     ++ temperatureRtvAutomations
-    ++ temperatureCalibrationAutomations
-    ++ electricHeatingAutomations;
+    ++ temperatureCalibrationAutomations;
 
   template = []
    ++ temperatureAutoWanted 
