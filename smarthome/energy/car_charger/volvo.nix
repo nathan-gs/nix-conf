@@ -8,7 +8,7 @@
         {
           name = "car_charger";
           entity_id = "binary_sensor.2abn528_battery_charging";
-          fixed.power = 1.995;
+          fixed.power = 1995;
         }
       ];
     };
