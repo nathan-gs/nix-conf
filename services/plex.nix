@@ -8,8 +8,8 @@
     enable = true;
     openFirewall = true;
   };
- 
-  users.groups.media.members = ["plex" ];
+
+  users.groups.media.members = [ "plex" ];
 
 
   systemd.services.plex = {
@@ -39,5 +39,5 @@
 
   # Plex Monitoring
   services.tautulli.enable = false;
- 
+
 }

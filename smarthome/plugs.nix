@@ -70,6 +70,12 @@ let
       ieee = "0xa4c138689a501455";
       floor = "floor0";
     }
+    {
+      zone = "wtw";
+      name = "verwarming";
+      ieee = "0xa4c138bd3c10d7c4";
+      floor = "system";
+    }
   ];
 
 in 

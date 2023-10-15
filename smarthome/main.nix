@@ -48,6 +48,7 @@ with lib;
     ./calendar.nix
     ./hvac-vaillant.nix
     ./hvac/temperature.nix
+    ./hvac/electric_heating.nix
     ./energy/powercalc.nix
     ./energy/car_charger/volvo.nix
     ./energy/appliances/dishwasher.nix
