@@ -200,6 +200,16 @@ in
         # '';
       }
       {
+        name = "itho_wtw_valve";
+        state_topic = "itho/ithostatus";
+        value_template = "{{ value_json['Valve position'] }}";
+        unique_id = "itho_wtw_valve_status";
+        device_class = "opening";
+        payload_on = "1";
+        payload_off = "0";
+        icon = "mdi:valve";
+      }
+      {
         name = "itho_wtw_is_summerday";
         state_topic = "itho/ithostatus";
         value_template = "{{ value_json['Summerday (K_min)'] }}";
@@ -239,7 +249,7 @@ in
       {
         name = "itho_wtw_inlet_temperature";
         state_topic = "itho/ithostatus";
-        value_template = "{{ value_json['Supply temp (°C)'] }}";
+        value_template = "{{ value_json['Outdoor temp (°C)'] }}";
         unit_of_measurement = "°C";
         unique_id = "itho_wtw_inlet_temperature";
         state_class = "measurement";
@@ -248,7 +258,7 @@ in
       {
         name = "itho_wtw_outlet_temperature";
         state_topic = "itho/ithostatus";
-        value_template = "{{ value_json['Exhaust temp (°C)'] }}";
+        value_template = "{{ value_json['Room temp (°C)'] }}";
         unit_of_measurement = "°C";
         unique_id = "itho_wtw_outlet_temperature";
         state_class = "measurement";
