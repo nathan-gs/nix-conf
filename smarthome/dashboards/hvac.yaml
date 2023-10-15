@@ -197,6 +197,53 @@ views:
                   duration: 5m
                 stroke_width: 2
                 yaxis_id: humidity
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            yaxis:
+              - id: temperature
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 7
+            color_list:
+              - '#ff9800'
+              - '#3498db'
+              - '#e74c3c'
+              - '#1a4c6e'
+              - '#f3721e'
+            header:
+              show: false
+            series:
+              - entity: sensor.system_wtw_air_quality_inlet_temperature
+                name: Inlet Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.system_wtw_air_quality_to_house_temperature
+                name: To House Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: sensor.system_wtw_air_quality_outlet_temperature
+                name: Outlet Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                yaxis_id: temperature
       - type: vertical-stack
         cards:
           - type: markdown
@@ -974,7 +1021,7 @@ views:
                 stroke_width: 2
                 show:
                   header_color_threshold: true
-                yaxis_id: temperature              
+                yaxis_id: temperature
               - entity: sensor.floor1_nikolai_temperature_na_humidity
                 name: Humidity
                 type: line
