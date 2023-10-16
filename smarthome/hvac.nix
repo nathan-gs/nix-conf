@@ -323,7 +323,7 @@ let
             {% if is_window_closed %}
               {% if workday %}
                 {% if now().hour >= 6 and now().hour < 17 %}
-                  {{ temperature_comfort_low }}
+                  {{ temperature_eco }}
                 {% else %}
                   {{ temperature_night }} 
                 {% endif %}

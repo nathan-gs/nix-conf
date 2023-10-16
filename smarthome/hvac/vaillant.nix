@@ -1,4 +1,4 @@
-{config, pkgs, lib, ...}:
+{ config, pkgs, lib, ... }:
 
 {
 
@@ -26,7 +26,7 @@
             data = {
               temperature = "{{ states('sensor.heating_temperature_desired') }}";
             };
-          }        
+          }
         ];
         mode = "single";
       }
@@ -40,7 +40,7 @@
         min_temp = 5.5;
         precision = 0.1;
         temp_step = 0.5;
-        modes = [ "auto" "heat" "cool" "off"];
+        modes = [ "auto" "heat" "cool" "off" ];
         # Quite an ugly regex workaround due to 0 not being findable...
         mode_state_template = ''
           {% set values = { 'auto':'auto', 'on':'heat',  'night':'cool', 'summer':'off'} %}
@@ -69,6 +69,31 @@
         '';
         current_temperature_topic = "ebusd/370/DisplayedRoomTemp";
         current_temperature_template = "{{ value_json.temp.value }}";
+        temperature_unit = "C";
+      }
+      {
+        name = "boiler";
+        max_temp = 90;
+        min_temp = 0;
+        precision = 0.1;
+        temp_step = 0.5;
+        # unfortunately mapping is not correct (Yet)
+        modes = [ "off" "on" "auto" "party" "load" "holiday" ];
+        mode_state_template = ''
+          {% set values = { 0:'off', 1:'on',  2:'auto', 3:'autosunday', 4:'party', 5: 'load', 7: 'holiday'} %}
+          {{ values[value] if value in values.keys() else 'auto' }}
+        '';
+        mode_state_topic = "ebusd/370/HwcOPMode";
+        mode_command_template = ''
+          {% set values = { 'off':0, 'on':1,  'auto':2, 'autosunday':3, 'party':4, 'load':5, 'holiday':7} %}
+          {{ values[value] if value in values.keys() else 2 }}
+        '';
+        mode_command_topic = "ebusd/370/HwcOPMode/set";
+        temperature_state_topic = "ebusd/370/HwcTempDesired";
+        temperature_state_template = "{{ value_json.temp1.value }}";
+        current_temperature_topic = "ebusd/370/DisplayedHwcStorageTemp";
+        current_temperature_template = "{{ value_json.temp1.value }}";
+        temperature_unit = "C";
       }
     ];
 

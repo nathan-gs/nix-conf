@@ -257,7 +257,6 @@ views:
               - id: pm25
                 apex_config:
                   forceNiceScale: true
-                  decimalsInFloat: 0
                   tickAmount: 7
             color_list:
               - '#ff9800'
@@ -297,7 +296,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: pm25
-              - entity: sensor.system_wtw_air_quality_inlet_pm25
+              - entity: sensor.dummy
                 type: line
                 transform: return 10
                 color: black
@@ -980,8 +979,8 @@ views:
             header:
               show: false
             series:
-              - entity: number.floor1_nikolai_rtv_na_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: climate.floor1_nikolai_rtv_na
+                attribute: temperature
                 name: Wanted Temperature
                 type: line
                 group_by:
@@ -1258,3 +1257,55 @@ views:
           - entity: sensor.garden_garden_temperature_noordkant_battery
         title: Battery
         show_header_toggle: true
+  - theme: Backend-selected
+    icon: mdi:water-boiler
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: horizontal-stack
+            cards:
+              - type: thermostat
+                entity: climate.boiler
+              - type: grid
+                cards: []
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            yaxis:
+              - id: temperature
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  tickAmount: 7
+            color_list:
+              - '#ff9800'
+              - '#e74c3c'
+              - '#3498db'
+              - '#1a4c6e'
+            header:
+              show: false
+            series:
+              - entity: climate.boiler
+                attribute: temperature
+                name: Desired Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
+              - entity: climate.boiler
+                attribute: current_temperature
+                name: Current Temperature
+                type: line
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
