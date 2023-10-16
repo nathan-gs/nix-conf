@@ -80,7 +80,7 @@
             device_class = "occupancy";            
           }
           {
-            name = "floor0_nikolai_in_use";
+            name = "floor1_nikolai_in_use";
             state = "{{ states('binary_sensor.flaptop') | bool(false) }}";
             device_class = "occupancy";            
           }
