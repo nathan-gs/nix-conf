@@ -10,7 +10,7 @@
         standby_power = 0.5;
         fixed.power = ''
           {% set remaining_time = states('sensor.dishwasher_remaining_time') | int(0) %}
-          {% set program = states('sensor.dishwasher_program') %}
+          {% set program = states('sensor.dishwasher_program') | int(0) %}
           {% set mode = states('sensor.dishwasher_mode') %}
           {% set on = states('binary_sensor.dishwasher_status') | bool (false) %}
           {% set power = 0.5 %}
