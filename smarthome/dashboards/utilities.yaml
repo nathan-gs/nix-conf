@@ -1,7 +1,7 @@
 views:
   - theme: Backend-selected
-    title: Smart Gateways - Smart Meter Gateway
-    path: smart-gateways-p1-gateway
+    title: Utilities
+    path: p1
     icon: mdi:lightning-bolt-circle
     badges: []
     cards:
@@ -462,7 +462,7 @@ views:
                 yaxis_id: gas_per_dd
   - theme: Backend-selected
     title: Individual Devices
-    path: a
+    path: individual
     badges: []
     cards:
       - square: false
@@ -478,10 +478,10 @@ views:
               yellow: 30
               red: 40
           - type: custom:apexcharts-card
-            graph_span: 24h
+            graph_span: 3h
             header:
               show: false
-              title: Verbruik laatste 24 uur
+              title: Verbruik laatste 3 uur
             apex_config:
               yaxis:
                 - id: first
@@ -498,7 +498,7 @@ views:
                 name: Power
                 group_by:
                   func: median
-                  duration: 15m
+                  duration: 1m
                   fill: last
                 show:
                   datalabels: false
@@ -518,7 +518,7 @@ views:
           - type: gauge
             entity: sensor.floor1_waskot_metering_plug_droogkast_power
           - type: custom:apexcharts-card
-            graph_span: 24h
+            graph_span: 3h
             header:
               show: false
               title: Verbruik laatste 24h
@@ -538,7 +538,7 @@ views:
                 name: Wasmachine
                 group_by:
                   func: median
-                  duration: 15m
+                  duration: 1m
                   fill: last
                 show:
                   datalabels: false
@@ -549,7 +549,7 @@ views:
                 name: Droogkast
                 group_by:
                   func: median
-                  duration: 15m
+                  duration: 1m
                   fill: last
                 show:
                   datalabels: false
@@ -567,10 +567,10 @@ views:
               yellow: 1000
               red: 2200
           - type: custom:apexcharts-card
-            graph_span: 24h
+            graph_span: 3h
             header:
               show: false
-              title: Verbruik laatste 24 uur
+              title: Verbruik laatste 3 uur
             apex_config:
               yaxis:
                 - id: first
@@ -587,7 +587,83 @@ views:
                 name: Power
                 group_by:
                   func: median
-                  duration: 15m
+                  duration: 1m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true
+      - square: false
+        columns: 1
+        type: grid
+        cards:
+          - type: gauge
+            entity: sensor.car_charger_energy_power
+            unit: W
+            needle: false
+            severity:
+              green: 0
+              yellow: 1900
+              red: 2200
+          - type: custom:apexcharts-card
+            graph_span: 3h
+            header:
+              show: false
+              title: Verbruik laatste 3 uur
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  opposite: false
+                  name: Energie
+            all_series_config:
+              stroke_width: 1
+            series:
+              - entity: sensor.car_charger_energy_power
+                unit: W
+                type: line
+                name: Power
+                group_by:
+                  func: median
+                  duration: 1m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true
+      - square: false
+        columns: 1
+        type: grid
+        cards:
+          - type: gauge
+            entity: sensor.electric_heating_auxiliary_power
+            unit: W
+            needle: false
+            severity:
+              green: 0
+              yellow: 1900
+              red: 2200
+          - type: custom:apexcharts-card
+            graph_span: 3h
+            header:
+              show: false
+              title: Verbruik laatste 3 uur
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 0
+                  opposite: false
+                  name: Energie
+            all_series_config:
+              stroke_width: 1
+            series:
+              - entity: sensor.electric_heating_auxiliary_power
+                unit: W
+                type: line
+                name: Power
+                group_by:
+                  func: median
+                  duration: 1m
                   fill: last
                 show:
                   datalabels: false
