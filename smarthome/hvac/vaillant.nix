@@ -40,6 +40,17 @@
               retain = false;
             };
           }
+          {
+            delay = "0:00:05";
+          }
+          {
+            service = "mqtt.publish";
+            data = {
+              topic = "ebusd/370/Hc1DayTemp/get";
+              payload_template = "?1";
+              retain = false;
+            };
+          }
         ];
         mode = "single";
       }

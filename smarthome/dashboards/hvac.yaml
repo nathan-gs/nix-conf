@@ -1390,7 +1390,7 @@ views:
                 stroke_width: 2
                 yaxis_id: temperature_diff
       - type: custom:apexcharts-card
-        graph_span: 24h
+        graph_span: 4h
         show:
           last_updated: true
         yaxis:
@@ -1424,7 +1424,7 @@ views:
             type: line
             group_by:
               func: last
-              duration: 5m
+              duration: 1m
             stroke_width: 2
             show:
               header_color_threshold: true
@@ -1434,13 +1434,13 @@ views:
             type: line
             group_by:
               func: last
-              duration: 5m
+              duration: 1m
             stroke_width: 2
             show:
               header_color_threshold: true
             yaxis_id: cv_temperature
       - type: custom:apexcharts-card
-        graph_span: 24h
+        graph_span: 4h
         show:
           last_updated: true
         yaxis:
@@ -1464,7 +1464,7 @@ views:
             type: line
             group_by:
               func: last
-              duration: 5m
+              duration: 1m
             stroke_width: 2
             show:
               header_color_threshold: true
@@ -1475,7 +1475,7 @@ views:
             type: line
             group_by:
               func: last
-              duration: 5m
+              duration: 1m
             stroke_width: 2
             show:
               header_color_threshold: true
@@ -1486,7 +1486,7 @@ views:
             type: line
             group_by:
               func: last
-              duration: 5m
+              duration: 1m
             stroke_width: 2
             show:
               header_color_threshold: true
