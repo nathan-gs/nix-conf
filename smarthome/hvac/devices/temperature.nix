@@ -1,32 +1,56 @@
 [
   {
-    zone = "morgane";
+    zone = "living";
     name = "na";
-    ieee = "0x847127fffead504a";
-    floor = "floor1";
+    ieee = "0x00124b0029113b83";
+    floor = "floor0";
   }
   {
-    zone = "nikolai";
+    zone = "keuken";
     name = "na";
-    ieee = "0x847127fffed3d47e";
-    floor = "floor1";
+    ieee = "0x00124b0029114a89";
+    floor = "floor0";
   }
   {
-    zone = "fen";
+    zone = "bureau";
     name = "na";
-    ieee = "0xa4c1382fd78a278a";
-    floor = "floor1";
+    ieee = "0x00124b0029113a29";
+    floor = "floor0";
   }
   {
+    ieee = "0x00124b002910edd6";
     zone = "badkamer";
     name = "na";
-    ieee = "0x847127fffeaf3190";
     floor = "floor1";
   }
   {
-    zone = "roaming";
-    name = "sonoff0";
-    ieee = "0x00124b002397596e";
-    floor = "roaming";
+    ieee = "0x00124b002910d106";
+    zone = "fen";
+    name = "na";
+    floor = "floor1";
+  }
+  {
+    ieee = "0x00124b00291149da";
+    zone = "nikolai";
+    name = "na";
+    floor = "floor1";
+  }
+  {
+    ieee = "0x00124b00291150db";
+    zone = "morgane";
+    name = "na";
+    floor = "floor1";
+  }
+  {
+    ieee = "0x00124b002910ed8a";
+    zone = "basement";
+    name = "na";
+    floor = "basement";
+  }
+  {
+    ieee = "0x00124b002910ce57";
+    zone = "garden";
+    name = "noordkant";
+    floor = "garden";
   }
 ]

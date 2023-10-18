@@ -24,7 +24,20 @@
             service = "climate.set_temperature";
             target.entity_id = "climate.cv";
             data = {
-              temperature = "{{ states('sensor.heating_temperature_desired') }}";
+              target_temp_high = "{{ states('sensor.heating_temperature_desired') | float(15.5) }}";
+              target_temp_low = "10";
+            };
+          }
+          {
+            delay = "0:00:15";
+          }
+          # Workaround to update desired temperature
+          {
+            service = "mqtt.publish";
+            data = {
+              topic = "ebusd/370/DisplayedHc1RoomTempDesired/get";
+              payload_template = "?1";
+              retain = false;
             };
           }
         ];

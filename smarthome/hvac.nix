@@ -6,18 +6,15 @@ let
     {% set workday = states('binary_sensor.workday') | bool(true) %}    
     {% set anyone_home = states('binary_sensor.anyone_home') | bool(true) %}
     {% set temperature_eco = 15.0 %}
-    {% set temperature_night = 16.5 %}
+    {% set temperature_night = 17 %}
     {% set temperature_comfort_low = 17.5 %}
     {% set temperature_comfort = 18.5 %}
     {% set temperature_minimal = 5.5 %}
   '';
 
   rtv = import ./hvac/devices/rtv.nix;
-
   windows = import ./hvac/devices/windows.nix;
-
   tempSensors = import ./hvac/devices/temperature.nix;
-
   rtvFilteredAttributes = import ./hvac/devices/rtvFilteredAttributes.nix;
 
   rtvDevices = builtins.listToAttrs ( 
@@ -323,15 +320,15 @@ let
         {% set new_temp = desired_temp %}
         {% set is_anyone_home_or_coming = states('binary_sensor.anyone_home_or_coming_home') | bool(true) %}
         {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}        
-        {% if is_anyone_home_or_coming %}          
+        {% if is_anyone_home_or_coming %}
           {% if target_temp > (current_temp + 0.5) %}
             {% if temperature_diff_wanted > 0.5 %}
               {# Gradually increase temperature #}
-              {% set new_temp = (((current_temp + 0.5) * 2) | round(0) / 2) %}
+              {% set new_temp = (current_temp + 0.5) %}
               {% set new_temp = min(new_temp, max_desired_temp) %}
-            {% endif %}
-          {% elif target_temp < current_temp %}
-            {% set new_temp = ((target_temp * 2) | round(0) / 2) %}
+            {% endif %}            
+          {% elif target_temp < current_temp %}          
+            {% set new_temp = target_temp %}
             {% set new_temp = max(new_temp, temperature_eco) %}
           {% endif %}
         {% elif is_travelling %}
@@ -339,6 +336,7 @@ let
         {% else %}
           {% set new_temp = temperature_eco %}
         {% endif %}
+        {% set new_temp = (((new_temp + 0.5) * 2) | round(0) / 2) %}
         {{ new_temp }}
       '';
       icon = ''
