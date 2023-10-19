@@ -46,6 +46,7 @@ with lib;
   imports = [
     ./location.nix
     ./calendar.nix
+    ./weather.nix
     ./hvac/vaillant.nix
     ./hvac/temperature.nix
     ./hvac/electricHeating.nix

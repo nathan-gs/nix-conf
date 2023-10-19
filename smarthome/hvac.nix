@@ -5,9 +5,9 @@ let
   autoWantedHeader = ''
     {% set workday = states('binary_sensor.workday') | bool(true) %}    
     {% set anyone_home = states('binary_sensor.anyone_home') | bool(true) %}
-    {% set temperature_eco = 15.0 %}
-    {% set temperature_night = 17 %}
-    {% set temperature_comfort_low = 17.5 %}
+    {% set temperature_eco = 14.5 %}
+    {% set temperature_night = 16.0 %}
+    {% set temperature_comfort_low = 17 %}
     {% set temperature_comfort = 18.5 %}
     {% set temperature_minimal = 5.5 %}
   '';
@@ -319,16 +319,17 @@ let
         {% set target_temp = current_temp + temperature_diff_wanted %}
         {% set new_temp = desired_temp %}
         {% set is_anyone_home_or_coming = states('binary_sensor.anyone_home_or_coming_home') | bool(true) %}
-        {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}        
+        {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}
+        {% set forecast_temp = states('sensor.weather_forecast_temperature_max_4h') | float(15) %}
+        {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
+        {% set is_target_increase_is_more_than_half_degree = target_temp > (current_temp + 0.5) %}
         {% if is_anyone_home_or_coming %}
-          {% if target_temp > (current_temp + 0.5) %}
-            {% if temperature_diff_wanted > 0.5 %}
-              {# Gradually increase temperature #}
-              {% set new_temp = (current_temp + 0.5) %}
-              {% set new_temp = min(new_temp, max_desired_temp) %}
-            {% endif %}            
-          {% elif target_temp < current_temp %}          
-            {% set new_temp = target_temp %}
+          {% if temperature_diff_wanted > 0.5 and is_large_deviation_between_forecast_and_target %}
+            {# Gradually increase temperature #}
+            {% set new_temp = (current_temp + 0.5) %}
+            {% set new_temp = min(new_temp, max_desired_temp) %}
+          {% else %}          
+            {% set new_temp = (target_temp - 0.5) %}
             {% set new_temp = max(new_temp, temperature_eco) %}
           {% endif %}
         {% elif is_travelling %}
@@ -336,7 +337,7 @@ let
         {% else %}
           {% set new_temp = temperature_eco %}
         {% endif %}
-        {% set new_temp = (((new_temp + 0.5) * 2) | round(0) / 2) %}
+        {% set new_temp = ((new_temp * 2) | round(0) / 2) %}
         {{ new_temp }}
       '';
       icon = ''
