@@ -53,6 +53,7 @@ with lib;
     ./energy/powercalc.nix
     ./energy/car_charger/volvo.nix
     ./energy/appliances/dishwasher.nix
+    ./energy/solar/battery.nix
   ];
 
   services.zigbee2mqtt.settings = {
