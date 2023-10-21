@@ -87,6 +87,8 @@
       "ebusd"
       "ffmpeg"      
       "forecast_solar"
+      "homekit_controller"
+      "homekit"
       "http"
       "mqtt"
       "my"            
