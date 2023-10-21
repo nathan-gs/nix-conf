@@ -26,14 +26,10 @@ let
     );
 
 solar = import ./solar.nix {config = config;};
-charger-bluecorner = import ./charger-bluecorner.nix {config = config; pkgs = pkgs;};
-charger = import ./charger.nix {config = config; pkgs = pkgs;};
-garden = import ./garden.nix {config = config; pkgs = pkgs;};
 hvac-wtw = import ./hvac-wtw.nix {config = config; pkgs = pkgs;};
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
-wfh = import ./wfh.nix;
 lights = import ./lights.nix;
 hvac = import ./hvac.nix {config = config; pkgs = pkgs; lib = lib;};
 plugs = import ./plugs.nix;
@@ -52,6 +48,7 @@ with lib;
     ./hvac/electricHeating.nix
     ./energy/powercalc.nix
     ./energy/car_charger/volvo.nix
+    ./energy/car_charger/car_charger.nix
     ./energy/appliances/dishwasher.nix
     ./energy/solar/battery.nix
   ];
@@ -68,20 +65,12 @@ with lib;
       lights.automations
       ++ hvac.automations
       ++ hvac-wtw.automations
-      ++ wfh.automations
       ++ media.automations
       ++ plugs.automations
-      ++ energy.automations
-      ++ charger-bluecorner.automations
-      ++ charger.automations
-      ++ garden.automations;
+      ++ energy.automations;
 
     config.binary_sensor = [ ] 
-    ++ wfh.binary_sensor
     ++ solar.binary_sensor
-    ++ charger-bluecorner.binary_sensor
-    ++ charger.binary_sensor
-    ++ garden.binary_sensor
     ++ hvac-wtw.binary_sensor;
 
 
@@ -92,8 +81,6 @@ with lib;
 
       sensor = []
         ++ water.mqtt.sensor
-        ++ charger-bluecorner.mqtt_sensor
-        ++ garden.mqtt_sensor
         ++ hvac-wtw.mqtt.sensor;
 
       fan = []
@@ -104,29 +91,20 @@ with lib;
 
     config.homeassistant.customize = {} 
       // energy.customize
-      // solar.customize
-      // charger-bluecorner.customize
-      // charger.customize
-      // garden.customize;
+      // solar.customize;
 
     config.sensor = []
       ++ energy.sensor
-      ++ solar.sensor
-      ++ charger-bluecorner.sensor
-      ++ charger.sensor
-      ++ garden.sensor        
+      ++ solar.sensor      
       ++ hvac-wtw.sensor;
 
     config.scrape = []
-      ++ energy.scrape
-      ++ garden.scrape;      
+      ++ energy.scrape;      
 
     config.utility_meter = { } 
       // water.utility_meter
       // energy.utility_meter
-      // solar.utility_meter
-      // charger-bluecorner.utility_meter
-      // garden.utility_meter;
+      // solar.utility_meter;
 
     config.template = [] 
       ++ energy.template
@@ -134,17 +112,11 @@ with lib;
       ++ hvac.template
       ++ media.template
       ++ solar.template
-      ++ charger-bluecorner.template
-      ++ charger.template
-      ++ garden.template
       ++ hvac-wtw.template;
 
     config.recorder.exclude.entity_globs = []
-      ++ charger-bluecorner.recorder_excludes
-      ++ charger.recorder_excludes
       ++ hvac.recorder_excludes
       ++ solar.recorder_excludes
-      ++ garden.recorder_excludes
       ++ hvac-wtw.recorder_excludes;
 
     config.climate = []
