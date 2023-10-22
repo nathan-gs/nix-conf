@@ -43,9 +43,11 @@ with lib;
     ./location.nix
     ./calendar.nix
     ./weather.nix
+    ./air_quality.nix
+    ./doorbell.nix
     ./hvac/vaillant.nix
     ./hvac/temperature.nix
-    ./hvac/electricHeating.nix
+    ./hvac/electric_heating.nix
     ./energy/powercalc.nix
     ./energy/car_charger/volvo.nix
     ./energy/car_charger/car_charger.nix
