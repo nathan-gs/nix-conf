@@ -76,6 +76,12 @@ let
       ieee = "0xa4c138bd3c10d7c4";
       floor = "system";
     }
+    {
+      zone = "doorbell";
+      name = "doorbell";
+      ieee = "0xa4c138fde84ee814";
+      floor = "system";
+    }
   ];
 
 in 
@@ -133,7 +139,13 @@ in
   ];
 
   devices = []
-    ++ map (v: v // { type = "plug";}) plugs
-    ++ map (v: v // { type = "metering_plug";}) metering_plugs;
+    ++ map (v: v // { 
+        type = "plug";
+        home_assistant.child_lock = null;
+      }) plugs
+    ++ map (v: v // { 
+      type = "metering_plug";
+      home_assistant.child_lock = null;
+    }) metering_plugs;
   
 }
