@@ -25,13 +25,13 @@
       add_header Strict-Transport-Security $hsts_header;
 
       # Enable CSP for your services.
-      #add_header Content-Security-Policy "script-src 'self'; object-src 'none'; base-uri 'none';" always;
+      add_header Content-Security-Policy "object-src 'self'; base-uri 'self';" always;
 
       # Minimize information leaked to other domains
       add_header 'Referrer-Policy' 'origin-when-cross-origin';
 
       # Disable embedding as a frame
-      add_header X-Frame-Options DENY;
+      add_header X-Frame-Options SAMEORIGIN always;
 
       # Prevent injection of code in other mime types (XSS Attacks)
       add_header X-Content-Type-Options nosniff;
