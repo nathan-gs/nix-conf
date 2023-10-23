@@ -296,16 +296,6 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: pm25
-              - entity: sensor.dummy
-                type: line
-                transform: return 10
-                color: black
-                stroke_width: 1
-                show:
-                  in_header: false
-                  name_in_header: false
-                  legend_value: false
-                name: ' '
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -1431,6 +1421,16 @@ views:
             yaxis_id: cv_temperature
           - entity: sensor.ebusd_bai_flowtemp_temp
             name: Flow Temperature (CV)
+            type: line
+            group_by:
+              func: last
+              duration: 1m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            yaxis_id: cv_temperature
+          - entity: sensor.ebusd_bai_flowtempdesired_temp
+            name: Flow Temperature Desired (CV)
             type: line
             group_by:
               func: last
