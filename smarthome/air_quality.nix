@@ -46,19 +46,19 @@ in
           {
             name = "irceline_air_quality_no2_sxw_current";
             select = ''
-              table :has(> td:contains("44R740")) td[align=center] > :first-child :first-child
+              table :has(> td:-soup-contains("44R740")) td[align=center] > :first-child :first-child
             '' ;
             value_template = "{{ value | int(-1) }}";
-            unit_of_measurement = "µg/m3";
+            unit_of_measurement = "µg/m³";
             device_class = "nitrogen_dioxide";
           }
           {
             name = "irceline_air_quality_no2_sxw_24h";
             select = ''
-              table :has(> td:contains("44R740")) td:nth-child(5)
+              table :has(> td:-soup-contains("44R740")) td:nth-child(5)
             '' ;
             value_template = "{{ (value) }}";
-            unit_of_measurement = "µg/m3";
+            unit_of_measurement = "µg/m³";
             device_class = "nitrogen_dioxide";
           }
         ];
@@ -70,10 +70,10 @@ in
           {
             name = "irceline_air_quality_ozone_sxw_current";
             select = ''
-              table :has(> td:contains("44R740")) td:nth-child(4)
+              table :has(> td:-soup-contains("44R740")) td:nth-child(4)
             '' ;
             value_template = "{{ value | int(-1) }}";
-            unit_of_measurement = "µg/m3";
+            unit_of_measurement = "µg/m³";
             device_class = "ozone";
           }
         ];
