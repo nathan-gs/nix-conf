@@ -4,7 +4,7 @@ let
   aqSensors = [
     {      
       name = "inlet";
-      ieee = "0xbc026efffea63649";
+      ieee = "0xbc026efffea62f54";
     }
     {      
       name = "to_house";
