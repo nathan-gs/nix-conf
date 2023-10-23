@@ -6,8 +6,8 @@
 
     "automation manual" = [
       {
-        id = "cv_temperature_sync";
-        alias = "cv_temperature_sync";
+        id = "cv_temperature_set";
+        alias = "cv.temperature_set";
         trigger = [
           {
             platform = "state";
@@ -52,6 +52,32 @@
             };
           }
         ];
+        mode = "single";
+      }
+      {
+        id = "cv_query";
+        alias = "cv.query";
+        trigger = [
+          {
+            platform = "time_pattern";
+            minutes = "/5";
+          }
+        ];
+        action = lib.lists.forEach [
+          "ebusd/370/DisplayedHc1RoomTempDesired"
+          "ebusd/370/DisplayedRoomTemp"
+          "ebusd/bai/FlowTemp"
+          "ebusd/bai/ReturnTemp"
+          "ebusd/bai/ModulationTempDesired"
+        ]
+          (x: {
+            service = "mqtt.publish";
+            data = {
+              topic = "${x}/get";
+              payload_template = "?3";
+              retain = false;
+            };
+          });
         mode = "single";
       }
     ];

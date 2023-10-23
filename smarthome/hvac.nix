@@ -117,26 +117,31 @@ let
         {
           name = "floor1_nikolai_temperature_auto_wanted";
           state = ''
-            ${autoWantedHeader}
+            ${autoWantedHeader}            
             {% set is_window_closed = states('binary_sensor.floor1_nikolai_window_na_contact') | bool(false) == false %}
             {% if is_window_closed %}
-              {% if workday %}
-                {% if now().hour >= 6 and now().hour < 17 %}
-                  {{ temperature_eco }}
-                {% else %}
-                  {{ temperature_night }}
-                {% endif %}
+              {% set in_use = states('binary_sensor.floor1_nikolai_in_use') | bool(false) %}
+              {% if in_use %}
+                {{ temperature_comfort }}
               {% else %}
-                {% if now().hour >= 7 and now().hour < 9 %}
-                  {{ temperature_eco }}
-                {% elif now().hour >= 9 and now().hour < 18 %}
-                  {% if anyone_home %}
-                    {{ temperature_comfort_low }}
+                {% if workday %}
+                  {% if now().hour >= 6 and now().hour < 17 %}
+                    {{ temperature_eco }}
                   {% else %}
                     {{ temperature_night }}
                   {% endif %}
                 {% else %}
-                  {{ temperature_night }}
+                  {% if now().hour >= 7 and now().hour < 9 %}
+                    {{ temperature_eco }}
+                  {% elif now().hour >= 9 and now().hour < 18 %}
+                    {% if anyone_home %}
+                      {{ temperature_comfort_low }}
+                    {% else %}
+                      {{ temperature_night }}
+                    {% endif %}
+                  {% else %}
+                    {{ temperature_night }}
+                  {% endif %}
                 {% endif %}
               {% endif %}
             {% else %}
@@ -230,8 +235,8 @@ let
           name = "floor0_bureau_temperature_auto_wanted";
           state = ''
             ${autoWantedHeader}
-            {% set bureau_in_use = states('binary_sensor.floor0_bureau_in_use') | bool(false) %}
-            {% if bureau_in_use %}
+            {% set in_use = states('binary_sensor.floor0_bureau_in_use') | bool(false) %}
+            {% if in_use %}
               {{ temperature_comfort }}
             {% else %}
               {% if workday %}
