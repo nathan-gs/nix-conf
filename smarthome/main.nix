@@ -49,6 +49,7 @@ with lib;
     ./hvac/temperature.nix
     ./hvac/electric_heating.nix
     ./energy/powercalc.nix
+    ./energy/tariffs.nix
     ./energy/car_charger/volvo.nix
     ./energy/car_charger/car_charger.nix
     ./energy/appliances/dishwasher.nix
@@ -99,9 +100,6 @@ with lib;
       ++ energy.sensor
       ++ solar.sensor      
       ++ hvac-wtw.sensor;
-
-    config.scrape = []
-      ++ energy.scrape;      
 
     config.utility_meter = { } 
       // water.utility_meter
