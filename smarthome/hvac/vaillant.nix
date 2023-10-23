@@ -67,6 +67,7 @@
           "ebusd/370/DisplayedHc1RoomTempDesired"
           "ebusd/370/DisplayedRoomTemp"
           "ebusd/bai/FlowTemp"
+          "ebusd/bai/FlowTempDesired"
           "ebusd/bai/ReturnTemp"
           "ebusd/bai/ModulationTempDesired"
         ]
