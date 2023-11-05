@@ -219,17 +219,17 @@ let
                 {% elif now().hour >= 17 and now().hour < 21 %}
                   {{ temperature_night }}
                 {% else %}
-                  {{ temperature_night }}
+                  {{ temperature_eco }}
                 {% endif %}
               {% else %}
-                {{ temperature_minimal }}
+                {% if now().hour >= 9 and now().hour < 21 %}
+                  {{ temperature_night }}
+                {% else %}
+                  {{ temperature_eco }}
+                {% endif %}
               {% endif %}
             {% else %}
-              {% if now().hour >= 17 and now().hour < 21 %}
-                {{ temperature_night }}
-              {% else %}
-                {{ temperature_minimal }}
-              {% endif %}
+              {{ temperature_minimal }}
             {% endif %}
           '';
           unit_of_measurement = "°C";
