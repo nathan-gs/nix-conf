@@ -330,24 +330,24 @@ let
       device_class = "temperature";
       state = ''
         ${autoWantedHeader}
-        {% set desired_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
+        {% set cv_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
         {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
         {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
         {% set max_desired_temp = 21 %}
         {% set target_temp = current_temp + temperature_diff_wanted %}
-        {% set new_temp = desired_temp %}
+        {% set new_temp = cv_temp %}
         {% set is_anyone_home_or_coming = states('binary_sensor.anyone_home_or_coming_home') | bool(true) %}
         {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}
         {% set forecast_temp = states('sensor.weather_forecast_temperature_max_4h') | float(15) %}
         {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
-        {% set is_target_increase_is_more_than_half_degree = target_temp > (current_temp + 0.5) %}
+        {% set is_target_increase_is_more_than_0_3_degree = target_temp > (current_temp + 0.3) %}
         {% if is_anyone_home_or_coming %}
-          {% if temperature_diff_wanted > 0.5 and is_large_deviation_between_forecast_and_target %}
+          {% if is_target_increase_is_more_than_0_3_degree and is_large_deviation_between_forecast_and_target %}
             {# Gradually increase temperature #}
-            {% set new_temp = (current_temp + 0.5) %}
-            {% set new_temp = min(new_temp, max_desired_temp) %}
+            {% set new_temp = (current_temp + 1) %}
+            {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
           {% else %}          
-            {% set new_temp = (target_temp - 0.5) %}
+            {% set new_temp = (target_temp - 1) %}
             {% set new_temp = max(new_temp, temperature_eco) %}
           {% endif %}
         {% elif is_travelling %}
