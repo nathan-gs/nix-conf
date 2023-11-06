@@ -51,6 +51,20 @@
           auth_pam_service_name nginx;
         '';
     };
+
+    locations."/db" = {
+      proxyPass = "http://127.0.0.1:2344";
+      extraConfig =
+        ''
+          # required when the target is also TLS server with multiple hosts
+          proxy_ssl_server_name on;
+          # required when the server wants to use HTTP Authentication
+          proxy_pass_header Authorization;
+          # PAM Auth
+          auth_pam "Password Required";
+          auth_pam_service_name nginx;
+        '';
+    };
   };
 
   services.photoprism-slideshow = {
@@ -90,6 +104,26 @@
     wantedBy = [ "multi-user.target" ];
     path = [ pkgs.gawk pkgs.busybox ];
     script = ''source ${./photoprism-prioritize.sh}'';
-  }; 
+  };
+
+  systemd.services.photoprism-db = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    unitConfig = {
+      RequiresMountsFor = "/media/documents";
+    };
+    serviceConfig = {
+      ExecStart = ''
+          ${pkgs.sqlite-web}/bin/sqlite_web \
+            --port 2344 \
+            --no-browser \
+            --url-prefix "/db" \
+            /var/lib/photoprism/index.db
+        '';
+      User = "nathan";      
+    };
+    environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+    wantedBy = ["multi-user.target"];
+  };
 
 }
