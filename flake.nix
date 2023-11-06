@@ -9,8 +9,8 @@
 
   outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, ... }:
     let 
-      unstableOverlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.system}; };
-      unstableModule = ({ config, pkgs, ...}: { nixpkgs.overlays = [ unstableOverlay ]; });
+      overlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.system}; };
+      overlayModule = ({ config, pkgs, ...}: { nixpkgs.overlays = [ overlay ]; });
 
     in 
       {  
@@ -21,9 +21,10 @@
             ./computers/nhtpc.nix
             secrets.nixosModules.secrets
             photoprism-slideshow.nixosModules.photoprism-slideshow
-            unstableModule
+            overlayModule
           ];
 
+          specialArgs.channels = { inherit nixpkgs nixpkgs-unstable; };
       
           # Select the target system here.
           system = "x86_64-linux";
