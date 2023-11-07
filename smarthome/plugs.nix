@@ -59,6 +59,12 @@ let
       floor = "floor1";
     }
     {
+      zone = "nikolai";
+      name = "verwarming";
+      ieee = "0xa4c1385317a3b396";
+      floor = "floor1";
+    }
+    {
       zone = "bureau";
       name = "verwarming";
       ieee = "0xa4c1388319da7258";

@@ -24,6 +24,10 @@
               power_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_power";
               energy_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_energy";
             }
+            {
+              power_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_power";
+              energy_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_energy";
+            }
           ];
         }
         {

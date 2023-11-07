@@ -65,16 +65,23 @@ in
               {% endif %}
             '';
             device_class = "heat";
-            delay_on.minutes = 5;
-            delay_off.minutes = 1;
+            delay_on.seconds = 60;
+            delay_off.seconds = 15;
           }
           {
             name = "floor0_living_metering_plug_verwarming_target";
+            state = ''false'';
+            device_class = "heat";
+            delay_on.minutes = 1;            
+            delay_off.seconds = 15;
+          }
+          {
+            name = "floor1_nikolai_metering_plug_verwarming_target";
             state = ''
-              {% set sensor = states('sensor.floor0_living_metering_plug_verwarming_power') | float(0) %}
+              {% set sensor = states('sensor.floor1_nikolai_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
-              {% set indoor_temp = states('sensor.floor0_living_temperature_na_temperature') | float(21) %}
-              {% set power_available = (house_return + sensor) %}
+              {% set indoor_temp = states('sensor.floor1_nikolai_temperature_na_temperature') | float(21) %}
+              {% set power_available = (house_return + sensor) %}              
               {% if power_available > 750 and indoor_temp < 21 %}
                 true  
               {% else %}
@@ -82,8 +89,15 @@ in
               {% endif %}
             '';
             device_class = "heat";
-            delay_on.minutes = 1;
-            delay_off.minutes = 2;
+            delay_on = ''
+              {% set in_use = states('binary_sensor.floor1_nikolai_in_use') | bool(false) %}
+              {% if in_use %}
+                00:00:30
+              {% else %}
+                00:02:00
+              {% endif %}
+            '';
+            delay_off.seconds = 15;
           }
           {
             name = "floor0_bureau_metering_plug_verwarming_target";
@@ -99,16 +113,23 @@ in
               {% endif %}
             '';
             device_class = "heat";
-            delay_on.minutes = 2;
-            delay_off.minutes = 3;
+            delay_on = ''
+              {% set in_use = states('binary_sensor.floor0_bureau_in_use') | bool(false) %}
+              {% if in_use %}
+                00:00:45
+              {% else %}
+                00:02:30
+              {% endif %}
+            '';
+            delay_off.seconds = 15;
           }
         ];
       }
     ];
 
     "automation manual" = []
-      ++ map (v: automateTurnOn v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" ]
-      ++ map (v: automateTurnOff v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" ];
+      ++ map (v: automateTurnOn v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" "floor1_nikolai_metering_plug_verwarming" ]
+      ++ map (v: automateTurnOff v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" "floor1_nikolai_metering_plug_verwarming" ];
 
   };
 }
