@@ -5,8 +5,9 @@ let
   autoWantedHeader = ''
     {% set workday = states('binary_sensor.workday') | bool(true) %}    
     {% set anyone_home = states('binary_sensor.anyone_home') | bool(true) %}
-    {% set temperature_eco = 14.5 %}
-    {% set temperature_night = 16.0 %}
+    {% set temperature_away = 14.5 %}
+    {% set temperature_eco = 15.5 %}
+    {% set temperature_night = 16.5 %}
     {% set temperature_comfort_low = 17 %}
     {% set temperature_comfort = 18.5 %}
     {% set temperature_minimal = 5.5 %}
@@ -353,7 +354,7 @@ let
         {% elif is_travelling %}
           {% set new_temp = temperature_minimal %}
         {% else %}
-          {% set new_temp = temperature_eco %}
+          {% set new_temp = temperature_away %}
         {% endif %}
         {% set new_temp = ((new_temp * 2) | round(0) / 2) %}
         {{ new_temp }}
