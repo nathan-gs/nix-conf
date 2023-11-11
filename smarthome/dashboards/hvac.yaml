@@ -435,7 +435,7 @@ views:
                 state_color: false
                 columns: 1
                 entities:
-                  - entity: sensor.floor0_bureau_temperature_na_temperature
+                  - entity: sensor.floor0_bureau_temperature
                   - entity: sensor.floor0_bureau_temperature_na_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
@@ -497,7 +497,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor0_bureau_temperature_na_temperature
+              - entity: sensor.floor0_bureau_temperature
                 name: Actual Temperature (Sensor)
                 type: line
                 group_by:
@@ -532,7 +532,7 @@ views:
                 state_color: false
                 columns: 1
                 entities:
-                  - entity: sensor.floor0_keuken_temperature_na_temperature
+                  - entity: sensor.floor0_keuken_temperature
                   - entity: sensor.floor0_keuken_temperature_na_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
@@ -594,7 +594,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor0_keuken_temperature_na_temperature
+              - entity: sensor.floor0_keuken_temperature
                 name: Actual Temperature (Sensor)
                 type: line
                 group_by:
@@ -709,6 +709,17 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
+              - entity: sensor.floor0_living_temperature
+                name: Actual Temperature (CV)
+                type: line
+                color: '#1a4c6e'
+                group_by:
+                  func: last
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: temperature
               - entity: sensor.floor0_living_temperature_na_temperature
                 name: Actual Temperature (Sensor)
                 type: line
@@ -716,7 +727,7 @@ views:
                 group_by:
                   func: last
                   duration: 5m
-                stroke_width: 2
+                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -745,7 +756,7 @@ views:
                 state_color: false
                 columns: 1
                 entities:
-                  - entity: sensor.floor1_badkamer_temperature_na_temperature
+                  - entity: sensor.floor1_badkamer_temperature
                   - entity: sensor.floor1_badkamer_temperature_na_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
@@ -807,7 +818,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_badkamer_temperature_na_temperature
+              - entity: sensor.floor1_badkamer_temperature
                 name: Actual Temperature (Sensor)
                 type: line
                 group_by:
@@ -842,7 +853,7 @@ views:
                 state_color: false
                 columns: 1
                 entities:
-                  - entity: sensor.floor1_fen_temperature_na_temperature
+                  - entity: sensor.floor1_fen_temperature
                   - entity: sensor.floor1_fen_temperature_na_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
@@ -904,7 +915,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_fen_temperature_na_temperature
+              - entity: sensor.floor1_fen_temperature
                 name: Actual Temperature (Sensor)
                 type: line
                 group_by:
@@ -939,7 +950,7 @@ views:
                 state_color: false
                 columns: 1
                 entities:
-                  - entity: sensor.floor1_nikolai_temperature_na_temperature
+                  - entity: sensor.floor1_nikolai_temperature
                   - entity: sensor.floor1_nikolai_temperature_na_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
@@ -1001,7 +1012,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_nikolai_temperature_na_temperature
+              - entity: sensor.floor1_nikolai_temperature
                 name: Actual Temperature (Sensor)
                 type: line
                 group_by:
@@ -1036,7 +1047,7 @@ views:
                 state_color: false
                 columns: 1
                 entities:
-                  - entity: sensor.floor1_morgane_temperature_na_temperature
+                  - entity: sensor.floor1_morgane_temperature
                   - entity: sensor.floor1_morgane_temperature_na_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
@@ -1098,7 +1109,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_morgane_temperature_na_temperature
+              - entity: sensor.floor1_morgane_temperature
                 name: Actual Temperature (Sensor)
                 type: line
                 group_by:
@@ -1143,7 +1154,7 @@ views:
           show: true
           title: Basement
         series:
-          - entity: sensor.basement_basement_temperature_na_temperature
+          - entity: sensor.basement_basement_temperature
             name: Actual Temperature (Sensor)
             type: line
             group_by:

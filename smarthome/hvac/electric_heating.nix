@@ -66,14 +66,14 @@ in
             '';
             device_class = "heat";
             delay_on.seconds = 60;
-            delay_off.seconds = 15;
+            delay_off.seconds = 60;
           }
           {
             name = "floor0_living_metering_plug_verwarming_target";
             state = ''false'';
             device_class = "heat";
             delay_on.minutes = 1;            
-            delay_off.seconds = 15;
+            delay_off.seconds = 60;
           }
           {
             name = "floor1_nikolai_metering_plug_verwarming_target";
@@ -97,7 +97,7 @@ in
                 00:02:00
               {% endif %}
             '';
-            delay_off.seconds = 15;
+            delay_off.seconds = 60;
           }
           {
             name = "floor0_bureau_metering_plug_verwarming_target";
@@ -121,7 +121,7 @@ in
                 00:02:30
               {% endif %}
             '';
-            delay_off.seconds = 15;
+            delay_off.seconds = 60;
           }
         ];
       }

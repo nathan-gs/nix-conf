@@ -1,5 +1,20 @@
 {config, pkgs, lib, ...}:
 
+let 
+  rooms = import ./devices/rooms.nix;
+
+  roomTempFunction = {floor, room, sensor1, sensor2 ? null} : {
+    name = "${floor}_${room}_temperature";
+    state = ''
+      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} | float(0) %}      
+      {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
+      {{ sensor1 }}
+    '';
+    unit_of_measurement = "°C";
+    device_class = "temperature";
+  };
+
+in 
 {
 
   services.home-assistant.config = {
@@ -129,7 +144,11 @@
             unit_of_measurement = "°C";
           }
 
-        ];
+        ]
+        ++ map(v : roomTempFunction {floor = "floor0"; room = v; sensor1 = "floor0_${v}_temperature_na_temperature";}) (builtins.filter (v: v != "living") rooms.floor0)
+        ++ map(v : roomTempFunction {floor = "floor0"; room = v; sensor1 = "ebusd_370_displayedroomtemp_temp"; sensor2 = "floor0_${v}_temperature_na_temperature";}) ["living"]
+        ++ map(v : roomTempFunction {floor = "floor1"; room = v; sensor1 = "floor1_${v}_temperature_na_temperature";}) rooms.floor1
+        ++ map(v : roomTempFunction {floor = "basement"; room = v; sensor1 = "basement_${v}_temperature_na_temperature";}) rooms.basement;
       }
     ];
 

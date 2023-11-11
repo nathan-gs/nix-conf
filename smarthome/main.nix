@@ -48,6 +48,7 @@ with lib;
     ./hvac/vaillant.nix
     ./hvac/temperature.nix
     ./hvac/electric_heating.nix
+    ./hvac/rtv.nix
     ./energy/powercalc.nix
     ./energy/tariffs.nix
     ./energy/car_charger/volvo.nix
