@@ -1,7 +1,7 @@
 {config, pkgs, lib, ...}:
 
 let 
-  rooms = import ./devices/rooms.nix;
+  rooms = import ../rooms.nix;
 
   roomTempFunction = {floor, room, sensor1, sensor2 ? null} : {
     name = "${floor}_${room}_temperature";
