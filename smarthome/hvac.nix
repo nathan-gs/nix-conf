@@ -266,9 +266,9 @@ let
         {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}
         {% set forecast_temp = states('sensor.weather_forecast_temperature_max_4h') | float(15) %}
         {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
-        {% set is_target_increase_is_more_than_0_3_degree = target_temp > (current_temp + 0.3) %}
+        {% set is_heating_needed = target_temp >= current_temp %}
         {% if is_anyone_home_or_coming %}
-          {% if is_target_increase_is_more_than_0_3_degree and is_large_deviation_between_forecast_and_target %}
+          {% if is_heating_needed and is_large_deviation_between_forecast_and_target %}
             {# Gradually increase temperature #}
             {% set new_temp = (current_temp + 1) %}
             {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
