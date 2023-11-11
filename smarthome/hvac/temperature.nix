@@ -77,15 +77,9 @@ in
           {
             name = "indoor_humidity";
             state = ''
-              {% set v = (
-                states("sensor.floor0_bureau_temperature_na_humidity"),
-                states("sensor.floor0_keuken_temperature_na_humidity"),
-                states("sensor.floor0_living_temperature_na_humidity"),
-                states("sensor.floor1_badkamer_temperature_na_humidity"),
-                states("sensor.floor1_fen_temperature_na_humidity"),
-                states("sensor.floor1_morgane_temperature_na_humidity"),
-                states("sensor.floor1_nikolai_temperature_na_humidity")
-              )  
+              {% set v = [
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
+              ]
               %}
               {% set valid_humidities = v | select('!=','unknown') | map('float') | list %}
               {{ (valid_humidities | sum / valid_humidities | length) | round(2) }}
@@ -102,15 +96,9 @@ in
           {
             name = "indoor_humidity_max";
             state = ''
-              {% set v = (
-                states("sensor.floor0_bureau_temperature_na_humidity"),
-                states("sensor.floor0_keuken_temperature_na_humidity"),
-                states("sensor.floor0_living_temperature_na_humidity"),
-                states("sensor.floor1_badkamer_temperature_na_humidity"),
-                states("sensor.floor1_fen_temperature_na_humidity"),
-                states("sensor.floor1_morgane_temperature_na_humidity"),
-                states("sensor.floor1_nikolai_temperature_na_humidity")
-              )  
+              {% set v = [
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
+              ]
               %}
               {% set valid_humidities = v | select('!=','unknown') | map('float') | list %}
               {{ max(valid_humidities) | round(2) }}
@@ -128,14 +116,7 @@ in
             name = "indoor_temperature";
             state = ''
               {% set sensors = [
-                states('sensor.floor0_bureau_temperature_na_temperature'),
-                states('sensor.floor0_keuken_temperature_na_temperature'),
-                states('sensor.floor0_living_temperature_na_temperature'),
-                states('sensor.floor1_badkamer_temperature_na_temperature'),
-                states('sensor.floor1_fen_temperature_na_temperature'),
-                states('sensor.floor1_morgane_temperature_na_temperature'),
-                states('sensor.floor1_nikolai_temperature_na_temperature'),
-                states('sensor.ebusd_370_displayedroomtemp_temp')
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)}
               ] %}
               {% set valid_temperatures = sensors | select('!=','unknown') | map('float') | list %}
               {{ (valid_temperatures | sum / valid_temperatures | length) | round(2) }}
