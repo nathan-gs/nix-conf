@@ -172,14 +172,14 @@
     ln -snf "${(pkgs.callPackage ../apps/ha-hon.nix {})}" "/var/lib/hass/custom_components/hon"
     ln -snf "${(pkgs.callPackage ../apps/ha-electrolux-status.nix {})}" "/var/lib/hass/custom_components/electrolux_status"
     ln -snf "${(pkgs.callPackage ../apps/ha-indego.nix {})}" "/var/lib/hass/custom_components/indego"
-    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/powercalc.nix {})}" "/var/lib/hass/custom_components/powercalc"
+    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})}" "/var/lib/hass/custom_components/powercalc"
   '';  
 
   # needs copy, HA does not follow symlinks
   # https://github.com/home-assistant/core/pull/42295
   system.activationScripts.ha-www.text = ''
     mkdir -p "/var/lib/hass/www"
-    cp "${(pkgs.callPackage ../pkgs/home-assistant/fan-mode-button-row.nix {})}" "/var/lib/hass/www/fan-mode-button-row.js"
-    cp "${(pkgs.callPackage ../pkgs/home-assistant/apexcharts-card.nix {})}" "/var/lib/hass/www/apexcharts-card.js"
+    cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/fan-mode-button-row.nix {})}" "/var/lib/hass/www/fan-mode-button-row.js"
+    cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/apexcharts-card.nix {})}" "/var/lib/hass/www/apexcharts-card.js"
   '';
 }
