@@ -173,6 +173,7 @@
     ln -snf "${(pkgs.callPackage ../apps/ha-electrolux-status.nix {})}" "/var/lib/hass/custom_components/electrolux_status"
     ln -snf "${(pkgs.callPackage ../apps/ha-indego.nix {})}" "/var/lib/hass/custom_components/indego"
     ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})}" "/var/lib/hass/custom_components/powercalc"
+    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})}" "/var/lib/hass/custom_components/afvalbeheer"
   '';  
 
   # needs copy, HA does not follow symlinks

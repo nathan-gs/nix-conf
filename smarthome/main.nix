@@ -45,6 +45,7 @@ with lib;
     ./weather.nix
     ./air_quality.nix
     ./doorbell.nix
+    ./waste.nix
     ./hvac/vaillant.nix
     ./hvac/temperature.nix
     ./hvac/electric_heating.nix
