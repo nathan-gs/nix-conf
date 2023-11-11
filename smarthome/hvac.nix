@@ -225,7 +225,7 @@ let
         device_class = "temperature";
         state = ''
           {% set temperature_wanted = state_attr("climate.${v.floor}_${v.zone}_rtv_${v.name}", "temperature") | float(15.5) %}
-          {% set temperature_actual = states("sensor.${v.floor}_${v.zone}_temperature_na_temperature") | float(15.5) %}
+          {% set temperature_actual = states("sensor.${v.floor}_${v.zone}_temperature") | float(15.5) %}
           {{ (temperature_wanted - temperature_actual) | round(2) }}
         '';
         icon = "mdi:thermometer-auto";
@@ -273,7 +273,7 @@ let
             {% set new_temp = (current_temp + 1) %}
             {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
           {% else %}          
-            {% set new_temp = (target_temp - 1) %}
+            {% set new_temp = (target_temp - 0.5) %}
             {% set new_temp = max(new_temp, temperature_eco) %}
           {% endif %}
         {% elif is_travelling %}
