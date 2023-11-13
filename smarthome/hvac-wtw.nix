@@ -42,16 +42,21 @@ in
             {% set dewpoint_outdoor_smaller_then_indoor = ((states('sensor.outdoor_dewpoint') | float) +1) < (states('sensor.indoor_dewpoint') | float) %}
             {% set dewpoint_over_17_and_dewpoint_outdoor_lower = (dewpoint_over_17 and dewpoint_outdoor_smaller_then_indoor) | bool %}
             {% set humidity_max_over_80 = (states('sensor.indoor_humidity_max') | float(100) > 80) %}
-
-            {% if is_cooking or is_using_sanitary or dewpoint_over_17_and_dewpoint_outdoor_lower or is_using_dryer or house_needs_cooling_and_temp_outside_lower or humidity_max_over_80 %}
-              high
-            {% elif is_home %}
-              medium
+            {% set is_not_electricity_delivery_power_near_max_threshold = states('binary_sensor.electricity_delivery_power_near_max_threshold') | bool(false) == false %}
+            
+            {% if is_not_electricity_delivery_power_near_max_threshold %}
+              {% if is_cooking or is_using_sanitary or dewpoint_over_17_and_dewpoint_outdoor_lower or is_using_dryer or house_needs_cooling_and_temp_outside_lower or humidity_max_over_80 %}
+                high
+              {% elif is_home %}
+                medium
+              {% else %}
+                low
+              {% endif %}
             {% else %}
               low
             {% endif %}
           '';
-          attributes = {
+          attributes = {            
             is_cooking = ''false'';
             is_home = ''{{ states('binary_sensor.anyone_home') | bool(true) }}'';
             is_using_sanitary = ''false'';
@@ -72,6 +77,7 @@ in
               {% endif %}
               {{ house_needs_cooling_and_temp_outside_lower }}
             '';
+            electricity_delivery_power_near_max_threshold = ''{{ states('binary_sensor.electricity_delivery_power_near_max_threshold') | bool(false) }}'';
             icon = ''
               {% set am = states('sensor.wtw_target_fan') %}
               {% if am == "low" %}

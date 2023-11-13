@@ -151,10 +151,7 @@ let
         source = "sensor.dsmr_reading_electricity_returned_2";
         cycle = "yearly";
       };
-      electricity_delivery_15m = {
-        source = "sensor.electricity_delivery";
-        cron = "*/15 * * * *";
-      };
+      
     };
 
     sensor = [
@@ -225,11 +222,7 @@ let
             state = "{{ ( states('sensor.electricity_peak_return_yearly') | float ) + ( states('sensor.electricity_offpeak_return_yearly') | float ) }}";
           }
           
-          {
-            name = "electricity_delivery_power_15m";
-            state = "{{ (states('sensor.electricity_delivery_15m') | float(0)) * 4 | float }}";
-            unit_of_measurement = "kW";
-          }
+          
           {
             name = "electricity_grid_consumed_power";
             state = "{{ states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000 }}";
@@ -257,86 +250,10 @@ let
           }
         ];
       }
-      {
-        trigger = {
-          platform = "time_pattern";
-          minutes = "/15";
-        };
-        sensor = [
-          {
-            name = "electricity_delivery_power_monthly_15m_max";
-            state = ''
-              {% if is_number(states('sensor.electricity_delivery_power_monthly_15m_max')) %}
-                {% if ((now().hour == 0) and (now().minute < 15) and (now().day == 1)) %}
-                  {{ states('sensor.electricity_delivery_power_15m') | float }}
-                {% else %}
-                  {% if ((states('sensor.electricity_delivery_power_monthly_15m_max') | float) < (states('sensor.electricity_delivery_power_15m')) | float) %}
-                    {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
-                  {% else %}
-                    {{ states('sensor.electricity_delivery_power_monthly_15m_max') | float }} 
-                  {% endif %}
-                {% endif %}
-              {% else %}
-                0
-              {% endif %}
-            '';
-            unit_of_measurement = "kW";
-          }
-          {
-            name = "electricity_delivery_power_daily_15m_max";
-            state = ''
-              {% if is_number(states('sensor.electricity_delivery_power_daily_15m_max')) %}
-                {% if ((now().hour == 0) and (now().minute < 15)) %}
-                  {{ states('sensor.electricity_delivery_power_15m') | float }}
-                {% else %}
-                  {% if ((states('sensor.electricity_delivery_power_daily_15m_max') | float) < (states('sensor.electricity_delivery_power_15m')) | float) %}
-                    {{ states('sensor.electricity_delivery_power_15m') or 0 | float }}
-                  {% else %}
-                    {{ states('sensor.electricity_delivery_power_daily_15m_max') | float }} 
-                  {% endif %}
-                {% endif %}
-              {% else %}
-                0
-              {% endif %}
-            '';
-            unit_of_measurement = "kW";
-          }
-        ];
-      }
-      {
-        binary_sensor = {
-          name = "electricity_delivery_power_max_threshold_reached";
-          delay_on = "00:02:00";
-          delay_off = "00:01:00";
-          state = "{{ (states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000) > 2800 }}";
-        };
-      }
+      
     ];
 
-    automations = [
-      {
-        id = "electricity_delivery_power_max_threshold_reached_send_notification";
-        alias = "electricity_delivery_power_max_threshold_reached_send_notification";
-        trigger = [
-          {
-            platform = "state";
-            entity_id = "binary_sensor.electricity_delivery_power_max_threshold_reached";
-            to = "on";
-          }
-        ];
-        condition = [];
-        action = [
-          {
-            service = "notify.notify";
-            data = {
-              title = "Electricity Peak; ({{  (states('sensor.dsmr_reading_electricity_currently_delivered') | float * 1000) }}W (max 2800w)";
-              message = "Electricity Peak; ({{  (states('sensor.dsmr_reading_electricity_currently_delivered') | float * 1000) }}W (max 2800w)";
-            };
-          }
-        ];
-        mode = "single";
-      }
-    ];
+    automations = [ ];
 
   };
 

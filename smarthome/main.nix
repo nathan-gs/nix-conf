@@ -52,6 +52,7 @@ with lib;
     ./hvac/rtv.nix
     ./energy/powercalc.nix
     ./energy/tariffs.nix
+    ./energy/capacity_peaks.nix
     ./energy/car_charger/volvo.nix
     ./energy/car_charger/car_charger.nix
     ./energy/appliances/dishwasher.nix
