@@ -11,6 +11,9 @@
     host = "127.0.0.1";
     extraPackages = [ pkgs.sqlite pkgs.nodejs pkgs.nixpkgs-fmt pkgs.nixpkgs-unstable.nixd ];
     withoutConnectionToken = true;
+    extraEnvironment = {
+      SSH_AUTH_SOCK = "/home/nathan/.ssh/ssh_auth_sock";
+    };
   };
 
   # TODO remove
