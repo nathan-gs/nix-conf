@@ -90,7 +90,7 @@ in
             '';
             device_class = "heat";
             delay_on = ''
-              {% set in_use = states('binary_sensor.floor1_nikolai_in_use') | bool(false) %}
+              {% set in_use = states('input_boolean.floor1_nikolai_in_use') | bool(false) %}
               {% if in_use %}
                 00:00:30
               {% else %}
@@ -114,7 +114,7 @@ in
             '';
             device_class = "heat";
             delay_on = ''
-              {% set in_use = states('binary_sensor.floor0_bureau_in_use') | bool(false) %}
+              {% set in_use = states('input_boolean.floor0_bureau_in_use') | bool(false) %}
               {% if in_use %}
                 00:00:45
               {% else %}

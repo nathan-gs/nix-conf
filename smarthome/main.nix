@@ -47,7 +47,7 @@ with lib;
     ./doorbell.nix
     ./waste.nix
     ./hvac/vaillant.nix
-    ./hvac/temperature.nix
+    ./hvac/room_control.nix
     ./hvac/electric_heating.nix
     ./hvac/rtv.nix
     ./energy/powercalc.nix

@@ -51,13 +51,15 @@ let
             ${autoWantedHeader}            
             {% set is_window_closed = states('binary_sensor.floor1_nikolai_window_na_contact') | bool(false) == false %}
             {% if is_window_closed %}
-              {% set in_use = states('binary_sensor.floor1_nikolai_in_use') | bool(false) %}            
+              {% set in_use = states('input_boolean.floor1_nikolai_in_use') | bool(false) %}            
               {% if workday %}
                 {% if in_use and now().hour < 17 %}
-                  {{ temperature_comfort }}
+                  {{ temperature_comfort }}                  
                 {% else %}
-                  {% if now().hour >= 6 and now().hour < 17 %}
+                  {% if now().hour >= 6 and now().hour < 18 %}
                     {{ temperature_eco }}
+                  {% elif now().hour >= 18 and now().hour < 22 %}
+                    {{ temperature_comfort_low }}
                   {% else %}
                     {{ temperature_night }}
                   {% endif %}
@@ -71,6 +73,8 @@ let
                   {% else %}
                     {{ temperature_night }}
                   {% endif %}
+                {% elif now().hour >= 18 and now().hour < 22 %}
+                  {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_night }}
                 {% endif %}                
@@ -88,8 +92,10 @@ let
             {% set is_window_closed = states('binary_sensor.floor1_morgane_window_na_contact') | bool(false) == false %}
             {% if is_window_closed %}
               {% if workday %}
-                {% if now().hour >= 6 and now().hour < 17 %}
+                {% if now().hour >= 6 and now().hour < 18 %}
                   {{ temperature_eco }}
+                {% elif now().hour >= 18 and now().hour < 22 %}
+                  {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_night }}
                 {% endif %}
@@ -102,6 +108,8 @@ let
                   {% else %}
                     {{ temperature_night }}
                   {% endif %}
+                {% elif now().hour >= 18 and now().hour < 22 %}
+                  {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_night }}
                 {% endif %}
@@ -121,10 +129,14 @@ let
               {% if workday %}
                 {% if now().hour >= 6 and now().hour < 17 %}
                   {{ temperature_eco }}
+                {% elif now().hour >= 19 and now().hour < 22 %}
+                  {{ temperature_comfort_low }}
                 {% else %}
                   {{ temperature_night }} 
                 {% endif %}
-              {% else %}                
+              {% elif now().hour >= 19 and now().hour < 22 %}
+                  {{ temperature_comfort_low }}
+              {% else %}                              
                 {{ temperature_night }}
               {% endif %}
             {% else %}
@@ -172,7 +184,7 @@ let
           name = "floor0_bureau_temperature_auto_wanted";
           state = ''
             ${autoWantedHeader}
-            {% set in_use = states('binary_sensor.floor0_bureau_in_use') | bool(false) %}
+            {% set in_use = states('input_boolean.floor0_bureau_in_use') | bool(false) %}
             {% if in_use %}
               {{ temperature_comfort }}
             {% else %}
@@ -197,17 +209,22 @@ let
           name = "floor0_living_temperature_auto_wanted";
           state = ''
             ${autoWantedHeader}
-            {% if workday %}
-              {% if now().hour >= 17 and now().hour < 22 %}
-                {{ temperature_comfort }}
-              {% else %}
-                {{ temperature_eco }}
-              {% endif %}
+            {% set in_use = states('input_boolean.floor0_living_in_use') | bool(false) %}
+            {% if in_use %}
+              {{ temperature_comfort }}
             {% else %}
-              {% if now().hour >= 7 and now().hour < 22 %}
-                {{ temperature_comfort }}
+              {% if workday %}
+                {% if now().hour >= 17 and now().hour < 22 %}
+                  {{ temperature_comfort }}
+                {% else %}
+                  {{ temperature_eco }}
+                {% endif %}
               {% else %}
-                {{ temperature_eco }}
+                {% if now().hour >= 7 and now().hour < 22 %}
+                  {{ temperature_comfort }}
+                {% else %}
+                  {{ temperature_eco }}
+                {% endif %}
               {% endif %}
             {% endif %}
           '';

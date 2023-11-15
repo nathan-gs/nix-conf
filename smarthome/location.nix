@@ -74,16 +74,6 @@
             delay_on.minutes = 10;
             delay_off.minutes = 10;
           }
-          {
-            name = "floor0_bureau_in_use";
-            state = "{{ states('binary_sensor.ndesk') | bool(false) }}";
-            device_class = "occupancy";            
-          }
-          {
-            name = "floor1_nikolai_in_use";
-            state = "{{ states('binary_sensor.flaptop') | bool(false) }}";
-            device_class = "occupancy";            
-          }
         ];
       }
     ];
