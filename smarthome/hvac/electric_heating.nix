@@ -82,7 +82,7 @@ in
               {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
               {% set indoor_temp = states('sensor.floor1_nikolai_temperature_na_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}              
-              {% if power_available > 750 and indoor_temp < 21 %}
+              {% if power_available > 760 and indoor_temp < 22 %}
                 true  
               {% else %}
                 false
