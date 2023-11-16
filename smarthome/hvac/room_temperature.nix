@@ -3,6 +3,7 @@
 let
   rooms = import ../rooms.nix;
   temperatureHeader = import ./temperature_sets.nix;
+  templateHelpers = import ../helpers/template.nix;
 
   heatedRooms = rooms.heated;
 
@@ -72,20 +73,14 @@ let
     {% endif %}
   '';
 
-  templateSensorTemperature = name: value: {
-    name = name;
-    state = value;
-    unit_of_measurement = "°C";
-    device_class = "temperature";
-    icon = "mdi:thermometer-auto";
-  };
+  templateSensorTemperature = templateHelpers.sensorTemperature;
 
-  roomTempFunction = { floor, room, sensor1, sensor2 ? null }: {
+  roomTempFunction = { floor, room, sensor1, sensor2 ? null, adjustment ? 0 }: {
     name = "${floor}_${room}_temperature";
     state = ''
       {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} | float(0) %}      
       {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
-      {{ sensor1 }}
+      {{ sensor1 + ${toString adjustment} }}
     '';
     unit_of_measurement = "°C";
     device_class = "temperature";
@@ -232,9 +227,9 @@ in
             )
           )
         ]
-        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensor1 = "floor0_${v}_temperature_na_temperature"; }) (builtins.filter (v: v != "living") rooms.floor0)
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensor1 = "floor0_${v}_temperature_na_temperature"; adjustment = -0.3; }) (builtins.filter (v: v != "living") rooms.floor0)
         ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensor1 = "ebusd_370_displayedroomtemp_temp"; sensor2 = "floor0_${v}_temperature_na_temperature"; }) [ "living" ]
-        ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensor1 = "floor1_${v}_temperature_na_temperature"; }) rooms.floor1
+        ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensor1 = "floor1_${v}_temperature_na_temperature"; adjustment = -0.3; }) rooms.floor1
         ++ map (v: roomTempFunction { floor = "basement"; room = v; sensor1 = "basement_${v}_temperature_na_temperature"; }) rooms.basement
         ++ map
           (

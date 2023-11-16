@@ -1,12 +1,36 @@
 { config, pkgs, lib, ... }:
 
 let
-  rtv = import ./devices/rtv.nix;
+  rtvI = import ./devices/rtv.nix;
+  rtv = map (v: v // { type = "rtv"; }) rtvI;
+  templateHelpers = import ../helpers/template.nix;
+
+  sensorTemperature = templateHelpers.sensorTemperature;
 
 in
 {
 
   services.home-assistant.config = {
+
+    template = [
+      {
+        # Let's boost the RTV temperature to raise the room temperature quicker
+        sensor = map(v: sensorTemperature 
+          "${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted" 
+          ''
+            {% set room_temp = states('sensor.${v.floor}_${v.zone}_temperature') | float(15.7) %}
+            {% set target_temp = states('sensor.${v.floor}_${v.zone}_temperature_auto_wanted') | float(15.7) %}
+            {% set need_heating = room_temp < target_temp %}
+            {% set adjustment = 0 %}
+            {% if need_heating %}
+              {% set adjustment = 2 %}
+            {% endif %}
+            {{ target_temp + adjustment }}
+          ''
+          ) rtv;
+      }
+    ];
+
     "automation manual" = map
       (v: {
         id = "${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_calibration";
@@ -36,7 +60,7 @@ in
         ];
         mode = "single";
       })
-      (map (v: v // { type = "rtv"; }) rtv)
+      rtv
       ++
       map
       (v: {
@@ -45,7 +69,7 @@ in
         trigger = [
           {
             platform = "state";
-            entity_id = "sensor.${v.floor}_${v.zone}_temperature_auto_wanted";
+            entity_id = "sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted";
           }
           {
             platform = "time";
@@ -70,7 +94,7 @@ in
         ];
         condition = ''
           {{ 
-            (states('sensor.${v.floor}_${v.zone}_temperature_auto_wanted') | float(0) != state_attr('climate.${v.floor}_${v.zone}_${v.type}_${v.name}', 'temperature') | float(0))
+            (states('sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted') | float(0) != state_attr('climate.${v.floor}_${v.zone}_${v.type}_${v.name}', 'temperature') | float(0))
           }}
         '';
         action = [
@@ -78,12 +102,12 @@ in
             service = "climate.set_temperature";
             target.entity_id = "climate.${v.floor}_${v.zone}_${v.type}_${v.name}";
             data = {
-              temperature = "{{ states('sensor.${v.floor}_${v.zone}_temperature_auto_wanted') }}";
+              temperature = "{{ states('sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted') }}";
             };
           }
         ];
         mode = "queued";
       })
-      (map (v: v // { type = "rtv"; }) rtv);
+      rtv;
   };
 }
