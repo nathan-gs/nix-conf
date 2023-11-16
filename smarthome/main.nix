@@ -46,8 +46,10 @@ with lib;
     ./air_quality.nix
     ./doorbell.nix
     ./waste.nix
+    ./occupation/rooms.nix
     ./hvac/vaillant.nix
-    ./hvac/room_control.nix
+    ./hvac/room_temperature.nix
+    ./hvac/temperature.nix
     ./hvac/electric_heating.nix
     ./hvac/rtv.nix
     ./energy/powercalc.nix

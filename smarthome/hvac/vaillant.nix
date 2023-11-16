@@ -1,8 +1,82 @@
 { config, pkgs, lib, ... }:
 
+let
+
+  rooms = import ../rooms.nix;
+
+  roomsDiffWanted = map (v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heated;
+
+  autoWantedHeader = import ./temperature_sets.nix;
+
+in
 {
 
   services.home-assistant.config = {
+
+    template = [
+      {
+        sensor = [
+          {
+            name = "heating_temperature_diff_wanted";
+            unit_of_measurement = "°C";
+            device_class = "temperature";
+            state = ''
+              {% 
+              set v = (
+                ${builtins.concatStringsSep "," roomsDiffWanted}
+              )
+              %}
+              {% set valid_temp = v | select('!=','unknown') | map('float') | list %}
+              {{ max(valid_temp) | round(2) }}
+            '';
+            icon = "mdi:thermometer-auto";
+          }
+          {
+            name = "heating_temperature_desired";
+            unit_of_measurement = "°C";
+            device_class = "temperature";
+            state = ''
+              ${autoWantedHeader}
+              {% set cv_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
+              {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
+              {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
+              {% set max_desired_temp = 21 %}
+              {% set target_temp = current_temp + temperature_diff_wanted %}
+              {% set new_temp = cv_temp %}
+              {% set is_anyone_home_or_coming = states('binary_sensor.anyone_home_or_coming_home') | bool(true) %}
+              {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}
+              {% set forecast_temp = states('sensor.weather_forecast_temperature_max_4h') | float(15) %}
+              {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
+              {% set is_heating_needed = target_temp >= current_temp %}
+              {% if is_anyone_home_or_coming %}
+                {% if is_heating_needed and is_large_deviation_between_forecast_and_target %}
+                  {# Gradually increase temperature #}
+                  {% set new_temp = (current_temp + 1) %}
+                  {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
+                {% else %}          
+                  {% set new_temp = (target_temp - 0.5) %}
+                  {% set new_temp = max(new_temp, temperature_eco) %}
+                {% endif %}
+              {% elif is_travelling %}
+                {% set new_temp = temperature_minimal %}
+              {% else %}
+                {% set new_temp = temperature_away %}
+              {% endif %}
+              {% set new_temp = ((new_temp * 2) | round(0) / 2) %}
+              {{ new_temp }}
+            '';
+            icon = ''
+              {% if (state_attr("climate.cv", "current_temperature") | float(19.5)) < (states('sensor.heating_temperature_desired') | float(19.5)) %}
+                mdi:thermometer-chevron-up
+              {% else %}
+                mdi:thermometer-chevron-down
+              {% endif %}
+            '';
+          }
+        ];
+      }
+      
+    ];
 
     "automation manual" = [
       {
