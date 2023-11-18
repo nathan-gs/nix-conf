@@ -105,6 +105,10 @@ in
               temperature = "{{ states('sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted') }}";
             };
           }
+          {
+            # Workaround to make sure if it's triggered in quick succession the last one is actually executed.
+            delay = "0:01:00";
+          }
         ];
         mode = "queued";
       })

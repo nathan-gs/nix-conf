@@ -86,7 +86,7 @@ in
   template = [ ]
     ++ temperatureAutoWanted
     ++ [{ sensor = roomTemperatureDifferenceWanted; }]
-    ++ [{ sensor = heatingNeeded; }];
+    ++ [{ sensor = heatingNeeded; }];  
 
 
   recorder_excludes = [
