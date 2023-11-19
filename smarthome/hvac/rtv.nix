@@ -1,8 +1,7 @@
 { config, pkgs, lib, ... }:
 
 let
-  rtvI = import ../devices/rtv.nix;
-  rtv = map (v: v // { type = "rtv"; }) rtvI;
+  rtv = import ../devices/rtv.nix;
   haHelpers = import ../helpers/ha.nix;
 
   sensorTemperature = haHelpers.sensorTemperature;

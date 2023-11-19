@@ -1,9 +1,3 @@
-let
-
-  plugs = import ./devices/plugs.nix;
-  metering_plugs = import ./devices/metering_plugs.nix;
-
-in 
 {
 
   
@@ -57,14 +51,4 @@ in
 
   ];
 
-  devices = []
-    ++ map (v: v // { 
-        type = "plug";
-        home_assistant.child_lock = null;
-      }) plugs
-    ++ map (v: v // { 
-      type = "metering_plug";
-      home_assistant.child_lock = null;
-    }) metering_plugs;
-  
 }

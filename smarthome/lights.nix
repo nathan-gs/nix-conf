@@ -1,7 +1,4 @@
 let
-  lights = import ./devices/lights.nix;
-
-  lightPlugs = import ./devices/light_plugs.nix;
 
   automations = [
     # Cirkel
@@ -70,8 +67,8 @@ let
       ];
       action = [
         {
-          service = "switch.turn_on";
-          target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
+          service = "light.turn_on";
+          target.entity_id = "light.floor0_living_light_plug_kattenlamp";
         }
         {
           service = "light.turn_on";
@@ -91,8 +88,8 @@ let
       ];
       action = [
         {
-          service = "switch.turn_off";
-          target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
+          service = "light.turn_off";
+          target.entity_id = "light.floor0_living_light_plug_kattenlamp";
         }
         {
           service = "light.turn_off";
@@ -108,7 +105,7 @@ let
       trigger = [
         {
           platform = "state";
-          entity_id = ["binary_sensor.ndesk"];
+          entity_id = ["input_boolean.floor0_bureau_in_use"];
           to = "on";
         }
       ];
@@ -177,34 +174,9 @@ let
     }
   ];
 
-
-  lightPlugDevices = 
-    builtins.listToAttrs ( 
-      (
-        map (v: { name = "${v.ieee}"; value = { 
-        friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-        homeassistant = {
-#          name = "${v.zone} Light ${v.name}";
-#          switch = {
-#            type = "light";
-#            object_id = "light";            
-#          };
-#          light = {
-#            name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-#            value_template = "";
-#            state_value_template = "'{{ value_json.state }}'";
-#          };
-        };
-      };})
-      )       
-      (
-        map (v: v // { type = "light_plug";}) lightPlugs
-      )
-    );
 in 
 {
-  devices = [] ++ map (v: v // {type = "light";}) lights;
-  zigbeeDevices = {} // lightPlugDevices;
+
   automations = [] ++ automations;
 
 }
