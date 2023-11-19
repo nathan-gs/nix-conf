@@ -24,9 +24,9 @@ views:
                 entity: sensor.wtw_target_fan
                 attribute: house_needs_cooling_and_temp_outside_lower
               - type: attribute
-                name: dew point over 17°C and outdoor lower
+                name: dew pointhigh and outdoor lower
                 entity: sensor.wtw_target_fan
-                attribute: dewpoint_over_17_and_dewpoint_outdoor_lower
+                attribute: dewpoint_high_and_dewpoint_outdoor_lower
               - type: attribute
                 name: humidity max over 80%
                 entity: sensor.wtw_target_fan
@@ -39,10 +39,6 @@ views:
                 name: is using sanitary
                 entity: sensor.wtw_target_fan
                 attribute: is_using_sanitary
-              - type: attribute
-                name: is using dryer
-                entity: sensor.wtw_target_fan
-                attribute: is_using_dryer
           - type: entities
             show_header_toggle: false
             entities:
@@ -727,7 +723,7 @@ views:
                 group_by:
                   func: last
                   duration: 5m
-                stroke_width: 1
+                stroke_width: 2
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature

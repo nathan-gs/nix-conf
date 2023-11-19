@@ -10,7 +10,7 @@
     icon = "mdi:thermometer-auto";
   };
 
-  automation = name: {triggers ? [], condition = "true", actions = [], mode = "single" } : {
+  automation = name: {triggers ? [], condition ? "true", actions ? [], mode ? "single" } : {
     id = builtins.replaceStrings [ "/" "." ] [ "_" "_" ] name;
     alias = name;
     trigger = triggers;

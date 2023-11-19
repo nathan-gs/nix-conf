@@ -40,16 +40,17 @@ with lib;
 {
 
   imports = [
-    ./location.nix
+    ./occupancy/location.nix
     ./calendar.nix
     ./weather.nix
     ./air_quality.nix
     ./doorbell.nix
     ./waste.nix
-    ./occupation/rooms.nix
+    ./occupancy/rooms.nix
     ./hvac/vaillant.nix
     ./hvac/room_temperature.nix
     ./hvac/temperature.nix
+    ./hvac/ventilation.nix
     ./hvac/electric_heating.nix
     ./hvac/rtv.nix
     ./energy/powercalc.nix
@@ -72,27 +73,22 @@ with lib;
     config."automation manual" = 
       lights.automations
       ++ hvac.automations
-      ++ hvac-wtw.automations
       ++ media.automations
       ++ plugs.automations
       ++ energy.automations;
 
     config.binary_sensor = [ ] 
-    ++ solar.binary_sensor
-    ++ hvac-wtw.binary_sensor;
+    ++ solar.binary_sensor;
 
 
     config.mqtt = {
       binary_sensor = [] 
-        ++ water.mqtt.binary_sensor
-        ++ hvac-wtw.mqtt.binary_sensor;
+        ++ water.mqtt.binary_sensor;
 
       sensor = []
-        ++ water.mqtt.sensor
-        ++ hvac-wtw.mqtt.sensor;
+        ++ water.mqtt.sensor;
 
-      fan = []
-        ++ hvac-wtw.mqtt.fan;
+      fan = [];
 
 
     };
@@ -103,8 +99,7 @@ with lib;
 
     config.sensor = []
       ++ energy.sensor
-      ++ solar.sensor      
-      ++ hvac-wtw.sensor;
+      ++ solar.sensor;
 
     config.utility_meter = { } 
       // water.utility_meter
@@ -116,16 +111,13 @@ with lib;
       ++ water.template
       ++ hvac.template
       ++ media.template
-      ++ solar.template
-      ++ hvac-wtw.template;
+      ++ solar.template;
 
     config.recorder.exclude.entity_globs = []
       ++ hvac.recorder_excludes
-      ++ solar.recorder_excludes
-      ++ hvac-wtw.recorder_excludes;
+      ++ solar.recorder_excludes;
 
-    config.climate = []
-      ++ hvac-wtw.climate;
+    config.climate = [];
 
   };
 }

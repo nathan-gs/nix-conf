@@ -38,6 +38,13 @@
         count = 2;
         scan_interval = 30;
       }
+      {
+        platform = "ping";
+        host = "nstudio";
+        name = "nstudio";
+        count = 2;
+        scan_interval = 30;
+      }
     ];
 
     template = [

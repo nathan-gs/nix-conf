@@ -65,14 +65,31 @@ in
               {% endif %}
             '';
             device_class = "heat";
-            delay_on.seconds = 60;
+            delay_on.seconds = 90;
             delay_off.seconds = 60;
           }
           {
             name = "floor0_living_metering_plug_verwarming_target";
-            state = ''false'';
+            state = ''
+              {% set sensor = states('floor0_living_metering_plug_verwarming_power') | float(0) %}
+              {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
+              {% set indoor_temp = states('sensor.floor0_living_temperature') | float(21) %}
+              {% set power_available = (house_return + sensor) %}
+              {% if power_available > 835 and indoor_temp < 21 %}
+                true  
+              {% else %}
+                false
+              {% endif %}
+            '';
             device_class = "heat";
-            delay_on.minutes = 1;            
+            delay_on = ''
+              {% set in_use = states('input_boolean.floor0_living_in_use') | bool(false) %}
+              {% if in_use %}
+                00:00:30
+              {% else %}
+                00:02:00
+              {% endif %}
+            '';            
             delay_off.seconds = 60;
           }
           {
@@ -80,7 +97,7 @@ in
             state = ''
               {% set sensor = states('sensor.floor1_nikolai_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
-              {% set indoor_temp = states('sensor.floor1_nikolai_temperature_na_temperature') | float(21) %}
+              {% set indoor_temp = states('sensor.floor1_nikolai_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}              
               {% if power_available > 760 and indoor_temp < 22 %}
                 true  
@@ -92,7 +109,7 @@ in
             delay_on = ''
               {% set in_use = states('input_boolean.floor1_nikolai_in_use') | bool(false) %}
               {% if in_use %}
-                00:00:30
+                00:00:45
               {% else %}
                 00:02:00
               {% endif %}
@@ -104,7 +121,7 @@ in
             state = ''
               {% set sensor = states('sensor.floor0_bureau_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
-              {% set indoor_temp = states('sensor.floor0_bureau_temperature_na_temperature') | float(21) %}
+              {% set indoor_temp = states('sensor.floor0_bureau_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}
               {% if power_available > 685 and indoor_temp < 21 %}
                 true  
@@ -116,7 +133,7 @@ in
             delay_on = ''
               {% set in_use = states('input_boolean.floor0_bureau_in_use') | bool(false) %}
               {% if in_use %}
-                00:00:45
+                00:01:00
               {% else %}
                 00:02:30
               {% endif %}

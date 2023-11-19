@@ -1,46 +1,7 @@
 let
-  lights = [
-    {      
-      zone = "bureau";
-      name = "desk";
-      ieee = "0x842e14fffe674147";
-      floor = "floor0";
-    }
-    {      
-      zone = "living";
-      name = "bollamp";
-      ieee = "0x50325ffffeaca4be";
-      floor = "floor0";
-    }
-    {      
-      zone = "bureau";
-      name = "desk2";
-      ieee = "0x0c4314fffe98c59f";
-      floor = "floor0";
-    }
-    {
-      zone = "keuken";
-      name = "consumptionindicator";
-      ieee = "0x04cd15fffe629cbe";
-      floor = "floor0";
-    }
-  ];
+  lights = import ./devices/lights.nix;
 
-  lightPlugs = [
-    {
-      zone = "living";
-      name = "kattenlamp";
-      ieee = "0x0c4314fffee9dcd3";
-      floor = "floor0";      
-    }
-    {
-      zone = "living";
-      name = "kerstboom";
-      ieee = "0x50325ffffe5ebbec";
-      floor = "floor0";
-    }
-    
-  ];
+  lightPlugs = import ./devices/light_plugs.nix;
 
   automations = [
     # Cirkel
@@ -178,7 +139,7 @@ let
       condition = [
         {
           condition = "state";
-          entity_id = ["binary_sensor.ndesk"];
+          entity_id = ["input_boolean.floor0_bureau_in_use"];
           state = "on";
         }
       ];
@@ -201,7 +162,7 @@ let
         } 
         {
           platform = "state";
-          entity_id = ["binary_sensor.ndesk"];
+          entity_id = ["input_boolean.floor0_bureau_in_use"];
           to = "off";
         }
       ];
@@ -235,7 +196,7 @@ let
 #          };
         };
       };})
-      )
+      )       
       (
         map (v: v // { type = "light_plug";}) lightPlugs
       )

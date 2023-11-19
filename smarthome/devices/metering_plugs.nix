@@ -24,10 +24,10 @@
     floor = "floor1";
   }
   {
-    zone = "fen";
-    name = "deken";
+    zone = "bureau";
+    name = "scherm";
     ieee = "0xa4c138bd0cf23138";
-    floor = "floor1";
+    floor = "floor0";
   }
   {
     zone = "badkamer";
@@ -64,5 +64,11 @@
     name = "doorbell";
     ieee = "0xa4c138fde84ee814";
     floor = "system";
+  }
+  {
+    zone = "nikolai";
+    name = "scherm";
+    ieee = "0xa4c138947648ed30";
+    floor = "floor1";
   }
 ]
