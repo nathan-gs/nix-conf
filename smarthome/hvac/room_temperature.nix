@@ -3,7 +3,7 @@
 let
   rooms = import ../rooms.nix;
   temperatureHeader = import ./temperature_sets.nix;
-  templateHelpers = import ../helpers/template.nix;
+  haHelpers = import ../helpers/ha.nix;
 
   heatedRooms = rooms.heated;
 
@@ -73,7 +73,7 @@ let
     {% endif %}
   '';
 
-  templateSensorTemperature = templateHelpers.sensorTemperature;
+  templateSensorTemperature = haHelpers.sensorTemperature;
 
   roomTempFunction = { floor, room, sensor1, sensor2 ? null, adjustment ? 0 }: {
     name = "${floor}_${room}_temperature";
