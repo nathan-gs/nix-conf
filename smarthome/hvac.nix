@@ -13,7 +13,7 @@ let
     {% set temperature_minimal = 5.5 %}
   '';
 
-  rtv = import ./hvac/devices/rtv.nix;
+  rtv = import ./devices/rtv.nix;
   windows = import ./hvac/devices/windows.nix;
   tempSensors = import ./hvac/devices/temperature.nix;
   rtvFilteredAttributes = import ./hvac/devices/rtvFilteredAttributes.nix;
