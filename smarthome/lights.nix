@@ -74,6 +74,10 @@ let
           service = "light.turn_on";
           target.entity_id = "light.floor0_living_light_bollamp";
         }
+        {
+          service = "light.turn_on";
+          target.entity_id = "light.floor0_living_light_booglamp";
+        }
       ];
       mode = "single";
     }
@@ -94,6 +98,10 @@ let
         {
           service = "light.turn_off";
           target.entity_id = "light.floor0_living_light_bollamp";
+        }
+        {
+          service = "light.turn_off";
+          target.entity_id = "light.floor0_living_light_booglamp";
         }
       ];
       mode = "single";

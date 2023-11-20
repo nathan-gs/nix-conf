@@ -17,11 +17,10 @@ map
       floor = "floor0";
     }
     {
-      zone = "bureau";
-      name = "desk2";
+      zone = "living";
+      name = "booglamp";
       ieee = "0x0c4314fffe98c59f";
       floor = "floor0";
-      disabled = true;
     }
     {
       zone = "keuken";
