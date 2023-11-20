@@ -67,8 +67,8 @@ let
       ];
       action = [
         {
-          service = "light.turn_on";
-          target.entity_id = "light.floor0_living_light_plug_kattenlamp";
+          service = "switch.turn_on";
+          target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
         }
         {
           service = "light.turn_on";
@@ -88,8 +88,8 @@ let
       ];
       action = [
         {
-          service = "light.turn_off";
-          target.entity_id = "light.floor0_living_light_plug_kattenlamp";
+          service = "switch.turn_off";
+          target.entity_id = "switch.floor0_living_light_plug_kattenlamp";
         }
         {
           service = "light.turn_off";
