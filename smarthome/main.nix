@@ -5,7 +5,6 @@ solar = import ./solar.nix {config = config;};
 water = import ./water.nix;
 energy = import ./energy.nix;
 media = import ./media.nix;
-lights = import ./lights.nix;
 plugs = import ./plugs.nix;
 
 in 
@@ -21,6 +20,7 @@ with lib;
     ./air_quality.nix
     ./doorbell.nix
     ./waste.nix
+    ./lights.nix
     ./occupancy/rooms.nix
     ./hvac/vaillant.nix
     ./hvac/room_temperature.nix
@@ -40,8 +40,7 @@ with lib;
 
   services.home-assistant = {
     config."automation manual" = 
-      lights.automations
-      ++ media.automations
+      media.automations
       ++ plugs.automations
       ++ energy.automations;
 

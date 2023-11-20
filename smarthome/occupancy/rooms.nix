@@ -2,7 +2,7 @@
 
 let
   rooms = import ../rooms.nix;
-  haHelpers = import ../helpers/ha.nix;
+  ha = import ./helpers/ha.nix {lib = lib;};
 
   automateRoomUse = { floor, room, triggers, action }:
     {

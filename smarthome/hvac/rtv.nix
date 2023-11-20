@@ -2,9 +2,9 @@
 
 let
   rtv = import ../devices/rtv.nix;
-  haHelpers = import ../helpers/ha.nix;
+  ha = import ../helpers/ha.nix {lib = lib;};
 
-  sensorTemperature = haHelpers.sensorTemperature;
+  sensorTemperature = ha.sensor.temperature;
 
 in
 {

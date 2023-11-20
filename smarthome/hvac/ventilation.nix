@@ -2,7 +2,7 @@
 
 let
 
-  ha = import ../helpers/ha.nix;
+  ha = import ./helpers/ha.nix {lib = lib;};
 
 
 in
