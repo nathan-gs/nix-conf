@@ -10,29 +10,23 @@
       };
     };
 
+    mqtt.sensor = [    
+      {
+        name = "electricity_delivery_power_monthly_15m_max";
+        state_topic = "dsmr/consumption/peak/running_month";
+        unit_of_measurement = "kW";
+        device_class = "power";
+        force_update = true;
+        icon = "mdi:meter-electric";
+      }
+    ];
+
     template = [  
       {
         sensor = [
           {
             name = "electricity_delivery_power_15m";
-            state = "{{ (states('sensor.electricity_delivery_15m') | float(0)) * 4 }}";
-            unit_of_measurement = "kW";
-          }
-          {
-            name = "electricity_delivery_power_monthly_15m_max";
-            state = ''
-              {% set electricity_delivery_power_15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {% set electricity_delivery_power_monthly_15m_max = this.state | float(0) %}
-              {% if ((now().hour == 0) and (now().minute < 15) and (now().day == 1)) %}
-                {{ electricity_delivery_power_15m }}
-              {% else %}
-                {% if electricity_delivery_power_monthly_15m_max < electricity_delivery_power_15m %}
-                  {{ electricity_delivery_power_15m }}
-                {% else %}
-                  {{ electricity_delivery_power_monthly_15m_max }} 
-                {% endif %}
-              {% endif %}
-            '';
+            state = "{{ states('sensor.sensor.dsmr_consumption_quarter_hour_peak_electricity_average_delivered') | float(0) }}";
             unit_of_measurement = "kW";
           }
           {

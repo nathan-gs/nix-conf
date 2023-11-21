@@ -52,7 +52,7 @@ let
       delay = time;
     };
 
-    mqtt_publish = topic: payload: retain: {
+    mqttPublish = topic: payload: retain: {
       service = "mqtt.publish";
       data = {
         topic = topic;
