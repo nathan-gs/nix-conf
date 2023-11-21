@@ -7,6 +7,7 @@ let
   roomsDiffWanted = map (v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heated;
 
   autoWantedHeader = import ./temperature_sets.nix;
+  ha = import ../helpers/ha.nix { lib = lib; };
 
 in
 {
@@ -75,7 +76,7 @@ in
           }
         ];
       }
-      
+
     ];
 
     "automation manual" = [
@@ -83,16 +84,11 @@ in
         id = "cv_temperature_set";
         alias = "cv.temperature_set";
         trigger = [
-          {
-            platform = "state";
-            entity_id = "sensor.heating_temperature_desired";
-          }
+          (ha.trigger.state "sensor.heating_temperature_desired")
         ];
-        condition = ''
-          {{ 
-            (states('sensor.heating_temperature_desired') | float(0) != state_attr('climate.cv', 'temperature') | float(0)) and ( states('climate.cv') == "heat" )
-          }}
-        '';
+        condition = [
+          (ha.condition.state "climate.cv" "heat")
+        ];
         action = [
           {
             service = "climate.set_temperature";
@@ -102,31 +98,14 @@ in
               target_temp_low = "10";
             };
           }
-          {
-            delay = "0:00:15";
-          }
+          (ha.action.delay "0:00:15")
           # Workaround to update desired temperature
-          {
-            service = "mqtt.publish";
-            data = {
-              topic = "ebusd/370/DisplayedHc1RoomTempDesired/get";
-              payload_template = "?1";
-              retain = false;
-            };
-          }
-          {
-            delay = "0:00:05";
-          }
-          {
-            service = "mqtt.publish";
-            data = {
-              topic = "ebusd/370/Hc1DayTemp/get";
-              payload_template = "?1";
-              retain = false;
-            };
-          }
+          (ha.action.mqtt_publish "ebusd/370/DisplayedHc1RoomTempDesired/get" "?1" false)
+          (ha.action.delay "0:00:05")
+          (ha.action.mqtt_publish "ebusd/370/Hc1DayTemp/get" "?1" false)
+          (ha.action.delay "0:00:05")
         ];
-        mode = "single";
+        mode = "queued";
       }
       {
         id = "cv_query";
@@ -137,23 +116,19 @@ in
             minutes = "/5";
           }
         ];
-        action = lib.lists.forEach [
-          "ebusd/370/DisplayedHc1RoomTempDesired"
-          "ebusd/370/DisplayedRoomTemp"
-          "ebusd/bai/FlowTemp"
-          "ebusd/bai/FlowTempDesired"
-          "ebusd/bai/ReturnTemp"
-          "ebusd/bai/ModulationTempDesired"
-        ]
-          (x: {
-            service = "mqtt.publish";
-            data = {
-              topic = "${x}/get";
-              payload_template = "?3";
-              retain = false;
-            };
-          });
-        mode = "single";
+        action =
+          map (x: (ha.action.mqtt_publish "${x}/get" "?3" false)) [
+            "ebusd/370/DisplayedHc1RoomTempDesired"
+            "ebusd/370/DisplayedRoomTemp"
+            "ebusd/bai/FlowTemp"
+            "ebusd/bai/FlowTempDesired"
+            "ebusd/bai/ReturnTemp"
+            "ebusd/bai/ModulationTempDesired"
+          ]
+          ++ [
+            (ha.action.delay "0:00:05")
+          ];
+        mode = "queued";
       }
     ];
 

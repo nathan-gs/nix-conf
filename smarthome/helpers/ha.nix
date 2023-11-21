@@ -48,6 +48,18 @@ let
       target.entity_id = entity;
     };
 
+    delay = time: {
+      delay = time;
+    };
+
+    mqtt_publish = topic: payload: retain: {
+      service = "mqtt.publish";
+      data = {
+        topic = topic;
+        payload_template = payload;
+        retain = retain;
+      };
+    };
   };
 
   trigger = {
@@ -62,6 +74,19 @@ let
       entity_id = name;
       to = to;
     };
+
+    state = name: {
+      platform = "state";
+      entity = name;
+    };
+  };
+
+  condition = {
+    state = entity: state: {
+      condition = "state";
+      entity_id = entity;
+      state = state;
+    };
   };
 in
 
@@ -72,5 +97,5 @@ in
   automationOnOff = automationOnOff;
   action = action;
   trigger = trigger;
-
+  condition = condition;
 }
