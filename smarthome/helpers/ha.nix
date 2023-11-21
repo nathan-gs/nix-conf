@@ -77,7 +77,7 @@ let
 
     state = name: {
       platform = "state";
-      entity = name;
+      entity_id = name;
     };
   };
 

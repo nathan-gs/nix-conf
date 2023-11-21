@@ -145,30 +145,6 @@
         mode = "single";
       }
       {
-        id = "electricity_delivery_power_max_threshold_light";
-        alias = "electricity_delivery_power_max_threshold.light";
-        trigger = [
-          {
-            platform = "state";
-            entity_id = "binary_sensor.electricity_delivery_power_max_threshold";
-            to = "on";
-          }
-        ];
-        condition = [];
-        action = [
-          {
-            service = "light.turn_on";
-            target.entity_id = "light.floor0_keuken_light_consumptionindicator";
-            data = {
-              rgb_color = [255 0 0];
-              effect = "blink";
-              transition = 10;
-            };
-          }
-        ];
-        mode = "single";
-      }
-      {
         id = "electricity_delivery_power_normal_light";
         alias = "electricity_delivery_power_normal.light";
         trigger = [
