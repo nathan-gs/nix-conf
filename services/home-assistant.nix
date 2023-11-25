@@ -181,5 +181,6 @@
     mkdir -p "/var/lib/hass/www"
     cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/fan-mode-button-row.nix {})}" "/var/lib/hass/www/fan-mode-button-row.js"
     cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/apexcharts-card.nix {})}" "/var/lib/hass/www/apexcharts-card.js"
+    cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/auto-entities.nix {})}" "/var/lib/hass/www/auto-entities.js"
   '';
 }
