@@ -1,5 +1,11 @@
 { config, pkgs, lib, ... }:
 
+let
+  ha = import ./helpers/ha.nix { lib = lib; };
+  carName = config.secrets.nathan-car.name;
+
+in
+
 {
 
   services.home-assistant.config = {
@@ -23,7 +29,7 @@
             state = ''
               {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0)  %}
               {% set battery_remaining = states('sensor.solis_remaining_battery_capacity') | float(0) %}
-              {% set car_charged = states('sensor.2abn528_battery_level') | float(10) %}
+              {% set car_charged = states('sensor.${carName}_battery_level') | float(10) %}
               {% set solar_now = states('sensor.solar_currently_produced') | float(0) %}
               {% set current_usage = states('sensor.electricity_total_power') | float(5) / 1000 %}
               {% set charger_in_use = states('switch.garden_garden_plug_laadpaal') | bool(false) %}
@@ -67,6 +73,28 @@
           }
         ];
       }
+    ];
+
+    "automation manual" = [
+      (
+        ha.automation "system/car_charger.charging_stopped"
+          {
+            triggers = [ (ha.trigger.state_to "binary_sensor.${carName}_plug_status" "off") ];
+            actions = [
+              (ha.action.delay "00:05:00")
+              (ha.action.off "switch.garden_garden_plug_laadpaal")
+            ];
+          }
+      )
+      (
+        ha.automation "system/car_charger.turn_on"
+          {
+            triggers = [ (ha.trigger.at "01:30:00") ];
+            actions = [
+              (ha.action.on "switch.garden_garden_plug_laadpaal")
+            ];
+          }
+      )
     ];
   };
 }
