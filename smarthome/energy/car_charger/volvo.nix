@@ -1,7 +1,7 @@
 {config, pkgs, lib, ...}:
 let 
   carName = config.secrets.nathan-car.name;
-  consumptionPower = 2010;
+  consumptionPower = "2010";
 
 in
 {
