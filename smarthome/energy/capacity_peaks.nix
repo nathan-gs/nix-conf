@@ -26,7 +26,7 @@
         sensor = [
           {
             name = "electricity_delivery_power_15m";
-            state = "{{ states('sensor.sensor.dsmr_consumption_quarter_hour_peak_electricity_average_delivered') | float(0) }}";
+            state = "{{ states('sensor.dsmr_consumption_quarter_hour_peak_electricity_average_delivered') | float(0) }}";
             unit_of_measurement = "kW";
           }
           {
