@@ -45,6 +45,7 @@ views:
               - entity: sensor.itho_wtw_inlet_fan
               - entity: sensor.itho_wtw_outlet_fan
               - entity: binary_sensor.itho_wtw_bypass
+              - entity: binary_sensor.itho_wtw_valve
               - entity: binary_sensor.itho_wtw_is_summerday
               - entity: sensor.itho_wtw_airfilter
       - type: vertical-stack
