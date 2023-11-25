@@ -10,6 +10,15 @@ let
       device_class = "temperature";
       icon = "mdi:thermometer-auto";
     };
+
+    battery_from_attr = name: source: {
+      name = name;
+      state = ''
+        {{ state_attr('${source}', 'battery') | int(0) }}
+      '';
+      device_class = "battery";
+      unit_of_measurement = "%";
+    };
   };
 
   automation = name: { triggers ? [ ], conditions ? [ ], actions ? [ ], mode ? "single" }: {
@@ -23,14 +32,14 @@ let
 
   automationOnOff = name: { triggersOn ? [ ], triggersOff ? [ ], conditionsOn ? [ ], conditionsOff ? [ ], entities ? [ ], mode ? "single" }: [
     (automation "${name}.turn_on" {
-      triggers = triggersOn;
+      triggers = triggersOn;   
       conditions = conditionsOn;
       actions = map (entity: (action.on entity)) entities;
       mode = mode;
     })
     (automation "${name}.turn_off" {
       triggers = triggersOff;
-      conditions = conditionsOff;
+      conditions = conditionsOff;   
       actions = map (entity: (action.off entity)) entities;
       mode = mode;
     })

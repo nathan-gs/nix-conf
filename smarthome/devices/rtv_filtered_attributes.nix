@@ -1,7 +1,6 @@
 [
   "comfort_temperature"
   "eco_temperature"
-  "voltage"
   "detectwindow_temperature"
   "detectwindow_timeminute"
   "binary_one"
