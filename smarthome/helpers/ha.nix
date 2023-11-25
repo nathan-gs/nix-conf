@@ -87,6 +87,11 @@ let
       entity_id = entity;
       state = state;
     };
+
+    time_after = time: {
+      condition = "time";
+      after = time;      
+    };
   };
 in
 

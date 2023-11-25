@@ -39,8 +39,11 @@ in
             }
           ];
           triggersOff = [
-            (ha.trigger.at "00:00:00")
+            (ha.trigger.at "23:59:00")
             (ha.trigger.state_to "input_boolean.floor0_living_in_use" "off")
+          ];
+          conditionsOff = [
+            (ha.condition.time_after "22:00:00")
           ];
           entities = [ "switch.floor0_living_light_plug_kattenlamp" "light.floor0_living_light_bollamp" "light.floor0_living_light_booglamp" ];
         })
