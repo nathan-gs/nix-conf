@@ -2,9 +2,9 @@
 
 let
   rooms = import ../rooms.nix;
-  ha = import ./helpers/ha.nix {lib = lib;};
+  ha = import ../helpers/ha.nix {lib = lib;};
 
-  automateRoomUse = { floor, room, triggers, action }:
+  automateRoomUse = { floor, room, triggers, action, extraActions ? [] }:
     {
       id = "${floor}_${room}_in_use_turn_${action}";
       alias = "${floor}/${room}/in_use.turn_${action}";
@@ -15,7 +15,7 @@ let
           service = "input_boolean.turn_${action}";
           target.entity_id = "input_boolean.${floor}_${room}_in_use";
         }
-      ];
+      ] ++ extraActions;
       mode = "single";
     };
 
@@ -106,8 +106,12 @@ in
               entity_id = "binary_sensor.floor0_bureau_scherm_in_use";
               to = "on";
             }
+            (ha.trigger.tag "floor0_bureau")
           ];
           action = "on";
+          extraActions = [
+            (ha.action.on "switch.floor0_bureau_metering_plug_scherm")
+          ];
         }
       )
       (
@@ -119,9 +123,13 @@ in
               platform = "state";
               entity_id = "binary_sensor.floor0_bureau_scherm_in_use";
               to = "off";
-            }
+            }            
           ];
           action = "off";
+          extraActions = [
+            (ha.action.delay "00:01:00")
+            (ha.action.off "switch.floor0_bureau_metering_plug_scherm")
+          ];
         }
       )
       (

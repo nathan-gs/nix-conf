@@ -107,6 +107,11 @@ let
       entity_id = entity;
       above = threshold;
     };
+
+    tag = id: {
+      platform = "tag";
+      tag_id = id;
+    };
     
   };
 
