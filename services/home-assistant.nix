@@ -66,6 +66,10 @@
             url = "/local/fan-mode-button-row.js";
             type = "module";
           }
+          {
+            url = "/local/auto-entities.js";
+            type = "module";
+          }
         ];
       };
       "automation ui" = "!include automations.yaml";
