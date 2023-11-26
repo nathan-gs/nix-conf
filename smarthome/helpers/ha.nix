@@ -1,7 +1,7 @@
 { lib, ... }:
 
 let
-
+  
   sensor = {
     temperature = name: value: {
       name = name;
@@ -69,9 +69,18 @@ let
         retain = retain;
       };
     };
+
+    notify = title: message: {
+      service = "notify.notify";
+      data = {
+        title = title;
+        message = message;
+      };      
+    };
+    
   };
 
-  trigger = {
+  trigger = rec {
 
     at = time: {
       platform = "time";
@@ -88,6 +97,11 @@ let
       platform = "state";
       entity_id = name;
     };
+
+
+    on = name: state_to name "on";
+    off = name: state_to name "off";
+    
   };
 
   condition = {
