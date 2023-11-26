@@ -91,6 +91,10 @@ in
         triggers = [(ha.trigger.on "binary_sensor.watermeter_leak_detect")];
         actions = [(ha.action.notify "Waterlek" "Waterlek gedetecteerd, verbruik van {{ states('sensor.watermeter_usage_last_minute') | float(0) | round(0) }}l in laatste minuut.")];
       })
+      (ha.automation "system/water.abnormal_usage" {
+        triggers = [(ha.trigger.above "sensor.water_delivery_daily" 500)];
+        actions = [(ha.action.notify "Abnormaal Waterverbruik" "Abnormaal dagelijks waterverbruik, reeds {{ states('sensor.water_delivery_daily') | float(0) | round(0) }}l verbruikt.")];
+      })
     ];
 
 

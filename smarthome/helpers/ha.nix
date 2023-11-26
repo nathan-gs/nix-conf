@@ -98,9 +98,15 @@ let
       entity_id = name;
     };
 
-
     on = name: state_to name "on";
+
     off = name: state_to name "off";
+
+    above = entity: threshold: {
+      platform = "numeric_state";
+      entity_id = entity;
+      above = threshold;
+    };
     
   };
 
