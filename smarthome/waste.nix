@@ -22,8 +22,8 @@
 
     "automation manual" = [
       {
-        id = "waste_notify";
-        alias = "waste.notify";
+        id = "system_waste_notify";
+        alias = "system/waste.notify";
         trigger = [
           {
             platform = "time";
