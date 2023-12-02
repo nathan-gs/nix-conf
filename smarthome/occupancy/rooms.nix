@@ -32,7 +32,7 @@ in
         binary_sensor = [
           {
             name = "floor0_bureau_scherm_in_use";
-            state = ''{{ states('sensor.floor0_bureau_metering_plug_scherm_power') |float(0) > 20 }}'';
+            state = ''{{ states('sensor.floor0_bureau_metering_plug_scherm_power') |float(0) > 12 }}'';
             device_class = "occupancy";
           }
           {
