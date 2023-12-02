@@ -18,7 +18,6 @@ with lib;
     ./energy/appliances/dishwasher.nix
     ./energy/capacity_peaks.nix
     ./energy/car_charger/car_charger.nix
-    ./energy/car_charger/volvo.nix
     ./energy/powercalc.nix
     ./energy/solar/battery.nix
     ./energy/tariffs.nix
