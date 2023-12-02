@@ -3,6 +3,7 @@
 let
   ha = import ../../helpers/ha.nix { lib = lib; };
   carName = config.secrets.nathan-car.name;
+  consumptionPower = "2010";
 
 in
 
@@ -75,6 +76,12 @@ in
       }
     ];
 
+    input_boolean = {
+      car_charger_charge_at_night = {
+        icon = "mdi:ev-station";
+      };
+    };
+
     "automation manual" = [
       (
         ha.automation "system/car_charger.charging_stopped"
@@ -89,12 +96,72 @@ in
       (
         ha.automation "system/car_charger.turn_on"
           {
-            triggers = [ (ha.trigger.at "01:30:00") ];
+            triggers = [ (ha.trigger.at "00:00:00") ];
+            conditions = [
+              (ha.condition.state "binary_sensor.${carName}_plug_status" "on")
+              (ha.condition.state "device_tracker.${carName}_position" "home")
+              (ha.condition.state "input_binary.car_charger_charge_at_night" "on")
+            ];
             actions = [
               (ha.action.on "switch.garden_garden_plug_laadpaal")
             ];
           }
       )
     ];
+
+    powercalc = {
+      sensors = [
+        {
+          name = "car_charger";
+          unique_id = "car_charger";
+          entity_id = "binary_sensor.${carName}_battery_charging";
+          fixed.power = ''
+            {% set car_charging = states('binary_sensor.${carName}_battery_charging') | bool (false) %}
+            {% set charger = states('switch.garden_garden_plug_laadpaal') | bool (false) %}
+            {% set position = states('device_tracker.${carName}_position') == "home" %}
+            {% set power = 0 %}
+            {% if car_charging and charger and position %}
+              {% set power = ${consumptionPower} %}
+            {% endif %}
+            {{ power }}
+          '';
+        }
+        {
+          name = "car_charger_solar";
+          unique_id = "car_charger_solar";
+          entity_id = "binary_sensor.${carName}_battery_charging";
+          fixed.power = ''
+            {% set car_charging = states('binary_sensor.${carName}_battery_charging') | bool (false) %}
+            {% set charger = states('switch.garden_garden_plug_laadpaal') | bool (false) %}
+            {% set position = states('device_tracker.${carName}_position') == "home" %}
+            {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
+            {% set power = 0 %}
+            {% if car_charging and charger and position %}              
+              {% set power = min((${consumptionPower} - import_from_grid), ${consumptionPower}) %}
+              {% if power < 0 %}
+                {% set power = 0 %}
+              {% endif %}
+            {% endif %}
+            {{ power }}
+          '';
+        }
+        {
+          name = "car_charger_grid";
+          entity_id = "binary_sensor.${carName}_battery_charging";
+          unique_id = "car_charger_grid";
+          fixed.power = ''
+            {% set car_charging = states('binary_sensor.${carName}_battery_charging') | bool (false) %}
+            {% set charger = states('switch.garden_garden_plug_laadpaal') | bool (false) %}
+            {% set position = states('device_tracker.${carName}_position') == "home" %}
+            {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
+            {% set power = 0 %}
+            {% if car_charging and charger and position %}
+              {% set power = min(import_from_grid, ${consumptionPower}) %}
+            {% endif %}
+            {{ power }}
+          '';
+        }
+      ];
+    };
   };
 }
