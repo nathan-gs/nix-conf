@@ -24,7 +24,6 @@
     configWritable = false;
     config = {
       default_config = {};
-      met = {};
       backup = {};
       homeassistant = {
         name = "SXW";
@@ -94,6 +93,7 @@
       "homekit_controller"
       "homekit"
       "http"
+      "met"
       "mqtt"
       "my"            
       "openweathermap"
