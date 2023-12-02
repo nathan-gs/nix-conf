@@ -18,14 +18,12 @@
   '';
 
   services.fail2ban.jails = {
-    sshd = ''
-      enabled = true
-      mode = extra
-    '';
-    sshd-aggresive = ''
-      enabled = true
-      filter = sshd[mode=aggressive]
-    '';
+    sshd-aggresive = {
+      settings = {
+        enabled = true;
+        filter = "sshd[mode=aggressive]";
+      };
+    };
   };
 
 

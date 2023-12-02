@@ -58,15 +58,17 @@
   };
 
   services.fail2ban.jails = {
-    pam-generic = ''
-      enabled = true
-      filter = pam-generic
-      port = 0:65535
-      _ttys_re=(?:nginx)
-      banaction = iptables-multiport
-      banaction_allports = iptables-multiport
-      journalmatch = _SYSTEMD_UNIT=nginx.service + _COMM=nginx
-    '';
+    pam-generic = {
+      settings = {
+        enabled = true;
+        filter = "pam-generic";
+        port = "0:65535";
+        _ttys_re = "(?:nginx)";
+        banaction = "iptables-multiport";
+        banaction_allports = "iptables-multiport";
+        journalmatch = "_SYSTEMD_UNIT=nginx.service + _COMM=nginx";
+      };
+    };
   };
 
 }
