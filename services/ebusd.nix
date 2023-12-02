@@ -1,16 +1,5 @@
 { channels, config, pkgs, lib, ... }:
 {
-  # imports = [
-  #   "${channels.nixpkgs-unstable}/nixos/modules/services/home-automation/ebusd.nix"
-  # ];
-
-  # nixpkgs.overlays = [
-  #   (new: prev: { ebusd = pkgs.nixpkgs-unstable.pkgs.ebusd; })
-  # ];
-
-  imports = [
-    ../apps/ebusd-module.nix
-  ];
 
   services.ebusd = {
     enable = true;
