@@ -76,4 +76,10 @@ map
       ieee = "0xa4c138947648ed30";
       floor = "floor1";
     }
+    {
+      zone = "fen";
+      name = "deken";
+      ieee = "0xa4c13859f1a8fc3d";
+      floor = "floor1";
+    }
   ]
