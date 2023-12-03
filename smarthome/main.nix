@@ -38,7 +38,7 @@ with lib;
 
 
   services.home-assistant = {
-    config."automation manual" = 
+    config."automation manual" = []
       ++ energy.automations;
 
     config.binary_sensor = [ ] 
