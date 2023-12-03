@@ -3,10 +3,10 @@
 stdenv.mkDerivation rec {
 
   name = "powercalc";
-  version = "v1.9.5";
+  version = "v1.9.8";
   src = fetchzip {
     url = "https://github.com/bramstroker/homeassistant-powercalc/releases/download/${version}/powercalc.zip";
-    hash = "sha256-+CbiE26ZiaPk4C9TJlT/jKKRq3NzDIR/LPrZ8dFVSSA=";
+    hash = "sha256-OKEcGOptIp1CZd4lYYxnnJEkUAtvmei5OnKeywYiiLI=";
     stripRoot = false;
   };
   

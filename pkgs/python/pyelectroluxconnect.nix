@@ -7,13 +7,13 @@
 
 buildPythonPackage rec {
   pname = "pyelectroluxconnect";
-  version = "0.3.19";
+  version = "0.3.20";
 
   src = fetchFromGitHub {
     owner = "tomeko12";
     repo = "pyelectroluxconnect";
     rev = version;
-    sha256 = "1jkbmaiwad5kmryqmm83jvab8vy6kxvj2v8vn0jggsa4xm7rzgwm";
+    sha256 = "sha256-5eTHJsE5Jof5WSZFkf8/1UQafpgxpGTPuDWQMENgAG0=";
   };
 
   propagatedBuildInputs = [ requests beautifulsoup4 ];

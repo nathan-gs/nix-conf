@@ -5,8 +5,8 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "mauro-midolo";
     repo = "homeassistant_electrolux_status";
-    rev = "v2.12.0";
-    sha256 = "0wfvpmj5d129a4iy2hvcfpq9877zajs93arm54n0l7ly2pcn644n";
+    rev = "v4.1.0";
+    sha256 = "sha256-85p4eG0ePW2EI6vzksSbWLhNfkdrzCiu1KChuPwSobU=";
   };
 
   
