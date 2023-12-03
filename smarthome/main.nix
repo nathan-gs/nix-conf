@@ -3,8 +3,6 @@ let
 
 solar = import ./solar.nix {config = config;};
 energy = import ./energy.nix;
-media = import ./media.nix;
-plugs = import ./plugs.nix;
 
 in 
 
@@ -13,9 +11,11 @@ with lib;
 
   imports = [
     ./air_quality.nix
+    ./appliances/deken.nix
+    ./appliances/dishwasher.nix
+    ./appliances/tv.nix
     ./calendar.nix
     ./doorbell.nix
-    ./energy/appliances/dishwasher.nix
     ./energy/capacity_peaks.nix
     ./energy/car_charger/car_charger.nix
     ./energy/powercalc.nix
@@ -39,8 +39,6 @@ with lib;
 
   services.home-assistant = {
     config."automation manual" = 
-      media.automations
-      ++ plugs.automations
       ++ energy.automations;
 
     config.binary_sensor = [ ] 
@@ -60,7 +58,6 @@ with lib;
 
     config.template = [] 
       ++ energy.template
-      ++ media.template
       ++ solar.template;
 
     config.recorder.exclude.entity_globs = []

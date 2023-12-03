@@ -93,6 +93,14 @@ let
       to = to;
     };
 
+
+    state_to_for = name: to: for: {
+      platform = "state";
+      entity_id = name;
+      to = to;
+      for = for;
+    };
+
     state = name: {
       platform = "state";
       entity_id = name;
@@ -101,6 +109,10 @@ let
     on = name: state_to name "on";
 
     off = name: state_to name "off";
+
+    on_for = name: for: state_to_for name "on" for;
+
+    off_for = name: for: state_to_for name "off" for;
 
     above = entity: threshold: {
       platform = "numeric_state";

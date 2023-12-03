@@ -2,9 +2,9 @@
 
 let
   rooms = import ../rooms.nix;
-  ha = import ../helpers/ha.nix {lib = lib;};
+  ha = import ../helpers/ha.nix { lib = lib; };
 
-  automateRoomUse = { floor, room, triggers, action, extraActions ? [] }:
+  automateRoomUse = { floor, room, triggers, action, extraActions ? [ ] }:
     {
       id = "${floor}_${room}_in_use_turn_${action}";
       alias = "${floor}/${room}/in_use.turn_${action}";
@@ -60,6 +60,10 @@ in
               {% endif %}
             '';
             device_class = "occupancy";
+          }
+          {
+            name = "floor0_living_appletv_woonkamer";
+            state = ''{{ states('sensor.living_audio_input_format') in ['DTS 5.1'] }}'';
           }
         ];
       }
@@ -123,7 +127,7 @@ in
               platform = "state";
               entity_id = "binary_sensor.floor0_bureau_scherm_in_use";
               to = "off";
-            }            
+            }
           ];
           action = "off";
           extraActions = [
