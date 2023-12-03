@@ -136,7 +136,7 @@
             service = "light.turn_on";
             target.entity_id = "light.floor0_keuken_light_consumptionindicator";
             data = {
-              rgb_color = [255 128 0];
+              rgb_color = [255 200 0];
               effect = "blink";
               transition = 10;
             };
