@@ -9,7 +9,7 @@ export SSH_AUTH_SOCK=~/.ssh/ssh_auth_sock
 
 Copy the following in `~/.ssh/rc`:
 ```bash
-#!/bin/bash
+#!/usr/bin/env bash
 
 if [ ! -S ~/.ssh/ssh_auth_sock ] && [ -S "$SSH_AUTH_SOCK_ORIGINAL" ]; then
   ln -sf $SSH_AUTH_SOCK_ORIGINAL ~/.ssh/ssh_auth_sock
