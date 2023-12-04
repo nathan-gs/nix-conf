@@ -80,6 +80,9 @@ in
       car_charger_charge_at_night = {
         icon = "mdi:ev-station";
       };
+      car_charger_charge_offpeak = {
+        icon = "mdi:ev-station";
+      };
     };
 
     "automation manual" = [
@@ -96,11 +99,19 @@ in
       (
         ha.automation "system/car_charger.turn_on"
           {
-            triggers = [ (ha.trigger.at "00:00:00") ];
+            triggers = [(
+              ha.trigger.template_for 
+                ''
+                  {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
+                  {% set not_high_usage = not(states('binary_sensor.electricity_high_usage') | bool(true)) %}
+                  {% set plugged_in = states('binary_sensor.${carName}_plug_status') | bool(true) %}
+                  {% set is_home = states('device_tracker.${carName}_position') == "home" %}
+                  {{ is_offpeak and not_high_usage and plugged_in and is_home }}
+                ''
+                "00:30:00"
+            )];
             conditions = [
-              (ha.condition.state "binary_sensor.${carName}_plug_status" "on")
-              (ha.condition.state "device_tracker.${carName}_position" "home")
-              (ha.condition.state "input_binary.car_charger_charge_at_night" "on")
+              (ha.condition.on "input_boolean.car_charger_charge_offpeak")
             ];
             actions = [
               (ha.action.on "switch.garden_garden_plug_laadpaal")

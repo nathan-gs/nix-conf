@@ -124,10 +124,18 @@ let
       platform = "tag";
       tag_id = id;
     };
+
+    template_for = template: for: {
+      platform = "template";
+      value_template = template;
+      for = for;
+    };
+
+    template = template: template_for template "00:00:00";
     
   };
 
-  condition = {
+  condition = rec {
     state = entity: state: {
       condition = "state";
       entity_id = entity;
@@ -138,6 +146,11 @@ let
       condition = "time";
       after = time;      
     };
+
+    on = name: state name "on";
+
+    off = name: state name "off";
+
   };
 in
 

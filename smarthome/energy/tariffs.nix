@@ -30,6 +30,17 @@
             state = "{{ ( states('sensor.electricity_cost_offpeak_kwh_energycomponent') | float ) + (1.44160 / 100) + (6.87 / 100) + (1.26 / 100) + (0.2942 / 100) + (2.233 / 100) + (0.344 / 100) }}";      
           }
         ];
+        binary_sensor = [
+          {
+            name = "electricity_is_offpeak";
+            state = ''
+              {% set day = now().weekday() %}
+              {% set hour = now().hour %}
+              {% set is_weekend = day >= 5 %}
+              {{ is_weekend or not(7 <= hour < 22) }}
+            '';
+          }
+        ];
       }
     ];
 

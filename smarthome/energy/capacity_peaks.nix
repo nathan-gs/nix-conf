@@ -47,6 +47,36 @@
             unit_of_measurement = "kW";
           }
         ];
+        binary_sensor = [
+          {
+            name = "electricity_high_usage";
+            state = ''
+              {% set is_high = false %}
+              {# vaatwas #}
+              {% set dishwasher_remaining_time = states('sensor.dishwasher_remaining_time') | int(0) %}
+              {% set is_dishwasher_on = states('binary_sensor.dishwasher_status') | bool(false) %}
+              {% if is_dishwasher_on and dishwasher_remaining_time > 45 %}
+                {% set is_high = true %}
+              {% endif %}
+              {# Wasmachine #}
+              {% set wasmachine_cycle = states('sensor.aeg_wasmachine_wm1_cyclephase_2') | string %}
+              {% if wasmachine_cycle == "Washing" %}
+                {% set is_high = true %}
+              {% endif %}
+              {# oven #}
+              {% set oven_on = states('sensor.floor0_keuken_metering_plug_oven_power') | int(0) > 20 %}
+              {% if oven_on %}
+                {% set is_high = true %}
+              {% endif %}
+              {# car charger #}
+              {% set car_charger_on = states('sensor.car_charger_power') | int(0) > 20 %}
+              {% if car_charger_on %}
+                {% set is_high = true %}
+              {% endif %}
+              {{ is_high }}
+            '';
+          }
+        ];
       }
       {
         binary_sensor = [
