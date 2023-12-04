@@ -28,7 +28,6 @@ map
       name = "kerstboom";
       ieee = "0x50325ffffe5ebbec";
       floor = "floor0";
-      disabled = true;
     }
 
   ]
