@@ -61,24 +61,17 @@ in
           conditionsOn = [
             (ha.condition.on "input_boolean.floor0_bureau_in_use")
             { 
-              "or" = [
-                {
-                  condition = "sun";
-                  before = "sunrise";
-                  offset = "00:30:00";
-                }
-                {
-                  condition = "sun";
-                  after = "sunset";
-                  offset = "-00:30:00";
-                }
-              ];
+              condition = "sun";
+              after = "sunset";
+              after_offset = "-00:30:00";
+              before = "sunrise";
+              before_offset = "00:30:00";
             }
           ];
           triggersOff = [
             {
               platform = "sun";
-              before = "sunrise";
+              event = "sunrise";
               offset = "00:30:00";
             }
             (ha.trigger.off_for "input_boolean.floor0_bureau_in_use" "00:01:00")
