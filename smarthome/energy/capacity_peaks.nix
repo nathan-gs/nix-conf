@@ -55,7 +55,7 @@
               {# vaatwas #}
               {% set dishwasher_remaining_time = states('sensor.dishwasher_remaining_time') | int(0) %}
               {% set is_dishwasher_on = states('binary_sensor.dishwasher_status') | bool(false) %}
-              {% if is_dishwasher_on and dishwasher_remaining_time > 45 %}
+              {% if is_dishwasher_on and dishwasher_remaining_time > 75 %}
                 {% set is_high = true %}
               {% endif %}
               {# Wasmachine #}
