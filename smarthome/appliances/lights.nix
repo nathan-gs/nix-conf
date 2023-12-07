@@ -48,82 +48,43 @@ in
           entities = [ "switch.floor0_living_light_plug_kattenlamp" "light.floor0_living_light_bollamp" "light.floor0_living_light_booglamp" ];
         })
         ++
-        [
-          # NDESK Light
-          {
-            id = "floor0_bureau_lights_on_before_sunrise";
-            alias = "floor0_bureau_lights_on_before_sunrise";
-            trigger = [
-              {
-                platform = "state";
-                entity_id = [ "input_boolean.floor0_bureau_in_use" ];
-                to = "on";
-              }
-            ];
-            condition = [
-              {
-                condition = "sun";
-                before = "sunrise";
-              }
-            ];
-            action = [
-              {
-                service = "light.turn_on";
-                target.entity_id = "light.floor0_bureau_light_desk";
-              }
-            ];
-            mode = "single";
-          }
-          {
-            id = "floor0_bureau_lights_on_at_sunset";
-            alias = "floor0_bureau_lights_on_at_sunset";
-            trigger = [
-              {
-                platform = "sun";
-                event = "sunset";
-                offset = "-00:30:00";
-              }
-            ];
-            condition = [
-              {
-                condition = "state";
-                entity_id = [ "input_boolean.floor0_bureau_in_use" ];
-                state = "on";
-              }
-            ];
-            action = [
-              {
-                service = "light.turn_on";
-                target.entity_id = "light.floor0_bureau_light_desk";
-              }
-            ];
-            mode = "single";
-          }
-          {
-            id = "floor0_bureau_lights_off";
-            alias = "floor0_bureau_lights_off";
-            trigger = [
-              {
-                platform = "sun";
-                event = "sunrise";
-                offset = "00:30:00";
-              }
-              {
-                platform = "state";
-                entity_id = [ "input_boolean.floor0_bureau_in_use" ];
-                to = "off";
-              }
-            ];
-            condition = [ ];
-            action = [
-              {
-                service = "light.turn_off";
-                target.entity_id = "light.floor0_bureau_light_desk";
-              }
-            ];
-            mode = "single";
-          }
-        ];
+        (ha.automationOnOff "floor0/bureau/lights"
+        {
+          triggersOn = [
+            (ha.trigger.on "input_boolean.floor0_bureau_in_use")
+            {
+              platform = "sun";
+              event = "sunset";
+              offset = "-00:30:00";
+            }
+          ];
+          conditionsOn = [
+            (ha.condition.on "input_boolean.floor0_bureau_in_use")
+            { 
+              "or" = [
+                {
+                  condition = "sun";
+                  before = "sunrise";
+                  offset = "00:30:00";
+                }
+                {
+                  condition = "sun";
+                  after = "sunset";
+                  offset = "-00:30:00";
+                }
+              ];
+            }
+          ];
+          triggersOff = [
+            {
+              platform = "sun";
+              before = "sunrise";
+              offset = "00:30:00";
+            }
+            (ha.trigger.off_for "input_boolean.floor0_bureau_in_use" "00:01:00")
+          ];
+          entities = [ "light.floor0_bureau_light_desk" ];
+        });
 
   };
 }
