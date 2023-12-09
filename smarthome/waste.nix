@@ -1,4 +1,4 @@
-{ config, lib, pkgs, ... }:
+{ config, lib, pkgs, ha, ... }:
 
 {
   services.home-assistant.config = {

@@ -1,6 +1,8 @@
 { config, pkgs, lib, ... }:
 {
 
+  _module.args.ha = import ../lib/ha.nix { lib = lib; };
+
   networking.firewall.allowedTCPPorts = [ 1400 ];
 
   services.nginx.virtualHosts."ha.nathan.gs" = {

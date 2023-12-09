@@ -1,7 +1,6 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, ha, ... }:
 
 let
-  ha = import ../../helpers/ha.nix { lib = lib; };
   carName = config.secrets.nathan-car.name;
   consumptionPower = "2010";
 

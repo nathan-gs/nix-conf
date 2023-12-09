@@ -1,8 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, ha, ... }:
 
 let
   rooms = import ../rooms.nix;
-  ha = import ../helpers/ha.nix { lib = lib; };
 
   automateRoomUse = { floor, room, triggers, action, extraActions ? [ ] }:
     {

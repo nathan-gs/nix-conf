@@ -1,7 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, ha, ... }:
 let
-  ha = import ../helpers/ha.nix { lib = lib; };
-
+  #ha = import ./lib/ha.nix { lib = lib; };
+  #ha = lib.ha;
 in
 {
 

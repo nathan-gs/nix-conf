@@ -1,4 +1,4 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, ha, ... }:
 
 let
 
@@ -7,7 +7,6 @@ let
   roomsDiffWanted = map (v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heated;
 
   autoWantedHeader = import ./temperature_sets.nix;
-  ha = import ../helpers/ha.nix { lib = lib; };
 
 in
 {

@@ -1,9 +1,4 @@
-{ config, pkgs, lib, ... }:
-
-let
-  ha = import ../../helpers/ha.nix { lib = lib; };
-
-in
+{ config, pkgs, lib, ha, ... }:
 {
 
   services.home-assistant.config = {

@@ -1,8 +1,7 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, ha, ... }:
 
 let
   rtv = import ../devices/rtv.nix;
-  ha = import ../helpers/ha.nix { lib = lib; };
 
   sensorTemperature = ha.sensor.temperature;
 

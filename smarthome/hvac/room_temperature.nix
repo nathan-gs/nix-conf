@@ -1,9 +1,8 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, lib, ha, ... }:
 
 let
   rooms = import ../rooms.nix;
   temperatureHeader = import ./temperature_sets.nix;
-  ha = import ../helpers/ha.nix {lib = lib;};
 
   heatedRooms = rooms.heated;
 
