@@ -1,8 +1,5 @@
 { config, pkgs, lib, ha, ... }:
-let
-  #ha = import ./lib/ha.nix { lib = lib; };
-  #ha = lib.ha;
-in
+
 {
 
   services.home-assistant.config = {

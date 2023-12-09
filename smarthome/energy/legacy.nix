@@ -311,9 +311,26 @@ let
 
 in
 {
-  template = gas.template ++ electricity.template ++ degreeDays.template;
-  sensor = electricity.sensor ++ degreeDays.sensor;
-  utility_meter = gas.utility_meter // electricity.utility_meter;
-  customize = electricity.customize;
-  automations = [] ++ electricity.automations;
+
+  services.home-assistant = {
+    config."automation manual" = []
+      ++ electricity.automations;
+
+    config.homeassistant.customize = {} 
+      // electricity.customize;
+
+    config.sensor = []
+      ++ electricity.sensor
+       ++ degreeDays.sensor;
+
+    config.utility_meter = { } 
+      //  gas.utility_meter 
+      // electricity.utility_meter;
+
+    config.template = [] 
+      ++ gas.template 
+      ++ electricity.template 
+      ++ degreeDays.template;
+
+  };
 }

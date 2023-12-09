@@ -1,6 +1,10 @@
 { config, lib, pkgs, ha, ... }:
 
 {
+  imports = [
+    ./rooms.nix
+  ];
+
   services.home-assistant.config = {
     proximity = {
       home = {

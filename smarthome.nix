@@ -1,7 +1,7 @@
 { config, pkgs, lib, ... }:
 {
   imports = [
-    ./smarthome/main.nix
+    ./smarthome
     ./services/mosquitto.nix
     ./services/ebusd.nix
     ./services/zigbee2mqtt.nix

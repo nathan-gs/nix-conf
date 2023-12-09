@@ -2,7 +2,7 @@
 
 let
 
-  devices = import ./devices/all.nix;
+  devices = import ./devices;
   
   zigbeeDevices = {} //
     builtins.listToAttrs ( 
