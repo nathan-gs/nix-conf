@@ -68,6 +68,16 @@
               {% if oven_on %}
                 {% set is_high = true %}
               {% endif %}
+              {# Airfryer #}
+              {% set airfryer_on = states('sensor.floor0_keuken_metering_plug_airfryer_power') | int(0) > 20 %}
+              {% if airfryer_on %}
+                {% set is_high = true %}
+              {% endif %}
+              {# Bathroom Heating #}
+              {% set bathroom_heating_on = states('switch.floor1_badkamer_metering_plug_verwarming') | bool(false) %}
+              {% if bathroom_heating_on %}
+                {% set is_high = true %}
+              {% endif %}
               {# car charger #}
               {% set car_charger_on = states('sensor.car_charger_power') | int(0) > 20 %}
               {% if car_charger_on %}

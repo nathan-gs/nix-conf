@@ -82,4 +82,10 @@ map
       ieee = "0xa4c13859f1a8fc3d";
       floor = "floor1";
     }
+    {
+      zone = "keuken";
+      name = "airfryer";
+      ieee = "0xa4c13863b0b63bf6";
+      floor = "floor0";
+    }
   ]
