@@ -1,6 +1,8 @@
 { lib, ... }:
 
 let
+
+  genId = id: (lib.strings.toLower (builtins.replaceStrings [ "/" "." " " ] [ "_" "_" "_" ] id));
   
   sensor = {
     temperature = name: value: {
@@ -19,10 +21,20 @@ let
       device_class = "battery";
       unit_of_measurement = "%";
     };
+
+    battery_from_3v_voltage_attr = name: source: {
+      name = name;
+      unique_id = genId name;
+      state = ''
+        {{ (((state_attr('${source}', 'voltage') | int(0) * 2) / 3000) * 100) | round(0) }}
+      '';
+      device_class = "battery";
+      unit_of_measurement = "%";
+    };
   };
 
   automation = name: { triggers ? [ ], conditions ? [ ], actions ? [ ], mode ? "single" }: {
-    id = builtins.replaceStrings [ "/" "." ] [ "_" "_" ] name;
+    id = genId name;
     alias = name;
     trigger = triggers;
     condition = conditions;

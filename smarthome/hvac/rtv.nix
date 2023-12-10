@@ -3,8 +3,6 @@
 let
   rtv = import ../devices/rtv.nix;
 
-  sensorTemperature = ha.sensor.temperature;
-
 in
 {
 
@@ -14,12 +12,12 @@ in
       {
         # Let's boost the RTV temperature to raise the room temperature quicker
         sensor = map
-          (v: sensorTemperature
-            "${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted"
+          (v: ha.sensor.temperature
+            "${v.floor}/${v.zone}/${v.type}/${v.name} temperature_wanted"
             ''
               {% set room_temp = states('sensor.${v.floor}_${v.zone}_temperature') | float(15.7) %}
               {% set target_temp = states('sensor.${v.floor}_${v.zone}_temperature_auto_wanted') | float(15.7) %}
-              {% set need_heating = room_temp < target_temp %}
+              {% set need_heating = (room_temp + 0.2) < target_temp %}
               {% set adjustment = 0 %}
               {% if need_heating %}
                 {% set adjustment = 2 %}
@@ -31,8 +29,8 @@ in
       }
       {
         sensor = map
-          (v: (ha.sensor.battery_from_attr
-            "${v.floor}_${v.zone}_${v.type}_${v.name}_battery"
+          (v: (ha.sensor.battery_from_3v_voltage_attr
+            "${v.floor}/${v.zone}/${v.type}/${v.name} battery"
             "climate.${v.floor}_${v.zone}_${v.type}_${v.name}"
           ))
           rtv;
