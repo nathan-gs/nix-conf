@@ -31,8 +31,13 @@ in
         binary_sensor = [
           {
             name = "floor0_bureau_scherm_in_use";
-            state = ''{{ states('sensor.floor0_bureau_metering_plug_scherm_power') |float(0) > 12 }}'';
+            state = ''
+              {% set scherm_in_use = states('sensor.floor0_bureau_metering_plug_scherm_power') |float(0) > 12 %}
+              {% set ndesk_in_use = states('binary_sensor.ndesk') | bool(false) %}
+              {{ scherm_in_use or ndesk_in_use }}
+            '';
             device_class = "occupancy";
+            delay_off = "00:01:00";
           }
           {
             name = "floor1_nikolai_scherm_in_use";
@@ -59,10 +64,12 @@ in
               {% endif %}
             '';
             device_class = "occupancy";
+            delay_off = "00:01:00";
           }
           {
             name = "floor0_living_appletv_woonkamer";
             state = ''{{ states('sensor.living_audio_input_format') in ['DTS 5.1'] }}'';
+            delay_off = "00:05:00";
           }
         ];
       }
