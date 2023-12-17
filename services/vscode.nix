@@ -14,7 +14,7 @@
     };
     extraArguments = [
       "--log=info"
-    ]
+    ];
   };
 
   services.nginx.virtualHosts."vscode.nathan.gs" = {
