@@ -7,11 +7,14 @@
     user = "nathan";
     userDataDir = "/home/nathan/.vscode_server";
     host = "127.0.0.1";
-    extraPackages = [ pkgs.sqlite pkgs.nodejs pkgs.nixpkgs-fmt pkgs.nixd ];
+    extraPackages = [ pkgs.sqlite pkgs.nodejs pkgs.nixpkgs-fmt pkgs.nixd pkgs.git ];
     withoutConnectionToken = true;
     extraEnvironment = {
       SSH_AUTH_SOCK = "/home/nathan/.ssh/ssh_auth_sock";
     };
+    extraArguments = [
+      "--log=info"
+    ]
   };
 
   services.nginx.virtualHosts."vscode.nathan.gs" = {
@@ -32,4 +35,6 @@
       '';
     };
   };
+
+  networking.firewall.allowedTCPPorts = [ 4000 ];
 }
