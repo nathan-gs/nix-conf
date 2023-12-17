@@ -30,7 +30,7 @@ in
       {
         binary_sensor = [
           {
-            name = "floor0_bureau_scherm_in_use";
+            name = "floor0/bureau/scherm_in_use";
             state = ''
               {% set scherm_in_use = states('sensor.floor0_bureau_metering_plug_scherm_power') |float(0) > 12 %}
               {% set ndesk_in_use = states('binary_sensor.ndesk') | bool(false) %}
@@ -40,12 +40,12 @@ in
             delay_off = "00:01:00";
           }
           {
-            name = "floor1_nikolai_scherm_in_use";
+            name = "floor1/nikolai/scherm_in_use";
             state = ''{{ states('sensor.floor1_nikolai_metering_plug_scherm_power') |float(0) > 10 }}'';
             device_class = "occupancy";
           }
           {
-            name = "floor0_living_in_use_by_flaptop";
+            name = "floor0/living/in_use_by_flaptop";
             state = ''
               {% set flaptop_on = states('binary_sensor.flaptop') |bool(false) %}
               {% set ndesk_on = states('binary_sensor.ndesk') | bool(false) %}
@@ -55,7 +55,7 @@ in
               {% set bureau_in_use = states('binary_sensor.floor0_bureau_scherm_in_use') | bool(false) %}
               {% if flaptop_on and nikolai_not_in_use %}
                 {% if bureau_in_use and (ndesk_on or nstudio_on) %}
-                  false
+                  true
                 {% else %}
                   {{ is_anyone_home }}
                 {% endif %}
@@ -77,30 +77,39 @@ in
 
     input_boolean = {
       floor0_bureau_in_use = {
+        name = "floor0/bureau/in_use";
         icon = "mdi:desk";
       };
       floor0_living_in_use = {
+        name = "floor0/living/in_use";
         icon = "mdi:sofa";
       };
       floor0_keuken_in_use = {
+        name = "floor0/keuken/in_use";
         icon = "mdi:countertop";
       };
       floor0_wc_in_use = {
+        name = "floor0/wc/in_use";
         icon = "mdi:toilet";
       };
       floor1_badkamer_in_use = {
+        name = "floor1/badkamer/in_use";
         icon = "mdi:shower-head";
       };
       floor1_nikolai_in_use = {
+        name = "floor1/nikolai/in_use";
         icon = "mdi:bed";
       };
       floor1_morgane_in_use = {
+        name = "floor1/morgane/in_use";
         icon = "mdi:bed";
       };
       floor1_fen_in_use = {
+        name = "floor1/fen/in_use";
         icon = "mdi:bed-double";
       };
       basement_basement_in_use = {
+        name = "basement/basement/in_use";
         icon = "mdi:home-floor-b";
       };
     };
