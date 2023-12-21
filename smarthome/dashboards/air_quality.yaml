@@ -1,0 +1,137 @@
+views:
+  - title: Home
+    cards:
+      - type: vertical-stack
+        cards:
+          - square: true
+            type: grid
+            cards:
+              - type: gauge
+                entity: sensor.irceline_sxw_air_quality_pm25
+                severity:
+                  green: 0
+                  yellow: 10
+                  red: 20
+                name: SXW
+                max: 50
+                needle: true
+              - type: gauge
+                entity: sensor.system_wtw_air_quality_inlet_pm25
+                severity:
+                  green: 0
+                  yellow: 10
+                  red: 20
+                name: Inlet
+                max: 50
+                needle: true
+              - type: gauge
+                entity: sensor.system_wtw_air_quality_to_house_pm25
+                severity:
+                  green: 0
+                  yellow: 5
+                  red: 10
+                name: To House
+                needle: true
+                max: 50
+            columns: 3
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - entity: sensor.system_wtw_air_quality_inlet_pm25
+                name: inlet
+              - entity: sensor.irceline_sxw_air_quality_pm25
+                name: SXW
+              - entity: sensor.irceline_evergem_air_quality_pm25
+                name: Evergem
+              - entity: sensor.irceline_rieme_air_quality_pm25
+                name: Rieme
+              - entity: sensor.irceline_zelzate_air_quality_pm25
+                name: Zelzate
+            stat_types:
+              - mean
+            days_to_show: 7
+            hide_legend: true
+            title: PM2.5
+          - type: iframe
+            url: >-
+              https://geo.irceline.be/www/rioifdm_nrt.html?pol=pm25&lan=en&ex=24hmean
+            aspect_ratio: 70%
+      - type: vertical-stack
+        cards:
+          - square: true
+            type: grid
+            cards:
+              - type: gauge
+                entity: sensor.irceline_sxw_air_quality_no2
+                severity:
+                  green: 0
+                  yellow: 16
+                  red: 26
+                name: SXW
+                max: 75
+                needle: true
+            columns: 3
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - entity: sensor.irceline_sxw_air_quality_no2
+                name: SXW
+              - entity: sensor.irceline_evergem_air_quality_no2
+                name: Evergem
+              - entity: sensor.irceline_zelzate_air_quality_no2
+                name: Zelzate
+              - entity: sensor.irceline_wachtebeke_air_quality_no2
+                name: Wachtebeke
+            stat_types:
+              - mean
+            days_to_show: 7
+            title: NO2
+            hide_legend: true
+          - type: iframe
+            url: >-
+              https://geo.irceline.be/www/rioifdm_nrt.html?pol=no2&lan=en&ex=24hmean
+            aspect_ratio: 70%
+      - type: vertical-stack
+        cards:
+          - square: true
+            type: grid
+            cards:
+              - type: gauge
+                entity: sensor.irceline_sxw_air_quality_ozone
+                severity:
+                  green: 0
+                  yellow: 66
+                  red: 151
+                name: SXW
+                max: 250
+                needle: true
+            columns: 3
+          - chart_type: line
+            period: hour
+            type: statistics-graph
+            entities:
+              - entity: sensor.irceline_sxw_air_quality_ozone
+                name: SXW
+            stat_types:
+              - mean
+            days_to_show: 7
+            hide_legend: true
+            title: Ozone
+          - type: iframe
+            url: https://geo.irceline.be/www/rioifdm_nrt.html?pol=o3&lan=en
+            aspect_ratio: 70%
+      - type: vertical-stack
+        cards:
+          - type: iframe
+            url: >-
+              https://www.irceline.be/tables/forecast/model/belaqi.php?lang=en&format=html&fdays=2
+            aspect_ratio: 65%
+            title: Bel AQI
+      - type: vertical-stack
+        cards:
+          - type: iframe
+            url: https://geo.irceline.be/www/bc_24hmean_EN.html
+            aspect_ratio: 70%
+            title: Black Carbon
