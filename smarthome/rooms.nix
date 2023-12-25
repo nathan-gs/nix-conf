@@ -19,4 +19,12 @@ in
     "floor1_morgane"
     "floor1_fen"
   ];
+
+  heatedLeading = [
+    "floor0_living"
+    "floor0_bureau"
+    "floor1_nikolai"
+    "floor1_morgane"
+    "floor1_fen"
+  ];
 }

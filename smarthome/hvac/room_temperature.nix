@@ -75,9 +75,9 @@ let
   templateSensorTemperature = ha.sensor.temperature;
 
   roomTempFunction = { floor, room, sensor1, sensor2 ? null, adjustment ? 0 }: {
-    name = "${floor}_${room}_temperature";
+    name = "${floor}/${room}/temperature";
     state = ''
-      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} | float(0) %}      
+      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} | float(unavailable) %}      
       {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
       {{ sensor1 + ${toString adjustment} }}
     '';
@@ -94,7 +94,7 @@ in
       {
         sensor = [
           (
-            templateSensorTemperature "floor1_nikolai_temperature_auto_wanted" (
+            templateSensorTemperature "floor1/nikolai/temperature_auto_wanted" (
               temperatureSets
                 (windowClosed
                   "binary_sensor.floor1_nikolai_window_na_contact"
@@ -108,7 +108,7 @@ in
             )
           )
           (
-            templateSensorTemperature "floor1_morgane_temperature_auto_wanted" (
+            templateSensorTemperature "floor1/morgane/temperature_auto_wanted" (
               temperatureSets
                 (windowClosed
                   "binary_sensor.floor1_morgane_window_na_contact"
@@ -120,7 +120,7 @@ in
             )
           )
           (
-            templateSensorTemperature "floor1_fen_temperature_auto_wanted" (
+            templateSensorTemperature "floor1/fen/temperature_auto_wanted" (
               temperatureSets
                 (windowClosed
                   "binary_sensor.floor1_fen_window_na_contact"
@@ -146,7 +146,7 @@ in
             )
           )
           (
-            templateSensorTemperature "floor1_badkamer_temperature_auto_wanted" (
+            templateSensorTemperature "floor1/badkamer/temperature_auto_wanted" (
               temperatureSets
                 (windowClosed
                   "binary_sensor.floor1_badkamer_window_na_contact"
@@ -175,10 +175,10 @@ in
             )
           )
           (
-            templateSensorTemperature "floor0_keuken_temperature_auto_wanted" (temperatureSets "{{ temperature_eco }}")
+            templateSensorTemperature "floor0/keuken/temperature_auto_wanted" (temperatureSets "{{ temperature_eco }}")
           )
           (
-            templateSensorTemperature "floor0_bureau_temperature_auto_wanted" (
+            templateSensorTemperature "floor0/bureau/temperature_auto_wanted" (
               temperatureSets
                 (inUse
                   "input_boolean.floor0_bureau_in_use"
@@ -202,7 +202,7 @@ in
             )
           )
           (
-            templateSensorTemperature "floor0_living_temperature_auto_wanted" (
+            templateSensorTemperature "floor0/living/temperature_auto_wanted" (
               temperatureSets
                 (inUse
                   "input_boolean.floor0_living_in_use"

@@ -4,7 +4,7 @@ let
 
   rooms = import ../rooms.nix;
 
-  roomsDiffWanted = map (v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heated;
+  roomsDiffWanted = map (v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heatedLeading;
 
   autoWantedHeader = import ./temperature_sets.nix;
 
