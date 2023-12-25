@@ -1,13 +1,23 @@
-{ stdenv, pkgs, fetchgit }:
+{ stdenv, pkgs, fetchgit, buildHomeAssistantComponent, python311Packages, buildPythonPackage }:
 
-stdenv.mkDerivation rec {
-  name = "ha-indego";
+buildHomeAssistantComponent rec {
+
+  owner = "jm-73";
+  domain = "indego";
+  version = "5.6.1";
+
   src = fetchgit {
     url = "https://github.com/jm-73/Indego";
     rev = "0c543a3aae86eeb4019828c123b0f7ad1de954c6";
     sha256 = "sha256-1eZ3oQpzmFB64Qi0ohSBvYsHmcQfll0+rP9+BKMiBm8=";
   };
 
-  
-  installPhase = ''cp -a custom_components/indego $out'';
+  propagatedBuildInputs = [
+    python311Packages.requests
+    python311Packages.aiohttp
+    python311Packages.pytz
+    (python311Packages.callPackage ../../python/pyindego.nix {}) 
+  ];
+  dontBuild = true;
+  #installPhase = ''cp -a custom_components/indego $out'';
 }

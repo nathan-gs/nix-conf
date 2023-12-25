@@ -1,16 +1,20 @@
-{ lib, stdenv, pkgs, fetchFromGitHub }:
+{ lib, stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent }:
 
-stdenv.mkDerivation rec {
-  name = "ha-hon";
+buildHomeAssistantComponent rec {
+  owner = "gvigroux";
+  domain = "hon";
+  version = "0.6.7";
+
   src = fetchFromGitHub {
     owner = "gvigroux";
     repo = "hon";
-    rev = "0.6.7";
+    rev = version;
     sha256 = "sha256-ZLrSp9LGaznpMRrHB8JKMLLFGlcRgh0szG1WDA5GPH4=";
   };
 
   
-  installPhase = ''cp -a custom_components/hon $out'';
+  #installPhase = ''cp -a custom_components/hon $out'';
+  dontBuild = true;
 
   meta = with lib; {
    description = "Home Assistant component supporting hOn cloud.";

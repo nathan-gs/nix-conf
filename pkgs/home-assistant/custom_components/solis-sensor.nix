@@ -1,11 +1,14 @@
-{ stdenv, pkgs, fetchFromGitHub }:
+{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent }:
 
-stdenv.mkDerivation rec {
-  name = "ha-solis-sensor";
+buildHomeAssistantComponent rec {
+  owner = "hultenvp";  
+  domain = "solis";
+  version = "3.5.0";
+
   src = fetchFromGitHub {
     owner = "hultenvp";
     repo = "solis-sensor";
-    rev = "v3.5.0";
+    rev = "v${version}";
     sha256 = "sha256-YtTwmjT3SHhXtsvglZfeL1kPwBdoEySfQHs4+S7ExJY=";
   };
 

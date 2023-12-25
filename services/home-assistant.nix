@@ -114,8 +114,6 @@
     ];
 
     extraPackages = ps: with ps; [
-      (callPackage ../pkgs/python/pyelectroluxconnect.nix {})
-      (callPackage ../pkgs/python/pyindego.nix {})
       aiohomekit
       aiohttp
       bellows
@@ -132,6 +130,15 @@
       zigpy-xbee
       zigpy-zigate
       zigpy-znp
+    ];
+
+    customComponents = [
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/solis-sensor.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})
     ];
   };
 
@@ -169,17 +176,6 @@
 
     startAt = "*-*-* 03:42:00";
   };
-
-  
-  system.activationScripts.ha-custom_components.text = ''
-    mkdir -p "/var/lib/hass/custom_components"
-    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/solis-sensor.nix {})}" "/var/lib/hass/custom_components/solis"
-    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})}" "/var/lib/hass/custom_components/hon"
-    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})}" "/var/lib/hass/custom_components/electrolux_status"
-    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {})}" "/var/lib/hass/custom_components/indego"
-    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})}" "/var/lib/hass/custom_components/powercalc"
-    ln -snf "${(pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})}" "/var/lib/hass/custom_components/afvalbeheer"
-  '';  
 
   # needs copy, HA does not follow symlinks
   # https://github.com/home-assistant/core/pull/42295

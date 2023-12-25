@@ -1,7 +1,5 @@
 { lib
 , buildPythonPackage
-, requests
-, beautifulsoup4
 , fetchFromGitHub
 }:
 
@@ -16,7 +14,7 @@ buildPythonPackage rec {
     sha256 = "sha256-5eTHJsE5Jof5WSZFkf8/1UQafpgxpGTPuDWQMENgAG0=";
   };
 
-  propagatedBuildInputs = [ requests beautifulsoup4 ];
+  #propagatedBuildInputs = [ requests beautifulsoup4 ];
 
   doCheck = false;
 

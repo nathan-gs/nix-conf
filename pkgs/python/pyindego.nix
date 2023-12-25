@@ -1,8 +1,5 @@
 { lib
 , buildPythonPackage
-, requests
-, aiohttp
-, pytz
 , fetchgit
 }:
 
@@ -16,7 +13,7 @@ buildPythonPackage rec {
     sha256 = "sha256-AF20MdEV9gCfbJe+huWczA0yK24zFaVHpuyqb09Ccrk=";
   };
 
-  propagatedBuildInputs = [ requests aiohttp pytz ];
+  #propagatedBuildInputs = [ requests aiohttp pytz ];
 
   doCheck = false;
 

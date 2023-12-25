@@ -1,14 +1,16 @@
-{ stdenv, pkgs, fetchzip }:
+{ stdenv, pkgs, fetchzip, buildHomeAssistantComponent }:
 
-stdenv.mkDerivation rec {
+buildHomeAssistantComponent rec {
 
-  name = "powercalc";
-  version = "v1.9.8";
+  owner = "bramstroker";
+  domain = "powercalc";
+  version = "1.9.8";
   src = fetchzip {
-    url = "https://github.com/bramstroker/homeassistant-powercalc/releases/download/${version}/powercalc.zip";
+    url = "https://github.com/bramstroker/homeassistant-powercalc/releases/download/v${version}/powercalc.zip";
     hash = "sha256-OKEcGOptIp1CZd4lYYxnnJEkUAtvmei5OnKeywYiiLI=";
     stripRoot = false;
   };
   
-  installPhase = ''cp -a $src $out'';
+  #installPhase = ''cp -a $src $out'';
+  dontBuild = true;
 }
