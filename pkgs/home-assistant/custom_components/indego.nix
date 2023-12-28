@@ -1,4 +1,4 @@
-{ stdenv, pkgs, fetchgit, buildHomeAssistantComponent, python311Packages, buildPythonPackage }:
+{ stdenv, pkgs, fetchgit, buildHomeAssistantComponent, pyindego }:
 
 buildHomeAssistantComponent rec {
 
@@ -13,11 +13,7 @@ buildHomeAssistantComponent rec {
   };
 
   propagatedBuildInputs = [
-    python311Packages.requests
-    python311Packages.aiohttp
-    python311Packages.pytz
-    (python311Packages.callPackage ../../python/pyindego.nix {}) 
+    pyindego    
   ];
-  dontBuild = true;
-  #installPhase = ''cp -a custom_components/indego $out'';
+
 }

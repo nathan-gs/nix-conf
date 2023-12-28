@@ -12,9 +12,6 @@ buildHomeAssistantComponent rec {
     sha256 = "sha256-ZLrSp9LGaznpMRrHB8JKMLLFGlcRgh0szG1WDA5GPH4=";
   };
 
-  
-  #installPhase = ''cp -a custom_components/hon $out'';
-  dontBuild = true;
 
   meta = with lib; {
    description = "Home Assistant component supporting hOn cloud.";

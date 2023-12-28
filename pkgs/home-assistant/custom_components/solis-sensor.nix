@@ -11,7 +11,4 @@ buildHomeAssistantComponent rec {
     rev = "v${version}";
     sha256 = "sha256-YtTwmjT3SHhXtsvglZfeL1kPwBdoEySfQHs4+S7ExJY=";
   };
-
-  
-  installPhase = ''cp -a custom_components/solis $out'';
 }

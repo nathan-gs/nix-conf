@@ -1,7 +1,4 @@
-{ lib
-, buildPythonPackage
-, fetchFromGitHub
-}:
+{ stdenv, pkgs, lib, buildPythonPackage, fetchFromGitHub }:
 
 buildPythonPackage rec {
   pname = "pyelectroluxconnect";
@@ -14,7 +11,10 @@ buildPythonPackage rec {
     sha256 = "sha256-5eTHJsE5Jof5WSZFkf8/1UQafpgxpGTPuDWQMENgAG0=";
   };
 
-  #propagatedBuildInputs = [ requests beautifulsoup4 ];
+  propagatedBuildInputs = [
+    pkgs.python311Packages.requests
+    pkgs.python311Packages.beautifulsoup4
+  ];
 
   doCheck = false;
 

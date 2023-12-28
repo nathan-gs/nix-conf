@@ -13,8 +13,9 @@ buildHomeAssistantComponent  rec {
     sha256 = "sha256-l4v3QHiGXdWxt3bh6oIBlJYwDxpi3h2K1u0EmpA5oao=";
   };
 
+  propagatedBuildInputs = [
+    pkgs.python311Packages.rsa
+    pkgs.python311Packages.pycryptodome
+  ];
   
-  #installPhase = ''cp -a custom_components/afvalbeheer $out'';
-
-  dontBuild = true;
 }

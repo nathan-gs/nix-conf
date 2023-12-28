@@ -1,4 +1,4 @@
-{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent, python311Packages, buildPythonPackage }:
+{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent, pyelectroluxconnect }:
 
 buildHomeAssistantComponent rec {
 
@@ -14,12 +14,7 @@ buildHomeAssistantComponent rec {
   };
 
   propagatedBuildInputs = [
-    python311Packages.requests
-    python311Packages.beautifulsoup4
-    (python311Packages.callPackage ../../python/pyelectroluxconnect.nix {}) 
+    pyelectroluxconnect
   ];
 
-  
-  #installPhase = ''cp -a custom_components/electrolux_status $out'';
-  dontBuild = true;
 }

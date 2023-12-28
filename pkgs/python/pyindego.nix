@@ -1,7 +1,4 @@
-{ lib
-, buildPythonPackage
-, fetchgit
-}:
+{ lib, buildPythonPackage, fetchgit, python311Packages }:
 
 buildPythonPackage rec {
   pname = "pyIndego";
@@ -9,11 +6,15 @@ buildPythonPackage rec {
 
   src = fetchgit {
     url = "https://github.com/jm-73/pyIndego";
-    rev = "cf45b9cfd7c2e56edfe5d3a8e2f2a6b0ad007c23";
-    sha256 = "sha256-AF20MdEV9gCfbJe+huWczA0yK24zFaVHpuyqb09Ccrk=";
+    rev = "f1aaae1d19898c9fa90989412880681ed46e50d2";
+    sha256 = "sha256-jwRwteBfvQVvmFdPt9dyosWV4hFhjyWEb/7nOEzWJHk=";
   };
 
-  #propagatedBuildInputs = [ requests aiohttp pytz ];
+  propagatedBuildInputs = [
+    python311Packages.requests
+    python311Packages.aiohttp
+    python311Packages.pytz
+  ];
 
   doCheck = false;
 
