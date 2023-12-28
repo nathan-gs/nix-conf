@@ -65,6 +65,12 @@ map
       floor = "system";
     }
     {
+      zone = "wtw";
+      name = "wtw";
+      ieee = "0xa4c1389e32839e0e";
+      floor = "system";
+    }
+    {
       zone = "doorbell";
       name = "doorbell";
       ieee = "0xa4c138fde84ee814";
