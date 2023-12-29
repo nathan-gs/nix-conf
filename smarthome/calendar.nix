@@ -8,10 +8,22 @@
         binary_sensor = [
           {
             name = "workday";
-            state = "{{ (now().weekday() < 5) }}";
+            state = ''
+              {% set not_holiday_at_home = states('input_boolean.holiday_at_home') | bool(false) == false %}
+              {% set workday = (now().weekday() < 5) %}
+              {{ not_holiday_at_home and workday }}
+            '';
           }
         ];
       }
     ];
+    
+    input_boolean = {
+      holiday_at_home = {
+        name = "holiday at home";
+        icon = "mdi:fireplace";
+      };
+    };
   };
+
 }
