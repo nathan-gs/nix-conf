@@ -28,6 +28,8 @@
             name = "electricity_delivery_power_15m";
             state = "{{ states('sensor.dsmr_consumption_quarter_hour_peak_electricity_average_delivered') | float(0) }}";
             unit_of_measurement = "kW";
+            state_class = "measurement";
+            device_class = "power";
           }
           {
             name = "electricity_delivery_power_daily_15m_max";
@@ -45,6 +47,26 @@
               {% endif %}
             '';
             unit_of_measurement = "kW";
+            state_class = "measurement";
+            device_class = "power";
+          }
+          {
+            name = "electricity_delivery_power_15m_estimated";
+            unit_of_measurement = "kW";
+            state = ''
+              {% set seconds_left = (15 - now().minute % 15) * 60 - now().second % 60 %}
+              {# workaround because power_15m reports the previous value for ~ 10s after the quarter #}
+              {% if seconds_left < (15 * 60 - 30)  %}
+                {% set power_15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {% else %}
+                {% set power_15m = 0 %}
+              {% endif %}
+              {% set current_power = (states('sensor.electricity_grid_consumed_power_avg_1m') | float(states('sensor.electricity_grid_consumed_power') | float(0))) / 1000 %}
+              {% set current_power_till_end = (current_power * seconds_left) / (3600 / 4) %}
+              {{ ((current_power_till_end + power_15m)) | round(2) }}
+            '';
+            state_class = "measurement";
+            device_class = "power";
           }
         ];
         binary_sensor = [
@@ -59,7 +81,7 @@
                 {% set is_high = true %}
               {% endif %}
               {# Wasmachine #}
-              {% set wasmachine_cycle = states('sensor.aeg_wasmachine_wm1_cyclephase_2') | string %}
+              {% set wasmachine_cycle = states('sensor.aeg_wasmachine_wm1_cyclephase') | string %}
               {% if wasmachine_cycle == "Washing" %}
                 {% set is_high = true %}
               {% endif %}
@@ -93,18 +115,29 @@
           {
             name = "electricity_delivery_power_max_threshold";
             state = ''
-              {% set electricity_delivery_power_15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {{ electricity_delivery_power_15m > 2.3 }}
+              {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+              {{ electricity_delivery_power_15m_estimated > 2.45 }}
             '';
           }
           {
             name = "electricity_delivery_power_near_max_threshold";
             state = ''
-              {% set electricity_delivery_power_15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {{ electricity_delivery_power_15m > 1.6 }}
+              {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+              {{ electricity_delivery_power_15m_estimated > 1.6 }}
             '';
           }
         ];
+      }
+    ];
+
+    sensor = [
+      {
+        platform = "statistics";
+        name = "electricity_grid_consumed_power_avg_1m";
+        entity_id = "sensor.electricity_grid_consumed_power";
+        state_characteristic = "average_linear";
+        max_age.minutes = 1;
+        sampling_size = 60;
       }
     ];
 
@@ -127,12 +160,14 @@
               title = "Electricity Peak";
               message = ''
                 {% set electricity_delivery_power_15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
+                {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
                 {% set currently_delivered = states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000 %}
                 {% set minutes_remaining = (now().minute // 15 + 1) * 15 - now().minute %}
-                Currently at capacity peak {{ electricity_delivery_power_15m }}kW with {{ minutes_remaining }}m remaining, current power {{ currently_delivered }}W
+                Currently at capacity peak {{ electricity_delivery_power_15m }}kW, estimated to be {{ electricity_delivery_power_15m_estimated }}kW with {{ minutes_remaining }}m remaining, current power {{ currently_delivered }}W
               '';
             };
           }
+          (ha.action.delay "00:01:00")
         ];
         mode = "single";
       }
