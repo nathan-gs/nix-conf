@@ -5,11 +5,11 @@
         "systems": "systems"
       },
       "locked": {
-        "lastModified": 1689068808,
-        "narHash": "sha256-6ixXo3wt24N/melDWjq70UuHQLxGV8jZvooRanIHXw0=",
+        "lastModified": 1701680307,
+        "narHash": "sha256-kAuep2h5ajznlPMD9rnQyffWG8EM/C73lejGofXvdM8=",
         "owner": "numtide",
         "repo": "flake-utils",
-        "rev": "919d646de7be200f3bf08cb76ae1f09402b6f9b4",
+        "rev": "4022d587cbbfd70fe950c1e2083a02621806a725",
         "type": "github"
       },
       "original": {
@@ -67,16 +67,16 @@
     },
     "nixpkgs_2": {
       "locked": {
-        "lastModified": 1690370995,
-        "narHash": "sha256-9z//23jGegLJrf3ITStLwVf715O39dq5u48Kr/XW14U=",
+        "lastModified": 1703467016,
+        "narHash": "sha256-/5A/dNPhbQx/Oa2d+Get174eNI3LERQ7u6WTWOlR1eQ=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "f3fbbc36b4e179a5985b9ab12624e9dfe7989341",
+        "rev": "d02d818f22c777aa4e854efc3242ec451e5d462a",
         "type": "github"
       },
       "original": {
         "id": "nixpkgs",
-        "ref": "nixos-23.05",
+        "ref": "nixos-23.11",
         "type": "indirect"
       }
     },
@@ -101,11 +101,11 @@
         "sbt": "sbt"
       },
       "locked": {
-        "lastModified": 1690815464,
-        "narHash": "sha256-TzJO4ztrcMzXwCOOIrXt3/+7uuK56NnNpOzQlYVJFJI=",
+        "lastModified": 1703868430,
+        "narHash": "sha256-vMN75FheERbeJOrXNmHG1MrO7x9+WhsajSQSRmxYQao=",
         "owner": "nathan-gs",
         "repo": "photoprism-slideshow",
-        "rev": "5c634209a77bc8fff3fbcf6764d97df7b4ffe008",
+        "rev": "d1ec01b1b0a5ddaade224236eb9fe9444d63868d",
         "type": "github"
       },
       "original": {
@@ -131,11 +131,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1675083208,
-        "narHash": "sha256-+sSFhSpV2jckr1qYlX/SaxQ6IdpagD6o4rru/3HAl0I=",
+        "lastModified": 1698464090,
+        "narHash": "sha256-Pnej7WZIPomYWg8f/CZ65sfW85IfIUjYhphMMg7/LT0=",
         "owner": "zaninime",
         "repo": "sbt-derivation",
-        "rev": "92d6d6d825e3f6ae5642d1cce8ff571c3368aaf7",
+        "rev": "6762cf2c31de50efd9ff905cbcc87239995a4ef9",
         "type": "github"
       },
       "original": {

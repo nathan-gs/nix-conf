@@ -71,6 +71,7 @@
   services.photoprism-slideshow = {
     enable = true;
     preload = true;
+    interval = 60;
   };
 
   systemd.services.photoprism.serviceConfig = {
