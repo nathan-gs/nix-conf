@@ -107,7 +107,7 @@ in
                   {% set is_home = states('device_tracker.${carName}_position') == "home" %}
                   {{ is_offpeak and not_high_usage and plugged_in and is_home }}
                 ''
-                "00:30:00"
+                "00:01:00"
             )];
             conditions = [
               (ha.condition.on "input_boolean.car_charger_charge_offpeak")
