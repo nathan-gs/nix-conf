@@ -1,0 +1,73 @@
+title: Maintenance
+views:
+  - title: Battery
+    path: battery
+    cards:
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: sensor.*_rtv_*_battery
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: sensor.*_window_*_battery
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: sensor.*_temperature_*_battery
+          exclude: []
+        sort:
+          method: state
+          numeric: true
+          reverse: false
+      - type: custom:auto-entities
+        card:
+          type: entities
+        filter:
+          include:
+            - entity_id: sensor.*_battery
+          exclude:
+            - entity_id: sensor.*_window_*_battery
+            - entity_id: sensor.*_rtv_*_battery
+            - entity_id: sensor.*_temperature_*_battery
+        sort:
+          method: state
+          numeric: true
+          reverse: false
+  - title: Entities
+    path: entities
+    badges: []
+    cards:
+      - type: entities
+        title: Unavailable Entities
+        state_color: true
+        show_header_toggle: false
+        entities:
+          - type: custom:auto-entities
+            show_empty: false
+            unique: true
+            filter:
+              template: >-
+                {{
+                state_attr('sensor.system_ha_unavailable_entities','entity_id')
+                }}
+            sort:
+              method: state
+            card:
+              type: entities

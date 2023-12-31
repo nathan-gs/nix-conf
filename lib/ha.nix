@@ -89,6 +89,28 @@ let
         message = message;
       };      
     };
+
+    persistent_notification = {
+      create = id: title: message: {
+        service = "persistent_notification.create";
+        data = {
+          notification_id = id;
+          title = title;
+          message = message;
+        };
+      };
+      
+      dismiss = id: {
+        service = "persistent_notification.dismiss";
+        data.notification_id = id;
+      };
+    };
+
+    conditional = conditions: actions: alternatives: {
+      "if" = conditions;
+      "then" = actions;
+      "else" = alternatives;
+    };
     
   };
 
@@ -118,6 +140,12 @@ let
       entity_id = name;
     };
 
+    state_attr = name: attribute: {
+      platform = "state";
+      entity_id = name;
+      attribute = attribute;
+      to = "~";
+    };
     on = name: state_to name "on";
 
     off = name: state_to name "off";
@@ -162,6 +190,12 @@ let
     on = name: state name "on";
 
     off = name: state name "off";
+
+    below = entity: number: {
+      condition = "numeric_state";
+      entity_id = entity;
+      below = number;
+    };
 
   };
 in

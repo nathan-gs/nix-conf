@@ -8,6 +8,7 @@
     ./calendar.nix
     ./doorbell.nix
     ./energy
+    ./ha
     ./hvac
     ./occupancy
     ./waste.nix
