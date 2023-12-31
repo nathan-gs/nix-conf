@@ -2,17 +2,6 @@
 
 let 
   rooms = import ../rooms.nix;
-
-  roomTempFunction = {floor, room, sensor1, sensor2 ? null} : {
-    name = "${floor}_${room}_temperature";
-    state = ''
-      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} | float(0) %}      
-      {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
-      {{ sensor1 }}
-    '';
-    unit_of_measurement = "°C";
-    device_class = "temperature";
-  };
 in 
 {
 
@@ -80,7 +69,7 @@ in
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
               ]
               %}
-              {% set valid_humidities = v | select('!=','unknown') | map('float') | list %}
+              {% set valid_humidities = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
               {{ (valid_humidities | sum / valid_humidities | length) | round(2) }}
             '';
             icon = ''
@@ -99,7 +88,7 @@ in
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
               ]
               %}
-              {% set valid_humidities = v | select('!=','unknown') | map('float') | list %}
+              {% set valid_humidities = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
               {{ max(valid_humidities) | round(2) }}
             '';
             icon = ''
@@ -117,7 +106,7 @@ in
               {% set sensors = [
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)}
               ] %}
-              {% set valid_temperatures = sensors | select('!=','unknown') | map('float') | list %}
+              {% set valid_temperatures = sensors | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
               {{ (valid_temperatures | sum / valid_temperatures | length) | round(2) }}
             '';
             icon = "mdi:home-thermometer";

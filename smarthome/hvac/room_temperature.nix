@@ -86,12 +86,17 @@ let
   roomTempFunction = { floor, room, sensor1, sensor2 ? null, adjustment ? 0 }: {
     name = "${floor}/${room}/temperature";
     state = ''
-      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} | float(unavailable) %}      
+      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} %}      
       {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
       {{ sensor1 + ${toString adjustment} }}
     '';
     unit_of_measurement = "°C";
     device_class = "temperature";
+    availability = ''
+      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} %}      
+      {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
+      {{ sensor1 not in ["unavailable", "unknown", "none"] }}
+    '';
   };
 
 in
