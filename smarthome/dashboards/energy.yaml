@@ -31,16 +31,27 @@ views:
             cards:
               - type: vertical-stack
                 cards:
-                  - show_name: false
-                    show_icon: true
-                    type: button
-                    tap_action:
-                      action: toggle
-                    entity: switch.garden_garden_plug_laadpaal
-                    show_state: false
-                    name: Laadpaal
-                    icon: mdi:ev-station
-                    icon_height: 80px
+                  - type: horizontal-stack
+                    cards:
+                      - show_name: true
+                        show_icon: true
+                        type: button
+                        tap_action:
+                          action: toggle
+                        entity: switch.garden_garden_plug_laadpaal
+                        show_state: false
+                        name: Laadpaal
+                        icon: mdi:ev-station
+                        icon_height: 80px
+                      - show_name: true
+                        show_icon: true
+                        type: button
+                        tap_action:
+                          action: toggle
+                        name: During offpeak
+                        show_state: false
+                        icon_height: 80px
+                        entity: input_boolean.car_charger_charge_offpeak
                   - type: entities
                     entities:
                       - entity: sensor.2abn528_battery_level
@@ -49,6 +60,10 @@ views:
                     entities:
                       - entity: sensor.openweathermap_condition
                       - entity: sensor.openweathermap_forecast_condition
+                  - type: entities
+                    entities:
+                      - entity: sensor.electricity_delivery_power_15m_estimated
+                      - entity: sensor.electricity_delivery_power_15m
               - type: vertical-stack
                 cards:
                   - type: entities
@@ -62,6 +77,15 @@ views:
                       - entity: sensor.electricity_cost_offpeak_kwh
                       - entity: sensor.gas_cost_kwh
                       - entity: sensor.water_cost
-              - type: energy-distribution
+                      - entity: sensor.electricity_injection_kwh
+                      - entity: binary_sensor.electricity_high_usage
+              - type: vertical-stack
+                cards:
+                  - type: energy-distribution
+                  - type: entities
+                    entities:
+                      - entity: sensor.energy_production_today_remaining
+                      - entity: sensor.energy_production_today
+                      - entity: sensor.energy_production_tomorrow
           - type: energy-solar-graph
           - type: energy-usage-graph
