@@ -11,7 +11,6 @@
       ../headless.nix
       ../system.nix
       ../disks.nix
-      ../powersave.nix
      ../apps/cloudflare-dyndns.nix
      ../services/smb.nix
      ../services/onedrive.nix
@@ -110,11 +109,17 @@
   
   # Use the GRUB 2 boot loader.
   boot.loader.grub.memtest86.enable = true;
-  boot.loader.grub.version = 2;
   boot.loader.grub.device = "/dev/disk/by-id/ata-SDV-32_987032400115";
 
   boot.blacklistedKernelModules = [ 
     "gma500_gfx"
   ];
+
+  powerManagement = {
+    enable = true;
+    powertop.enable = true;
+    scsiLinkPolicy = "med_power_with_dipm";
+    cpuFreqGovernor = "powersave";
+  };
   
 }
