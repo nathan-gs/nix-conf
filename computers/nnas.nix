@@ -13,8 +13,8 @@
       ../disks.nix
       ../powersave.nix
      ../apps/cloudflare-dyndns.nix
-     ../smb.nix
-     ../onedrive.nix
+     ../services/smb.nix
+     ../services/onedrive.nix
     ];
 
 
