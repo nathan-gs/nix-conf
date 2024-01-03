@@ -21,6 +21,9 @@
   services.nginx.virtualHosts."vscode.nathan.gs" = {
     forceSSL = true;
     enableACME = true;
+    extraConfig = ''
+      proxy_buffering off;
+    '';
     locations."/" = {
       proxyPass = "http://127.0.0.1:3000";
       proxyWebsockets = true; # needed if you need to use WebSocket
