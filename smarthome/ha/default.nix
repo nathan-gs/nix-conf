@@ -13,6 +13,7 @@
               {% set entities = state_attr(this.entity_id,'entity_id') %}
               {{ entities|count if entities != none else none }}
             '';
+            # TODO: remove nkeys_ floor1_fen_window & roaming_roaming
             attributes.entity_id = ''
               {% set ignore_seconds = 60 %}
               {% set ignore_ts = (now().timestamp() - ignore_seconds)|as_datetime %}
@@ -47,6 +48,10 @@
                   |rejectattr('entity_id', 'contains', 'openweathermap_dew_point')
                   |rejectattr('entity_id', 'contains', 'openweathermap_forecast_temperature_low')
                   |rejectattr('entity_id', 'contains', 'openweathermap_uv_index')
+                  |rejectattr('entity_id', 'contains', 'plex_')
+                  |rejectattr('entity_id', 'contains', 'nkeys_') 
+                  |rejectattr('entity_id', 'contains', 'floor1_fen_window_') 
+                  |rejectattr('entity_id', 'contains', 'roaming_roaming_window_sonoff0') 
                   
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
