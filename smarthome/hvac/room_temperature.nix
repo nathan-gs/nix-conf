@@ -31,7 +31,7 @@ let
 
   inUseBeforeNight = sensor: right: ''
     {% set in_use = states('${sensor}') | bool(false) %}
-    {% if in_use and now().hour < 23 %}
+    {% if in_use and now().hour < 22 %}
       {{ temperature_comfort }}
     {% else %}
       ${right}
@@ -194,7 +194,7 @@ in
           (
             templateSensorTemperature "floor0/bureau/temperature_auto_wanted" (
               temperatureSets
-                (inUse
+                (inUseBeforeNight
                   "input_boolean.floor0_bureau_in_use"
                   (workday
                     ''
