@@ -1,5 +1,7 @@
 { config, lib, pkgs, ha, ... }:
-
+let
+  rooms = import ../rooms.nix;
+in
 {
   imports = [
     ./rooms.nix
@@ -51,6 +53,13 @@
       }
     ];
 
+    input_boolean = {
+      coming_home = {
+        name = "coming_home";
+        icon = "mdi:home";
+      };
+    };
+
     template = [
       {
         binary_sensor = [
@@ -63,7 +72,9 @@
             name = "anyone_coming_home";
             state = ''
               {% set within_10km = states('proximity.home') | float(0) <= 10 %}
-              {{ within_10km and is_state_attr('proximity.home', 'dir_of_travel', 'towards') }}
+              {% set sensor_based = within_10km and is_state_attr('proximity.home', 'dir_of_travel', 'towards') %}
+              {% set override = states('input_boolean.coming_home') | bool(false) %}
+              {{ sensor_based or override }}
             '';
             device_class = "occupancy";
             delay_on.minutes = 1;
@@ -74,7 +85,7 @@
             state = ''
               {{ states('binary_sensor.anyone_home') | bool(true) or states('binary_sensor.is_anyone_coming_home') | bool(false) }}
             '';
-            device_class = "occupancy";            
+            device_class = "occupancy";
           }
           {
             name = "far_away";
@@ -88,6 +99,25 @@
         ];
       }
     ];
+
+    "automation manual" = [
+      (ha.automation "occupancy/anyone_home.turn_on" {
+        triggers = [ (ha.trigger.on "binary_sensor.anyone_home") ];
+        actions = [ (ha.action.off "input_boolean.coming_home") ];
+      })
+      (ha.automation "occupancy/anyone_home.turn_off" {
+        triggers = [ (ha.trigger.off "binary_sensor.anyone_home") ];
+        actions = map
+          (v:
+            {
+              service = "input_boolean.turn_off";
+              target.entity_id = "input_boolean.${v}";
+            }
+          )
+          rooms.all;
+      })
+    ];
   };
+
 
 }

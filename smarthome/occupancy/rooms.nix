@@ -214,27 +214,7 @@ in
           ];
           action = "off";
         }
-      )
-      {
-        id = "all_rooms_in_use_turn_off";
-        alias = "all_rooms/in_use.turn_off";
-        trigger = [
-          {
-            platform = "state";
-            entity_id = "binary_sensor.anyone_home";
-            to = "off";
-          }
-        ];
-        action = map
-          (v:
-            {
-              service = "input_boolean.turn_off";
-              target.entity_id = "input_boolean.${v}";
-            }
-          )
-          rooms.all;
-        mode = "single";
-      }
+      )      
     ];
 
   };
