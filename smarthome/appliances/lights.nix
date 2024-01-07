@@ -2,27 +2,27 @@
 
 {
   services.home-assistant.config = {
-    "automation manual" =
-      (ha.automationOnOff "kerstverlichting"
-        {
-          triggersOn = [
-            {
-              platform = "sun";
-              event = "sunset";
-              offset = "-00:30:00";
-            }
-            (ha.trigger.at "07:00:00")
-          ];
-          triggersOff = [
-            (ha.trigger.at "23:00:00")
-            {
-              platform = "sun";
-              event = "sunrise";
-              offset = "00:30:00";
-            }
-          ];
-          entities = [ "switch.garden_voordeur_light_plug_cirkel" "switch.floor0_living_light_plug_kerstboom" ];
-        })
+    "automation manual" = []
+      # (ha.automationOnOff "kerstverlichting"
+      #   {
+      #     triggersOn = [
+      #       {
+      #         platform = "sun";
+      #         event = "sunset";
+      #         offset = "-00:30:00";
+      #       }
+      #       (ha.trigger.at "07:00:00")
+      #     ];
+      #     triggersOff = [
+      #       (ha.trigger.at "23:00:00")
+      #       {
+      #         platform = "sun";
+      #         event = "sunrise";
+      #         offset = "00:30:00";
+      #       }
+      #     ];
+      #     entities = [ "switch.garden_voordeur_light_plug_cirkel" "switch.floor0_living_light_plug_kerstboom" ];
+      #   })
       ++
       (ha.automationOnOff "floor0/living/lights"
         {
