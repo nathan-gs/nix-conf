@@ -3,6 +3,7 @@
 {
 
   imports = [
+    ./degree_days.nix
     ./electric_heating.nix
     ./room_temperature.nix
     ./rtv.nix
