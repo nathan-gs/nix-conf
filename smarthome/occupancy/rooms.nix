@@ -30,11 +30,11 @@ in
       {
         binary_sensor = [
           {
-            name = "floor0/bureau/scherm_in_use";
+            name = "floor0/bureau/pc_in_use";
             state = ''
-              {% set scherm_in_use = states('sensor.floor0_bureau_metering_plug_scherm_power') |float(0) > 12 %}
+              {% set pc_in_use = states('sensor.floor0_bureau_metering_plug_pc_power') |float(0) > 12 %}
               {% set ndesk_in_use = states('binary_sensor.ndesk') | bool(false) %}
-              {{ scherm_in_use or ndesk_in_use }}
+              {{ pc_in_use or ndesk_in_use }}
             '';
             device_class = "occupancy";
             delay_off = "00:01:00";
@@ -52,7 +52,7 @@ in
               {% set nstudio_on = states('binary_sensor.nstudio') | bool(false) %}
               {% set is_anyone_home = states('binary_sensor.anyone_home') |bool(false) %}
               {% set nikolai_not_in_use = states('binary_sensor.floor1_nikolai_scherm_in_use') | bool(false) == false %}
-              {% set bureau_in_use = states('binary_sensor.floor0_bureau_scherm_in_use') | bool(false) %}
+              {% set bureau_in_use = states('binary_sensor.floor0_bureau_pc_in_use') | bool(false) %}
               {% if flaptop_on and nikolai_not_in_use %}
                 {% if bureau_in_use and (ndesk_on or nstudio_on) %}
                   true
@@ -122,14 +122,14 @@ in
           triggers = [
             {
               platform = "state";
-              entity_id = "binary_sensor.floor0_bureau_scherm_in_use";
+              entity_id = "binary_sensor.floor0_bureau_pc_in_use";
               to = "on";
             }
             (ha.trigger.tag "floor0_bureau")
           ];
           action = "on";
           extraActions = [
-            (ha.action.on "switch.floor0_bureau_metering_plug_scherm")
+            (ha.action.on "switch.floor0_bureau_metering_plug_pc")
           ];
         }
       )
@@ -140,14 +140,14 @@ in
           triggers = [
             {
               platform = "state";
-              entity_id = "binary_sensor.floor0_bureau_scherm_in_use";
+              entity_id = "binary_sensor.floor0_bureau_pc_in_use";
               to = "off";
             }
           ];
           action = "off";
           extraActions = [
             (ha.action.delay "00:01:00")
-            (ha.action.off "switch.floor0_bureau_metering_plug_scherm")
+            (ha.action.off "switch.floor0_bureau_metering_plug_pc")
           ];
         }
       )

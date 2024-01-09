@@ -30,7 +30,7 @@ map
     }
     {
       zone = "bureau";
-      name = "scherm";
+      name = "pc";
       ieee = "0xa4c138bd0cf23138";
       floor = "floor0";
     }
@@ -93,5 +93,11 @@ map
       name = "airfryer";
       ieee = "0xa4c13863b0b63bf6";
       floor = "floor0";
+    }
+    {
+      zone = "basement";
+      name = "diepvries";
+      ieee = "0xa4c13831f438c2ea";
+      floor = "basement";
     }
   ]
