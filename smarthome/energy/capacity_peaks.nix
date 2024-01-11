@@ -105,6 +105,10 @@
               {% if car_charger_on %}
                 {% set is_high = true %}
               {% endif %}
+              {% set battery_charging = 5 <= now().hour < 7 %}
+              {% if battery_charging %}
+                {% set is_high = true %}
+              {% endif %}
               {{ is_high }}
             '';
           }
