@@ -104,7 +104,7 @@ in
                   {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
                   {% set not_high_usage = not(states('binary_sensor.electricity_high_usage') | bool(true)) %}
                   {% set plugged_in = states('binary_sensor.${carName}_plug_status') | bool(true) %}
-                  {% set is_home = states('device_tracker.${carName}_position') == "home" %}
+                  {% set is_home = states('binary_sensor.anyone_home') | bool(true) %}
                   {{ is_offpeak and not_high_usage and plugged_in and is_home }}
                 ''
                 "00:01:00"

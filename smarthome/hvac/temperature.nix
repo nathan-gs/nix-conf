@@ -39,7 +39,7 @@ in
           {
             name = "outdoor_humidity";
             state = ''
-              {% set rh1 = states('sensor.system_wtw_air_quality_inlet_humidity') | float(60) %}
+              {% set rh1 = states('sensor.garden_garden_temperature_noordkant_humidity') | float(60) %}
               {% set rh2 = states('sensor.openweathermap_humidity') | float(60) %}
               {% set rh = (rh1 + rh2) / 2 %}
               {{ rh | round(2) }}
@@ -50,10 +50,6 @@ in
           {
             name = "outdoor_temperature";
             state = ''
-              {#
-              {% set itho_wtw = states('sensor.itho_wtw_inlet_temperature') | float(16) %}
-              {% set inlet = states('sensor.system_wtw_air_quality_inlet_temperature') | float(16) %}
-              #}
               {% set garden = states('sensor.garden_garden_temperature_noordkant_temperature') | float(16) %}
               {% set openweather = states('sensor.openweathermap_temperature') | float(garden) %}
               {% set sum = garden + openweather %}

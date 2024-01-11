@@ -13,10 +13,6 @@
           create_group = "electric_heating_auxiliary";
           entities = [
             {
-              power_sensor_id = "sensor.system_wtw_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.system_wtw_metering_plug_verwarming_energy";
-            }
-            {
               power_sensor_id = "sensor.floor0_living_metering_plug_verwarming_power";
               energy_sensor_id = "sensor.floor0_living_metering_plug_verwarming_energy";
             }
@@ -39,6 +35,10 @@
             {
               power_sensor_id = "sensor.floor1_badkamer_metering_plug_verwarming_power";
               energy_sensor_id = "sensor.floor1_badkamer_metering_plug_verwarming_energy";
+            }
+            {
+              power_sensor_id = "sensor.system_wtw_metering_plug_verwarming_power";
+              energy_sensor_id = "sensor.system_wtw_metering_plug_verwarming_energy";
             }
           ];
         }
