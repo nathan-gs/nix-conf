@@ -48,6 +48,8 @@ views:
               - entity: binary_sensor.itho_wtw_valve
               - entity: binary_sensor.itho_wtw_is_summerday
               - entity: sensor.itho_wtw_airfilter
+              - entity: sensor.itho_wtw_inlet_temperature
+              - entity: sensor.itho_wtw_outlet_temperature
       - type: vertical-stack
         cards:
           - type: weather-forecast
@@ -1499,3 +1501,91 @@ views:
             show:
               header_color_threshold: true
             yaxis_id: temperature
+  - title: Efficiency
+    path: efficiency
+    icon: mdi:calculator-variant
+    badges: []
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: custom:apexcharts-card
+            graph_span: 1 month
+            span:
+              start: month
+            header:
+              show: true
+              title: Gasverbruik laatste maand
+            apex_config:
+              yaxis:
+                - id: first
+                  forceNiceScale: true
+                  decimalsInFloat: 3
+                  opposite: false
+                  name: Gas
+            series:
+              - entity: sensor.gas_delivery_hourly
+                unit: m3
+                type: column
+                name: gasverbruik
+                color: '#EF810E'
+                group_by:
+                  func: max
+                  duration: 1d
+                show:
+                  datalabels: false
+                  extremas: false
+          - type: custom:apexcharts-card
+            graph_span: 31d
+            span:
+              start: month
+            show:
+              last_updated: true
+            yaxis:
+              - id: dd
+                apex_config:
+                  forceNiceScale: true
+                  decimalsInFloat: 1
+                  min: 0
+                  max: 15
+              - id: gas_per_dd
+                opposite: true
+                min: 0
+                max: 0.8
+                apex_config:
+                  forceNiceScale: false
+                  decimalsInFloat: 2
+                  tickAmount: 4
+            color_list:
+              - '#1a4c6e'
+              - '#3498db'
+              - '#f3721e'
+            header:
+              show: true
+              title: Degree Days
+            series:
+              - entity: sensor.degree_day_daily
+                name: Degree Day
+                type: column
+                group_by:
+                  func: last
+                  duration: 1d
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+                yaxis_id: dd
+              - entity: sensor.gas_m3_per_degree_day
+                name: Gas m3 per DD
+                type: line
+                group_by:
+                  func: last
+                  duration: 1d
+                stroke_width: 2
+                yaxis_id: gas_per_dd
+              - entity: sensor.gas_m3_per_degree_day_occupancy_adjusted
+                name: Adjusted
+                type: line
+                group_by:
+                  func: last
+                  duration: 1d
+                stroke_width: 2
+                yaxis_id: gas_per_dd

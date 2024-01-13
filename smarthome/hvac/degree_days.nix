@@ -29,7 +29,7 @@
       {
         trigger = {
           platform = "time";
-          at = "23:59:59";          
+          at = "23:59:30";          
         };
         sensor = [
           {
@@ -47,6 +47,25 @@
           }
         ];
       }
+      {
+        trigger = {
+          platform = "time";
+          at = "23:59:59";          
+        };
+        sensor = [
+          {
+            name = "gas_m3_per_degree_day_occupancy_adjusted";
+            state = ''
+              {% set gas_m3_per_degree_day = states('sensor.gas_m3_per_degree_day') | float(0) %}
+              {% set occupancy_rate = (states('sensor.occupancy_anyone_home_daily') | float(0) / 24) %}
+              {{ gas_m3_per_degree_day * occupancy_rate }}
+            '';
+            unit_of_measurement = "(m³/DD)*O";
+          }
+        ];
+      }
     ];
+
+    
   };
 }

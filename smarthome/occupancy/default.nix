@@ -117,6 +117,18 @@ in
           rooms.all;
       })
     ];
+
+    sensor = [
+      {
+        platform = "history_stats";
+        name = "occupancy/anyone_home daily";
+        entity_id = "binary_sensor.anyone_home";
+        state = "on";
+        type = "time";
+        start = "{{ now().replace(hour=0, minute=0, second=0, microsecond=0) }}";
+        end = "{{ now() }}";
+      }
+    ];
   };
 
 
