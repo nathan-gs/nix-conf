@@ -15,7 +15,7 @@
             '';
             # TODO: remove nkeys_ floor1_fen_window & roaming_roaming
             attributes.entity_id = ''
-              {% set ignore_seconds = 60 %}
+              {% set ignore_seconds = 300 %}
               {% set ignore_ts = (now().timestamp() - ignore_seconds)|as_datetime %}
               {% set entities = states
                   |rejectattr('domain','in',['button','event','group','input_button','input_text','scene', 'media_player'])
@@ -77,6 +77,7 @@
                 [ (ha.action.persistent_notification.create "system_ha_unavailable_entities" "Unavailable Entities" ''{{ state_attr('sensor.system_ha_unavailable_entities','entity_id')|join('\n') }}'') ]
               )
             ];
+            mode = "queued";
           }
       )
     ];
