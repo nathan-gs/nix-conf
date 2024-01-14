@@ -74,9 +74,9 @@ in
               {% set solar_power = states('sensor.electricity_solar_power') | int(0) %}
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
               {% set battery_charged = battery > 80 %}
-              {% set solar_power_available = (solar_power - 835 - 250) > 0 %}
+              {% set solar_power_available = (solar_power - 760 - 250) > 0 %}
               {% set start_on_solar = battery_charged and solar_power_available %}
-              {% if (power_available > 835 or start_on_solar) and indoor_temp < 22 %}
+              {% if (power_available > 760 or start_on_solar) and indoor_temp < 22 %}
                 true  
               {% else %}
                 false
@@ -100,7 +100,7 @@ in
               {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
               {% set indoor_temp = states('sensor.floor1_nikolai_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}              
-              {% if power_available > 760 and indoor_temp < 22 %}
+              {% if power_available > 685 and indoor_temp < 22 %}
                 true  
               {% else %}
                 false
