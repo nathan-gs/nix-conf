@@ -127,7 +127,7 @@
             name = "electricity_delivery_power_near_max_threshold";
             state = ''
               {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {{ electricity_delivery_power_15m_estimated > 1.6 }}
+              {{ electricity_delivery_power_15m_estimated > 1.9 }}
             '';
           }
         ];
