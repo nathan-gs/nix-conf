@@ -103,9 +103,10 @@ in
               {% set prefer_electricity_over_gas = states('binary_sensor.energy_electricity_prefer_over_gas') | bool(false) %}
               {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_nikolai_in_use') | bool(false) %}
               {% set needs_heating = indoor_temp < (states('sensor.floor1_nikolai_temperature_auto_wanted') | float(15.5)) %}
+              {% set power_not_near_max_threshold = not(states('binary_sensor.electricity_delivery_power_near_max_threshold') | bool(false)) %}
               {% if power_available > 685 and indoor_temp < 22 %}
                 true 
-              {% elif prefer_electricity_over_gas and home_alone_and_in_use and needs_heating %}
+              {% elif prefer_electricity_over_gas and home_alone_and_in_use and needs_heating and power_not_near_max_threshold %}
                 true
               {% else %}
                 false
@@ -114,13 +115,19 @@ in
             device_class = "heat";
             delay_on = ''
               {% set in_use = states('input_boolean.floor1_nikolai_in_use') | bool(false) %}
+              {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_nikolai_in_use') | bool(false) %}
               {% if in_use %}
                 00:00:45
+              {% elif home_alone_and_in_use %}
+                00:00:00
               {% else %}
                 00:02:00
               {% endif %}
             '';
-            delay_off.seconds = 120;
+            delay_off = ''
+              {% set power_not_near_max_threshold = not(states('binary_sensor.electricity_delivery_power_near_max_threshold') | bool(false)) %}
+              {{ "00:02:00" if power_not_near_max_threshold else "00:00:00" }}
+            '';
           }
           {
             name = "floor0/bureau/metering_plug/verwarming_target";
@@ -131,10 +138,11 @@ in
               {% set power_available = (house_return + sensor) %}      
               {% set prefer_electricity_over_gas = states('binary_sensor.energy_electricity_prefer_over_gas') | bool(false) %}
               {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false) %}     
-              {% set needs_heating = indoor_temp < (states('sensor.floor0_bureau_temperature_auto_wanted') | float(15.5)) %}                
+              {% set needs_heating = indoor_temp < (states('sensor.floor0_bureau_temperature_auto_wanted') | float(15.5)) %}           
+              {% set power_not_near_max_threshold = not(states('binary_sensor.electricity_delivery_power_near_max_threshold') | bool(false)) %}     
               {% if power_available > 685 and indoor_temp < 21 %}
                 true  
-              {% elif prefer_electricity_over_gas and home_alone_and_in_use and needs_heating %}
+              {% elif prefer_electricity_over_gas and home_alone_and_in_use and needs_heating and power_not_near_max_threshold %}
                 true
               {% else %}
                 false
@@ -143,13 +151,19 @@ in
             device_class = "heat";
             delay_on = ''
               {% set in_use = states('input_boolean.floor0_bureau_in_use') | bool(false) %}
+              {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false) %}     
               {% if in_use %}
                 00:01:00
+              {% elif home_alone_and_in_use %}
+                00:00:00
               {% else %}
                 00:02:30
               {% endif %}
             '';
-            delay_off.seconds = 120;
+            delay_off = ''
+              {% set power_not_near_max_threshold = not(states('binary_sensor.electricity_delivery_power_near_max_threshold') | bool(false)) %}
+              {{ "00:02:00" if power_not_near_max_threshold else "00:00:00" }}
+            '';
           }
         ];
       }
