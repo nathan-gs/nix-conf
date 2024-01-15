@@ -71,6 +71,24 @@ in
             state = ''{{ states('sensor.living_audio_input_format') in ['DTS 5.1'] }}'';
             delay_off = "00:05:00";
           }
+          {
+            name = "occupancy/home_alone/bureau/in_use";
+            state = ''
+              {% set home_alone = (states.person | selectattr('state','eq','home') | list | count) == 1 %}
+              {% set in_use = states('input_boolean.floor0_bureau_in_use') | bool(false) %}
+              {{ home_alone and in_use }}
+            '';
+            device_class = "occupancy";
+          }
+          {
+            name = "occupancy/home_alone/nikolai/in_use";
+            state = ''
+              {% set home_alone = (states.person | selectattr('state','eq','home') | list | count) == 1 %}
+              {% set in_use = states('input_boolean.floor1_nikolai_in_use') | bool(false) %}
+              {{ home_alone and in_use }}
+            '';
+            device_class = "occupancy";
+          }
         ];
       }
     ];

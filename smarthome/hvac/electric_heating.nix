@@ -99,9 +99,14 @@ in
               {% set sensor = states('sensor.floor1_nikolai_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
               {% set indoor_temp = states('sensor.floor1_nikolai_temperature') | float(21) %}
-              {% set power_available = (house_return + sensor) %}              
+              {% set power_available = (house_return + sensor) %}
+              {% set prefer_electricity_over_gas = states('binary_sensor.energy_electricity_prefer_over_gas') | bool(false) %}
+              {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_nikolai_in_use') | bool(false) %}
+              {% set needs_heating = indoor_temp < (states('sensor.floor1_nikolai_temperature_auto_wanted') | float(15.5)) %}
               {% if power_available > 685 and indoor_temp < 22 %}
-                true  
+                true 
+              {% elif prefer_electricity_over_gas and home_alone_and_in_use and needs_heating %}
+                true
               {% else %}
                 false
               {% endif %}
@@ -123,11 +128,16 @@ in
               {% set sensor = states('sensor.floor0_bureau_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
               {% set indoor_temp = states('sensor.floor0_bureau_temperature') | float(21) %}
-              {% set power_available = (house_return + sensor) %}              
+              {% set power_available = (house_return + sensor) %}      
+              {% set prefer_electricity_over_gas = states('binary_sensor.energy_electricity_prefer_over_gas') | bool(false) %}
+              {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false) %}     
+              {% set needs_heating = indoor_temp < (states('sensor.floor0_bureau_temperature_auto_wanted') | float(15.5)) %}                
               {% if power_available > 685 and indoor_temp < 21 %}
-                  true  
-                {% else %}
-                  false
+                true  
+              {% elif prefer_electricity_over_gas and home_alone_and_in_use and needs_heating %}
+                true
+              {% else %}
+                false
               {% endif %}
             '';
             device_class = "heat";

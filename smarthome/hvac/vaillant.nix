@@ -2,10 +2,6 @@
 
 let
 
-  rooms = import ../rooms.nix;
-
-  roomsDiffWanted = map (v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heatedLeading;
-
   autoWantedHeader = import ./temperature_sets.nix;
 
 in
@@ -21,9 +17,17 @@ in
             unit_of_measurement = "°C";
             device_class = "temperature";
             state = ''
+              {% set nikolai_not_home_alone = not(states('binary_sensor.occupancy_home_alone_nikolai_in_use') | bool(false)) %}
+              {% set bureau_not_home_alone = not(states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false)) %}
+              {% set nikolai_temp = states('sensor.floor1_nikolai_temperature_diff_wanted') if nikolai_not_home_alone else 0 %}
+              {% set bureau_temp = states('sensor.floor0_bureau_temperature_diff_wanted') if bureau_not_home_alone else 0 %}
               {% 
               set v = (
-                ${builtins.concatStringsSep "," roomsDiffWanted}
+                states('sensor.floor0_living_temperature_diff_wanted'),
+                states('sensor.floor1_fen_temperature_diff_wanted'),
+                states('sensor.floor1_morgane_temperature_diff_wanted'),
+                nikolai_temp,
+                bureau_temp
               )
               %}
               {% set valid_temp = v | select('!=','unknown') | map('float') | list %}

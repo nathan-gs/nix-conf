@@ -29,8 +29,27 @@
             # Cost = vendor + federal accijns + nettarifs + transport + bijdrage energie + groene stroom + wkk
             state = "{{ ( states('sensor.electricity_cost_offpeak_kwh_energycomponent') | float ) + (1.44160 / 100) + (6.87 / 100) + (1.26 / 100) + (0.2942 / 100) + (2.233 / 100) + (0.344 / 100) }}";      
           }
+          {
+            name = "energy/electricity/cost";
+            unit_of_measurement = "€/kWh";
+            state = ''
+              {% if (states('binary_sensor.electricity_is_offpeak') | bool(false)) %}
+                {{ states('sensor.electricity_cost_offpeak_kwh') | float }}
+              {% else %}
+                {{ states('sensor.electricity_cost_peak_kwh') | float }}
+              {% endif %}
+            '';
+          }
         ];
         binary_sensor = [
+          {
+            name = "energy/electricity/prefer_over_gas";
+            state = ''
+              {% set electricity_cost = states('sensor.energy_electricity_cost') | float(10) %}
+              {% set gas_cost = states('sensor.gas_cost_kwh') | float(0.15) %}
+              {{ (electricity_cost / 4) < gas_cost }}
+            '';            
+          }
           {
             name = "electricity_is_offpeak";
             state = ''
