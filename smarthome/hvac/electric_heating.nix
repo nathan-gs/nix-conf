@@ -116,10 +116,10 @@ in
             delay_on = ''
               {% set in_use = states('input_boolean.floor1_nikolai_in_use') | bool(false) %}
               {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_nikolai_in_use') | bool(false) %}
-              {% if in_use %}
-                00:00:45
-              {% elif home_alone_and_in_use %}
+              {% if home_alone_and_in_use %}
                 00:00:00
+              {% elif in_use %}
+                00:00:45
               {% else %}
                 00:02:00
               {% endif %}
@@ -152,10 +152,10 @@ in
             delay_on = ''
               {% set in_use = states('input_boolean.floor0_bureau_in_use') | bool(false) %}
               {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false) %}     
-              {% if in_use %}
-                00:01:00
-              {% elif home_alone_and_in_use %}
+              {% if home_alone_and_in_use %}
                 00:00:00
+              {% elif in_use %}
+                00:01:00
               {% else %}
                 00:02:30
               {% endif %}

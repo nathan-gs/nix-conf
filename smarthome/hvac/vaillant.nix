@@ -19,8 +19,8 @@ in
             state = ''
               {% set nikolai_not_home_alone = not(states('binary_sensor.occupancy_home_alone_nikolai_in_use') | bool(false)) %}
               {% set bureau_not_home_alone = not(states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false)) %}
-              {% set nikolai_temp = states('sensor.floor1_nikolai_temperature_diff_wanted') if nikolai_not_home_alone else 0 %}
-              {% set bureau_temp = states('sensor.floor0_bureau_temperature_diff_wanted') if bureau_not_home_alone else 0 %}
+              {% set nikolai_temp = states('sensor.floor1_nikolai_temperature_diff_wanted') if nikolai_not_home_alone else "ignore" %}
+              {% set bureau_temp = states('sensor.floor0_bureau_temperature_diff_wanted') if bureau_not_home_alone else "ignore" %}
               {% 
               set v = (
                 states('sensor.floor0_living_temperature_diff_wanted'),
@@ -30,7 +30,7 @@ in
                 bureau_temp
               )
               %}
-              {% set valid_temp = v | select('!=','unknown') | map('float') | list %}
+              {% set valid_temp = v | select('!=', "ignore") | select('!=','unknown') | map('float') | list %}
               {{ max(valid_temp) | round(2) }}
             '';
             icon = "mdi:thermometer-auto";
