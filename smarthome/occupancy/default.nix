@@ -116,6 +116,12 @@ in
           )
           rooms.all;
       })
+      (ha.automation "occupancy/anyone_coming_home.turn_on" {
+        triggers = [ (ha.trigger.on "input_boolean.coming_home") ];
+        actions = [ 
+          (ha.action.on "input_boolean.floor0_living_in_use")
+        ];
+      })
     ];
 
     sensor = [
