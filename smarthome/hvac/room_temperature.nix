@@ -222,7 +222,7 @@ in
                   "input_boolean.floor0_living_in_use"
                   (workday
                     ''
-                      {% if now().hour >= 17 and now().hour < 22 %}
+                      {% if now().hour >= 16 and now().hour < 22 %}
                         {{ temperature_comfort }}
                       {% else %}
                         {{ temperature_eco }}
