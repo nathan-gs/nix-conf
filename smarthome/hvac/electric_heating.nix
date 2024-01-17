@@ -55,13 +55,14 @@ in
             state = ''
               {% set inlet_temp = states('sensor.system_wtw_air_quality_inlet_temperature') | float(5) %}
               {% set not_overheating = inlet_temp < 41 %}
-              {% if inlet_temp < -1 %}
+              {% if inlet_temp < 0 %}
                 true
               {% else %}
                 false
               {% endif %}
             '';
             device_class = "heat";
+            delay_off = "00:01:00";
           }
           {
             name = "floor0/living/metering_plug/verwarming_target";
