@@ -3,12 +3,12 @@
 buildHomeAssistantComponent rec {
   owner = "hultenvp";  
   domain = "solis";
-  version = "3.5.0";
+  version = "3.5.1";
 
   src = fetchFromGitHub {
     owner = "hultenvp";
     repo = "solis-sensor";
     rev = "v${version}";
-    sha256 = "sha256-YtTwmjT3SHhXtsvglZfeL1kPwBdoEySfQHs4+S7ExJY=";
+    sha256 = "sha256-mvnC08AlCbTI24GhlAJ4docF7rNGTzvr9s0118Qsvik=";
   };
 }
