@@ -78,24 +78,8 @@ in
             entity_id = "sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted";
           }
           {
-            platform = "time";
-            at = "08:00:00";
-          }
-          {
-            platform = "time";
-            at = "13:00:00";
-          }
-          {
-            platform = "time";
-            at = "17:00:00";
-          }
-          {
-            platform = "time";
-            at = "20:00:00";
-          }
-          {
-            platform = "time";
-            at = "23:00:00";
+            platform = "time_pattern";
+            minutes = "/10";
           }
         ];
         condition = ''
