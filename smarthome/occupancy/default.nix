@@ -77,13 +77,11 @@ in
               {{ sensor_based or override }}
             '';
             device_class = "occupancy";
-            delay_on.minutes = 1;
-            delay_off.minutes = 10;
           }
           {
             name = "anyone_home_or_coming_home";
             state = ''
-              {{ states('binary_sensor.anyone_home') | bool(true) or states('binary_sensor.is_anyone_coming_home') | bool(false) }}
+              {{ states('binary_sensor.anyone_home') | bool(true) or states('binary_sensor.anyone_coming_home') | bool(false) }}
             '';
             device_class = "occupancy";
           }
