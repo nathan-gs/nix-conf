@@ -53,9 +53,10 @@ in
           {
             name = "system/wtw/metering_plug/verwarming_target";
             state = ''
-              {% set inlet_temp = states('sensor.system_wtw_air_quality_inlet_temperature') | float(5) %}
-              {% set not_overheating = inlet_temp < 41 %}
-              {% if inlet_temp < 0 %}
+              {% set inlet_temp_aq = states('sensor.system_wtw_air_quality_inlet_temperature') | float(5) %}
+              {% set inlet_temp_wtw = states('sensor.itho_wtw_inlet_temperature') | float(5) %}
+              {% set not_overheating = inlet_temp_aq < 41 %}
+              {% if inlet_temp_wtw < 4 %}
                 true
               {% else %}
                 false
