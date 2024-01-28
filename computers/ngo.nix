@@ -70,6 +70,7 @@
 
   users.users.nathan.packages = with pkgs; [
     firefox
+    vscode
     #  thunderbird
   ];
 
