@@ -29,4 +29,8 @@
       "--pollinterval=50" ];
   };
 
+  environment.systemPackages = with pkgs; [ 
+    ebusd
+  ];
+
 }

@@ -12,7 +12,6 @@
     tmux
     tree
     jq     
-    ebusd
   ];
 
   programs.bash.enableCompletion = true;
