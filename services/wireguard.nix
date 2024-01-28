@@ -5,7 +5,7 @@
     allowedUDPPorts = [ 51820 ]; # Clients and peers can use the same port, see listenport
   }; 
   
-  systemd.services.wireguard-reresolve-dns = {
+  systemd.services.wireguard-reresolve-dns = mkIf false {
     description = "reresolve-dns"; 
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
