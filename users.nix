@@ -2,14 +2,13 @@
 
 {
   users.extraUsers.nathan = {
-     isNormalUser = true;
-     uid = 2000;
-     extraGroups = [ "wheel" "docker" "media" ];
-     openssh.authorizedKeys.keys = [
-       config.secrets.ssh.nathan.pub
-       config.secrets.ssh.nathan-2021.pub
-       config.secrets.ssh.nathan-nchromebook.pub
-     ];
+    isNormalUser = true;
+    uid = 2000;
+    extraGroups = [ "wheel" "docker" "media" "networkmanager" ];
+    openssh.authorizedKeys.keys = [
+      config.secrets.ssh.ngo.pub
+      config.secrets.ssh.nathan-2021.pub
+    ];
   };
 
   users.extraUsers.femke = {
@@ -24,27 +23,27 @@
   };
 
   users.extraUsers.nills = {
-     isNormalUser = true;
-     uid = 2004;
-     openssh.authorizedKeys.keys = [
-       config.secrets.ssh.nills.pub.k0
-       config.secrets.ssh.nills.pub.k1
-       config.secrets.ssh.nills.pub.k2
-       config.secrets.ssh.nills.pub.k3
-       config.secrets.ssh.nills.pub.k4
-     ];
+    isNormalUser = true;
+    uid = 2004;
+    openssh.authorizedKeys.keys = [
+      config.secrets.ssh.nills.pub.k0
+      config.secrets.ssh.nills.pub.k1
+      config.secrets.ssh.nills.pub.k2
+      config.secrets.ssh.nills.pub.k3
+      config.secrets.ssh.nills.pub.k4
+    ];
   };
 
   users.extraUsers.wesley = {
-     isNormalUser = true;
-     uid = 2005;
-     openssh.authorizedKeys.keys = [
-       config.secrets.ssh.wesley.pub.k0
-     ];
-     extraGroups = [ "media" ];
+    isNormalUser = true;
+    uid = 2005;
+    openssh.authorizedKeys.keys = [
+      config.secrets.ssh.wesley.pub.k0
+    ];
+    extraGroups = [ "media" ];
   };
 
-  
+
   users.users.mediaonly = {
     uid = 2003;
     group = "mediaonly";
@@ -56,13 +55,13 @@
 
   users.groups.mediaonly = {
     gid = 2000;
-  };  
+  };
 
   users.groups.media = {
     gid = 2001;
   };
-  
-  security.sudo.wheelNeedsPassword = false;  
+
+  security.sudo.wheelNeedsPassword = false;
 
   # Warning true is only valid when setting a hashedPassword.
   users.mutableUsers = true;
