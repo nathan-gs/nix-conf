@@ -9,6 +9,7 @@
     [ # Include the results of the hardware scan.
       ./ngo-hardware.nix
       ../system.nix
+      ../users.nix
     ];
 
   # Bootloader.

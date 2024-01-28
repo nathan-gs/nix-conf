@@ -10,6 +10,8 @@
       (modulesPath + "/installer/scan/not-detected.nix")
       ../headless.nix
       ../system.nix
+      ../users.nix
+      ../users-servers.nix
       ../disks.nix
      ../apps/cloudflare-dyndns.nix
      ../services/smb.nix

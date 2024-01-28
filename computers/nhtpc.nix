@@ -11,6 +11,8 @@
       ../disks.nix
       ../headless.nix
       ../system.nix
+      ../users.nix
+      ../users-servers.nix
       ../powersave.nix
       ../apps/cloudflare-dyndns.nix
       ../services/onedrive.nix

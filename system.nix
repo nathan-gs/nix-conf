@@ -3,7 +3,6 @@
 {
 
   imports = [
-    ./users.nix
     ./software.nix    
     ./hosts.nix
     ./services/ssh.nix
