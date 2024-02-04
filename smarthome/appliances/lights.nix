@@ -40,7 +40,7 @@
           conditionsOff = [
             (ha.condition.time_after "22:00:00")
           ];
-          entities = [ "switch.floor0_living_light_plug_kattenlamp" "light.floor0_living_light_bollamp" "light.floor0_living_light_booglamp" ];
+          entities = [ "light.floor0_living_light_kattenlamp" "light.floor0_living_light_bollamp" "light.floor0_living_light_booglamp" ];
         })
         ++
         (ha.automationOnOff "floor0/bureau/lights"
