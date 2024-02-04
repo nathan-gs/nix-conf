@@ -28,4 +28,16 @@ map
       ieee = "0x04cd15fffe629cbe";
       floor = "floor0";
     }
+    {
+      zone = "living";
+      name = "kattenlamp";
+      ieee = "0x2c1165fffec74a1b";
+      floor = "floor0";
+    }
+    {
+      zone = "living";
+      name = "tv";
+      ieee = "0x847127fffe9a7f97";
+      floor = "floor0";
+    }
   ]

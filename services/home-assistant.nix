@@ -136,7 +136,7 @@
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/solis-sensor.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {
-        pyelectroluxconnect = (pkgs.python311Packages.callPackage ../pkgs/python/pyelectroluxconnect.nix {});
+        pyelectroluxocp = (pkgs.python311Packages.callPackage ../pkgs/python/pyelectroluxocp.nix {});
       })
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {
         pyindego = (pkgs.python311Packages.callPackage ../pkgs/python/pyindego.nix {});
