@@ -1,20 +1,20 @@
-{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent, pyelectroluxconnect }:
+{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent, pyelectroluxocp }:
 
 buildHomeAssistantComponent rec {
 
-  owner = "mauro-modolo";
+  owner = "albaintor";
   domain = "electrolux_status";
-  version = "5.0.0";
+  version = "1.0";
 
   src = fetchFromGitHub {
-    owner = "mauro-midolo";
+    owner = owner;
     repo = "homeassistant_electrolux_status";
     rev = "v${version}";
-    sha256 = "sha256-6PAvOebc8Dtj5uMadYfrzbuF0ToBnmW8VXpdk9c1N4o=";
+    sha256 = "sha256-NrcafOZAVTaFSJF/1TRKeHms1P1HtcHR/pUYq9/UwWo=";
   };
 
   propagatedBuildInputs = [
-    pyelectroluxconnect
+    pyelectroluxocp
   ];
 
 }
