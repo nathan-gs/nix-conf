@@ -167,10 +167,11 @@
         "nixpkgs": "nixpkgs_3"
       },
       "locked": {
-        "dirtyRev": "7f96124825050bfd3437db67987b47c389e4e662-dirty",
-        "dirtyShortRev": "7f96124-dirty",
-        "lastModified": 1706466801,
+        "lastModified": 1707051990,
         "narHash": "sha256-tzybm2Um1aS21UMZCzH80+9TxEK1Wf1eaYmB4b95U+Q=",
+        "ref": "refs/heads/main",
+        "rev": "850540cee26cbfe5465693849ccec5eb0e763262",
+        "revCount": 25,
         "type": "git",
         "url": "file:///etc/nixos/secrets"
       },
