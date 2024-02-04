@@ -55,7 +55,9 @@
 
   # Enable the GNOME Desktop Environment.
   services.xserver.displayManager.gdm.enable = true;
-  services.xserver.desktopManager.gnome.enable = true;
+  services.xserver.desktopManager.gnome = {
+    enable = true;
+  };
 
   # Configure keymap in X11
   services.xserver = {
@@ -89,7 +91,21 @@
   users.users.nathan.packages = with pkgs; [
     firefox
     vscode
+    microsoft-edge
     #  thunderbird
+  ];
+
+  nix.distributedBuilds = true;
+
+  nix.buildMachines = [
+    {
+      sshKey = "/root/.ssh/nixdist";
+      sshUser = "nixdist";
+      hostName = "h.nathan.gs";
+      systems = [
+        "x86_64-linux"
+      ];
+    }
   ];
 
   # Allow unfree packages
