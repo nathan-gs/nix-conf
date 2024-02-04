@@ -4,10 +4,11 @@
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
     secrets.url = "git+file:///etc/nixos/secrets";
     photoprism-slideshow.url = "github:nathan-gs/photoprism-slideshow";
+    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
   };
 
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, ... }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, nixos-hardware, ... }:
     let
       overlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.system}; };
       overlayModule = ({ config, pkgs, ... }: { nixpkgs.overlays = [ overlay ]; });
@@ -36,6 +37,7 @@
             # Point this to your original configuration.
             ./computers/ngo.nix
             secrets.nixosModules.secrets
+            nixos-hardware.nixosModules.microsoft-surface-go
             overlayModule
           ];
 
