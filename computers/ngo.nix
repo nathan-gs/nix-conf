@@ -92,10 +92,15 @@
     firefox
     vscode
     microsoft-edge
+    chromium 
     #  thunderbird
   ];
 
   nix.distributedBuilds = true;
+  nix.settings.max-jobs = 0;
+  nix.extraOptions = ''
+    builders-use-substitutes = true
+  '';
 
   nix.buildMachines = [
     {
@@ -105,11 +110,22 @@
       systems = [
         "x86_64-linux"
       ];
+      supportedFeatures = [
+        "big-parallel"
+        "nixos-test"
+        "benchmark"
+        "kvm"
+      ];
+      speedFactor = 2;
+      maxJobs = 4;
     }
   ];
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
+
+  microsoft-surface.surface-control.enable = true;
+  hardware.microsoft-surface.firmware.surface-go-ath10k.replace = true;
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
