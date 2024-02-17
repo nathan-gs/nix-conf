@@ -92,6 +92,7 @@ let
     '';
     unit_of_measurement = "°C";
     device_class = "temperature";
+    state_class = "measurement";
     availability = ''
       {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} %}      
       {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}

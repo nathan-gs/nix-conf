@@ -18,6 +18,7 @@
         device_class = "power";
         force_update = true;
         icon = "mdi:meter-electric";
+        state_class = "measurement";
       }
     ];
 

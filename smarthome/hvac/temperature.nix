@@ -22,6 +22,7 @@ in
             '';
             unit_of_measurement = "°C";
             icon = "mdi:water-percent";
+            state_class = "measurement";
           }
           {
             name = "outdoor_dewpoint";
@@ -35,6 +36,7 @@ in
             '';
             unit_of_measurement = "°C";
             icon = "mdi:water-percent";
+            state_class = "measurement";
           }
           {
             name = "outdoor_humidity";
@@ -46,6 +48,7 @@ in
             '';
             unit_of_measurement = "%";
             icon = "mdi:water-percent";
+            state_class = "measurement";
           }
           {
             name = "outdoor_temperature";
@@ -57,6 +60,7 @@ in
             '';
             unit_of_measurement = "°C";
             icon = "mdi:home-thermometer-outline";
+            state_class = "measurement";
           }
           {
             name = "indoor_humidity";
@@ -76,6 +80,7 @@ in
               {% endif %}
             '';
             unit_of_measurement = "%";
+            state_class = "measurement";
           }
           {
             name = "indoor_humidity_max";
@@ -95,6 +100,7 @@ in
               {% endif %}
             '';
             unit_of_measurement = "%";
+            state_class = "measurement";
           }
           {
             name = "indoor_temperature";
@@ -107,6 +113,7 @@ in
             '';
             icon = "mdi:home-thermometer";
             unit_of_measurement = "°C";
+            state_class = "measurement";
           }
         ];
       }

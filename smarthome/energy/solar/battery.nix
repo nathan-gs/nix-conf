@@ -57,6 +57,7 @@
         unit_of_measurement = "%";
         json_attributes_topic = "solar/battery/change";
         json_attributes_template = "{{ value_json | tojson }}";
+        state_class = "measurement";
       }
     ];
 
