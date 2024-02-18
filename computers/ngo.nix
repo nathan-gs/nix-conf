@@ -93,6 +93,7 @@
     vscode
     microsoft-edge
     chromium 
+    signal-desktop
     #  thunderbird
   ];
 
