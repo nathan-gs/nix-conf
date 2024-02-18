@@ -2,13 +2,13 @@
 
 buildPythonPackage rec {
   pname = "pyelectroluxocp";
-  version = "0.0.7";
+  version = "0.0.12";
 
   src = fetchFromGitHub {
     owner = "Woyken";
     repo = "py-electrolux-ocp";
     rev = version;
-    sha256 = "sha256-MAW3ShBJF3xzHk3L/+2nVn1sJ/7RzEQElOjfd3/tOxs=";
+    sha256 = "sha256-9LibWs5DKu39eJ10wX24AfLjKSZ4rJb06rlmrkszL6Q=";
   };
 
   propagatedBuildInputs = [

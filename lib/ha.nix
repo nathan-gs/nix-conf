@@ -11,6 +11,7 @@ let
       unit_of_measurement = "°C";
       device_class = "temperature";
       icon = "mdi:thermometer-auto";
+      state_class = "measurement";
     };
 
     battery_from_attr = name: source: {
@@ -20,6 +21,7 @@ let
       '';
       device_class = "battery";
       unit_of_measurement = "%";
+      state_class = "measurement";
     };
 
     battery_from_3v_voltage_attr = name: source: {
@@ -30,6 +32,7 @@ let
       '';
       device_class = "battery";
       unit_of_measurement = "%";
+      state_class = "measurement";
     };
   };
 

@@ -35,10 +35,16 @@ map
       floor = "floor1";
     }
     {
-      ieee = "0x00124b00291149da";
+      ieee = "0x9035eafffe0975c6";
       zone = "nikolai";
       name = "na";
       floor = "floor1";
+    }
+    {
+      ieee = "0x00124b00291149da";
+      zone = "notinuse";
+      name = "na";
+      floor = "notinuse";
     }
     {
       ieee = "0x00124b00291150db";

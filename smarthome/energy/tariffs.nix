@@ -11,23 +11,27 @@
             unit_of_measurement = "€/kWh";
             # Cost = vendor + federal tax + federal accijns + nettarifs + transport
             state = "{{ ( states('sensor.gas_cost_kwh_energycomponent') | float ) + (0.1058 / 100) + (0.0572 / 100) + (2.07 / 100) + (1.41 / 1000) }}";
+            state_class = "measurement";
           }
           {
             name = "gas_cost_m3";
             unit_of_measurement = "€/m³";
             state = "{{ ( states('sensor.gas_cost_kwh') | float ) * 11.60}}";
+            state_class = "measurement";
           }            
           {
             name = "electricity_cost_peak_kwh";
             unit_of_measurement = "€/kWh";
             # Cost = vendor + federal accijns + nettarifs + transport + bijdrage energie + groene stroom + wkk
             state = "{{ ( states('sensor.electricity_cost_peak_kwh_energycomponent') | float ) + (1.44160 / 100) + (9.42 / 100) + (1.26 / 100) + (0.2942 / 100) + (2.233 / 100) + (0.344 / 100) }}";      
+            state_class = "measurement";
           }
           {
             name = "electricity_cost_offpeak_kwh";
             unit_of_measurement = "€/kWh";
             # Cost = vendor + federal accijns + nettarifs + transport + bijdrage energie + groene stroom + wkk
             state = "{{ ( states('sensor.electricity_cost_offpeak_kwh_energycomponent') | float ) + (1.44160 / 100) + (6.87 / 100) + (1.26 / 100) + (0.2942 / 100) + (2.233 / 100) + (0.344 / 100) }}";      
+            state_class = "measurement";
           }
           {
             name = "energy/electricity/cost";
@@ -39,6 +43,7 @@
                 {{ states('sensor.electricity_cost_peak_kwh') | float }}
               {% endif %}
             '';
+            state_class = "measurement";
           }
         ];
         binary_sensor = [
@@ -73,12 +78,14 @@
             select = "table :has(> th:-soup-contains(Dagtarief)) td";
             value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
             unit_of_measurement = "€/kWh";
+            state_class = "measurement";
           }
           {
             name = "electricity_cost_offpeak_kwh_energycomponent";
             select = "table :has(> th:-soup-contains(Nachttarief)) td";
             unit_of_measurement = "€/kWh";
             value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
+            state_class = "measurement";
           }
           {
             name = "gas_cost_kwh_energycomponent";
@@ -87,6 +94,7 @@
             '';
             unit_of_measurement = "€/kWh";
             value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
+            state_class = "measurement";
           }
         ];
       }
@@ -101,6 +109,7 @@
             '' ;
             value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
             unit_of_measurement = "€/kWh";
+            state_class = "measurement";
           }
         ];
       }

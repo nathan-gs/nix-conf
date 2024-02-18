@@ -34,6 +34,7 @@ in
               {{ max(valid_temp) | round(2) }}
             '';
             icon = "mdi:thermometer-auto";
+            state_class = "measurement";
           }
           {
             name = "heating_temperature_desired";
@@ -76,6 +77,7 @@ in
                 mdi:thermometer-chevron-down
               {% endif %}
             '';
+            state_class = "measurement";
           }
         ];
       }

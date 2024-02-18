@@ -21,6 +21,7 @@
       ../services/vscode.nix
       ../services/nginx.nix
       ../services/smb.nix
+      ../services/remote-build-host.nix
       ../monitoring.nix
       ../smarthome.nix
     ];

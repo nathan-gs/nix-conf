@@ -61,6 +61,7 @@
             unit_of_measurement = "kWh";
             device_class = "energy";
             icon = "mdi:solar-panel";
+            state_class = "total";
           }
         ];
       }

@@ -23,6 +23,7 @@
               {% endif %}    
             '';
             unit_of_measurement = "DD";
+            state_class = "measurement";
           }
         ];
       }
@@ -44,6 +45,7 @@
               {% endif %}      
             '';
             unit_of_measurement = "m³/DD";
+            state_class = "measurement";
           }
         ];
       }
@@ -61,6 +63,7 @@
               {{ gas_m3_per_degree_day * occupancy_rate }}
             '';
             unit_of_measurement = "(m³/DD)*O";
+            state_class = "measurement";
           }
         ];
       }

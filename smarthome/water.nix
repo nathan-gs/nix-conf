@@ -29,6 +29,7 @@
           unit_of_measurement = "L";
           icon = "mdi:water";
           unique_id = "watermeter_usage_last_minute";
+          state_class = "measurement";
         }
       ];
 

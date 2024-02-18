@@ -23,6 +23,7 @@
             '';
             device_class = "temperature";
             unit_of_measurement = "°C";
+            state_class = "measurement";
           }
         ];
       }
