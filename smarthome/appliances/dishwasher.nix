@@ -71,8 +71,46 @@
     template = [
       { 
         sensor = [
+          (
+            ha.sensor.energy_demand_remaining 
+              "dishwasher" 
+              ''states('binary_sensor.dishwasher_status') | bool(false) and states('sensor.dishwasher_remaining_time') | int(0) > 0''
+              "0.7"
+          )
         ];
       }
+    ];
+
+    "automation manual" = [
+      (
+        ha.automation "system/dishwasher.turn_on"
+          {
+            triggers = [ (
+              ha.trigger.template_for 
+                ''
+                  {{ 
+                  states('binary_sensor.dishwasher_remote_control') | bool(false)
+                  and
+                  states('binary_sensor.dishwasher_status') | bool(false)
+                  and 
+                  states('binary_sensor.electricity_demand_management_run_now') | bool(false)
+                  }}
+                '' 
+                "00:05:00"
+              ) 
+            ];
+            actions = [
+              {
+                service = "hon.start_program";
+                data = {
+                  program = "auto_universal_soil";
+                  parameters = ''{'extraDry':'0','openDoor':'1','delayTime':'0'}'';
+                };
+                target.device_id = "6522a71c380d6b17f42bffd5b0645999";
+              }
+            ];
+          }
+      )
     ];
   };
 }

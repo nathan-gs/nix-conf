@@ -34,6 +34,20 @@ let
       unit_of_measurement = "%";
       state_class = "measurement";
     };
+
+    energy_demand_remaining = appliance: condition: template: {
+      name = "electricity/demand_management/${appliance}.energy_remaining";
+      unique_id = genId "electricity/demand_management/${appliance}.energy_remaining";
+      device_class = "energy";
+      state = ''
+        {% if ${condition} %}
+          ${template}
+        {% else %}
+          0
+        {% endif %}
+      '';
+      unit_of_measurement = "kWh";
+    };
   };
 
   automation = name: { triggers ? [ ], conditions ? [ ], actions ? [ ], mode ? "single" }: {
