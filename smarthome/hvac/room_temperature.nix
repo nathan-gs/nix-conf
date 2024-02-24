@@ -139,24 +139,15 @@ in
               temperatureSets
                 (windowClosed
                   "binary_sensor.floor1_fen_window_na_contact"
-                  (workday
-                    ''
-                      {% if now().hour >= 6 and now().hour < 17 %}
-                        {{ temperature_eco }}
-                      {% elif now().hour >= 19 and now().hour < 22 %}
-                        {{ temperature_comfort_low }}
-                      {% else %}
-                        {{ temperature_night }} 
-                      {% endif %}
-                    ''
-                    ''
-                      {% if now().hour >= 19 and now().hour < 22 %}
-                        {{ temperature_comfort_low }}
-                      {% else %}                              
-                        {{ temperature_night }}
-                      {% endif %}
-                    ''
-                  )
+                  ''
+                    {% if now().hour >= 6 and now().hour < 17 %}
+                      {{ temperature_eco }}
+                    {% elif now().hour >= 21 and now().hour < 22 %}
+                      {{ temperature_comfort_low }}
+                    {% else %}
+                      {{ temperature_night }} 
+                    {% endif %}
+                  ''                  
                 )
             )
           )
