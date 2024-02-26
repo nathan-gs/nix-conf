@@ -140,10 +140,8 @@ in
                 (windowClosed
                   "binary_sensor.floor1_fen_window_na_contact"
                   ''
-                    {% if now().hour >= 6 and now().hour < 17 %}
+                    {% if now().hour >= 6 and now().hour < 18 %}
                       {{ temperature_eco }}
-                    {% elif now().hour >= 21 and now().hour < 22 %}
-                      {{ temperature_comfort_low }}
                     {% else %}
                       {{ temperature_night }} 
                     {% endif %}
@@ -162,7 +160,7 @@ in
                       ''
                         {% if now().hour >= 6 and now().hour < 7 %}
                           {{ temperature_night }}
-                        {% elif now().hour >= 17 and now().hour < 21 %}
+                        {% elif now().hour >= 18 and now().hour < 21 %}
                           {{ temperature_night }}
                         {% else %}
                           {{ temperature_eco }}
@@ -214,8 +212,10 @@ in
                   "input_boolean.floor0_living_in_use"
                   (workday
                     ''
-                      {% if now().hour >= 16 and now().hour < 22 %}
+                      {% if now().hour >= 18 and now().hour < 22 %}
                         {{ temperature_comfort }}
+                      {% elif now().hour >= 16 and now().hour <= 17 %}
+                        {{ temperature_comfort_low }}
                       {% else %}
                         {{ temperature_eco }}
                       {% endif %}
