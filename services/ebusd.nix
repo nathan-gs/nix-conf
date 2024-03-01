@@ -1,7 +1,11 @@
 { channels, config, pkgs, lib, ... }:
 {
 
-  services.ebusd = {
+  imports = [
+     ./ebusd-service.nix
+  ];
+
+  services.ebusd-t = {
     enable = true;
     device = "enh:ebus:3335";
     mqtt = {
@@ -17,8 +21,8 @@
       network = "notice";
       bus = "error";
       update = "error";
-      other = "notice";
-      all = "error";
+      other = "info";
+      all = "info";
     };
     extraArguments = [
       "--latency=100" 
