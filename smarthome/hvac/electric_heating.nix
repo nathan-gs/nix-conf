@@ -142,7 +142,7 @@ in
               {% set home_alone_and_in_use = states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false) %}     
               {% set needs_heating = indoor_temp < (states('sensor.floor0_bureau_temperature_auto_wanted') | float(15.5)) %}           
               {% set power_not_near_max_threshold = not(states('binary_sensor.electricity_delivery_power_near_max_threshold') | bool(false)) %}     
-              {% if power_available > 685 and indoor_temp < 21 %}
+              {% if power_available > 700 and indoor_temp < 21 %}
                 true  
               {% elif prefer_electricity_over_gas and home_alone_and_in_use and needs_heating and power_not_near_max_threshold %}
                 true
