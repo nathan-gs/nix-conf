@@ -54,6 +54,7 @@
                   |rejectattr('entity_id', 'contains', 'floor1_nikolai_temperature_na_battery_low') 
                   |rejectattr('entity_id', 'contains', 'roaming_roaming') 
                   |rejectattr('entity_id', 'contains', '_kerstboom')                 
+                  |rejectattr('entity_id', 'contains', 'floor0_keuken_sonos')                 
                   
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
