@@ -12,6 +12,7 @@
     tmux
     tree
     jq     
+    (pkgs.python311Packages.callPackage ./pkgs/python/autogenstudio.nix {})
   ];
 
   programs.bash.enableCompletion = true;
