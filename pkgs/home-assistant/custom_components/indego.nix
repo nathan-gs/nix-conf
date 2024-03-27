@@ -1,4 +1,4 @@
-{ stdenv, pkgs, fetchgit, buildHomeAssistantComponent, pyindego }:
+{ stdenv, pkgs, fetchgit, buildHomeAssistantComponent }:
 
 buildHomeAssistantComponent rec {
 
@@ -13,7 +13,7 @@ buildHomeAssistantComponent rec {
   };
 
   propagatedBuildInputs = [
-    pyindego    
+    (pkgs.python311Packages.callPackage ../../python/pyindego.nix {})
   ];
 
 }

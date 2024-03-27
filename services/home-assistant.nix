@@ -135,12 +135,8 @@
     customComponents = [
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/solis-sensor.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {
-        pyelectroluxocp = (pkgs.python311Packages.callPackage ../pkgs/python/pyelectroluxocp.nix {});
-      })
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {
-        pyindego = (pkgs.python311Packages.callPackage ../pkgs/python/pyindego.nix {});
-      })
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})
     ];

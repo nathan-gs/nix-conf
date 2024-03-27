@@ -1,4 +1,4 @@
-{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent, pyelectroluxocp }:
+{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent}:
 
 buildHomeAssistantComponent rec {
 
@@ -14,7 +14,7 @@ buildHomeAssistantComponent rec {
   };
 
   propagatedBuildInputs = [
-    pyelectroluxocp
+    (pkgs.python311Packages.callPackage ../../python/pyelectroluxocp.nix {})
   ];
 
 }
