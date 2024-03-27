@@ -19,6 +19,7 @@
       ../services/photoprism.nix
       ../services/plex.nix
       ../services/vscode.nix
+      ../services/autogenstudio.nix
       ../services/nginx.nix
       ../services/smb.nix
       ../services/remote-build-host.nix
