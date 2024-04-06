@@ -87,6 +87,7 @@ map
       name = "deken";
       ieee = "0xa4c13859f1a8fc3d";
       floor = "floor1";
+      disabled = true;
     }
     {
       zone = "keuken";
