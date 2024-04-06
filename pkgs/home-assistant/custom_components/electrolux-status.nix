@@ -4,13 +4,13 @@ buildHomeAssistantComponent rec {
 
   owner = "albaintor";
   domain = "electrolux_status";
-  version = "1.0.12";
+  version = "1.0.17";
 
   src = fetchFromGitHub {
     owner = owner;
     repo = "homeassistant_electrolux_status";
     rev = "v${version}";
-    sha256 = "sha256-KUkMzJXY9BuJq1fYHh3UtTj1YsE9pxhECIVI/3q0q70=";
+    sha256 = "sha256-4VC7u0K9wGq2T0F83X4cZBvWwsdSuKSaBY7s36u2sQA=";
   };
 
   propagatedBuildInputs = [
