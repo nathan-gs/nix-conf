@@ -26,6 +26,7 @@
                   |rejectattr('entity_id', 'contains', 'dsmr_consumption_gas_read_at')
                   |rejectattr('entity_id', 'contains', 'dsmr_consumption_gas_currently')
                   |rejectattr('entity_id', 'contains', 'dsmr_consumption_quarter_hour_peak_electricity_read')
+                  |rejectattr('entity_id', 'contains', 'dsmr_reading_electricity_delivered_2_cost_2')
                   |rejectattr('entity_id', 'contains', 'dsmr_meter_stats_')
                   |rejectattr('entity_id', 'contains', 'dsmr_reading_electricity_delivered_1_cost_2')
                   |rejectattr('entity_id', 'contains', 'dsmr_reading_extra_device_delivered')
@@ -54,7 +55,10 @@
                   |rejectattr('entity_id', 'contains', 'floor1_nikolai_temperature_na_battery_low') 
                   |rejectattr('entity_id', 'contains', 'roaming_roaming') 
                   |rejectattr('entity_id', 'contains', '_kerstboom')                 
-                  |rejectattr('entity_id', 'contains', 'floor0_keuken_sonos')                 
+                  |rejectattr('entity_id', 'contains', 'floor1_fen_metering_plug_deken')                 
+                  |rejectattr('entity_id', 'contains', 'floor0_keuken_sonos')
+                  |rejectattr('entity_id', 'contains', 'garden_garden_plug_pomp')
+                  |rejectattr('entity_id', 'contains', 'all_standby_power')
                   
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
