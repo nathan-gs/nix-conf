@@ -8,6 +8,7 @@ in
   ];
 
   services.home-assistant.config = {
+    # TODO before HA 2024.03
     proximity = {
       home = {
         devices = [
@@ -29,6 +30,7 @@ in
     #  }
     #];
 
+    # TODO before HA 2024.03
     binary_sensor = [
       {
         platform = "ping";

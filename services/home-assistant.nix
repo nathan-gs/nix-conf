@@ -91,6 +91,7 @@
       "dsmr"
       "ebusd"
       "ffmpeg"      
+      "fritz"
       "forecast_solar"
       "homekit_controller"
       "homekit"
