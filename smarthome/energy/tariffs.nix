@@ -75,25 +75,27 @@
         sensor = [
           {
             name = "electricity_cost_peak_kwh_energycomponent";
-            select = "table :has(> th:-soup-contains(Dagtarief)) td";
-            value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
+            select = "table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(Dagtarief)";
+            value_template = "{{ (value.split('€')[1]|replace(',', '.')|trim | float) / 100 }}";
             unit_of_measurement = "€/kWh";
             state_class = "measurement";
           }
           {
             name = "electricity_cost_offpeak_kwh_energycomponent";
-            select = "table :has(> th:-soup-contains(Nachttarief)) td";
+            select = "table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(Nachttarief)";
             unit_of_measurement = "€/kWh";
-            value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
+            value_template = "{{ (value.split('€')[1]|replace(',', '.')|trim | float) / 100 }}";
             state_class = "measurement";
           }
           {
             name = "gas_cost_kwh_energycomponent";
             select = ''
-              tr:nth-child(5):has(:-soup-contains("€cent/kWh")) td
+              h3#octa-clear-gas + p + p + div table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(cent)
             '';
             unit_of_measurement = "€/kWh";
-            value_template = "{{ (value | replace(',', '.') | float) / 100 }}";
+            value_template = ''
+              {{ (value.split(':')[1].split('€')[1]|replace(',', '.')|trim | float) / 100 }}
+            '';
             state_class = "measurement";
           }
         ];
