@@ -18,7 +18,7 @@
               {% set ignore_seconds = 300 %}
               {% set ignore_ts = (now().timestamp() - ignore_seconds)|as_datetime %}
               {% set entities = states
-                  |rejectattr('domain','in',['button','event','group','input_button','input_text','scene', 'media_player'])
+                  |rejectattr('domain','in',['button','event','group','input_button','input_text','scene', 'media_player', 'update'])
                   |rejectattr('last_changed','ge',ignore_ts) 
                   |rejectattr('entity_id', 'contains', 'dsmr_current')
                   |rejectattr('entity_id', 'contains', 'dsmr_day')
@@ -59,6 +59,7 @@
                   |rejectattr('entity_id', 'contains', 'floor0_keuken_sonos')
                   |rejectattr('entity_id', 'contains', 'garden_garden_plug_pomp')
                   |rejectattr('entity_id', 'contains', 'all_standby_power')
+                  |rejectattr('entity_id', 'contains', '_battery_range')
                   
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
