@@ -43,7 +43,7 @@ map
     {
       zone = "nikolai";
       name = "verwarming";
-      ieee = "0xa4c1385317a3b396";
+      ieee = "0xa4c13859f1a8fc3d";      
       floor = "floor1";
     }
     {
@@ -85,7 +85,7 @@ map
     {
       zone = "fen";
       name = "deken";
-      ieee = "0xa4c13859f1a8fc3d";
+      ieee = "0xa4c1385317a3b396"; # Device does not measure correct
       floor = "floor1";
       disabled = true;
     }
