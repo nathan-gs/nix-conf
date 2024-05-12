@@ -74,6 +74,15 @@ let
     })
   ];
 
+  automationToggle = name: { triggers ? [ ], conditions ? [ ], entities ? [ ], mode ? "single" }: [
+    (automation "${name}.toggle" {
+      triggers = triggers;   
+      conditions = conditions;
+      actions = map (entity: (action.toggle entity)) entities;
+      mode = mode;
+    })
+  ];
+
   action = {
 
     on = entity: {
@@ -83,6 +92,11 @@ let
 
     off = entity: {
       service = "${lib.head (lib.strings.splitString "." entity)}.turn_off";
+      target.entity_id = entity;
+    };
+
+    toggle = entity: {
+      service = "${lib.head (lib.strings.splitString "." entity)}.toggle";
       target.entity_id = entity;
     };
 
@@ -222,6 +236,7 @@ in
   sensor = sensor;
   automation = automation;
   automationOnOff = automationOnOff;
+  automationToggle = automationToggle;
   action = action;
   trigger = trigger;
   condition = condition;
