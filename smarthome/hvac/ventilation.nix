@@ -14,8 +14,8 @@
               {% set is_using_sanitary = false %}
               {% set dewpoint_high = (states('sensor.indoor_dewpoint') | float(15.0) > 15.0) %}
               {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
-              {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float(19) %}
-              {% set house_needs_cooling = indoor_temperature > 25 %}
+              {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
+              {% set house_needs_cooling = indoor_temperature > 22 %}
               {% set house_needs_cooling_and_temp_outside_lower = false %}
               {% if house_needs_cooling and outdoor_temperature < indoor_temperature %}
                 {% set house_needs_cooling_and_temp_outside_lower = true %}
@@ -49,8 +49,8 @@
               humidity_max_over_80 = ''{{ (states('sensor.indoor_humidity_max') | float(100) > 80) }}'';
               house_needs_cooling_and_temp_outside_lower = ''
                 {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
-                {% set outdoor_temperature = states('sensor.garden_garden_temperature_noordkant_temperature') | float %}
-                {% set house_needs_cooling = indoor_temperature > 25 %}
+                {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
+                {% set house_needs_cooling = indoor_temperature > 22 %}
                 {% set house_needs_cooling_and_temp_outside_lower = false %}
                 {% if house_needs_cooling and outdoor_temperature < indoor_temperature %}
                   {% set house_needs_cooling_and_temp_outside_lower = true %}
@@ -226,7 +226,14 @@
         {
           name = "itho_wtw_inlet_temperature";
           state_topic = "itho/ithostatus";
-          value_template = "{{ value_json['Outdoor temp (°C)'] }}";
+          value_template = ''
+            {% set bypass_open = value_json['Bypass position'] | bool %}
+            {% if bypass_open %}
+              {{ value_json['Exhaust temp (°C)'] | float }}
+            {% else %}
+              {{ value_json['Supply temp (°C)'] | float }}
+            {% endif %}
+          '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
           state_class = "measurement";
@@ -235,7 +242,14 @@
         {
           name = "itho_wtw_outlet_temperature";
           state_topic = "itho/ithostatus";
-          value_template = "{{ value_json['Room temp (°C)'] }}";
+          value_template = ''
+            {% set bypass_open = value_json['Bypass position'] | bool %}
+            {% if bypass_open %}
+              {{ value_json['Supply temp (°C)'] | float }}
+            {% else %}
+              {{ value_json['Exhaust temp (°C)'] | float }}
+            {% endif %}
+          '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_outlet_temperature";
           state_class = "measurement";
