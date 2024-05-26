@@ -3,7 +3,7 @@
 {
 
   imports = [
-    ./air_quality.nix
+    ./air_quality
     ./appliances
     ./calendar.nix
     ./doorbell.nix
