@@ -15,6 +15,7 @@
       ../users-servers.nix
       ../powersave.nix
       ../apps/cloudflare-dyndns.nix
+      ../services/ollama.nix
       ../services/onedrive.nix
       ../services/photoprism.nix
       ../services/plex.nix
