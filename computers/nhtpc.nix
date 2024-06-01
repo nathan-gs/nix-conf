@@ -23,6 +23,7 @@
       ../services/autogenstudio.nix
       ../services/nginx.nix
       ../services/smb.nix
+      ../services/sos2mqtt.nix
       ../services/remote-build-host.nix
       ../monitoring.nix
       ../smarthome.nix

@@ -34,6 +34,10 @@
               acl = ["readwrite itho/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.itho.password;
             };
+            sos2mqtt = {
+              acl = ["readwrite irceline/#" "readwrite homeassistant/#" ];
+              password = config.secrets.mqtt.users.sos2mqtt.password;
+            };
         };
         
         port = 1883;
