@@ -14,6 +14,7 @@
     extraConfig = ''
       proxy_buffering off;
     '';
+    basicAuth = config.secrets.nginx.basicAuth;
     locations."/" = {
       proxyPass = "http://127.0.0.1:11434";
       proxyWebsockets = true; # needed if you need to use WebSocket
@@ -22,10 +23,6 @@
         proxy_ssl_server_name on;
         # required when the server wants to use HTTP Authentication
         proxy_pass_header Authorization;
-
-        # PAM Auth
-        auth_pam "Password Required";
-        auth_pam_service_name nginx;
 
         proxy_set_header X-Real-IP          $remote_addr;
         proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;

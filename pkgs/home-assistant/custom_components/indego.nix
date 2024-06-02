@@ -13,7 +13,7 @@ buildHomeAssistantComponent rec {
   };
 
   propagatedBuildInputs = [
-    (pkgs.python311Packages.callPackage ../../python/pyindego.nix {})
+    (pkgs.python312Packages.callPackage ../../python/pyindego.nix {})
   ];
 
 }

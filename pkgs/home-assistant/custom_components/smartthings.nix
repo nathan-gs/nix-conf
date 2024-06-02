@@ -1,4 +1,4 @@
-{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent, python311Packages }:
+{ stdenv, pkgs, fetchFromGitHub, buildHomeAssistantComponent, python312Packages }:
 
 buildHomeAssistantComponent  rec {
 
@@ -17,8 +17,8 @@ buildHomeAssistantComponent  rec {
   dontCheckManifest = true;
 
   propagatedBuildInputs = [
-    python311Packages.pysmartthings
-    python311Packages.pysmartapp
+    python312Packages.pysmartthings
+    python312Packages.pysmartapp
   ];
   
 }

@@ -14,7 +14,7 @@ buildHomeAssistantComponent rec {
   };
 
   propagatedBuildInputs = [
-    (pkgs.python311Packages.callPackage ../../python/pyelectroluxocp.nix {})
+    (pkgs.python312Packages.callPackage ../../python/pyelectroluxocp.nix {})
   ];
 
 }

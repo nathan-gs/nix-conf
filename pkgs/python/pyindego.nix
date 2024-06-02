@@ -1,4 +1,4 @@
-{ lib, buildPythonPackage, fetchgit, python311Packages }:
+{ lib, buildPythonPackage, fetchgit, python312Packages }:
 
 buildPythonPackage rec {
   pname = "pyIndego";
@@ -11,9 +11,9 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [
-    python311Packages.requests
-    python311Packages.aiohttp
-    python311Packages.pytz
+    python312Packages.requests
+    python312Packages.aiohttp
+    python312Packages.pytz
   ];
 
   doCheck = false;

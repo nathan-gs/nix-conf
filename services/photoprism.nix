@@ -25,6 +25,7 @@
   services.nginx.virtualHosts."photoprism.nathan.gs" = {
     forceSSL = true;
     enableACME = true;
+    basicAuth = config.secrets.nginx.basicAuth;
     locations."/" = {
       proxyPass = "http://127.0.0.1:2342";
       proxyWebsockets = true; # needed if you need to use WebSocket
@@ -34,9 +35,6 @@
           proxy_ssl_server_name on;
           # required when the server wants to use HTTP Authentication
           proxy_pass_header Authorization;
-          # PAM Auth
-          auth_pam "Password Required";
-          auth_pam_service_name nginx;
         '';
     };
     locations."/slideshow" = {
@@ -47,9 +45,6 @@
           proxy_ssl_server_name on;
           # required when the server wants to use HTTP Authentication
           proxy_pass_header Authorization;
-          # PAM Auth
-          auth_pam "Password Required";
-          auth_pam_service_name nginx;
         '';
     };
 
@@ -61,9 +56,6 @@
           proxy_ssl_server_name on;
           # required when the server wants to use HTTP Authentication
           proxy_pass_header Authorization;
-          # PAM Auth
-          auth_pam "Password Required";
-          auth_pam_service_name nginx;
         '';
     };
   };

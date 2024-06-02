@@ -1,4 +1,4 @@
-{ lib, buildPythonApplication, fetchPypi, python311Packages }:
+{ lib, buildPythonApplication, fetchPypi, python312Packages }:
 
 buildPythonApplication rec {
   pname = "autogenstudio";
@@ -10,15 +10,15 @@ buildPythonApplication rec {
   };
 
   propagatedBuildInputs = [
-    python311Packages.pydantic
-    python311Packages.fastapi
-    python311Packages.typer
-    python311Packages.uvicorn
-    #python311Packages.arxiv
-    (python311Packages.callPackage ./autogen.nix {})
-    python311Packages.python-dotenv
-    python311Packages.websockets
-    python311Packages.numpy
+    python312Packages.pydantic
+    python312Packages.fastapi
+    python312Packages.typer
+    python312Packages.uvicorn
+    #python312Packages.arxiv
+    (python312Packages.callPackage ./autogen.nix {})
+    python312Packages.python-dotenv
+    python312Packages.websockets
+    python312Packages.numpy
   ];
 
   doCheck = false;

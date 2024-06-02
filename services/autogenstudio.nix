@@ -6,7 +6,7 @@
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = ''${(pkgs.python311Packages.callPackage ../pkgs/python/autogenstudio.nix {})}/bin/autogenstudio ui --workers 2 --appdir /var/lib/autogenstudio --port 8081'';
+        ExecStart = ''${(pkgs.python312Packages.callPackage ../pkgs/python/autogenstudio.nix {})}/bin/autogenstudio ui --workers 2 --appdir /var/lib/autogenstudio --port 8081'';
         DynamicUser = true;
         Restart = "on-failure";
         StateDirectory = "autogenstudio";
@@ -52,6 +52,7 @@
     extraConfig = ''
       proxy_buffering off;
     '';
+    basicAuth = config.secrets.nginx.basicAuth;
     locations."/" = {
       proxyPass = "http://127.0.0.1:8081";
       proxyWebsockets = true; # needed if you need to use WebSocket
@@ -60,10 +61,6 @@
         proxy_ssl_server_name on;
         # required when the server wants to use HTTP Authentication
         proxy_pass_header Authorization;
-
-        # PAM Auth
-        auth_pam "Password Required";
-        auth_pam_service_name nginx;
 
         proxy_set_header X-Real-IP          $remote_addr;
         proxy_set_header X-Forwarded-For    $proxy_add_x_forwarded_for;

@@ -8,18 +8,6 @@ in
   ];
 
   services.home-assistant.config = {
-    # TODO before HA 2024.03
-    proximity = {
-      home = {
-        devices = [
-          "device_tracker.nphone_s22"
-          "device_tracker.sm_g780g"
-        ];
-        unit_of_measurement = "km";
-        tolerance = 50;
-      };
-    };
-
     #device_tracker = [
     #  {
     #    platform = "ping";
@@ -32,27 +20,27 @@ in
 
     # TODO before HA 2024.03
     binary_sensor = [
-      {
-        platform = "ping";
-        host = "ndesk";
-        name = "ndesk";
-        count = 2;
-        scan_interval = 30;
-      }
-      {
-        platform = "ping";
-        host = "flaptop-CP113907";
-        name = "flaptop";
-        count = 2;
-        scan_interval = 30;
-      }
-      {
-        platform = "ping";
-        host = "nstudio";
-        name = "nstudio";
-        count = 2;
-        scan_interval = 30;
-      }
+      # {
+      #   platform = "ping";
+      #   host = "ndesk";
+      #   name = "ndesk";
+      #   count = 2;
+      #   #scan_interval = 30;
+      # }
+      # {
+      #   platform = "ping";
+      #   host = "flaptop-CP113907";
+      #   name = "flaptop";
+      #   count = 2;
+      #   #scan_interval = 30;
+      # }
+      # {
+      #   platform = "ping";
+      #   host = "nstudio";
+      #   name = "nstudio";
+      #   count = 2;
+      #   #scan_interval = 30;
+      # }
     ];
 
     input_boolean = {
@@ -73,10 +61,13 @@ in
           {
             name = "anyone_coming_home";
             state = ''
-              {% set within_10km = states('proximity.home') | float(0) <= 10 %}
-              {% set sensor_based = within_10km and is_state_attr('proximity.home', 'dir_of_travel', 'towards') %}
-              {% set override = states('input_boolean.coming_home') | bool(false) %}
+              {#
+              {% set within_10km = states('sensor.sxw_nearest_distance') | float(0) <= 10 %}
+              {% set sensor_based = within_10km and (states('sensor.sxw_nearest_direction_of_travel') == 'towards') %}
+              {% set override = states('input_boolean.coming_home') | bool(false) %}            
               {{ sensor_based or override }}
+              #}
+              false
             '';
             device_class = "occupancy";
           }
@@ -90,7 +81,7 @@ in
           {
             name = "far_away";
             state = ''
-              {{ states('proximity.home') | float(0) >= 200 }}
+              {{ states('sensor.sxw_nearest_distance') | float(0) >= 200 }}
             '';
             device_class = "occupancy";
             delay_on.minutes = 10;

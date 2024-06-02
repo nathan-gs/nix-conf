@@ -1,4 +1,4 @@
-{ lib, buildPythonPackage, fetchFromGitHub, python311Packages }:
+{ lib, buildPythonPackage, fetchFromGitHub, python312Packages }:
 
 buildPythonPackage rec {
   pname = "FLAML";
@@ -12,7 +12,7 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [ 
-    python311Packages.numpy
+    python312Packages.numpy
   ];
 
   doCheck = false;

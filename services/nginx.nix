@@ -5,8 +5,6 @@
   services.nginx = {
     enable = true;
 
-    additionalModules = [ pkgs.nginxModules.pam ];
-
     # Use recommended settings
     recommendedGzipSettings = true;
     recommendedOptimisation = true;
@@ -51,24 +49,7 @@
     defaults.email = config.secrets.email;
   };
 
-  security.pam.services.nginx.setEnvironment = false;
-
-  systemd.services.nginx.serviceConfig = {
-    SupplementaryGroups = [ "shadow" ];
-  };
-
   services.fail2ban.jails = {
-    pam-generic = {
-      settings = {
-        enabled = true;
-        filter = "pam-generic";
-        port = "0:65535";
-        _ttys_re = "(?:nginx)";
-        banaction = "iptables-multiport";
-        banaction_allports = "iptables-multiport";
-        journalmatch = "_SYSTEMD_UNIT=nginx.service + _COMM=nginx";
-      };
-    };
   };
 
 }

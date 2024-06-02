@@ -12,7 +12,7 @@
     tmux
     tree
     jq     
-    (pkgs.python311Packages.callPackage ./pkgs/python/autogenstudio.nix {})
+    (pkgs.python312Packages.callPackage ./pkgs/python/autogenstudio.nix {})
     (pkgs.callPackage ./pkgs/sos2mqtt.nix {})
   ];
 

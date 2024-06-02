@@ -1,4 +1,4 @@
-{ lib, buildPythonPackage, fetchPypi, python311Packages }:
+{ lib, buildPythonPackage, fetchPypi, python312Packages }:
 
 buildPythonPackage rec {
   pname = "autogen";
@@ -11,15 +11,15 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [
-    python311Packages.diskcache
-    python311Packages.termcolor
-    (python311Packages.callPackage ./flaml.nix {})
-    (python311Packages.callPackage ./openai.nix {})
-    python311Packages.numpy
-    python311Packages.python-dotenv
-    python311Packages.tiktoken
-    python311Packages.pydantic
-    python311Packages.docker
+    python312Packages.diskcache
+    python312Packages.termcolor
+    (python312Packages.callPackage ./flaml.nix {})
+    (python312Packages.callPackage ./openai.nix {})
+    python312Packages.numpy
+    python312Packages.python-dotenv
+    python312Packages.tiktoken
+    python312Packages.pydantic
+    python312Packages.docker
   ];
 
   doCheck = false;

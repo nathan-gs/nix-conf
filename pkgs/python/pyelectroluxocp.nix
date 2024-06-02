@@ -12,8 +12,8 @@ buildPythonPackage rec {
   };
 
   propagatedBuildInputs = [
-    pkgs.python311Packages.aiohttp
-    pkgs.python311Packages.aiohttp-retry
+    pkgs.python312Packages.aiohttp
+    pkgs.python312Packages.aiohttp-retry
   ];
 
   doCheck = false;

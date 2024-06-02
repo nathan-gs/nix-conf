@@ -14,7 +14,7 @@ buildHomeAssistantComponent rec {
   };
   
   propagatedBuildInputs = [
-    pkgs.python311Packages.numpy
+    pkgs.python312Packages.numpy
   ];
 
 }

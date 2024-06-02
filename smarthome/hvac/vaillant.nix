@@ -50,7 +50,7 @@ in
               {% set new_temp = cv_temp %}
               {% set is_anyone_home_or_coming = states('binary_sensor.anyone_home_or_coming_home') | bool(true) %}
               {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}
-              {% set forecast_temp = states('sensor.weather_forecast_temperature_max_4h') | float(15) %}
+              {% set forecast_temp = states('sensor.openweathermap_forecast_temperature') | float(15) %}
               {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
               {% set is_heating_needed = target_temp >= current_temp %}
               {% if is_anyone_home_or_coming %}
