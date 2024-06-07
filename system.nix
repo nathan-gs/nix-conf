@@ -16,6 +16,10 @@
   # Enable the nix 2.0 CLI and flakes support feature-flags
   nix.extraOptions = ''
     experimental-features = nix-command flakes 
+    extra-substituters = https://devenv.cachix.org
+    extra-trusted-public-keys = devenv.cachix.org-1:w1cLUi8dv3hnoSPGAuibQv+f9TZLr6cv/Hm9XgU50cw=
+
+    trusted-users = root nathan
   '';
 
   # Set your time zone.

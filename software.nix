@@ -14,6 +14,7 @@
     jq     
     (pkgs.python312Packages.callPackage ./pkgs/python/autogenstudio.nix {})
     (pkgs.callPackage ./pkgs/sos2mqtt.nix {})
+    devenv
   ];
 
   programs.bash.enableCompletion = true;
