@@ -1,6 +1,8 @@
 { config, pkgs, lib, ha, ... }:
 {
 
+  # https://try.jsoup.org/
+
   services.home-assistant.config = {
 
     template = [  
@@ -110,6 +112,21 @@
               table :has(> td:-soup-contains(Octa)) td:nth-child(3)
             '' ;
             value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
+            unit_of_measurement = "€/kWh";
+            state_class = "measurement";
+          }
+        ];
+      }
+      {
+        resource = "https://www.pluginvest.eu/en/technische-hulp/creg-tarief/";
+        scan_interval = 3600;
+        sensor = [
+          {
+            name = "electricity_injection_creg_kwh";
+            select = ''
+              section.s_title h2 span.text-o-color-1 span
+            '' ;
+            value_template = ''{{ (value | replace("€ ", "") | replace("/kWh", "") | replace(",", ".") | float) * 1.06 }}'';
             unit_of_measurement = "€/kWh";
             state_class = "measurement";
           }
