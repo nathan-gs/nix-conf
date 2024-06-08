@@ -13,11 +13,6 @@
           create_group = "electric_heating_auxiliary";
           entities = [
             {
-              entity_id = "sensor.dummy";
-              name = "electric_heating_auxiliary_dummy";
-              fixed.power = 0;
-            }
-            {
               power_sensor_id = "sensor.floor0_living_metering_plug_verwarming_power";
               energy_sensor_id = "sensor.floor0_living_metering_plug_verwarming_energy";
             }
