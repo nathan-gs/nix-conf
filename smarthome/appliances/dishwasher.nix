@@ -10,11 +10,10 @@
         fixed.power = ''
           {% set remaining_time = states('sensor.dishwasher_remaining_time') | int(0) %}
           {% set program = states('sensor.dishwasher_program') | int(0) %}
-          {% set mode = states('sensor.dishwasher_mode') %}
           {% set on = states('binary_sensor.dishwasher_status') | bool (false) %}
           {% set power = 0.5 %}
           {% if on %}
-            {% if program == 15 and mode == "Program 2" %}
+            {% if program == 15 %}
               {# Programma Universeel #}
               {% if remaining_time > 170 %}
                 {% set power = 0.5 %}
@@ -37,7 +36,7 @@
               {% else %}
                 {% set power = 5 %}
               {% endif %}
-            {% elif program == 16 and mode == "Program 2" %}
+            {% elif program == 16 %}
               {# Programma Auto #}
               {% if remaining_time > 160 %}
                 {% set power = 0.5 %}
