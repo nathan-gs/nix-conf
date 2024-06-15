@@ -7,7 +7,7 @@ map
     {
       zone = "garden";
       name = "pomp";
-      ieee = "0x84fd27fffe953a0f";
+      ieee = "0x2c1165fffe68c1df";
       floor = "garden";
     }
   ]

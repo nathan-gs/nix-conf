@@ -11,8 +11,8 @@
             type = "action";
             domain = "mqtt";
             subtype = "on";
-            device_id = "ef629f47dff2146250bc005fa879e044";
-            discovery_id = "0x84fd27fffe953a0f action_on";
+            discovery_id = "0x2c1165fffe68c1df action_on";
+            device_id = "139fe92be206cea2bcba0191c6e40927";
           }
         ];
         entities = [ "switch.garden_garden_plug_pomp" ];
