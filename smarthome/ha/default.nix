@@ -60,7 +60,11 @@
                   |rejectattr('entity_id', 'contains', 'garden_garden_plug_pomp')
                   |rejectattr('entity_id', 'contains', 'all_standby_power')
                   |rejectattr('entity_id', 'contains', '_battery_range')
-                  
+                  |rejectattr('entity_id', 'contains', '_countdown')
+                  |rejectattr('entity_id', 'contains', 'zigbee2mqtt_bridge_permit_join_timeout')                  
+                  |rejectattr('entity_id', 'contains', 'irceline_linkeroever')
+                  |rejectattr('entity_id', 'contains', 'device_tracker')
+                  |rejectattr('entity_id', 'contains', '_internet_access')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
