@@ -49,7 +49,7 @@
     defaults.email = config.secrets.email;
   };
 
-  environment.etc."fail2ban/filter.d/nginx-http-auth-custom.conf".source = ./nginx-http-auth-custom.conf;
+  environment.etc."fail2ban/filter.d/nginx-http-auth-custom.conf".source = ./fail2ban/nginx-http-auth-custom.conf;
 
   services.fail2ban.jails = {
     nginx-http-auth-custom = {

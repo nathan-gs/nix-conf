@@ -20,6 +20,16 @@
     };
   };
 
+  environment.etc."fail2ban/filter.d/home-assistant.conf".source = ./fail2ban/home-assistant.conf;
+
+  services.fail2ban.jails = {
+    home-assistant = {
+      filter = "home-assistant";
+      enabled = true;
+    };
+  };
+
+
   services.home-assistant = {
     enable  = true;
     openFirewall = true;
@@ -88,6 +98,7 @@
       "backup"
       "buienradar"
       "command_line"
+      "conversation"
       "default_config"
       "dsmr"
       "ebusd"
