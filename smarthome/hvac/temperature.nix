@@ -53,10 +53,14 @@ in
           {
             name = "outdoor_temperature";
             state = ''
-              {% set garden = states('sensor.garden_garden_temperature_noordkant_temperature') | float(16) %}
-              {% set openweather = states('sensor.openweathermap_temperature') | float(garden) %}
-              {% set sum = garden + openweather %}
-              {{ (sum / 2) | round(2) }}
+              {% set v = [
+                states('sensor.garden_garden_temperature_noordkant_temperature'),
+                states('sensor.openweathermap_temperature'),
+                states('sensor.system_wtw_air_quality_inlet_temperature')
+              ]
+              %}
+              {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+              {{ (valid_v | sum / valid_v | length) | round(2) }}
             '';
             unit_of_measurement = "°C";
             icon = "mdi:home-thermometer-outline";
@@ -69,8 +73,8 @@ in
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
               ]
               %}
-              {% set valid_humidities = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-              {{ (valid_humidities | sum / valid_humidities | length) | round(2) }}
+              {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+              {{ (valid_v | sum / valid_v | length) | round(2) }}
             '';
             icon = ''
               {% if states('sensor.indoor_humidity') | float(100) > 70 %}
@@ -89,8 +93,8 @@ in
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
               ]
               %}
-              {% set valid_humidities = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-              {{ max(valid_humidities) | round(2) }}
+              {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+              {{ max(valid_v) | round(2) }}
             '';
             icon = ''
               {% if states('sensor.indoor_humidity') | float(100) > 70 %}
@@ -107,9 +111,11 @@ in
             state = ''
               {% set sensors = [
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)}
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)}
+                states('sensor.system_wtw_air_quality_outlet_temperature')
               ] %}
-              {% set valid_temperatures = sensors | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-              {{ (valid_temperatures | sum / valid_temperatures | length) | round(2) }}
+              {% set valid_v = sensors | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+              {{ (valid_v | sum / valid_v | length) | round(2) }}
             '';
             icon = "mdi:home-thermometer";
             unit_of_measurement = "°C";

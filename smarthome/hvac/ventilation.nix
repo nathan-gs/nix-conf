@@ -52,7 +52,7 @@
                 {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
                 {% set house_needs_cooling = indoor_temperature > 22 %}
                 {% set house_needs_cooling_and_temp_outside_lower = false %}
-                {% if house_needs_cooling and outdoor_temperature < indoor_temperature %}
+                {% if house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature %}
                   {% set house_needs_cooling_and_temp_outside_lower = true %}
                 {% endif %}
                 {{ house_needs_cooling_and_temp_outside_lower }}
