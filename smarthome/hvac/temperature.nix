@@ -110,8 +110,8 @@ in
             name = "indoor_temperature";
             state = ''
               {% set sensors = [
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)}
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)}
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)},
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)},
                 states('sensor.system_wtw_air_quality_outlet_temperature')
               ] %}
               {% set valid_v = sensors | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
