@@ -2,11 +2,11 @@
 
 buildPythonApplication rec {
   pname = "autogenstudio";
-  version = "0.0.56";
+  version = "0.1.2";
 
   src = fetchPypi {
     inherit pname version;
-    hash  = "sha256-KoLZ+ZArU8E+ik5VKDf20aX5QvAXHiWAQCyHy3INsF4=";
+    hash  = "sha256-4WPtSC7+ySJUUNaneRAytjMRtlOAl9jjBbCs7gdUI+U=";
   };
 
   propagatedBuildInputs = [
@@ -19,6 +19,10 @@ buildPythonApplication rec {
     python312Packages.python-dotenv
     python312Packages.websockets
     python312Packages.numpy
+    python312Packages.sqlalchemy
+    python312Packages.sqlmodel
+    python312Packages.loguru
+    python312Packages.alembic
   ];
 
   doCheck = false;

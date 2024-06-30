@@ -2,19 +2,19 @@
 
 buildPythonPackage rec {
   pname = "autogen";
-  version = "0.2.20";
+  version = "0.2.31";
 
   src = fetchPypi {
     inherit version;
     pname = "pyautogen";
-    hash  = "sha256-pk8QwF+GpqH87AdL8N5R8u7PeHKX82bo4v/zOrbX/Hc=";
+    hash  = "sha256-FXptLGjx/gyNHgfGiG+Xli3IXv/Y2kuq19eAStKEzHY=";
   };
 
   propagatedBuildInputs = [
     python312Packages.diskcache
     python312Packages.termcolor
     (python312Packages.callPackage ./flaml.nix {})
-    (python312Packages.callPackage ./openai.nix {})
+    python312Packages.openai
     python312Packages.numpy
     python312Packages.python-dotenv
     python312Packages.tiktoken
