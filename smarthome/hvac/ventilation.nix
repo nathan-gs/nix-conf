@@ -17,16 +17,23 @@
               {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
               {% set house_needs_cooling = indoor_temperature > 22 %}
               {% set house_needs_cooling_and_temp_outside_lower = false %}
-              {% if house_needs_cooling and outdoor_temperature < indoor_temperature %}
+              {% set bypass = states('sensor.itho_wtw_bypass') | bool(false) %}
+              {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature %}
                 {% set house_needs_cooling_and_temp_outside_lower = true %}
               {% endif %}
               {% set dewpoint_outdoor_smaller_then_indoor = ((states('sensor.outdoor_dewpoint') | float) +1) < (states('sensor.indoor_dewpoint') | float) %}
               {% set dewpoint_high_and_dewpoint_outdoor_lower = (dewpoint_high and dewpoint_outdoor_smaller_then_indoor) | bool %}
               {% set humidity_max_over_80 = (states('sensor.indoor_humidity_max') | float(100) > 80) %}
               {% set is_not_electricity_delivery_power_max_threshold = states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) == false %}
-            
+              {% set is_hot_outside = outdoor_temperature > 27 %}
               {% if is_not_electricity_delivery_power_max_threshold %}
-                {% if is_cooking or is_using_sanitary or dewpoint_high_and_dewpoint_outdoor_lower or house_needs_cooling_and_temp_outside_lower or humidity_max_over_80 %}
+                {% if humidity_max_over_80 %}
+                  high
+                {% elif is_cooking or is_using_sanitary %}
+                  high
+                {% elif is_hot_outside %}
+                  low
+                {% elif dewpoint_high_and_dewpoint_outdoor_lower or house_needs_cooling_and_temp_outside_lower %}
                   high
                 {% elif is_home %}
                   medium
@@ -48,14 +55,19 @@
               '';
               humidity_max_over_80 = ''{{ (states('sensor.indoor_humidity_max') | float(100) > 80) }}'';
               house_needs_cooling_and_temp_outside_lower = ''
+                {% set bypass = states('sensor.itho_wtw_bypass') | bool(false) %}
                 {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
                 {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
                 {% set house_needs_cooling = indoor_temperature > 22 %}
                 {% set house_needs_cooling_and_temp_outside_lower = false %}
-                {% if house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature %}
+                {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature %}
                   {% set house_needs_cooling_and_temp_outside_lower = true %}
                 {% endif %}
                 {{ house_needs_cooling_and_temp_outside_lower }}
+              '';
+              is_hot_outside = ''
+                {% set is_hot_outside = states('sensor.outdoor_temperature') | float(19) > 27 %}
+                {{ is_hot_outside }}
               '';
               electricity_delivery_power_near_max_threshold = ''{{ states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) }}'';
               icon = ''
