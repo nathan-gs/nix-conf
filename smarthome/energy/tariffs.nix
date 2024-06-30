@@ -126,7 +126,7 @@
             select = ''
               section.s_title h2 span.text-o-color-1 span
             '' ;
-            value_template = ''{{ (value | replace("€ ", "") | replace("/kWh", "") | replace(",", ".") | float) * 1.06 }}'';
+            value_template = ''{{ ((value | replace("€ ", "") | replace("/kWh", "") | replace(",", ".") | float) * 1.06) | round(3) }}'';
             unit_of_measurement = "€/kWh";
             state_class = "measurement";
           }
