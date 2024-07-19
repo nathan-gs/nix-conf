@@ -65,6 +65,9 @@
                   |rejectattr('entity_id', 'contains', 'irceline_linkeroever')
                   |rejectattr('entity_id', 'contains', 'device_tracker')
                   |rejectattr('entity_id', 'contains', '_internet_access')
+                  |rejectattr('entity_id', 'contains', '_window_')
+                  |rejectattr('entity_id', 'contains', 'conversation.home_assistant')
+                  |rejectattr('entity_id', 'contains', 'sensor.irceline_')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';

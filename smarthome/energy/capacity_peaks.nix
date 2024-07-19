@@ -143,6 +143,7 @@
         state_characteristic = "average_linear";
         max_age.minutes = 1;
         sampling_size = 60;
+        keep_last_sample = true;
       }
     ];
 

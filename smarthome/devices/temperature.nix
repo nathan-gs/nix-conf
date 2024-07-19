@@ -59,7 +59,7 @@ map
       floor = "basement";
     }
     {
-      ieee = "0x00124b002910ce57";
+      ieee = "0x28dba7fffe6b9cba";
       zone = "garden";
       name = "noordkant";
       floor = "garden";
