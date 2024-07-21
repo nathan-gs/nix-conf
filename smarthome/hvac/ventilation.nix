@@ -17,7 +17,7 @@
               {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
               {% set house_needs_cooling = indoor_temperature > 22 %}
               {% set house_needs_cooling_and_temp_outside_lower = false %}
-              {% set bypass = states('sensor.itho_wtw_bypass') | bool(false) %}
+              {% set bypass = states('binary_sensor.itho_wtw_bypass') | bool(false) %}
               {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature %}
                 {% set house_needs_cooling_and_temp_outside_lower = true %}
               {% endif %}
@@ -55,7 +55,7 @@
               '';
               humidity_max_over_80 = ''{{ (states('sensor.indoor_humidity_max') | float(100) > 80) }}'';
               house_needs_cooling_and_temp_outside_lower = ''
-                {% set bypass = states('sensor.itho_wtw_bypass') | bool(false) %}
+                {% set bypass = states('binary_sensor.itho_wtw_bypass') | bool(false) %}
                 {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
                 {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
                 {% set house_needs_cooling = indoor_temperature > 22 %}
