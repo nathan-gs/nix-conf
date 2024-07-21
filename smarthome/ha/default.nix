@@ -53,6 +53,7 @@
                   |rejectattr('entity_id', 'contains', 'nkeys_') 
                   |rejectattr('entity_id', 'contains', 'floor1_fen_window_') 
                   |rejectattr('entity_id', 'contains', 'floor1_nikolai_temperature_na_battery_low') 
+                  |rejectattr('entity_id', 'contains', 'garden_garden_temperature_noordkant_battery_low') 
                   |rejectattr('entity_id', 'contains', 'roaming_roaming') 
                   |rejectattr('entity_id', 'contains', '_kerstboom')                 
                   |rejectattr('entity_id', 'contains', 'floor1_fen_metering_plug_deken')                 
