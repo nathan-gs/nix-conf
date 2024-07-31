@@ -19,7 +19,7 @@
       PHOTOPRISM_SITE_URL = "https://photoprism.nathan.gs/";
       PHOTOPRISM_LOG_LEVEL = "info";
     };
-    package = pkgs.nixpkgs-unstable.photoprism;
+    #package = pkgs.nixpkgs-unstable.photoprism;
   };
 
   services.nginx.virtualHosts."photoprism.nathan.gs" = {
