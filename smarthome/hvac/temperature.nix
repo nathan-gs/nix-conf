@@ -41,10 +41,14 @@ in
           {
             name = "outdoor_humidity";
             state = ''
-              {% set rh1 = states('sensor.garden_garden_temperature_noordkant_humidity') | float(60) %}
-              {% set rh2 = states('sensor.openweathermap_humidity') | float(60) %}
-              {% set rh = (rh1 + rh2) / 2 %}
-              {{ rh | round(2) }}
+              {% set v = [
+                states('sensor.system_wtw_air_quality_inlet_humidity'),
+                states('sensor.garden_garden_temperature_noordkant_humidity'),
+                states('sensor.openweathermap_humidity')
+              ]
+              %}
+              {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+              {{ (valid_v | sum / valid_v | length) | round(2) }}
             '';
             unit_of_measurement = "%";
             icon = "mdi:water-percent";
@@ -56,7 +60,8 @@ in
               {% set v = [
                 states('sensor.garden_garden_temperature_noordkant_temperature'),
                 states('sensor.openweathermap_temperature'),
-                states('sensor.system_wtw_air_quality_inlet_temperature')
+                states('sensor.system_wtw_air_quality_inlet_temperature'),
+                states('sensor.itho_wtw_inlet_temperature')
               ]
               %}
               {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
@@ -70,7 +75,8 @@ in
             name = "indoor_humidity";
             state = ''
               {% set v = [
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)},
+                states('sensor.system_wtw_air_quality_outlet_humidity')
               ]
               %}
               {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
@@ -112,7 +118,8 @@ in
               {% set sensors = [
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)},
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)},
-                states('sensor.system_wtw_air_quality_outlet_temperature')
+                states('sensor.system_wtw_air_quality_outlet_temperature'),
+                states('sensor.itho_wtw_outlet_temperature')
               ] %}
               {% set valid_v = sensors | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
               {{ (valid_v | sum / valid_v | length) | round(2) }}

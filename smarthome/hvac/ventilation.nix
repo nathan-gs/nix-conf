@@ -238,13 +238,8 @@
         {
           name = "itho_wtw_inlet_temperature";
           state_topic = "itho/ithostatus";
-          value_template = ''
-            {% set bypass_open = value_json['Bypass position'] | bool %}
-            {% if bypass_open %}
-              {{ value_json['Exhaust temp (°C)'] | float }}
-            {% else %}
-              {{ value_json['Supply temp (°C)'] | float }}
-            {% endif %}
+          value_template = ''            
+            {{ value_json['Outdoor temp (°C)'] | float }}
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
@@ -255,12 +250,7 @@
           name = "itho_wtw_outlet_temperature";
           state_topic = "itho/ithostatus";
           value_template = ''
-            {% set bypass_open = value_json['Bypass position'] | bool %}
-            {% if bypass_open %}
-              {{ value_json['Supply temp (°C)'] | float }}
-            {% else %}
-              {{ value_json['Exhaust temp (°C)'] | float }}
-            {% endif %}
+            {{ value_json['Room temp (°C)'] | float }}            
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_outlet_temperature";
