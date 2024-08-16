@@ -11,7 +11,7 @@
             state = ''
               {% set is_home = states('binary_sensor.anyone_home') | bool(true) %}
               {% set is_cooking = false %}
-              {% set is_using_sanitary = false %}
+              {% set is_using_sanitary = states('input_boolean.floor0_wc_in_use') | bool(false) %}
               {% set dewpoint_high = (states('sensor.indoor_dewpoint') | float(15.0) > 15.0) %}
               {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
               {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
@@ -47,7 +47,9 @@
             attributes = {
               is_cooking = ''false'';
               is_home = ''{{ states('binary_sensor.anyone_home') | bool(true) }}'';
-              is_using_sanitary = ''false'';
+              is_using_sanitary = ''
+                {{ states('input_boolean.floor0_wc_in_use') | bool(false) }}
+              '';
               dewpoint_high_and_dewpoint_outdoor_lower = ''
                 {% set dewpoint_over_17 = (states('sensor.indoor_dewpoint') | float(15.0) > 15.0) %}
                 {% set dewpoint_outdoor_smaller_then_indoor = ((states('sensor.outdoor_dewpoint') | float) +1) < (states('sensor.indoor_dewpoint') | float) %}
