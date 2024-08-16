@@ -18,11 +18,10 @@ map
   })
   [
     {
-      zone = "roaming";
-      name = "kattenlamp";
+      zone = "keuken";
+      name = "aanrecht";
       ieee = "0x0c4314fffee9dcd3";
-      floor = "roaming";
-      disabled = true;
+      floor = "floor0";
     }
     {
       zone = "living";
