@@ -72,7 +72,20 @@
             (ha.trigger.off_for "input_boolean.floor0_bureau_in_use" "00:01:00")
           ];
           entities = [ "light.floor0_bureau_light_desk" ];
-        });
+        })
+        ++ 
+        (ha.automationOnOff "floor0/keuken/light/aanrecht" {
+          triggersOn = [(ha.trigger.on "switch.floor0_keuken_light_switch_main_l2")];
+          triggersOff = [(ha.trigger.off "switch.floor0_keuken_light_switch_main_l2")];
+          entities = [ "switch.floor0_keuken_light_plug_aanrecht" ];
+        })
+        ++ 
+        (ha.automationOnOff "floor1/badkamer/light/spiegel" {
+          triggersOn = [(ha.trigger.on "switch.floor1_badkamer_light_switch_main_l2")];
+          triggersOff = [(ha.trigger.off "switch.floor1_badkamer_light_switch_main_l2")];
+          entities = [ "switch.floor1_badkamer_light_switch_spiegel" ];
+        })
+        ;
 
   };
 }
