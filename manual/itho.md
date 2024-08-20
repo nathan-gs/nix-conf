@@ -10,3 +10,7 @@ changing:
 
 - Summer temp (°C) from 24 to 22
 - SummerCounter (K_min) from 800 to 300
+
+## 2024/08/19 New sensor
+
+- Offset bypass regulation (K) from 0.5 to 1.5
