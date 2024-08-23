@@ -1,0 +1,199 @@
+From 6bd464e360eabf8517496892ebbbb4b26edd3b07 Mon Sep 17 00:00:00 2001
+From: Nathan Bijnens <nathan@nathan.gs>
+Date: Wed, 21 Aug 2024 21:59:40 +0200
+Subject: [PATCH] DuckDB on master
+
+---
+ .../recorder/auto_repairs/schema.py           |  3 +-
+ homeassistant/components/recorder/const.py    |  1 +
+ .../components/recorder/db_schema.py          |  6 ++-
+ .../components/recorder/migration.py          | 52 ++++++++++++++++---
+ homeassistant/components/recorder/repack.py   | 10 ++++
+ .../recorder/system_health/__init__.py        |  2 +
+ .../recorder/system_health/duckdb.py          | 22 ++++++++
+ homeassistant/components/recorder/util.py     | 21 +++++++-
+ 8 files changed, 107 insertions(+), 10 deletions(-)
+ create mode 100644 homeassistant/components/recorder/system_health/duckdb.py
+
+diff --git a/homeassistant/components/recorder/auto_repairs/schema.py b/homeassistant/components/recorder/auto_repairs/schema.py
+index 1373f466bc2e54..3d636c6f8fb495 100644
+--- a/homeassistant/components/recorder/auto_repairs/schema.py
++++ b/homeassistant/components/recorder/auto_repairs/schema.py
+@@ -150,10 +150,11 @@ def validate_db_schema_precision(
+ ) -> set[str]:
+     """Do some basic checks for common schema errors caused by manual migration."""
+     schema_errors: set[str] = set()
+-    # Wrong precision is only an issue for MySQL / MariaDB / PostgreSQL
++    # Wrong precision is only an issue for MySQL / MariaDB / PostgreSQL / DuckDB
+     if instance.dialect_name not in (
+         SupportedDialect.MYSQL,
+         SupportedDialect.POSTGRESQL,
++        SupportedDialect.DUCKDB
+     ):
+         return schema_errors
+     try:
+diff --git a/homeassistant/components/recorder/const.py b/homeassistant/components/recorder/const.py
+index 066ae938971a2a..4c80202f9af554 100644
+--- a/homeassistant/components/recorder/const.py
++++ b/homeassistant/components/recorder/const.py
+@@ -79,3 +79,4 @@ class SupportedDialect(StrEnum):
+     SQLITE = "sqlite"
+     MYSQL = "mysql"
+     POSTGRESQL = "postgresql"
++    DUCKDB = "duckdb"
+diff --git a/homeassistant/components/recorder/db_schema.py b/homeassistant/components/recorder/db_schema.py
+index dd293ed6bc2c06..64263b1e78825f 100644
+--- a/homeassistant/components/recorder/db_schema.py
++++ b/homeassistant/components/recorder/db_schema.py
+@@ -204,10 +204,12 @@ def result_processor(self, dialect: Dialect, coltype: Any) -> Callable | None:
+ JSON_VARIANT_CAST = Text().with_variant(
+     postgresql.JSON(none_as_null=True),  # type: ignore[no-untyped-call]
+     "postgresql",
++    "duckdb"
+ )
+ JSONB_VARIANT_CAST = Text().with_variant(
+     postgresql.JSONB(none_as_null=True),  # type: ignore[no-untyped-call]
+     "postgresql",
++    "duckdb"
+ )
+ DATETIME_TYPE = (
+     DateTime(timezone=True)
+@@ -218,7 +220,7 @@ def result_processor(self, dialect: Dialect, coltype: Any) -> Callable | None:
+     Float()
+     .with_variant(mysql.DOUBLE(asdecimal=False), "mysql", "mariadb")  # type: ignore[no-untyped-call]
+     .with_variant(oracle.DOUBLE_PRECISION(), "oracle")
+-    .with_variant(postgresql.DOUBLE_PRECISION(), "postgresql")
++    .with_variant(postgresql.DOUBLE_PRECISION(), "postgresql", "duckdb")
+ )
+ UNUSED_LEGACY_COLUMN = Unused(0)
+ UNUSED_LEGACY_DATETIME_COLUMN = UnusedDateTime(timezone=True)
+@@ -375,7 +377,7 @@ def shared_data_bytes_from_event(
+         event: Event, dialect: SupportedDialect | None
+     ) -> bytes:
+         """Create shared_data from an event."""
+-        if dialect == SupportedDialect.POSTGRESQL:
++        if dialect in [SupportedDialect.POSTGRESQL, SupportedDialect.DUCKDB]:
+             bytes_result = json_bytes_strip_null(event.data)
+         bytes_result = json_bytes(event.data)
+         if len(bytes_result) > MAX_EVENT_DATA_BYTES:
+
+diff --git a/homeassistant/components/recorder/repack.py b/homeassistant/components/recorder/repack.py
+index 8c7ad137d8628d..4050ffb4e9312c 100644
+--- a/homeassistant/components/recorder/repack.py
++++ b/homeassistant/components/recorder/repack.py
+@@ -38,6 +38,16 @@ def repack_database(instance: Recorder) -> None:
+             conn.execute(text("VACUUM"))
+             conn.commit()
+         return
++    
++    if dialect_name == SupportedDialect.DUCKDB:
++        _LOGGER.debug("Vacuuming & Checkpointing DB to free space")
++        with instance.engine.connect().execution_options(
++            isolation_level="AUTOCOMMIT"
++        ) as conn:
++            conn.execute(text("VACUUM ANALYZE"))
++            conn.execute(text("CHECKPOINT"))
++            conn.commit()
++        return
+ 
+     # Optimize mysql / mariadb tables to free up space on disk
+     if dialect_name == SupportedDialect.MYSQL:
+diff --git a/homeassistant/components/recorder/system_health/__init__.py b/homeassistant/components/recorder/system_health/__init__.py
+index 16feaa198868e3..d95c4f45e312d8 100644
+--- a/homeassistant/components/recorder/system_health/__init__.py
++++ b/homeassistant/components/recorder/system_health/__init__.py
+@@ -15,11 +15,13 @@
+ from .mysql import db_size_bytes as mysql_db_size_bytes
+ from .postgresql import db_size_bytes as postgresql_db_size_bytes
+ from .sqlite import db_size_bytes as sqlite_db_size_bytes
++from .duckdb import db_size_bytes as duckdb_db_size_bytes
+ 
+ DIALECT_TO_GET_SIZE = {
+     SupportedDialect.SQLITE: sqlite_db_size_bytes,
+     SupportedDialect.MYSQL: mysql_db_size_bytes,
+     SupportedDialect.POSTGRESQL: postgresql_db_size_bytes,
++    SupportedDialect.DUCKDB: duckdb_db_size_bytes
+ }
+ 
+ 
+diff --git a/homeassistant/components/recorder/system_health/duckdb.py b/homeassistant/components/recorder/system_health/duckdb.py
+new file mode 100644
+index 00000000000000..fa1e6483411d6f
+--- /dev/null
++++ b/homeassistant/components/recorder/system_health/duckdb.py
+@@ -0,0 +1,22 @@
++"""Provide info to system health for duckdb."""
++
++from __future__ import annotations
++
++from sqlalchemy import text
++from sqlalchemy.orm.session import Session
++
++
++def db_size_bytes(session: Session, database_name: str) -> float | None:
++    """Get the duckdb database size."""
++    session.execute(text("SET database_size;"))    
++    size = session.execute(
++        text(
++            "SELECT database_size "
++            "FROM pragma_database_size();"
++        )
++    ).scalar()
++
++    if not size:
++        return None
++
++    return float(size)
+diff --git a/homeassistant/components/recorder/util.py b/homeassistant/components/recorder/util.py
+index 4d494aed7d541a..89da2ef8a4279e 100644
+--- a/homeassistant/components/recorder/util.py
++++ b/homeassistant/components/recorder/util.py
+@@ -95,6 +95,7 @@ def _simple_version(version: str) -> AwesomeVersion:
+ MARIADB_WITH_FIXED_IN_QUERIES_108 = _simple_version("10.8.4")
+ MIN_VERSION_MYSQL = _simple_version("8.0.0")
+ MIN_VERSION_PGSQL = _simple_version("12.0")
++MIN_VERSION_DUCKDB = _simple_version("0.9")
+ MIN_VERSION_SQLITE = _simple_version("3.31.0")
+ UPCOMING_MIN_VERSION_SQLITE = _simple_version("3.40.1")
+ MIN_VERSION_SQLITE_MODERN_BIND_VARS = _simple_version("3.32.0")
+@@ -352,7 +353,7 @@ def _fail_unsupported_dialect(dialect_name: str) -> NoReturn:
+             "starting. Please migrate your database to a supported software"
+         ),
+         dialect_name,
+-        "MariaDB ≥ 10.3, MySQL ≥ 8.0, PostgreSQL ≥ 12, SQLite ≥ 3.31.0",
++        "MariaDB ≥ 10.3, MySQL ≥ 8.0, PostgreSQL ≥ 12, SQLite ≥ 3.31.0, DuckDB > 0.9.0",
+     )
+     raise UnsupportedDialect
+ 
+@@ -607,6 +608,17 @@ def setup_connection_for_dialect(
+                 _raise_if_version_unsupported(
+                     version or version_string, "PostgreSQL", MIN_VERSION_PGSQL
+                 )
++    elif dialect_name == SupportedDialect.DUCKDB:
++        max_bind_vars = DEFAULT_MAX_BIND_VARS
++        if first_connection:
++            # server_version_num was added in 2006
++            result = query_on_connection(dbapi_connection, "PRAGMA version")
++            version_string = result[0][0]
++            version = _extract_version_from_server_response(version_string)
++            if not version or version < MIN_VERSION_DUCKDB:
++                _raise_if_version_unsupported(
++                    version or version_string, "DuckDB", MIN_VERSION_DUCKDB
++                )
+ 
+     else:
+         _fail_unsupported_dialect(dialect_name)
+@@ -915,6 +927,13 @@ def _filter_unique_constraint_integrity_error(err: Exception) -> bool:
+             and err.orig.pgcode == "23505"
+         ):
+             ignore = True
++        if (
++            dialect_name == SupportedDialect.DUCKDB
++            and err.orig
++            and hasattr(err.orig, "pgcode")
++            and err.orig.pgcode == "23505"
++        ):
++            ignore = True
+         if (
+             dialect_name == SupportedDialect.MYSQL
+             and err.orig
