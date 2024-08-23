@@ -11,7 +11,7 @@
 
   boot.kernel.sysctl = {
     "vm.dirty_writeback_centisecs" = 6000;
-    "vm.swappiness" = 0;
+    "vm.swappiness" = 40;
   };
 
   # https://www.reddit.com/r/linux/comments/lhgx9/how_can_i_reduce_my_power_consumption/
