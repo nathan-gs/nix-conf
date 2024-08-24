@@ -1,22 +1,10 @@
-From 6bd464e360eabf8517496892ebbbb4b26edd3b07 Mon Sep 17 00:00:00 2001
++From 6bd464e360eabf8517496892ebbbb4b26edd3b07 Mon Sep 17 00:00:00 2001
 From: Nathan Bijnens <nathan@nathan.gs>
 Date: Wed, 21 Aug 2024 21:59:40 +0200
 Subject: [PATCH] DuckDB on master
 
----
- .../recorder/auto_repairs/schema.py           |  3 +-
- homeassistant/components/recorder/const.py    |  1 +
- .../components/recorder/db_schema.py          |  6 ++-
- .../components/recorder/migration.py          | 52 ++++++++++++++++---
- homeassistant/components/recorder/repack.py   | 10 ++++
- .../recorder/system_health/__init__.py        |  2 +
- .../recorder/system_health/duckdb.py          | 22 ++++++++
- homeassistant/components/recorder/util.py     | 21 +++++++-
- 8 files changed, 107 insertions(+), 10 deletions(-)
- create mode 100644 homeassistant/components/recorder/system_health/duckdb.py
-
 diff --git a/homeassistant/components/recorder/auto_repairs/schema.py b/homeassistant/components/recorder/auto_repairs/schema.py
-index 1373f466bc2e54..3d636c6f8fb495 100644
+index 1373f466bc..3d636c6f8f 100644
 --- a/homeassistant/components/recorder/auto_repairs/schema.py
 +++ b/homeassistant/components/recorder/auto_repairs/schema.py
 @@ -150,10 +150,11 @@ def validate_db_schema_precision(
@@ -33,7 +21,7 @@ index 1373f466bc2e54..3d636c6f8fb495 100644
          return schema_errors
      try:
 diff --git a/homeassistant/components/recorder/const.py b/homeassistant/components/recorder/const.py
-index 066ae938971a2a..4c80202f9af554 100644
+index 066ae93897..4c80202f9a 100644
 --- a/homeassistant/components/recorder/const.py
 +++ b/homeassistant/components/recorder/const.py
 @@ -79,3 +79,4 @@ class SupportedDialect(StrEnum):
@@ -41,44 +29,136 @@ index 066ae938971a2a..4c80202f9af554 100644
      MYSQL = "mysql"
      POSTGRESQL = "postgresql"
 +    DUCKDB = "duckdb"
+
 diff --git a/homeassistant/components/recorder/db_schema.py b/homeassistant/components/recorder/db_schema.py
-index dd293ed6bc2c06..64263b1e78825f 100644
+index 186b873047..72583a12e1 100644
 --- a/homeassistant/components/recorder/db_schema.py
 +++ b/homeassistant/components/recorder/db_schema.py
-@@ -204,10 +204,12 @@ def result_processor(self, dialect: Dialect, coltype: Any) -> Callable | None:
- JSON_VARIANT_CAST = Text().with_variant(
-     postgresql.JSON(none_as_null=True),  # type: ignore[no-untyped-call]
-     "postgresql",
-+    "duckdb"
- )
- JSONB_VARIANT_CAST = Text().with_variant(
-     postgresql.JSONB(none_as_null=True),  # type: ignore[no-untyped-call]
-     "postgresql",
-+    "duckdb"
- )
- DATETIME_TYPE = (
-     DateTime(timezone=True)
-@@ -218,7 +220,7 @@ def result_processor(self, dialect: Dialect, coltype: Any) -> Callable | None:
-     Float()
-     .with_variant(mysql.DOUBLE(asdecimal=False), "mysql", "mariadb")  # type: ignore[no-untyped-call]
-     .with_variant(oracle.DOUBLE_PRECISION(), "oracle")
--    .with_variant(postgresql.DOUBLE_PRECISION(), "postgresql")
-+    .with_variant(postgresql.DOUBLE_PRECISION(), "postgresql", "duckdb")
- )
- UNUSED_LEGACY_COLUMN = Unused(0)
- UNUSED_LEGACY_DATETIME_COLUMN = UnusedDateTime(timezone=True)
-@@ -375,7 +377,7 @@ def shared_data_bytes_from_event(
-         event: Event, dialect: SupportedDialect | None
-     ) -> bytes:
-         """Create shared_data from an event."""
--        if dialect == SupportedDialect.POSTGRESQL:
-+        if dialect in [SupportedDialect.POSTGRESQL, SupportedDialect.DUCKDB]:
-             bytes_result = json_bytes_strip_null(event.data)
-         bytes_result = json_bytes(event.data)
-         if len(bytes_result) > MAX_EVENT_DATA_BYTES:
+@@ -247,7 +247,7 @@ class Events(Base):
+         _DEFAULT_TABLE_ARGS,
+     )
+     __tablename__ = TABLE_EVENTS
+-    event_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    event_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     event_type: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+     event_data: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+     origin: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+@@ -258,7 +258,7 @@ class Events(Base):
+     context_user_id: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+     context_parent_id: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+     data_id: Mapped[int | None] = mapped_column(
+-        Integer, ForeignKey("event_data.data_id"), index=True
++        Integer, ForeignKey("event_data.data_id")
+     )
+     context_id_bin: Mapped[bytes | None] = mapped_column(CONTEXT_BINARY_TYPE)
+     context_user_id_bin: Mapped[bytes | None] = mapped_column(CONTEXT_BINARY_TYPE)
+@@ -335,7 +335,7 @@ class EventData(Base):
+ 
+     __table_args__ = (_DEFAULT_TABLE_ARGS,)
+     __tablename__ = TABLE_EVENT_DATA
+-    data_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    data_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     hash: Mapped[int | None] = mapped_column(UINT_32_TYPE, index=True)
+     # Note that this is not named attributes to avoid confusion with the states table
+     shared_data: Mapped[str | None] = mapped_column(
+@@ -391,7 +391,7 @@ class EventTypes(Base):
+ 
+     __table_args__ = (_DEFAULT_TABLE_ARGS,)
+     __tablename__ = TABLE_EVENT_TYPES
+-    event_type_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    event_type_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     event_type: Mapped[str | None] = mapped_column(
+         String(MAX_LENGTH_EVENT_EVENT_TYPE), index=True, unique=True
+     )
+@@ -421,7 +421,7 @@ class States(Base):
+         _DEFAULT_TABLE_ARGS,
+     )
+     __tablename__ = TABLE_STATES
+-    state_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    state_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     entity_id: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+     state: Mapped[str | None] = mapped_column(String(MAX_LENGTH_STATE_STATE))
+     attributes: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+@@ -434,10 +434,10 @@ class States(Base):
+         TIMESTAMP_TYPE, default=time.time, index=True
+     )
+     old_state_id: Mapped[int | None] = mapped_column(
+-        Integer, ForeignKey("states.state_id"), index=True
++        Integer, ForeignKey("states.state_id")
+     )
+     attributes_id: Mapped[int | None] = mapped_column(
+-        Integer, ForeignKey("state_attributes.attributes_id"), index=True
++        Integer, ForeignKey("state_attributes.attributes_id")
+     )
+     context_id: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+     context_user_id: Mapped[str | None] = mapped_column(UNUSED_LEGACY_COLUMN)
+@@ -560,7 +560,7 @@ class StateAttributes(Base):
+ 
+     __table_args__ = (_DEFAULT_TABLE_ARGS,)
+     __tablename__ = TABLE_STATE_ATTRIBUTES
+-    attributes_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    attributes_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     hash: Mapped[int | None] = mapped_column(UINT_32_TYPE, index=True)
+     # Note that this is not named attributes to avoid confusion with the states table
+     shared_attrs: Mapped[str | None] = mapped_column(
+@@ -628,7 +628,7 @@ class StatesMeta(Base):
+ 
+     __table_args__ = (_DEFAULT_TABLE_ARGS,)
+     __tablename__ = TABLE_STATES_META
+-    metadata_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    metadata_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     entity_id: Mapped[str | None] = mapped_column(
+         String(MAX_LENGTH_STATE_ENTITY_ID), index=True, unique=True
+     )
+@@ -645,7 +645,7 @@ class StatesMeta(Base):
+ class StatisticsBase:
+     """Statistics base class."""
+ 
+-    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     created: Mapped[datetime | None] = mapped_column(UNUSED_LEGACY_DATETIME_COLUMN)
+     created_ts: Mapped[float | None] = mapped_column(TIMESTAMP_TYPE, default=time.time)
+     metadata_id: Mapped[int | None] = mapped_column(
+@@ -742,7 +742,7 @@ class StatisticsMeta(Base):
+ 
+     __table_args__ = (_DEFAULT_TABLE_ARGS,)
+     __tablename__ = TABLE_STATISTICS_META
+-    id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     statistic_id: Mapped[str | None] = mapped_column(
+         String(255), index=True, unique=True
+     )
+@@ -766,7 +766,7 @@ class RecorderRuns(Base):
+         _DEFAULT_TABLE_ARGS,
+     )
+     __tablename__ = TABLE_RECORDER_RUNS
+-    run_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    run_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     start: Mapped[datetime] = mapped_column(DATETIME_TYPE, default=dt_util.utcnow)
+     end: Mapped[datetime | None] = mapped_column(DATETIME_TYPE)
+     closed_incorrect: Mapped[bool] = mapped_column(Boolean, default=False)
+@@ -805,7 +805,7 @@ class SchemaChanges(Base):
+     __tablename__ = TABLE_SCHEMA_CHANGES
+     __table_args__ = (_DEFAULT_TABLE_ARGS,)
+ 
+-    change_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    change_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     schema_version: Mapped[int | None] = mapped_column(Integer)
+     changed: Mapped[datetime] = mapped_column(DATETIME_TYPE, default=dt_util.utcnow)
+ 
+@@ -825,7 +825,7 @@ class StatisticsRuns(Base):
+     __tablename__ = TABLE_STATISTICS_RUNS
+     __table_args__ = (_DEFAULT_TABLE_ARGS,)
+ 
+-    run_id: Mapped[int] = mapped_column(Integer, Identity(), primary_key=True)
++    run_id: Mapped[int] = mapped_column(Integer, primary_key=True)
+     start: Mapped[datetime] = mapped_column(DATETIME_TYPE, index=True)
+ 
+     def __repr__(self) -> str:
+
 
 diff --git a/homeassistant/components/recorder/repack.py b/homeassistant/components/recorder/repack.py
-index 8c7ad137d8628d..4050ffb4e9312c 100644
+index 8c7ad137d8..4050ffb4e9 100644
 --- a/homeassistant/components/recorder/repack.py
 +++ b/homeassistant/components/recorder/repack.py
 @@ -38,6 +38,16 @@ def repack_database(instance: Recorder) -> None:
@@ -99,10 +179,10 @@ index 8c7ad137d8628d..4050ffb4e9312c 100644
      # Optimize mysql / mariadb tables to free up space on disk
      if dialect_name == SupportedDialect.MYSQL:
 diff --git a/homeassistant/components/recorder/system_health/__init__.py b/homeassistant/components/recorder/system_health/__init__.py
-index 16feaa198868e3..d95c4f45e312d8 100644
+index 16feaa1988..d95c4f45e3 100644
 --- a/homeassistant/components/recorder/system_health/__init__.py
 +++ b/homeassistant/components/recorder/system_health/__init__.py
-@@ -15,11 +15,13 @@
+@@ -15,11 +15,13 @@ from ..util import session_scope
  from .mysql import db_size_bytes as mysql_db_size_bytes
  from .postgresql import db_size_bytes as postgresql_db_size_bytes
  from .sqlite import db_size_bytes as sqlite_db_size_bytes
@@ -118,7 +198,7 @@ index 16feaa198868e3..d95c4f45e312d8 100644
  
 diff --git a/homeassistant/components/recorder/system_health/duckdb.py b/homeassistant/components/recorder/system_health/duckdb.py
 new file mode 100644
-index 00000000000000..fa1e6483411d6f
+index 0000000000..fa1e648341
 --- /dev/null
 +++ b/homeassistant/components/recorder/system_health/duckdb.py
 @@ -0,0 +1,22 @@
@@ -145,10 +225,10 @@ index 00000000000000..fa1e6483411d6f
 +
 +    return float(size)
 diff --git a/homeassistant/components/recorder/util.py b/homeassistant/components/recorder/util.py
-index 4d494aed7d541a..89da2ef8a4279e 100644
+index 4d494aed7d..89da2ef8a4 100644
 --- a/homeassistant/components/recorder/util.py
 +++ b/homeassistant/components/recorder/util.py
-@@ -95,6 +95,7 @@ def _simple_version(version: str) -> AwesomeVersion:
+@@ -95,6 +95,7 @@ RECOMMENDED_MIN_VERSION_MARIA_DB_108 = _simple_version("10.8.4")
  MARIADB_WITH_FIXED_IN_QUERIES_108 = _simple_version("10.8.4")
  MIN_VERSION_MYSQL = _simple_version("8.0.0")
  MIN_VERSION_PGSQL = _simple_version("12.0")
@@ -183,7 +263,7 @@ index 4d494aed7d541a..89da2ef8a4279e 100644
  
      else:
          _fail_unsupported_dialect(dialect_name)
-@@ -915,6 +927,13 @@ def _filter_unique_constraint_integrity_error(err: Exception) -> bool:
+@@ -915,6 +927,13 @@ def filter_unique_constraint_integrity_error(
              and err.orig.pgcode == "23505"
          ):
              ignore = True

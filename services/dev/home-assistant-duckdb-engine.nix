@@ -21,8 +21,8 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     repo = "duckdb_engine";
     owner = "Mause";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-cm0vbz0VZ2Ws6FDWJO16q4KZW2obs0CBNrfY9jmR+6A=";
+    rev = "36811f05c7618e56f51aa2a62fe4ab99627dd963";
+    hash = "sha256-kSixrGRsi1kuCzQ5SRfz71o9oNKuTeBSfv2yLpOcHGQ=";
   };
 
   nativeBuildInputs = [ poetry-core ];
