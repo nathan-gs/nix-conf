@@ -44,7 +44,8 @@ in
               {% set v = [
                 states('sensor.system_wtw_air_quality_inlet_humidity'),
                 states('sensor.garden_garden_temperature_noordkant_humidity'),
-                states('sensor.openweathermap_humidity')
+                states('sensor.openweathermap_humidity'),
+                states('sensor.irceline_sint_kruiswinkel_humidity')
               ]
               %}
               {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
@@ -61,7 +62,8 @@ in
                 states('sensor.garden_garden_temperature_noordkant_temperature'),
                 states('sensor.openweathermap_temperature'),
                 states('sensor.system_wtw_air_quality_inlet_temperature'),
-                states('sensor.itho_wtw_inlet_temperature')
+                states('sensor.itho_wtw_inlet_temperature'),
+                states('sensor.irceline_sint_kruiswinkel_temperature)
               ]
               %}
               {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
@@ -75,7 +77,7 @@ in
             name = "indoor_humidity";
             state = ''
               {% set v = [
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)},
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_humidity')") rooms.heated)},
                 states('sensor.system_wtw_air_quality_outlet_humidity')
               ]
               %}
@@ -96,7 +98,7 @@ in
             name = "indoor_humidity_max";
             state = ''
               {% set v = [
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_na_humidity')") rooms.all)}
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_humidity')") rooms.heated)}
               ]
               %}
               {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
@@ -116,7 +118,7 @@ in
             name = "indoor_temperature";
             state = ''
               {% set sensors = [
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)},
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.heated)},
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature')") rooms.all)},
                 states('sensor.system_wtw_air_quality_outlet_temperature'),
                 states('sensor.itho_wtw_outlet_temperature')
@@ -142,6 +144,21 @@ in
         sampling_size = 60*24;
       }
     ];
+
+    recorder = {
+      include = {
+        entities = [
+          "sensor.indoor_dewpoint"
+          "sensor.outdoor_dewpoint"
+          "sensor.outdoor_humidity"
+          "sensor.outdoor_temperature"
+          "sensor.outdoor_temperature_24h_avg"
+          "sensor.indoor_humidity"
+          "sensor.indoor_humidity_max"
+          "sensor.indoor_temperature"
+        ];
+      };
+    };
 
   };
 

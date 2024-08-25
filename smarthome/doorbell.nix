@@ -29,5 +29,16 @@
 
     ];
 
+    recorder = {
+      include = {
+        entities = [
+          "automation.doorbell_notify"          
+        ];
+      };
+    };
+
   };
+
+  
+
 }

@@ -83,21 +83,34 @@ let
 
   templateSensorTemperature = ha.sensor.temperature;
 
-  roomTempFunction = { floor, room, sensor1, sensor2 ? null, adjustment ? 0 }: {
+  roomTempFunction = { floor, room, sensors, adjustment ? 0 }: {
     name = "${floor}/${room}/temperature";
     state = ''
-      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} %}      
-      {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
-      {{ sensor1 + ${toString adjustment} }}
+      {% set v = [
+        ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}')") sensors)}
+      ]
+      %}
+      {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+      {{ ((valid_v | sum / valid_v | length) | round(2) + ${toString adjustment}) }}
     '';
     unit_of_measurement = "°C";
     device_class = "temperature";
-    state_class = "measurement";
-    availability = ''
-      {% set sensor2 = ${if !isNull sensor2 then "states('sensor.${sensor2}')" else "0"} %}      
-      {% set sensor1 = states('sensor.${sensor1}') | float(sensor2) %}
-      {{ sensor1 not in ["unavailable", "unknown", "none"] }}
+    state_class = "measurement";    
+  };
+
+  roomHumidityFunction = { floor, room, sensors, adjustment ? 0 }: {
+    name = "${floor}/${room}/humidity";
+    state = ''
+      {% set v = [
+        ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}')") sensors)}
+      ]
+      %}
+      {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+      {{ ((valid_v | sum / valid_v | length) | round(2) + ${toString adjustment}) }}
     '';
+    unit_of_measurement = "%";
+    device_class = "humidity";
+    state_class = "measurement";    
   };
 
 in
@@ -232,10 +245,10 @@ in
             )
           )
         ]
-        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensor1 = "floor0_${v}_temperature_na_temperature"; adjustment = -0.3; }) (builtins.filter (v: v != "living") rooms.floor0)
-        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensor1 = "ebusd_370_displayedroomtemp_temp"; sensor2 = "floor0_${v}_temperature_na_temperature"; }) [ "living" ]
-        ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensor1 = "floor1_${v}_temperature_na_temperature"; adjustment = -0.3; }) rooms.floor1
-        ++ map (v: roomTempFunction { floor = "basement"; room = v; sensor1 = "basement_${v}_temperature_na_temperature"; }) rooms.basement
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_temperature"]; adjustment = -0.3; }) (builtins.filter (v: v != "living") rooms.floor0)
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "ebusd_370_displayedroomtemp_temp" "floor0_${v}_temperature_na_temperature" "floor0_living_fire_alarm_temperature" ]; }) [ "living" ]
+        ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_temperature" ]; adjustment = -0.3; }) rooms.floor1
+        ++ map (v: roomTempFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_temperature" ]; }) rooms.basement
         ++ map
           (
             v: templateSensorTemperature "${v}_temperature_diff_wanted" ''
@@ -244,9 +257,30 @@ in
               {{ (temperature_wanted - temperature_actual) | round(2) }}
             ''
           )
-          heatedRooms;
+          heatedRooms
+        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_humidity"]; adjustment = -5; }) (builtins.filter (v: v != "living") rooms.floor0)
+        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = [ "floor0_${v}_temperature_na_humidity" "floor0_living_fire_alarm_humidity" ]; }) [ "living" ]
+        ++ map (v: roomHumidityFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_humidity" ]; adjustment = -5; }) rooms.floor1
+        ++ map (v: roomHumidityFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_humidity"]; adjustment = -5; }) rooms.basement;
       }
     ];
+
+    recorder = {
+      include = {
+        entities = [
+        ]
+        ++ map(v: "sensor.${v}_temperature") rooms.all
+        ++ map(v: "sensor.${v}_temperature_diff_wanted") rooms.all
+        ++ map(v: "sensor.${v}_temperature_auto_wanted") rooms.all
+        ++ map(v: "sensor.${v}_humidity") rooms.all;
+      };
+      exclude = {
+        entity_globs = [
+          "sensor.*_*_rtv_*_temperature*"
+          "sensor.*_*_temperature_na_*"
+        ];
+      };
+    };
   };
 
 }

@@ -69,6 +69,7 @@
                   |rejectattr('entity_id', 'contains', '_window_')
                   |rejectattr('entity_id', 'contains', 'conversation.home_assistant')
                   |rejectattr('entity_id', 'contains', 'sensor.irceline_')
+                  |rejectattr('entity_id', 'contains', 'select.floor0_living_fire_alarm_main_alarm')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';

@@ -8,7 +8,7 @@ in
   floor1 = floor1;
   basement = basement;
 
-  all = map(v: "floor0_${v}") floor0 ++ map(v: "floor1_${v}") floor1;
+  all = map(v: "floor0_${v}") floor0 ++ map(v: "floor1_${v}") floor1 ++ ["basement_basement"];  
 
   heated = [
     "floor0_living"
