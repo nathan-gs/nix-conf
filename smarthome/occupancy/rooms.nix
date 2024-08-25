@@ -256,6 +256,15 @@ in
       ) 
     ];
 
+    recorder.exclude = {
+      entities = [
+      ];
+      entity_globs = [
+        "automation.*_*_in_use_turn_on"
+        "automation.*_*_in_use_turn_off"
+      ];
+    };
+
   };
 
 }

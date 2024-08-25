@@ -11,6 +11,7 @@
     ./ha
     ./hvac
     ./occupancy
+    ./recorder.nix
     ./waste.nix
     ./water.nix
     ./weather.nix

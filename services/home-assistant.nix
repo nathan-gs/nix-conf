@@ -15,8 +15,18 @@
         # required when the target is also TLS server with multiple hosts
         "proxy_ssl_server_name on;" +
         # required when the server wants to use HTTP Authentication
-        "proxy_pass_header Authorization;"
-        ;
+        "proxy_pass_header Authorization;";
+    };
+    locations."/db" = {
+      proxyPass = "http://127.0.0.1:2345";
+      extraConfig =
+        ''
+          # required when the target is also TLS server with multiple hosts
+          proxy_ssl_server_name on;
+          # required when the server wants to use HTTP Authentication
+          proxy_pass_header Authorization;
+        '';
+      basicAuth = config.secrets.nginx.basicAuth;
     };
   };
 
@@ -85,7 +95,9 @@
       };
       "automation ui" = "!include automations.yaml";
       recorder = {
-        purge_keep_days = 365;
+        purge_keep_days = 3650;
+        auto_purge = true;
+        auto_repack = true;
       };
     };
 
@@ -198,4 +210,22 @@
     cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/apexcharts-card.nix {})}" "/var/lib/hass/www/apexcharts-card.js"
     cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/auto-entities.nix {})}" "/var/lib/hass/www/auto-entities.js"
   '';
+
+
+  systemd.services.home-assistant-db = {
+    after = [ "network-online.target" ];
+    wants = [ "network-online.target" ];
+    serviceConfig = {
+      ExecStart = ''
+          ${pkgs.sqlite-web}/bin/sqlite_web \
+            --port 2345 \
+            --no-browser \
+            --url-prefix "/db" \
+            /var/lib/hass/home-assistant_v2.db
+        '';
+      User = "hass";      
+    };
+    environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
+    wantedBy = ["multi-user.target"];
+  };
 }

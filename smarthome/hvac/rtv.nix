@@ -103,5 +103,16 @@ in
         mode = "queued";
       })
       rtv;
+
+    recorder.exclude = {
+      entities = [
+
+      ];
+      entity_globs = [
+        "automation.*_*_rtv_*_temperature_calibration"
+        "automation.*_*_rtv_*_temperature_set"
+        "sensor.*_*_rtv_*_away_setting"
+      ];
+    };
   };
 }

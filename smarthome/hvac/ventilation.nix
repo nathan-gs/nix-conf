@@ -304,6 +304,17 @@
         }
       ];
     };
+    recorder.exclude = {
+      entities = [
+        "device_tracker.wtw_itho"
+        "switch.wtw_itho_internet_access"
+        "automation.itho_wtw_target"
+        "fan.wtw_itho_fan"
+      ];
+      entity_globs = [
+        "button.system_wtw_air_quality_*_identify"
+      ];
+    };
   };
 
 }

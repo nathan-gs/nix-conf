@@ -87,5 +87,14 @@
         })
         ;
 
+    recorder.exclude = {
+      entities = [
+      ];
+      entity_globs = [
+        "automation.*_turn_on"
+        "automation.*_turn_off"
+      ];
+    };
+
   };
 }
