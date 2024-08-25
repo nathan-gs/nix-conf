@@ -264,6 +264,7 @@ with lib;
           ${pkgs.hdparm}/bin/hdparm -S12 ${v}
           ${pkgs.hdparm}/bin/hdparm -B16 ${v}
         '') dataDisks);
+      serviceConfig.Type = "oneshot";
     };
 
     fileSystems = 
