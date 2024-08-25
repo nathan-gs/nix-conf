@@ -48,6 +48,7 @@
       SupplementaryGroups = [];
       SystemCallArchitectures = "native";
       UMask = "0077";
+      Type = "oneshot";
     };
   };
 }
