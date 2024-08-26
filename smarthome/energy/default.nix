@@ -16,6 +16,7 @@
         entities = [
           "sensor.battery_discharging_energy"
           "sensor.battery_charging_energy"
+          "sensor.energy_electricity_cost"
         ];
 
         entity_globs = [

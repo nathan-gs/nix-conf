@@ -3,7 +3,13 @@
 let
   carName = config.secrets.nathan-car.name;
   consumptionPower = "2050";
-
+  utilityMeter = name: cycle: {
+    "${name}_${cycle}" = {
+      source = "sensor.${name}";
+      cycle = cycle;
+    };
+  };
+  
 in
 
 {
@@ -12,8 +18,96 @@ in
 
     template = [
       {
+        trigger = {
+          platform = "time_pattern";
+          hours = "/1";
+        };
         sensor = [
+          {
+            name = "car_charger_solar_revenue_previous";
+            state = ''        
+            {{ states('sensor.car_charger_solar_revenue')| float(0) }}
+          '';
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }
+          {
+            name = "car_charger_grid_revenue_previous";
+            state = ''        
+            {{ states('sensor.car_charger_grid_revenue')| float(0) }}
+          '';
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }
         ];
+      }
+      {
+        sensor = [
+          {
+            name = "car_charger_solar_revenue_hourly";
+            device_class = "monetary";
+            state = ''
+              {% set energy = states('sensor.car_charger_solar_hourly') | float(0) %}
+              {% set injection_rev = states('sensor.electricity_injection_creg_kwh ') | float(0) %}
+              {{ (energy * injection_rev) | round(2) }}
+            '';
+            unit_of_measurement = "€";
+            icon = "mdi:car-electric-outline";
+          }
+          {
+            name = "car_charger_grid_revenue_hourly";
+            device_class = "monetary";
+            state = ''
+              {% set energy = states('sensor.car_charger_solar_hourly') | float(0) %}
+              {% set injection_rev = states('sensor.electricity_injection_creg_kwh ') | float(0) %}
+              {% set energy_cost = states('sensor.sensor.energy_electricity_cost ') | float(0) %}
+              {% set rev_per_kwh = injection_rev - energy_cost %}
+              {{ (energy * rev_per_kwh) | round(2) }}
+            '';
+            unit_of_measurement = "€";
+            icon = "mdi:car-electric-outline";
+          }
+          {
+            name = "car_charger_solar_revenue";
+            state = ''              
+              {% set hourly = states('sensor.car_charger_solar_revenue_hourly') | float(0) %}
+              {% set previous = states('sensor.car_charger_solar_revenue_previous') | float(0) %}
+              {{ previous + hourly | round(2) }}
+            '';
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }
+          {
+            name = "car_charger_grid_revenue";
+            state = ''              
+              {% set hourly = states('sensor.car_charger_grid_revenue_hourly') | float(0) %}
+              {% set previous = states('sensor.car_charger_grid_revenue_previous') | float(0) %}
+              {{ previous + hourly | round(2) }}
+            '';
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }
+          {
+            name = "car_charger_revenue";
+            state = ''              
+              {% set grid = states('sensor.car_charger_grid_revenue') | float(0) %}
+              {% set solar = states('sensor.car_charger_solar_revenue') | float(0) %}
+              {{ grid + solar | round(2) }}
+            '';
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }
+        ];        
 
         binary_sensor = [
           {
@@ -74,6 +168,15 @@ in
         ];
       }
     ];
+
+    utility_meter = {} 
+      // utilityMeter "car_charger_grid_revenue" "daily"
+      // utilityMeter "car_charger_grid_revenue" "monthly"
+      // utilityMeter "car_charger_solar_revenue" "daily"
+      // utilityMeter "car_charger_solar_revenue" "monthly"
+      // utilityMeter "car_charger_revenue" "daily"
+      // utilityMeter "car_charger_revenue" "monthly"
+    ;
 
     input_boolean = {
       car_charger_charge_at_night = {
@@ -136,6 +239,8 @@ in
             {% endif %}
             {{ power }}
           '';
+          create_utility_meters = true;
+          utility_meter_types = [ "hourly" "daily" "monthly" ];
         }
         {
           name = "car_charger_solar";
@@ -157,6 +262,8 @@ in
             {% endif %}
             {{ power }}
           '';
+          create_utility_meters = true;
+          utility_meter_types = [ "hourly" "daily" "monthly" ];
         }
         {
           name = "car_charger_grid";
@@ -175,6 +282,8 @@ in
             {% endif %}
             {{ power }}
           '';
+          create_utility_meters = true;
+          utility_meter_types = [ "hourly" "daily" "monthly" ];
         }
       ];
     };
