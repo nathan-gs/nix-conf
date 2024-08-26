@@ -150,6 +150,7 @@
       pyqrcode
       soco
       spotipy
+      universal-silabs-flasher
       zha-quirks
       zigpy-deconz
       zigpy-xbee
