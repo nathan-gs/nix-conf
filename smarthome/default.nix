@@ -6,6 +6,7 @@
     ./air_quality
     ./appliances
     ./calendar.nix
+    ./car
     ./doorbell.nix
     ./energy
     ./ha

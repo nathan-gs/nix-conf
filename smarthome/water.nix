@@ -92,6 +92,27 @@
       })
     ];
 
+    recorder = {
+      include = {
+        entities = [
+          "automation.system_water_abnormal_usage"
+          "automation.system_water_leak_detected"
+          "sensor.water_delivery"
+          "sensor.watermeter_total"
+          "sensor.watermeter_total_cost"
+          "sensor.watermeter_usage_last_minute"
+          "sensor.water_cost"
+          "sensor.indoor_humidity"
+          "sensor.indoor_humidity_max"
+          "sensor.indoor_temperature"
+        ];
+
+        entity_globs = [
+          "sensor.water_delivery_*"
+        ];
+      };
+    };
+
 
   };
 }

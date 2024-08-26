@@ -178,5 +178,19 @@ in
         }
       ];
     };
+
+    recorder = {
+      include = {
+        entities = [
+          "binary_sensor.car_charger_can_load"
+          "input_boolean.car_charger_charge_at_night"
+          "input_boolean.car_charger_charge_offpeak"
+        ];
+
+        entity_globs = [
+          "sensor.car_charger_*"
+        ];
+      };
+    };
   };
 }

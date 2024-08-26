@@ -83,35 +83,27 @@ let
 
   templateSensorTemperature = ha.sensor.temperature;
 
-  roomTempFunction = { floor, room, sensors, adjustment ? 0 }: {
-    name = "${floor}/${room}/temperature";
-    state = ''
-      {% set v = [
-        ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}')") sensors)}
-      ]
-      %}
-      {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-      {{ ((valid_v | sum / valid_v | length) | round(2) + ${toString adjustment}) }}
-    '';
-    unit_of_measurement = "°C";
-    device_class = "temperature";
-    state_class = "measurement";    
-  };
+  roomTempFunction = { floor, room, sensors, adjustment ? 0 }: 
+    ha.sensor.avg_from_list "${floor}/${room}/temperature" (map(v: "states('sensor.${v}')") sensors) {
+      unit_of_measurement = "°C";
+      device_class = "temperature";  
+      adjustment = adjustment;
+      icon = "mdi:home-thermometer-outline";
+    };
 
-  roomHumidityFunction = { floor, room, sensors, adjustment ? 0 }: {
-    name = "${floor}/${room}/humidity";
-    state = ''
-      {% set v = [
-        ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}')") sensors)}
-      ]
-      %}
-      {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-      {{ ((valid_v | sum / valid_v | length) | round(2) + ${toString adjustment}) }}
-    '';
-    unit_of_measurement = "%";
-    device_class = "humidity";
-    state_class = "measurement";    
-  };
+  roomHumidityFunction = { floor, room, sensors, adjustment ? 0 }: 
+    ha.sensor.avg_from_list "${floor}/${room}/humidity" (map(v: "states('sensor.${v}')") sensors) {
+      unit_of_measurement = "%";
+      device_class = "humidity";  
+      adjustment = adjustment;
+      icon = ''
+          {% if states('sensor.${floor}_${room}_humidity') | float(100) > 70 %}
+              mdi:water-percent-alert
+          {% else %}
+              mdi:water-percent
+          {% endif %}
+      '';
+    };
 
 in
 {
@@ -246,7 +238,7 @@ in
           )
         ]
         ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_temperature"]; adjustment = -0.3; }) (builtins.filter (v: v != "living") rooms.floor0)
-        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "ebusd_370_displayedroomtemp_temp" "floor0_${v}_temperature_na_temperature" "floor0_living_fire_alarm_temperature" ]; }) [ "living" ]
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "ebusd_370_displayedroomtemp_temp" "floor0_${v}_temperature_na_temperature" "floor0_living_fire_alarm_main_temperature" ]; }) [ "living" ]
         ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_temperature" ]; adjustment = -0.3; }) rooms.floor1
         ++ map (v: roomTempFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_temperature" ]; }) rooms.basement
         ++ map
@@ -259,7 +251,7 @@ in
           )
           heatedRooms
         ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_humidity"]; adjustment = -5; }) (builtins.filter (v: v != "living") rooms.floor0)
-        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = [ "floor0_${v}_temperature_na_humidity" "floor0_living_fire_alarm_humidity" ]; }) [ "living" ]
+        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = [ "floor0_${v}_temperature_na_humidity" "floor0_living_fire_alarm_main_humidity" "floor0_living_fire_alarm_main_humidity" ]; }) [ "living" ]
         ++ map (v: roomHumidityFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_humidity" ]; adjustment = -5; }) rooms.floor1
         ++ map (v: roomHumidityFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_humidity"]; adjustment = -5; }) rooms.basement;
       }

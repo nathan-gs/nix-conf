@@ -126,6 +126,22 @@ in
         end = "{{ now() }}";
       }
     ];
+
+    recorder = {
+      include = {
+        entities = [
+          "input_boolean.coming_home"
+          "binary_sensor.anyone_home"
+          "binary_sensor.anyone_coming_home"
+          "binary_sensor.anyone_home_or_coming_home"
+          "binary_sensor.far_away"
+          "sensor.occupancy_anyone_home_daily"
+        ];
+
+        entity_globs = [
+        ];
+      };
+    };
   };
 
 

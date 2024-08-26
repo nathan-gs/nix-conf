@@ -24,6 +24,18 @@
         icon = "mdi:fireplace";
       };
     };
+
+    recorder = {
+      include = {
+        entities = [
+          "binary_sensor.workday"
+          "input_boolean.holiday_at_home"          
+        ];
+
+        entity_globs = [
+        ];
+      };
+    };
   };
 
 }

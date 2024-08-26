@@ -202,58 +202,75 @@ in
       }
     ];
 
-    recorder.exclude = {
-      entities = [
-        "sensor.ebusd_uptime"
-        "device_tracker.ebus"
-        "switch.ebus_internet_access"
-        "automation.cv_query"
-        "automation.cv_temperature_set"
-        "binary_sensor.ebusd_370_chimneysweepmodeactive_yesno"
-        "sensor.ebusd_370_adcvaluetempbelow"
-        "sensor.ebusd_370_b51000m7opmodemonitor"
-        "sensor.ebusd_370_b51000tempdesiredloadingpump"
-        "sensor.ebusd_bai_hchours_hoursum2"
-        "sensor.ebusd_bai_hcpumpstarts_cntstarts2"
-        "sensor.ebusd_bai_hcstarts"
-        "sensor.ebusd_bai_hcunderhundredstarts"
-        "sensor.ebusd_bai_hourstillservice_hoursum2"
-        "sensor.ebusd_bai_hwchours_hoursum2"
-        "sensor.ebusd_bai_hwcstarts"
-        "sensor.ebusd_bai_hwcunderhundredstarts"
-        "sensor.ebusd_bai_prapscounter"
-        "sensor.ebusd_bai_prvortexflowsensorvalue"
-        "sensor.ebusd_bai_pumphours_hoursum2"
-        "sensor.ebusd_bai_returntemp_tempmirror"
-        "sensor.ebusd_bai_setmode_hwcflowtempdesired"
-        "sensor.ebusd_bai_setmode_releasebackup"
-        "sensor.ebusd_bai_setmode_releasecooling"
-        "sensor.ebusd_bai_setmode_remotecontrolhcpump"
-        "sensor.ebusd_bai_shemaxflowtemp_temp"
-        "sensor.ebusd_bai_status01_temp1_3"
-        "sensor.ebusd_bai_status01_temp2"
-        "sensor.ebusd_bai_status16_temp"
-        "sensor.ebusd_bai_status_hcmode2"
-        "sensor.ebusd_bai_status_press_2"
-        "sensor.ebusd_bai_status_temp"
-        "sensor.ebusd_bai_storageloadpumphours_hoursum2"
-        "sensor.ebusd_bai_storageloadpumpstarts_cntstarts2"
-        "sensor.ebusd_bai_valvestarts_cntstarts2"
-        "sensor.ebusd_bai_vortexflowsensor"
-        "sensor.ebusd_scan"
-        "binary_sensor.ebusd_370_chimneysweepmodeactive_yesno"
-        "binary_sensor.ebusd_bai_timerinputhc_onoff"
-      ];
-      entity_globs = [
-        "sensor.ebusd_bai_prenergycounthc*"
-        "sensor.ebusd_bai_prenergycounthwc*"
-        "sensor.ebusd_bai_prenergysumhc*"
-        "sensor.ebusd_bai_prenergysumhwc*"
-        "sensor.ebusd_bai_counterstartattempts1_temp*"
-        "sensor.ebusd_370_cctimer_*"
-        "sensor.ebusd_370_hctimer_*"
-        "sensor.ebusd_370_hwctimer_*"
-      ];
+    recorder = {
+       include = {
+        entities = [
+          "climate.cv"
+          "climate.boiler"
+          
+        ];
+        entity_globs = [
+          "sensor.heating_*"
+          "sensor.itho_wtw_outlet_*"
+          "binary_sensor.ebusd_*"
+          "sensor.ebusd_*"
+        ];
+
+      };
+      exclude = {
+        entities = [
+          "sensor.ebusd_uptime"
+          "device_tracker.ebus"
+          "switch.ebus_internet_access"
+          "automation.cv_query"
+          "automation.cv_temperature_set"
+          "update.ebusd_updatecheck"
+          "binary_sensor.ebusd_370_chimneysweepmodeactive_yesno"
+          "sensor.ebusd_370_adcvaluetempbelow"
+          "sensor.ebusd_370_b51000m7opmodemonitor"
+          "sensor.ebusd_370_b51000tempdesiredloadingpump"
+          "sensor.ebusd_bai_hchours_hoursum2"
+          "sensor.ebusd_bai_hcpumpstarts_cntstarts2"
+          "sensor.ebusd_bai_hcstarts"
+          "sensor.ebusd_bai_hcunderhundredstarts"
+          "sensor.ebusd_bai_hourstillservice_hoursum2"
+          "sensor.ebusd_bai_hwchours_hoursum2"
+          "sensor.ebusd_bai_hwcstarts"
+          "sensor.ebusd_bai_hwcunderhundredstarts"
+          "sensor.ebusd_bai_prapscounter"
+          "sensor.ebusd_bai_prvortexflowsensorvalue"
+          "sensor.ebusd_bai_pumphours_hoursum2"
+          "sensor.ebusd_bai_returntemp_tempmirror"
+          "sensor.ebusd_bai_setmode_hwcflowtempdesired"
+          "sensor.ebusd_bai_setmode_releasebackup"
+          "sensor.ebusd_bai_setmode_releasecooling"
+          "sensor.ebusd_bai_setmode_remotecontrolhcpump"
+          "sensor.ebusd_bai_shemaxflowtemp_temp"
+          "sensor.ebusd_bai_status01_temp1_3"
+          "sensor.ebusd_bai_status01_temp2"
+          "sensor.ebusd_bai_status16_temp"
+          "sensor.ebusd_bai_status_hcmode2"
+          "sensor.ebusd_bai_status_press_2"
+          "sensor.ebusd_bai_status_temp"
+          "sensor.ebusd_bai_storageloadpumphours_hoursum2"
+          "sensor.ebusd_bai_storageloadpumpstarts_cntstarts2"
+          "sensor.ebusd_bai_valvestarts_cntstarts2"
+          "sensor.ebusd_bai_vortexflowsensor"
+          "sensor.ebusd_scan"
+          "binary_sensor.ebusd_370_chimneysweepmodeactive_yesno"
+          "binary_sensor.ebusd_bai_timerinputhc_onoff"
+        ];
+        entity_globs = [
+          "sensor.ebusd_bai_prenergycounthc*"
+          "sensor.ebusd_bai_prenergycounthwc*"
+          "sensor.ebusd_bai_prenergysumhc*"
+          "sensor.ebusd_bai_prenergysumhwc*"
+          "sensor.ebusd_bai_counterstartattempts1_temp*"
+          "sensor.ebusd_370_cctimer_*"
+          "sensor.ebusd_370_hctimer_*"
+          "sensor.ebusd_370_hwctimer_*"
+        ];
+      };
     };
   };
 

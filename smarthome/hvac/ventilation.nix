@@ -304,16 +304,33 @@
         }
       ];
     };
-    recorder.exclude = {
-      entities = [
-        "device_tracker.wtw_itho"
-        "switch.wtw_itho_internet_access"
-        "automation.itho_wtw_target"
-        "fan.wtw_itho_fan"
-      ];
-      entity_globs = [
-        "button.system_wtw_air_quality_*_identify"
-      ];
+    recorder = {
+      include = {
+        entities = [
+          "binary_sensor.itho_wtw_bypass"
+          "binary_sensor.itho_wtw_is_summerday"
+          "binary_sensor.itho_wtw_valve"
+          "sensor.itho_wtw_actual_mode"
+          "sensor.wtw_target_fan"
+          "switch.system_wtw_metering_plug_verwarming"
+        ];
+        entity_globs = [
+          "sensor.itho_wtw_inlet_*"
+          "sensor.itho_wtw_outlet_*"
+        ];
+
+      };
+      exclude = {
+        entities = [
+          "device_tracker.wtw_itho"
+          "switch.wtw_itho_internet_access"
+          "automation.itho_wtw_target"
+          "fan.wtw_itho_fan"
+        ];
+        entity_globs = [
+          "button.system_wtw_air_quality_*_identify"
+        ];
+      };
     };
   };
 
