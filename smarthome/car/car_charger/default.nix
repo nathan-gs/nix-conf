@@ -20,7 +20,9 @@ in
       {
         trigger = {
           platform = "time_pattern";
-          hours = "/1";
+          hours = "*";
+          minutes = "59";
+          seconds = "50";
         };
         sensor = [
           {
@@ -46,37 +48,23 @@ in
         ];
       }
       {
+        trigger = {
+          platform = "time_pattern";
+          hours = "*";
+          minutes = "*";
+          seconds = "1";
+        };
         sensor = [
-          {
-            name = "car_charger_solar_revenue_hourly";
-            device_class = "monetary";
-            state = ''
-              {% set energy = states('sensor.car_charger_solar_hourly') | float(0) %}
-              {% set injection_rev = states('sensor.electricity_injection_creg_kwh ') | float(0) %}
-              {{ (energy * injection_rev) | round(2) }}
-            '';
-            unit_of_measurement = "€";
-            icon = "mdi:car-electric-outline";
-          }
-          {
-            name = "car_charger_grid_revenue_hourly";
-            device_class = "monetary";
-            state = ''
-              {% set energy = states('sensor.car_charger_solar_hourly') | float(0) %}
-              {% set injection_rev = states('sensor.electricity_injection_creg_kwh ') | float(0) %}
-              {% set energy_cost = states('sensor.sensor.energy_electricity_cost ') | float(0) %}
-              {% set rev_per_kwh = injection_rev - energy_cost %}
-              {{ (energy * rev_per_kwh) | round(2) }}
-            '';
-            unit_of_measurement = "€";
-            icon = "mdi:car-electric-outline";
-          }
           {
             name = "car_charger_solar_revenue";
             state = ''              
-              {% set hourly = states('sensor.car_charger_solar_revenue_hourly') | float(0) %}
+              {% set hourly = states('sensor.car_charger_solar_revenue_hourly') %}
               {% set previous = states('sensor.car_charger_solar_revenue_previous') | float(0) %}
-              {{ previous + hourly | round(2) }}
+              {% if hourly not in ['unavailable', 'unknown', 'none'] %}
+                {{ previous + (hourly | float) | round(2) }}       
+              {% else %}
+                {{ this.state | float }}
+              {% endif %}                     
             '';
             unit_of_measurement = "€";
             device_class = "monetary";
@@ -86,14 +74,68 @@ in
           {
             name = "car_charger_grid_revenue";
             state = ''              
-              {% set hourly = states('sensor.car_charger_grid_revenue_hourly') | float(0) %}
+              {% set hourly = states('sensor.car_charger_grid_revenue_hourly') %}
               {% set previous = states('sensor.car_charger_grid_revenue_previous') | float(0) %}
-              {{ previous + hourly | round(2) }}
+              {% if hourly not in ['unavailable', 'unknown', 'none'] %}
+                {{ previous + (hourly | float) | round(2) }}       
+              {% else %}
+                {{ this.state | float }}
+              {% endif %}              
             '';
             unit_of_measurement = "€";
             device_class = "monetary";
             state_class = "total";
             icon = "mdi:car-electric-outline";
+          }          
+        ];
+      }
+      {
+        sensor = [
+          {
+            name = "car_charger_solar_revenue_hourly";
+            device_class = "monetary";
+            state = ''
+              {% set energy = states('sensor.car_charger_solar_energy_hourly') %}
+              {% set injection_rev = states('sensor.electricity_injection_creg_kwh') %}
+              {% if energy not in ['unavailable', 'unknown', 'none'] or injection_rev not in ['unavailable', 'unknown', 'none', 0] %}
+                {{ (energy | float * injection_rev | float) | round(2) }}
+              {% else %}
+                {{ this.state | float }}
+              {% endif %}
+            '';
+            unit_of_measurement = "€";
+            icon = "mdi:car-electric-outline";
+            state_class = "total";
+          }
+          {
+            name = "car_charger_grid_revenue_hourly";
+            device_class = "monetary";
+            state = ''
+              {% set energy = states('sensor.car_charger_grid_energy_hourly') %}
+              {% set injection_rev = states('sensor.electricity_injection_creg_kwh')  %}
+              {% set energy_cost = states('sensor.energy_electricity_cost') %}
+              {% if (energy not in ['unavailable', 'unknown', 'none']) or (injection_rev not in ['unavailable', 'unknown', 'none', 0]) or (energy_cost not in ['unavailable', 'unknown', 'none', 0]) %}
+               {% set rev = (injection_rev | float) - (energy_cost | float) %}
+                {{ (energy | float * rev) | round(2) }}
+              {% else %}
+                {{ this.state | float }}
+              {% endif %}
+            '';
+            unit_of_measurement = "€";
+            icon = "mdi:car-electric-outline";
+            state_class = "total";
+          }
+          {
+            name = "car_charger_revenue_hourly";
+            device_class = "monetary";
+            state = ''
+              {% set grid = states('sensor.car_charger_grid_revenue_hourly') | float(0) %}
+              {% set solar = states('sensor.car_charger_solar_revenue_hourly') | float(0) %}
+              {{ grid + solar | round(2) }}
+            '';
+            unit_of_measurement = "€";
+            icon = "mdi:car-electric-outline";
+            state_class = "total";
           }
           {
             name = "car_charger_revenue";
