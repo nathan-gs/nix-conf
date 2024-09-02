@@ -136,9 +136,15 @@ in
           "binary_sensor.anyone_home_or_coming_home"
           "binary_sensor.far_away"
           "sensor.occupancy_anyone_home_daily"
+          "device_tracker.sm_g780g"        
         ];
 
         entity_globs = [
+          "device_tracker.fphone*"
+          "device_tracker.nphone*"
+          "device_tracker.volvo_*"
+          "device_tracker.*_position"
+          "person.*"
         ];
       };
     };
