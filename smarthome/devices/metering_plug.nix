@@ -31,7 +31,7 @@ map
     {
       zone = "bureau";
       name = "pc";
-      ieee = "0xa4c138bd0cf23138";
+      ieee = "0xa4c138a029d5a884";
       floor = "floor0";
     }
     {
