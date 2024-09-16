@@ -71,6 +71,7 @@
                   |rejectattr('entity_id', 'contains', 'sensor.irceline_')
                   |rejectattr('entity_id', 'contains', 'select.floor0_living_fire_alarm_main_alarm')
                   |rejectattr('entity_id', 'contains', 'sensor.garden_garden_button_pomp_battery')
+                  |rejectattr('entity_id', 'contains', 'sensor.rainfall_5d')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
