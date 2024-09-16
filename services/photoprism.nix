@@ -18,6 +18,11 @@
       PHOTOPRISM_DETECT_NSFW = "false";
       PHOTOPRISM_SITE_URL = "https://photoprism.nathan.gs/";
       PHOTOPRISM_LOG_LEVEL = "info";
+      PHOTOPRISM_DATABASE_DRIVER = "mysql";
+      PHOTOPRISM_DATABASE_NAME = "photoprism";
+      PHOTOPRISM_DATABASE_USER = "photoprism";
+      PHOTOPRISM_DATABASE_PASSWORD = config.secrets.mariadb.photoprism;
+      PHOTOPRISM_DATABASE_SERVER = "/run/mysqld/mysqld.sock";
     };
     #package = pkgs.nixpkgs-unstable.photoprism;
   };
@@ -48,21 +53,11 @@
         '';
     };
 
-    locations."/db" = {
-      proxyPass = "http://127.0.0.1:2344";
-      extraConfig =
-        ''
-          # required when the target is also TLS server with multiple hosts
-          proxy_ssl_server_name on;
-          # required when the server wants to use HTTP Authentication
-          proxy_pass_header Authorization;
-        '';
-    };
   };
 
   services.photoprism-slideshow = {
     enable = true;
-    preload = true;
+    dsn = "jdbc:mysql://photoprism:${config.secrets.mariadb.photoprism}@localhost/photoprism?unix_socket=/run/mysqld/mysqld.sock&charset=utf8mb4";
     interval = 60;
   };
 
@@ -72,26 +67,7 @@
     Group = lib.mkOverride 0 "media";
   };
 
-  # https://docs.photoprism.app/user-guide/backups/restore/
-  systemd.services.photoprism-backup = {
-    description = "Photoprism Backup";
-    path = [ pkgs.gnutar pkgs.gzip pkgs.sqlite ];
-    unitConfig = {
-      RequiresMountsFor = "/media/documents";
-    };
-    serviceConfig = {
-      User = "nathan";
-    };
-    script = ''
-       mkdir -pm 0775 /media/documents/nathan/onedrive_nathan_personal/backup/
-       target='/media/documents/nathan/onedrive_nathan_personal/backup/photoprism-index.db.gz'
-       
-       sqlite3 /var/lib/photoprism/index.db .dump | gzip -c > /tmp/photoprism-index.db.gz
 
-       mv /tmp/photoprism-index.db.gz $target
-      '';
-    startAt = "*-*-* 01:00:00";
-  };
 
   systemd.services.photoprism-prioritize = {
     description = "Power Save scripts";
@@ -100,24 +76,17 @@
     script = ''source ${./photoprism-prioritize.sh}'';
   };
 
-  systemd.services.photoprism-db = {
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    unitConfig = {
-      RequiresMountsFor = "/media/documents";
-    };
-    serviceConfig = {
-      ExecStart = ''
-          ${pkgs.sqlite-web}/bin/sqlite_web \
-            --port 2344 \
-            --no-browser \
-            --url-prefix "/db" \
-            /var/lib/photoprism/index.db
-        '';
-      User = "nathan";      
-    };
-    environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-    wantedBy = ["multi-user.target"];
+  services.mysql = {
+    ensureDatabases = [ "photoprism" ];
+    ensureUsers = [
+      {
+        name = "photoprism";
+        ensurePermissions = {
+          "photoprism.*" = "ALL PRIVILEGES";
+        };
+      }
+    ];
   };
+
 
 }
