@@ -69,7 +69,7 @@
               event = "sunrise";
               offset = "00:30:00";
             }
-            (ha.trigger.off_for "input_boolean.floor0_bureau_in_use" "00:01:00")
+            (ha.trigger.off "input_boolean.floor0_bureau_in_use")
           ];
           entities = [ "light.floor0_bureau_light_desk" ];
         })

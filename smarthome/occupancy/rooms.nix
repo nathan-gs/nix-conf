@@ -37,7 +37,7 @@ in
               {{ pc_in_use or ndesk_in_use }}
             '';
             device_class = "occupancy";
-            delay_off = "00:01:00";
+            delay_off = "00:05:00";
           }
           {
             name = "floor1/nikolai/scherm_in_use";
@@ -164,7 +164,6 @@ in
           ];
           action = "off";
           extraActions = [
-            (ha.action.delay "00:01:00")
             (ha.action.off "switch.floor0_bureau_metering_plug_pc")
           ];
         }
