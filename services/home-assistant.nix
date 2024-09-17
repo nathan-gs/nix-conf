@@ -17,17 +17,6 @@
         # required when the server wants to use HTTP Authentication
         "proxy_pass_header Authorization;";
     };
-    locations."/db" = {
-      proxyPass = "http://127.0.0.1:2345";
-      extraConfig =
-        ''
-          # required when the target is also TLS server with multiple hosts
-          proxy_ssl_server_name on;
-          # required when the server wants to use HTTP Authentication
-          proxy_pass_header Authorization;
-        '';
-      basicAuth = config.secrets.nginx.basicAuth;
-    };
   };
 
   environment.etc."fail2ban/filter.d/home-assistant.conf".source = ./fail2ban/home-assistant.conf;
@@ -95,6 +84,7 @@
       };
       "automation ui" = "!include automations.yaml";
       recorder = {
+        db_url = "mysql://hass:${config.secrets.mariadb.hass}@localhost/hass?unix_socket=/run/mysqld/mysqld.sock&charset=utf8mb4";
         purge_keep_days = 3650;
         auto_purge = true;
         auto_repack = true;
@@ -139,6 +129,7 @@
     ];
 
     extraPackages = ps: with ps; [
+      mysqlclient
       aiohomekit
       aiohttp
       bellows
@@ -170,7 +161,7 @@
 
   systemd.services.home-assistant-backup = {
     description = "home-assistant-backup"; 
-    path = [ pkgs.gnutar pkgs.gzip pkgs.sqlite ];
+    path = [ pkgs.gnutar pkgs.gzip ];
     unitConfig = {
       RequiresMountsFor = "/media/documents";
     };
@@ -186,6 +177,8 @@
         --exclude custom_components \
         --exclude 'home-assistant_v2*' \
         --exclude ui-lovelace.yaml \
+        --exclude home-assistant.log* \
+        --exclude www \
         -czf \
         /tmp/hass.tar.gz \
         -C /var/lib \
@@ -193,11 +186,6 @@
       
       chown nathan /tmp/hass.tar.gz
       mv /tmp/hass.tar.gz "$target/hass.tar.gz"
-
-      sqlite3 /var/lib/hass/home-assistant_v2.db .dump | gzip -c > /tmp/home-assistant_v2.db.gz
-      
-      chown nathan /tmp/home-assistant_v2.db.gz
-      mv /tmp/home-assistant_v2.db.gz "$target/home-assistant_v2.db.gz"
       '';
 
     startAt = "*-*-* 03:42:00";
@@ -212,21 +200,4 @@
     cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/auto-entities.nix {})}" "/var/lib/hass/www/auto-entities.js"
   '';
 
-
-  systemd.services.home-assistant-db = {
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
-    serviceConfig = {
-      ExecStart = ''
-          ${pkgs.sqlite-web}/bin/sqlite_web \
-            --port 2345 \
-            --no-browser \
-            --url-prefix "/db" \
-            /var/lib/hass/home-assistant_v2.db
-        '';
-      User = "hass";      
-    };
-    environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-    wantedBy = ["multi-user.target"];
-  };
 }
