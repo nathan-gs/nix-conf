@@ -1,7 +1,7 @@
 { config, pkgs, lib, ha, ... }:
 
 let
-  maxIndoorTemp = "20.0";
+  maxIndoorTemp = "21.5";
 
   automateTurnOn = v:
     {
