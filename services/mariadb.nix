@@ -5,11 +5,12 @@
     package = pkgs.mariadb;
     settings = {
       mysqld = {
-        innodb_buffer_pool_size = "3G";
-        innodb_log_file_size="765m";
+        innodb_buffer_pool_size = "16G";
+        innodb_log_file_size="2g";
+        innodb_buffer_pool_instances = "4";
         performance_schema = "on";
-        tmp_table_size = "32m";
-        max_heap_table_size = "32m";
+        tmp_table_size = "512m";
+        max_heap_table_size = "512m";
       };
     };
     ensureUsers = [
