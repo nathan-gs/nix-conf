@@ -8,6 +8,11 @@
       sensors = [ ];
     };
 
+    #
+    # The idea is every percentage represents a fixed kWh (dis)charging energy. 
+    # The US5000 has 4800Wh, the US3000C has 3552Wh.
+    #
+
     template = [
       {
         trigger = [
@@ -22,7 +27,7 @@
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
               {% if battery_change > 0 %}
-                {{ (( this.state | float ) + ((battery_change * 48) / 1000)) | round(2) }}
+                {{ (( this.state | float ) + ((battery_change * (48 + 35)) / 1000)) | round(2) }}
               {% else %}
                 {{ this.state | float }}
               {% endif %}
@@ -36,7 +41,7 @@
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
               {% if battery_change < 0 %}
-                {{ ((this.state | float) + ((battery_change * -1 * 48) / 1000)) | round(2) }}
+                {{ ((this.state | float) + ((battery_change * -1 * (48 + 35)) / 1000)) | round(2) }}
               {% else %}
                 {{ this.state | float }}
               {% endif %}
