@@ -41,7 +41,7 @@
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
               {% if battery_change < 0 %}
-                {{ ((this.state | float) + ((battery_change * -1 * (48 + 35)) / 1000)) | round(2) }}
+                {{ ((this.state | float) + ((battery_change * -1 * ((48 + 35) * 0.98)) / 1000)) | round(2) }}
               {% else %}
                 {{ this.state | float }}
               {% endif %}
