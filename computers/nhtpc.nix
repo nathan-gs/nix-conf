@@ -27,6 +27,7 @@
       ../services/remote-build-host.nix
       ../monitoring.nix
       ../smarthome.nix
+      ../gc.nix
     ];
 
 

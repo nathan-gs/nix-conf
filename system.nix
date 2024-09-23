@@ -86,10 +86,5 @@
   #   defaultLocale = "en_US.UTF-8";
   # };
 
-  nix.gc = {
-    automatic = true;
-    dates = "weekly";
-  };
-
 
 }

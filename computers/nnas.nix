@@ -16,6 +16,7 @@
      ../apps/cloudflare-dyndns.nix
      ../services/smb.nix
      ../services/onedrive.nix
+      ../gc.nix
     ];
 
 

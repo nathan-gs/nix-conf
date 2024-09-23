@@ -10,6 +10,7 @@
       (modulesPath + "/installer/scan/not-detected.nix")
       ../system.nix
       ../users.nix
+      ../gc.nix
     ];
 
   # Bootloader.
