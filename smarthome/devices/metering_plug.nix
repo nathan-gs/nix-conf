@@ -43,7 +43,7 @@ map
     {
       zone = "nikolai";
       name = "verwarming";
-      ieee = "0xa4c13859f1a8fc3d";      
+      ieee = "0xa4c138ed6a249389";      
       floor = "floor1";
     }
     {
