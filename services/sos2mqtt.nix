@@ -3,9 +3,7 @@
 
   systemd.services.sos2mqtt = {
     description = "sos2mqtt Service";
-    wantedBy = [ "multi-user.target" ];
     after = [ "network.target" ];
-    startAt = "*-*-* *:35:00";
     serviceConfig = {
       ExecStart = lib.concatStringsSep " " [ 
         ''${(pkgs.callPackage ../pkgs/sos2mqtt.nix {})}/bin/sos2mqtt'' 
@@ -49,6 +47,15 @@
       SystemCallArchitectures = "native";
       UMask = "0077";
       Type = "oneshot";
+    };
+  };
+
+  systemd.timers.sos2mqtt = {
+    wantedBy = [ "timers.target" ];
+    partOf = [ "sos2mqtt.service" ];
+    timerConfig = {
+      OnCalendar = "*-*-* *:35:00";
+      Unit = "sos2mqtt.service";
     };
   };
 }
