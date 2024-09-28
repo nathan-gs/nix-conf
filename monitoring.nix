@@ -24,9 +24,12 @@
           ];
           metric_relabel_configs = [
             {
-              source_labels = ["__name__"];
-              regex = "platform_nct6775_656 temp(\d*) temp|platform_\w*_\d* temp\d* Critical";
-              action = "drop";
+              action = "labeldrop";
+              regex = "platform_nct6775_656.*";
+            }
+            {
+              action = "labeldrop";
+              regex = "platform_.*Critical";
             }
           ];
         }

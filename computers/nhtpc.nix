@@ -33,7 +33,16 @@
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;
+  boot.loader.systemd-boot.memtest86.enable = true;
+
   boot.loader.efi.canTouchEfiVariables = true;
+
+  boot.kernelParams = [
+    "quiet"
+    "splash"
+    "apm=power_off"
+    "acpi=force"
+  ];
   
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
   boot.kernelModules = [ "kvm-intel" "coretemp" "nct6775" ];
@@ -117,7 +126,7 @@
     zoneId = config.secrets.cloudflare.zoneId;
     recordId = config.secrets.cloudflare.nhtpc.recordId;
     recordName = config.secrets.cloudflare.nhtpc.recordName;
-  };
+  };  
 
   # Enable sound.
   # sound.enable = true;
