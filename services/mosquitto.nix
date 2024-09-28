@@ -38,6 +38,10 @@
               acl = ["readwrite irceline/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.sos2mqtt.password;
             };
+            soliscontrol = {
+              acl = ["readwrite solar/#" "readwrite homeassistant/#" ];
+              password = config.secrets.mqtt.users.soliscontrol.password;
+            };
         };
         
         port = 1883;
