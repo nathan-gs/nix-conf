@@ -32,7 +32,7 @@ in
           {
             name = "floor0/bureau/pc_in_use";
             state = ''
-              {% set pc_in_use = states('sensor.floor0_bureau_metering_plug_pc_power') |float(0) > 12 %}
+              {% set pc_in_use = states('sensor.floor0_bureau_metering_plug_pc_power') |float(0) > 10 %}
               {% set ndesk_in_use = states('binary_sensor.ndesk') | bool(false) %}
               {{ pc_in_use or ndesk_in_use }}
             '';
