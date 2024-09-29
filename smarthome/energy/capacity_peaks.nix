@@ -69,6 +69,71 @@
             state_class = "measurement";
             device_class = "power";
           }
+          {
+            name = "solar/battery/overdischargesoc_target";
+            unit_of_measurement = "%";
+            device_class = "battery";
+            state = ''
+              {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+              {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
+              {% set car_charger_on = states('sensor.car_charger_power') | int(0) > 20 %}
+              {% set overdischargesoc_default = 30 %}
+              {% set overdischargesoc_with_car_charger_on = 40 %}
+              {% set overdischarge_min = 8 %}
+              {#
+              Test values
+              {% set power15m = 2.1 %}
+              {% set power15m_estimated = 2.8 %}
+
+              Echo's
+              {{ power15m }}
+              {{ power15m_estimated }}
+              {{ overdischargesoc }}
+              #}
+              {# Capacity Tweaks #}
+              {% if (power15m > 2.0) and (power15m_estimated > 2.45) %}
+                {{ overdischarge_min }}
+              {# If car charging #}
+              {% elif car_charger_on %}
+                {{ overdischargesoc_with_car_charger_on }}
+              {% else %}
+                {{ overdischargesoc_default }}
+              {% endif %}
+            '';
+          }
+          {
+            name = "solar/battery/forcechargesoc_target";
+            unit_of_measurement = "%";
+            device_class = "battery";
+            state = ''
+              {% set power15m = states('sensor.electricity_delivery_power_15m') | float(2) %}
+              {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(2) %}
+              {% set is_solar_left = states('sensor.energy_production_today_remaining') | float(0) > 1 %}
+              {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
+              {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
+              {% set forcechargesoc_high = 20 %}
+              {% set forcechargesoc_low = 15 %}
+              {% set overdischarge_min = 8 %}
+
+              {% if is_solar_left %}
+                {% set forcechargesoc_target = forcechargesoc_low %}
+              {% elif is_offpeak %}
+                {% set forcechargesoc_target = forcechargesoc_high %}
+              {% else %}
+                {% set forcechargesoc_target = forcechargesoc_low %}
+              {% endif %}
+
+              {% if (power15m < 1.5) and (power15m_estimated < 1.5) %}
+                {{ forcechargesoc_target }}
+              {% elif (power15m_estimated > 2) %}
+                {{ overdischarge_min }}
+              {% else %}
+                {{ forcechargesoc }}
+              {% endif %}
+            '';
+          }
+          
         ];
         binary_sensor = [
           {
@@ -106,10 +171,6 @@
               {% if car_charger_on %}
                 {% set is_high = true %}
               {% endif %}
-              {% set battery_charging = 5 <= now().hour < 7 %}
-              {% if battery_charging %}
-                {% set is_high = true %}
-              {% endif %}
               {{ is_high }}
             '';
           }
@@ -120,8 +181,10 @@
           {
             name = "electricity_delivery_power_max_threshold";
             state = ''
-              {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {{ electricity_delivery_power_15m_estimated > 2.45 }}
+              {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+              {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {{ (power15m > 1.25) and (power15m_estimated > 2.48) }}
+              
             '';
           }
           {
@@ -169,7 +232,9 @@
                 {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
                 {% set currently_delivered = states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000 %}
                 {% set minutes_remaining = (now().minute // 15 + 1) * 15 - now().minute %}
-                Currently at capacity peak {{ electricity_delivery_power_15m }}kW, estimated to be {{ electricity_delivery_power_15m_estimated }}kW with {{ minutes_remaining }}m remaining, current power {{ currently_delivered }}W
+                {% set battery = states('sensor.solis_remaining_battery_capacity') %}
+                {% set overdischargesoc = states('number.solar_battery_overdischargesoc') %}
+                Currently at capacity peak {{ electricity_delivery_power_15m }}kW, estimated to be {{ electricity_delivery_power_15m_estimated }}kW with {{ minutes_remaining }}m remaining, current power {{ currently_delivered }}W, battery at {{battery}} ({{overdischargesoc}})%.
               '';
             };
           }
@@ -182,9 +247,9 @@
         alias = "electricity_delivery_power_max_threshold.light";
         trigger = [
           {
-            platform = "state";
-            entity_id = "binary_sensor.electricity_delivery_power_max_threshold";
-            to = "on";
+            platform = "numeric_state";
+            entity_id = "sensor.electricity_delivery_power_15m_estimated";
+            above = "2.4";
           }
         ];
         condition = [];
@@ -206,9 +271,9 @@
         alias = "electricity_delivery_power_near_max_threshold.light";
         trigger = [
           {
-            platform = "state";
-            entity_id = "binary_sensor.electricity_delivery_power_near_max_threshold";
-            to = "on";
+            platform = "numeric_state";
+            entity_id = "sensor.electricity_delivery_power_15m_estimated";
+            above = "1.9";
           }
         ];
         condition = [];
@@ -229,11 +294,10 @@
         id = "electricity_delivery_power_normal_light";
         alias = "electricity_delivery_power_normal.light";
         trigger = [
-
           {
-            platform = "state";
-            entity_id = "binary_sensor.electricity_delivery_power_near_max_threshold";
-            to = "off";
+            platform = "numeric_state";
+            entity_id = "sensor.electricity_delivery_power_15m_estimated";
+            below = "1.8";
           }
         ];
         condition = [];
@@ -241,13 +305,38 @@
           {
             service = "light.turn_off";
             target.entity_id = "light.floor0_keuken_light_consumptionindicator";
-            data = {              
-            };
           }
         ];
         mode = "single";
       }
+      (ha.automation "solar/battery/overdischarge.control" {
+        triggers = [(ha.trigger.state "sensor.solar_battery_overdischargesoc_target")];
+        actions = [
+          (ha.action.set_value "number.solar_battery_overdischargesoc" ''{{ states('sensor.solar_battery_overdischargesoc_target') | int }}'')
+        ];
+        mode = "queued";
+      })
+      (ha.automation "solar/battery/forcechargesoc.control" {
+        triggers = [(ha.trigger.state "sensor.solar_battery_forcechargesoc_target")];
+        actions = [
+          (ha.action.set_value "number.solar_battery_forcechargesoc" ''{{ states('sensor.solar_battery_forcechargesoc_target') | int }}'')
+        ];
+        mode = "queued";
+      })
     ];
+
+    recorder = {
+      include = {
+        entities = [
+          "sensor.solar_battery_overdischargesoc_target"
+          "sensor.solar_battery_forcechargesoc_target"
+        ];
+
+        entity_globs = [
+          "number.solar_*"          
+        ];
+      };
+    };
 
   };
 }

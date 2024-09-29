@@ -126,6 +126,14 @@ let
       target.entity_id = entity;
     };
 
+    set_value = entity: value: {
+      service = "${lib.head (lib.strings.splitString "." entity)}.set_value";
+      target.entity_id = entity;
+      data.value = value;
+    };
+
+    
+
     delay = time: {
       delay = time;
     };
@@ -144,8 +152,10 @@ let
       data = {
         title = title;
         message = message;
-      };      
+      };     
     };
+
+    
 
     persistent_notification = {
       create = id: title: message: {
