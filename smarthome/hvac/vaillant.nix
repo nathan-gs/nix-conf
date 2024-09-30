@@ -48,16 +48,22 @@ in
               {% set max_desired_temp = 21 %}
               {% set target_temp = current_temp + temperature_diff_wanted %}
               {% set new_temp = cv_temp %}
-              {% set is_anyone_home_or_coming = states('binary_sensor.anyone_home_or_coming_home') | bool(true) %}
-              {% set is_travelling = states('binary_sensor.far_away') | bool(false) %}
+              {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
+              {% set is_travelling = is_state('binary_sensor.far_away', 'on') %}
               {% set forecast_temp = states('sensor.openweathermap_forecast_temperature') | float(15) %}
               {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
               {% set is_heating_needed = target_temp >= current_temp %}
+              {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
               {% if is_anyone_home_or_coming %}
                 {% if is_heating_needed and is_large_deviation_between_forecast_and_target %}
-                  {# Gradually increase temperature #}
-                  {% set new_temp = (current_temp + 1) %}
-                  {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
+                  {% if is_cv_water_circulating %}
+                    {# Do nothing #}
+                    {% set new_temp = cv_temp %}
+                  {% else %}
+                    {# Gradually increase temperature #}
+                    {% set new_temp = (current_temp + 0.6) %}
+                    {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
+                  {% endif %}
                 {% else %}          
                   {% set new_temp = (target_temp - 0.5) %}
                   {% set new_temp = max(new_temp, temperature_eco) %}
@@ -78,6 +84,13 @@ in
               {% endif %}
             '';
             state_class = "measurement";
+          }
+        ];
+        binary_sensor = [
+          {
+            name = "cv/water_circulating";
+            state = ''{{ is_state('sensor.ebusd_bai_status01_pumpstate', "on")}}'';
+            delay_off.minutes = 8;
           }
         ];
       }
