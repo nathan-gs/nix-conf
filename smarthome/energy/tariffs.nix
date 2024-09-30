@@ -12,7 +12,7 @@
             name = "gas_cost_kwh";
             unit_of_measurement = "€/kWh";
             state = ''
-              {% set energycomponent = states('sensor.gas_cost_octa_kwh_energycomponent') | float %}
+              {% set energycomponent = states('sensor.gas_cost_engie_drive_kwh_energycomponent') | float %}
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
               {% set imewo = (0.887 / 100) %}
               {% if gas_yearly < 5000 %}
@@ -56,12 +56,12 @@
             name = "electricity_cost_peak_kwh";
             unit_of_measurement = "€/kWh";
             state = ''
-              {% set energycomponent = states('sensor.electricity_cost_octa_peak_kwh_energycomponent') | float %}
+              {% set energycomponent = states('sensor.electricity_cost_engie_drive_peak_kwh_energycomponent') | float %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
               {% set imewo = (4.71756 / 100) %}
               {% set energiebijdrage = (0.20417 / 100) %}
               {% set accijns = (5.03288 / 100) %}
-              {{ energycomponent + wkk_and_greenenergy + imewo + energiebijdrage + accijns | round(5) }}
+              {{ (energycomponent + wkk_and_greenenergy + imewo + energiebijdrage + accijns) | round(5) }}
             '';
             state_class = "measurement";
           }
@@ -69,12 +69,12 @@
             name = "electricity_cost_offpeak_kwh";
             unit_of_measurement = "€/kWh";            
             state = ''
-              {% set energycomponent = states('sensor.electricity_cost_octa_offpeak_kwh_energycomponent') | float %}
+              {% set energycomponent = states('sensor.electricity_cost_engie_drive_offpeak_kwh_energycomponent') | float %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
               {% set imewo = (4.71756 / 100) %}
               {% set energiebijdrage = (0.20417 / 100) %}
               {% set accijns = (5.03288 / 100) %}
-              {{ energycomponent + wkk_and_greenenergy + imewo + energiebijdrage + accijns | round(5) }}
+              {{ (energycomponent + wkk_and_greenenergy + imewo + energiebijdrage + accijns) | round(5) }}
             '';
             state_class = "measurement";
           }
