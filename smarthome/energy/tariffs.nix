@@ -49,7 +49,7 @@
                 {% set imewo = 17.0 %}
               {% endif %}
               {% set databeheer = 13.95 %}
-              {{ (engie / 12) - (discount / 12) + (imewo / 12) + (databeheer / 12) }}
+              {{ ((engie / 12) - (discount / 12) + (imewo / 12) + (databeheer / 12)) | round(5) }}
             '';
           }           
           {
@@ -91,7 +91,7 @@
                 {% set discount = 80.0 %}
               {% endif %}
               {% set databeheer = 13.95 %}
-              {{ (engie / 12) + ((imewo_capacitytariffs_per_kw / 12 ) * capacity_peak_current_month) - (discount / 12) + (databeheer / 12) }}
+              {{ ((engie / 12) + ((imewo_capacitytariffs_per_kw / 12 ) * capacity_peak_current_month) - (discount / 12) + (databeheer / 12)) | round(5) }}
             '';
           }
           {
