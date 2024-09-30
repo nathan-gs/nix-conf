@@ -78,7 +78,7 @@
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
               {% set car_charger_on = states('sensor.car_charger_power') | int(0) > 20 %}
-              {% set overdischargesoc_default = 30 %}
+              {% set overdischargesoc_default = 25 %}
               {% set overdischargesoc_with_car_charger_on = 40 %}
               {% set overdischarge_min = 8 %}
               {#
@@ -109,7 +109,7 @@
             state = ''
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(2) %}
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(2) %}
-              {% set is_solar_left = states('sensor.energy_production_today_remaining') | float(0) > 1 %}
+              {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 1) and now().hour >= 5) %}
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 20 %}
