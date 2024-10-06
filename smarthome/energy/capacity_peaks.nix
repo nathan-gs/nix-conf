@@ -77,9 +77,12 @@
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
-              {% set car_charger_on = states('sensor.car_charger_power') | int(0) > 20 %}
+              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(20) %}
+              {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
+              {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
               {% set overdischargesoc_default = 25 %}
-              {% set overdischargesoc_with_car_charger_on = 40 %}
+              {% set overdischargesoc_charge_to = 15 %}
+              {% set overdischargesoc_with_car_charger_on = 40 %}              
               {% set overdischarge_min = 8 %}
               {#
               Test values
@@ -95,10 +98,14 @@
               {% if (power15m > 2.0) and (power15m_estimated > 2.45) %}
                 {{ overdischarge_min }}
               {# If car charging #}
-              {% elif car_charger_on %}
+              {% elif is_car_charging and is_solar_left == false %}
                 {{ overdischargesoc_with_car_charger_on }}
               {% else %}
-                {{ overdischargesoc_default }}
+                {% if battery < 12 %}
+                  {{ overdischargesoc_charge_to }}
+                {% else %}
+                  {{ overdischargesoc_default }}
+                {% endif %}
               {% endif %}
             '';
           }
@@ -113,17 +120,19 @@
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 20 %}
-              {% set forcechargesoc_low = 15 %}
+              {% set forcechargesoc_low = 12 %}
               {% set overdischarge_min = 8 %}
 
-              {% if is_solar_left %}
-                {% set forcechargesoc_target = forcechargesoc_low %}
-              {% elif is_offpeak %}
-                {% set forcechargesoc_target = forcechargesoc_high %}
-              {% else %}
-                {% set forcechargesoc_target = forcechargesoc_low %}
-              {% endif %}
-
+              {% set forcechargesoc_target = forcechargesoc_low %}
+              {#
+                {% if is_solar_left %}
+                  {% set forcechargesoc_target = forcechargesoc_low %}
+                {% elif is_offpeak %}
+                  {% set forcechargesoc_target = forcechargesoc_high %}
+                {% else %}
+                  {% set forcechargesoc_target = forcechargesoc_low %}
+                {% endif %}
+              #}
               {% if (power15m < 1.5) and (power15m_estimated < 1.5) %}
                 {{ forcechargesoc_target }}
               {% elif (power15m_estimated > 2) %}
