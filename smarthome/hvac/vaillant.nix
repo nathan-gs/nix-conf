@@ -52,10 +52,11 @@ in
               {% set is_travelling = is_state('binary_sensor.far_away', 'on') %}
               {% set forecast_temp = states('sensor.openweathermap_forecast_temperature') | float(15) %}
               {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
-              {% set is_heating_needed = target_temp >= current_temp %}
+              {% set is_heating_needed = target_temp > current_temp %}
               {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
+              {% set is_sufficient_increase = temperature_diff_wanted > 0.4 %}
               {% if is_anyone_home_or_coming %}
-                {% if is_heating_needed and is_large_deviation_between_forecast_and_target %}
+                {% if is_sufficient_increase and is_heating_needed and is_large_deviation_between_forecast_and_target %}
                   {% if is_cv_water_circulating %}
                     {# Do nothing #}
                     {% set new_temp = cv_temp %}
