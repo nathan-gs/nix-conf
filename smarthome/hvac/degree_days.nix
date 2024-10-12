@@ -69,6 +69,15 @@
       }
     ];
 
+    recorder = {
+      include = {
+        entities = [
+          "sensor.degree_day_daily"
+          "sensor.gas_m3_per_degree_day"
+          "sensor.gas_m3_per_degree_day_occupancy_adjusted"
+        ];
+      };
+    };
     
   };
 }
