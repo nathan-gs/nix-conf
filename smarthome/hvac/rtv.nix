@@ -104,14 +104,12 @@ in
       })
       rtv;
 
-    recorder.exclude = {
+    recorder.include = {
       entities = [
 
       ];
       entity_globs = [
-        "automation.*_*_rtv_*_temperature_calibration"
-        "automation.*_*_rtv_*_temperature_set"
-        "sensor.*_*_rtv_*_away_setting"
+        "sensor.*_*_rtv_*_temperature_wanted"
       ];
     };
   };

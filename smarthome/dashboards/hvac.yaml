@@ -50,6 +50,17 @@ views:
               - entity: sensor.itho_wtw_airfilter
               - entity: sensor.itho_wtw_inlet_temperature
               - entity: sensor.itho_wtw_outlet_temperature
+          - chart_type: line
+            period: 5minute
+            type: statistics-graph
+            entities:
+              - sensor.system_wtw_metering_plug_wtw_power
+            stat_types:
+              - mean
+              - min
+              - max
+            days_to_show: 1
+            hide_legend: false
       - type: vertical-stack
         cards:
           - type: weather-forecast
@@ -435,7 +446,7 @@ views:
                 columns: 1
                 entities:
                   - entity: sensor.floor0_bureau_temperature
-                  - entity: sensor.floor0_bureau_temperature_na_humidity
+                  - entity: sensor.floor0_bureau_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -450,7 +461,7 @@ views:
                   tickAmount: 6
               - id: humidity
                 opposite: true
-                min: 20
+                min: 40
                 max: 100
                 apex_config:
                   forceNiceScale: false
@@ -458,31 +469,19 @@ views:
                   tickAmount: 4
             color_list:
               - '#ff9800'
-              - '#3498db'
               - '#e74c3c'
+              - '#3498db'
               - '#1a4c6e'
             header:
               show: false
             series:
-              - entity: number.floor0_bureau_rtv_na_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: sensor.floor0_bureau_rtv_na_temperature_wanted
                 name: Wanted Temperature
                 type: line
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: number.floor0_bureau_rtv_na_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -506,7 +505,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor0_bureau_temperature_na_humidity
+              - entity: sensor.floor0_bureau_humidity
                 name: Humidity
                 type: line
                 color: black
@@ -532,7 +531,7 @@ views:
                 columns: 1
                 entities:
                   - entity: sensor.floor0_keuken_temperature
-                  - entity: sensor.floor0_keuken_temperature_na_humidity
+                  - entity: sensor.floor0_keuken_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -547,7 +546,7 @@ views:
                   tickAmount: 6
               - id: humidity
                 opposite: true
-                min: 20
+                min: 40
                 max: 100
                 apex_config:
                   forceNiceScale: false
@@ -555,31 +554,19 @@ views:
                   tickAmount: 4
             color_list:
               - '#ff9800'
-              - '#3498db'
               - '#e74c3c'
+              - '#3498db'
               - '#1a4c6e'
             header:
               show: false
             series:
-              - entity: number.floor0_keuken_rtv_na_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: sensor.floor0_keuken_rtv_na_temperature_wanted
                 name: Wanted Temperature
                 type: line
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: number.floor0_keuken_rtv_na_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -594,7 +581,7 @@ views:
                   header_color_threshold: true
                 yaxis_id: temperature
               - entity: sensor.floor0_keuken_temperature
-                name: Actual Temperature (Sensor)
+                name: Actual Temperature
                 type: line
                 group_by:
                   func: last
@@ -603,7 +590,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor0_keuken_temperature_na_humidity
+              - entity: sensor.floor0_keuken_humidity
                 name: Humidity
                 type: line
                 color: black
@@ -638,7 +625,7 @@ views:
                   tickAmount: 6
               - id: humidity
                 opposite: true
-                min: 20
+                min: 40
                 max: 100
                 apex_config:
                   forceNiceScale: false
@@ -647,8 +634,7 @@ views:
             header:
               show: false
             series:
-              - entity: number.floor0_living_rtv_vooraan_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: sensor.floor0_living_rtv_vooraan_temperature_wanted
                 name: Wanted Temperature (Vooraan)
                 type: line
                 group_by:
@@ -659,21 +645,7 @@ views:
                 color: '#ff9800'
                 show:
                   header_color_threshold: true
-              - entity: number.floor0_living_rtv_vooraan_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature (Vooraan)
-                color: '#3498db'
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: >-
-                  number.floor0_living_rtv_achteraan_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: sensor.floor0_living_rtv_achteraan_temperature_wanted
                 name: Wanted Temperature (Achteraan)
                 type: line
                 color: '#f3721e'
@@ -681,19 +653,6 @@ views:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: >-
-                  number.floor0_living_rtv_achteraan_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature (Achteraan)
-                type: line
-                color: '#2772a5'
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -709,9 +668,9 @@ views:
                   header_color_threshold: true
                 yaxis_id: temperature
               - entity: sensor.floor0_living_temperature
-                name: Actual Temperature (CV)
+                name: Actual Temperature
                 type: line
-                color: '#1a4c6e'
+                color: '#3498db'
                 group_by:
                   func: last
                   duration: 5m
@@ -719,18 +678,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor0_living_temperature_na_temperature
-                name: Actual Temperature (Sensor)
-                type: line
-                color: '#1a4c6e'
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_living_temperature_na_humidity
+              - entity: sensor.floor0_living_humidity
                 name: Humidity
                 type: line
                 color: black
@@ -756,7 +704,7 @@ views:
                 columns: 1
                 entities:
                   - entity: sensor.floor1_badkamer_temperature
-                  - entity: sensor.floor1_badkamer_temperature_na_humidity
+                  - entity: sensor.floor1_badkamer_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -771,7 +719,7 @@ views:
                   tickAmount: 6
               - id: humidity
                 opposite: true
-                min: 20
+                min: 40
                 max: 100
                 apex_config:
                   forceNiceScale: false
@@ -779,31 +727,19 @@ views:
                   tickAmount: 4
             color_list:
               - '#ff9800'
-              - '#3498db'
               - '#e74c3c'
+              - '#3498db'
               - '#1a4c6e'
             header:
               show: false
             series:
-              - entity: number.floor1_badkamer_rtv_na_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: sensor.floor1_badkamer_rtv_na_temperature_wanted
                 name: Wanted Temperature
                 type: line
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: number.floor1_badkamer_rtv_na_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -827,7 +763,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_badkamer_temperature_na_humidity
+              - entity: sensor.floor1_badkamer_humidity
                 name: Humidity
                 type: line
                 color: black
@@ -853,7 +789,7 @@ views:
                 columns: 1
                 entities:
                   - entity: sensor.floor1_fen_temperature
-                  - entity: sensor.floor1_fen_temperature_na_humidity
+                  - entity: sensor.floor1_fen_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -868,7 +804,7 @@ views:
                   tickAmount: 6
               - id: humidity
                 opposite: true
-                min: 20
+                min: 40
                 max: 100
                 apex_config:
                   forceNiceScale: false
@@ -876,31 +812,19 @@ views:
                   tickAmount: 4
             color_list:
               - '#ff9800'
-              - '#3498db'
               - '#e74c3c'
+              - '#3498db'
               - '#1a4c6e'
             header:
               show: false
             series:
-              - entity: number.floor1_fen_rtv_na_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: sensor.floor1_fen_rtv_na_temperature_wanted
                 name: Wanted Temperature
                 type: line
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: number.floor1_fen_rtv_na_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -924,7 +848,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_fen_temperature_na_humidity
+              - entity: sensor.floor1_fen_humidity
                 name: Humidity
                 type: line
                 color: black
@@ -950,7 +874,7 @@ views:
                 columns: 1
                 entities:
                   - entity: sensor.floor1_nikolai_temperature
-                  - entity: sensor.floor1_nikolai_temperature_na_humidity
+                  - entity: sensor.floor1_nikolai_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -965,7 +889,7 @@ views:
                   tickAmount: 6
               - id: humidity
                 opposite: true
-                min: 20
+                min: 40
                 max: 100
                 apex_config:
                   forceNiceScale: false
@@ -973,31 +897,19 @@ views:
                   tickAmount: 4
             color_list:
               - '#ff9800'
-              - '#3498db'
               - '#e74c3c'
+              - '#3498db'
               - '#1a4c6e'
             header:
               show: false
             series:
-              - entity: climate.floor1_nikolai_rtv_na
-                attribute: temperature
+              - entity: sensor.floor1_nikolai_rtv_na_temperature_wanted
                 name: Wanted Temperature
                 type: line
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: number.floor1_nikolai_rtv_na_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -1021,7 +933,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_nikolai_temperature_na_humidity
+              - entity: sensor.floor1_nikolai_humidity
                 name: Humidity
                 type: line
                 color: black
@@ -1047,7 +959,7 @@ views:
                 columns: 1
                 entities:
                   - entity: sensor.floor1_morgane_temperature
-                  - entity: sensor.floor1_morgane_temperature_na_humidity
+                  - entity: sensor.floor1_morgane_humidity
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -1070,31 +982,19 @@ views:
                   tickAmount: 4
             color_list:
               - '#ff9800'
-              - '#3498db'
               - '#e74c3c'
+              - '#3498db'
               - '#1a4c6e'
             header:
               show: false
             series:
-              - entity: number.floor1_morgane_rtv_na_current_heating_setpoint_auto
-                attribute: current_heating_setpoint
+              - entity: sensor.floor1_morgane_rtv_na_temperature_wanted
                 name: Wanted Temperature
                 type: line
                 group_by:
                   func: last
                   duration: 5m
                 stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: number.floor1_morgane_rtv_na_current_heating_setpoint_auto
-                attribute: local_temperature
-                name: Actual Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
@@ -1118,7 +1018,7 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: temperature
-              - entity: sensor.floor1_morgane_temperature_na_humidity
+              - entity: sensor.floor1_morgane_humidity
                 name: Humidity
                 type: line
                 color: black
@@ -1141,7 +1041,7 @@ views:
               tickAmount: 6
           - id: humidity
             opposite: true
-            min: 20
+            min: 40
             max: 100
             apex_config:
               forceNiceScale: false
@@ -1163,7 +1063,7 @@ views:
             show:
               header_color_threshold: true
             yaxis_id: temperature
-          - entity: sensor.basement_basement_temperature_na_humidity
+          - entity: sensor.basement_basement_humidity
             name: Humidity
             type: line
             color: black
@@ -1186,7 +1086,7 @@ views:
               tickAmount: 7
           - id: humidity
             opposite: true
-            min: 20
+            min: 40
             max: 100
             apex_config:
               forceNiceScale: false
@@ -1501,6 +1401,56 @@ views:
             show:
               header_color_threshold: true
             yaxis_id: temperature
+      - type: custom:apexcharts-card
+        graph_span: 36h
+        show:
+          last_updated: true
+        yaxis:
+          - id: temperature
+            apex_config:
+              forceNiceScale: true
+              decimalsInFloat: 0
+              tickAmount: 7
+        color_list:
+          - '#3498db'
+          - '#ff9800'
+          - '#f3721e'
+          - '#e74c3c'
+        header:
+          show: false
+        series:
+          - entity: sensor.heating_temperature_desired
+            name: Desired Temperature
+            type: column
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            yaxis_id: temperature
+          - entity: climate.cv
+            attribute: temperature
+            name: Desired Temperature (CV)
+            type: line
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            yaxis_id: temperature
+          - entity: climate.cv
+            attribute: current_temperature
+            name: Current Temperature (CV)
+            type: line
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 2
+            show:
+              header_color_threshold: true
+            yaxis_id: temperature
   - title: Efficiency
     path: efficiency
     icon: mdi:calculator-variant
@@ -1510,8 +1460,6 @@ views:
         cards:
           - type: custom:apexcharts-card
             graph_span: 1 month
-            span:
-              start: month
             header:
               show: true
               title: Gasverbruik laatste maand
@@ -1519,11 +1467,11 @@ views:
               yaxis:
                 - id: first
                   forceNiceScale: true
-                  decimalsInFloat: 3
+                  decimalsInFloat: 1
                   opposite: false
                   name: Gas
             series:
-              - entity: sensor.gas_delivery_hourly
+              - entity: sensor.gas_delivery_daily
                 unit: m3
                 type: column
                 name: gasverbruik
@@ -1535,9 +1483,7 @@ views:
                   datalabels: false
                   extremas: false
           - type: custom:apexcharts-card
-            graph_span: 31d
-            span:
-              start: month
+            graph_span: 1 month
             show:
               last_updated: true
             yaxis:
@@ -1550,7 +1496,7 @@ views:
               - id: gas_per_dd
                 opposite: true
                 min: 0
-                max: 0.8
+                max: 2
                 apex_config:
                   forceNiceScale: false
                   decimalsInFloat: 2
@@ -1563,6 +1509,14 @@ views:
               show: true
               title: Degree Days
             series:
+              - entity: sensor.gas_m3_per_degree_day
+                name: Gas m3 per DD
+                type: line
+                group_by:
+                  func: last
+                  duration: 1d
+                stroke_width: 2
+                yaxis_id: gas_per_dd
               - entity: sensor.degree_day_daily
                 name: Degree Day
                 type: column
@@ -1573,14 +1527,6 @@ views:
                 show:
                   header_color_threshold: true
                 yaxis_id: dd
-              - entity: sensor.gas_m3_per_degree_day
-                name: Gas m3 per DD
-                type: line
-                group_by:
-                  func: last
-                  duration: 1d
-                stroke_width: 2
-                yaxis_id: gas_per_dd
               - entity: sensor.gas_m3_per_degree_day_occupancy_adjusted
                 name: Adjusted
                 type: line
