@@ -17,10 +17,10 @@ in
             ''
               {% set room_temp = states('sensor.${v.floor}_${v.zone}_temperature') | float(15.7) %}
               {% set target_temp = states('sensor.${v.floor}_${v.zone}_temperature_auto_wanted') | float(15.7) %}
-              {% set need_heating = (room_temp + 0.2) < target_temp %}
+              {% set need_heating = (room_temp + 0.4) < target_temp %}
               {% set adjustment = 0 %}
               {% if need_heating %}
-                {% set adjustment = 2 %}
+                {% set adjustment = 3 %}
               {% endif %}
               {{ target_temp + adjustment }}
             ''
