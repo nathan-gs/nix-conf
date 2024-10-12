@@ -5,6 +5,44 @@
 
   services.home-assistant.config = {
 
+    input_number = {
+      gas_cost_engie_drive_kwh_energycomponent = {
+        step = 0.001;
+        min = 0;
+        max = 2;
+        unit_of_measurement = "€/kWh";
+        mode = "box";
+      };
+      electricity_cost_engie_drive_peak_kwh_energycomponent = {
+        step = 0.001;
+        min = 0;
+        max = 2;
+        unit_of_measurement = "€/kWh";
+        mode = "box";
+      };
+      electricity_cost_engie_drive_offpeak_kwh_energycomponent = {
+        step = 0.001;
+        min = 0;
+        max = 2;
+        unit_of_measurement = "€/kWh";
+        mode = "box";
+      };
+      electricity_injection_engie_drive_peak_kwh = {
+        step = 0.001;
+        min = 0;
+        max = 2;
+        unit_of_measurement = "€/kWh";
+        mode = "box";
+      };
+      electricity_injection_engie_drive_offpeak_kwh = {
+        step = 0.001;
+        min = 0;
+        max = 2;
+        unit_of_measurement = "€/kWh";
+        mode = "box";
+      };
+    };
+
     template = [  
       {
         sensor = [
@@ -12,7 +50,7 @@
             name = "gas_cost_kwh";
             unit_of_measurement = "€/kWh";
             state = ''
-              {% set energycomponent = states('sensor.gas_cost_engie_drive_kwh_energycomponent') | float %}
+              {% set energycomponent = states('input_number.gas_cost_engie_drive_kwh_energycomponent') | float %}
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
               {% set imewo = (0.887 / 100) %}
               {% if gas_yearly < 5000 %}
@@ -56,7 +94,7 @@
             name = "electricity_cost_peak_kwh";
             unit_of_measurement = "€/kWh";
             state = ''
-              {% set energycomponent = states('sensor.electricity_cost_engie_drive_peak_kwh_energycomponent') | float %}
+              {% set energycomponent = states('input_number.electricity_cost_engie_drive_peak_kwh_energycomponent') | float %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
               {% set imewo = (4.71756 / 100) %}
               {% set energiebijdrage = (0.20417 / 100) %}
@@ -69,7 +107,7 @@
             name = "electricity_cost_offpeak_kwh";
             unit_of_measurement = "€/kWh";            
             state = ''
-              {% set energycomponent = states('sensor.electricity_cost_engie_drive_offpeak_kwh_energycomponent') | float %}
+              {% set energycomponent = states('input_number.electricity_cost_engie_drive_offpeak_kwh_energycomponent') | float %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
               {% set imewo = (4.71756 / 100) %}
               {% set energiebijdrage = (0.20417 / 100) %}
@@ -93,6 +131,18 @@
               {% set databeheer = 13.95 %}
               {{ ((engie / 12) + ((imewo_capacitytariffs_per_kw / 12 ) * capacity_peak_current_month) - (discount / 12) + (databeheer / 12)) | round(5) }}
             '';
+          }
+          {
+            name = "electricity_injection_kwh";
+            unit_of_measurement = "€/kWh"; 
+            state = ''
+              {% if (states('binary_sensor.electricity_is_offpeak') | bool(false)) %}
+                {{ states('input_number.electricity_injection_engie_drive_offpeak_kwh') | float }}
+              {% else %}
+                {{ states('input_number.electricity_injection_engie_drive_peak_kwh') | float }}
+              {% endif %}
+            '';
+            state_class = "measurement";
           }
           {
             name = "energy/electricity/cost";
@@ -222,7 +272,7 @@
         scan_interval = 3600;
         sensor = [
           {
-            name = "electricity_injection_kwh";
+            name = "electricity_injection_octa_kwh";
             select = ''
               table :has(> td:-soup-contains(Octa)) td:nth-child(3)
             '' ;
@@ -266,5 +316,20 @@
         ];
       }
     ];
+
+    recorder = {
+      include = {
+
+        entity_globs = [
+          "sensor.electricity_injection_*"
+          "sensor.electricity_cost_*"
+          "sensor.energy_electricity_cost"
+          "input_number.electricity_cost_*"
+          "input_number.electricity_injection_*"
+          "binary_sensor.energy_electricity_prefer_over_gas"
+          "binary_sensor.electricity_is_offpeak"
+        ];
+      };
+    };
   };
 }
