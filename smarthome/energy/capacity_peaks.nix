@@ -156,8 +156,8 @@
                 {% set is_high = true %}
               {% endif %}
               {# Wasmachine #}
-              {% set wasmachine_cycle = states('sensor.aeg_wasmachine_wm1_cyclephase') | string %}
-              {% if wasmachine_cycle == "Washing" %}
+              {% set is_washing = is_state('sensor.aeg_wasmachine_cyclephase', "Wash") %}
+              {% if is_washing %}
                 {% set is_high = true %}
               {% endif %}
               {# oven #}
@@ -180,20 +180,20 @@
               {% if car_charger_on %}
                 {% set is_high = true %}
               {% endif %}
+              {% if is_state('binary_sensor.electricity_delivery_power_near_max_threshold', "on") %}
+                {% set is_high = true %}
+              {% endif %}
               {{ is_high }}
             '';
-          }
-        ];
-      }
-      {
-        binary_sensor = [
+            delay_off.seconds = 120;
+            device_class = "running";
+          }       
           {
             name = "electricity_delivery_power_max_threshold";
             state = ''
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {{ (power15m > 1.25) and (power15m_estimated > 2.48) }}
-              
+              {{ (power15m > 1.25) and (power15m_estimated > 2.48) }}              
             '';
           }
           {

@@ -207,6 +207,22 @@ in
               {% endif %}
             '';
           }
+          {
+            name = "car_charger_automation_should_charge";
+            device_class = "plug";
+            icon = ''
+              {% if is_state('binary_sensor.car_charger_automation_should_charge', "on") %}
+              mdi:car-electric
+              {% else %}
+              mdi:car-electric-outline
+              {% endif %}
+            '';
+            state = ''
+              {% set charge_offpeak = is_state("input_boolean.car_charger_charge_offpeak", "on") %}
+              {% set charge_at = is_state("input_boolean.car_charger_charge_at", "on") %}
+              {{ charge_offpeak or charge_at }}
+            '';
+          }
         ];
       }
     ];
@@ -227,6 +243,18 @@ in
       car_charger_charge_offpeak = {
         icon = "mdi:ev-station";
       };
+      car_charger_charge_at = {
+        icon = "mdi:ev-station";
+      };
+    };
+
+    input_datetime = {
+      car_charger_charge_at = {
+        has_date = false;
+        has_time = true;
+        icon = "mdi:ev-station";
+        initial = "23:00";
+      };
     };
 
     "automation manual" = [
@@ -243,22 +271,27 @@ in
       (
         ha.automation "system/car_charger.turn_on"
           {
-            triggers = [(
-              ha.trigger.template_for 
-                ''
-                  {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
-                  {% set not_high_usage = not(states('binary_sensor.electricity_high_usage') | bool(true)) %}
-                  {% set plugged_in = states('binary_sensor.${carName}_plug_status') | bool(true) %}
-                  {% set is_home = states('binary_sensor.anyone_home') | bool(true) %}
-                  {{ is_offpeak and not_high_usage and plugged_in and is_home }}
-                ''
-                "00:01:00"
-            )];
+            triggers = [
+              (
+                ha.trigger.template 
+                  ''
+                    {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
+                    {% set should_charge = states('input_boolean.car_charger_charge_offpeak') | bool(false) %}
+                    {{ should_charge and is_offpeak }}
+                  ''
+              )
+              (ha.trigger.at "input_datetime.car_charger_charge_at")
+            ];
             conditions = [
-              (ha.condition.on "input_boolean.car_charger_charge_offpeak")
+              (ha.condition.off "binary_sensor.electricity_high_usage")
+              (ha.condition.on "binary_sensor.${carName}_plug_status")
+              (ha.condition.state "device_tracker.${carName}_position" "home")
+              (ha.condition.on "binary_sensor.car_charger_automation_should_charge")
             ];
             actions = [
               (ha.action.on "switch.garden_garden_plug_laadpaal")
+              (ha.action.off "input_boolean.car_charger_charge_offpeak")
+              (ha.action.off "input_boolean.car_charger_charge_at")
             ];
           }
       )

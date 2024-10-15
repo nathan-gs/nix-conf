@@ -7,6 +7,7 @@ let
   sensor = {
     temperature = name: value: {
       name = name;
+      unique_id = genId name;
       state = value;
       unit_of_measurement = "°C";
       device_class = "temperature";
@@ -262,6 +263,11 @@ let
       condition = "numeric_state";
       entity_id = entity;
       below = number;
+    };
+
+    template = template: {
+      condition = "template";
+      value_template = template;
     };
 
   };
