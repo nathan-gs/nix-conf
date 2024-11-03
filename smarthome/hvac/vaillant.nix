@@ -91,7 +91,7 @@ in
           {
             name = "cv/water_circulating";
             state = ''{{ is_state('sensor.ebusd_bai_status01_pumpstate', "on")}}'';
-            delay_off.minutes = 8;
+            delay_off.minutes = 1;
           }
         ];
       }
@@ -221,9 +221,9 @@ in
         entities = [
           "climate.cv"
           "climate.boiler"
-          
         ];
         entity_globs = [
+          "sensor.cv_*"
           "sensor.heating_*"
           "sensor.itho_wtw_outlet_*"
           "binary_sensor.ebusd_*"
