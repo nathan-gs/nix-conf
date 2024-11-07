@@ -63,7 +63,7 @@ in
                     {% set new_temp = cv_temp %}
                   {% else %}
                     {# Gradually increase temperature #}
-                    {% set new_temp = (current_temp + 0.6) %}
+                    {% set new_temp = (current_temp + 0.8) %}
                     {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
                   {% endif %}
                 {% else %}          
