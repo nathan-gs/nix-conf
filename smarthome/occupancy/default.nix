@@ -137,6 +137,9 @@ in
           "binary_sensor.far_away"
           "sensor.occupancy_anyone_home_daily"
           "device_tracker.sm_g780g"        
+          "binary_sensor.flaptop"
+          "binary_sensor.ndesk"
+          "binary_sensor.nstudio"
         ];
 
         entity_globs = [
