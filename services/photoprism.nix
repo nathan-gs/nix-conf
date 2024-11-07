@@ -11,7 +11,6 @@
     originalsPath = "/media/documents/nathan/onedrive_nathan_personal/fn-fotos";
     importPath = "${config.services.photoprism.storagePath}/import";
     settings = {
-      PHOTOPRISM_DISABLE_BACKUPS = "true";
       PHOTOPRISM_FACE_SCORE = "5";
       PHOTOPRISM_AUTH_MODE = "public";
       PHOTOPRISM_ORIGINALS_LIMIT = "-1";
@@ -23,6 +22,13 @@
       PHOTOPRISM_DATABASE_USER = "photoprism";
       PHOTOPRISM_DATABASE_PASSWORD = config.secrets.mariadb.photoprism;
       PHOTOPRISM_DATABASE_SERVER = "/run/mysqld/mysqld.sock";
+      PHOTOPRISM_SIDECAR_YAML = "false";
+      PHOTOPRISM_WORKERS = "2";
+      PHOTOPRISM_DISABLE_BACKUPS = "true";
+      PHOTOPRISM_DISABLE_RESTART = "true";
+      PHOTOPRISM_DISABLE_WEBDAV = "true";
+      PHOTOPRISM_DEBUG = "true";
+      PHOTOPRISM_DISABLE_TLS = "true";
     };
     #package = pkgs.nixpkgs-unstable.photoprism;
   };
