@@ -55,9 +55,10 @@ in
               {% set is_heating_needed = target_temp > current_temp %}
               {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
               {% set is_sufficient_increase = temperature_diff_wanted > 0.4 %}
+              {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
               {% if is_anyone_home_or_coming %}
                 {% if is_sufficient_increase and is_heating_needed and is_large_deviation_between_forecast_and_target %}
-                  {% if is_cv_water_circulating %}
+                  {% if is_cv_water_circulating and not(is_large_increase_needed) %}
                     {# Do nothing #}
                     {% set new_temp = cv_temp %}
                   {% else %}
@@ -84,7 +85,7 @@ in
                 mdi:thermometer-chevron-down
               {% endif %}
             '';
-            state_class = "measurement";
+            state_class = "measurement";            
           }
         ];
         binary_sensor = [
@@ -224,6 +225,7 @@ in
         ];
         entity_globs = [
           "sensor.cv_*"
+          "binary_sensor.cv_*"
           "sensor.heating_*"
           "sensor.itho_wtw_outlet_*"
           "binary_sensor.ebusd_*"
