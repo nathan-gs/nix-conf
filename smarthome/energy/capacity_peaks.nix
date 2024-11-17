@@ -83,7 +83,7 @@
               {% set overdischargesoc_default = 25 %}
               {% set overdischargesoc_charge_to = 15 %}
               {% set overdischargesoc_with_car_charger_on = 40 %}              
-              {% set overdischarge_min = 8 %}
+              {% set overdischargesoc_min = 10 %}
               {#
               Test values
               {% set power15m = 2.1 %}
@@ -95,8 +95,8 @@
               {{ overdischargesoc }}
               #}
               {# Capacity Tweaks #}
-              {% if (power15m > 2.0) and (power15m_estimated > 2.45) %}
-                {{ overdischarge_min }}
+              {% if (power15m > 1.9) and (power15m_estimated > 2.45) %}
+                {{ overdischargesoc_min }}
               {# If car charging #}
               {% elif is_car_charging and is_solar_left == false %}
                 {{ overdischargesoc_with_car_charger_on }}
@@ -120,8 +120,8 @@
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 20 %}
-              {% set forcechargesoc_low = 12 %}
-              {% set overdischarge_min = 8 %}
+              {% set forcechargesoc_low = 15 %}
+              {% set forcechargesoc_min = 8 %}
 
               {% set forcechargesoc_target = forcechargesoc_low %}
               {#
@@ -136,7 +136,7 @@
               {% if (power15m < 1.5) and (power15m_estimated < 1.5) %}
                 {{ forcechargesoc_target }}
               {% elif (power15m_estimated > 2) %}
-                {{ overdischarge_min }}
+                {{ forcechargesoc_min }}
               {% else %}
                 {{ forcechargesoc }}
               {% endif %}
