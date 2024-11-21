@@ -97,6 +97,15 @@
         ];
         mode = "single";
       }
+      (ha.automation "solar/battery/charge" {
+        triggers = [(ha.trigger.template ''false'')];
+        actions = [
+          (ha.action.set_value "number.solar_battery_forcechargesoc" ''40'')
+          (ha.action.delay "00:00:30")
+          (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
+        ];
+        mode = "queued";
+      })
     ];
 
 
