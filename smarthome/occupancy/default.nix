@@ -148,6 +148,7 @@ in
           "device_tracker.volvo_*"
           "device_tracker.*_position"
           "person.*"
+          "sensor.sxw_*"
         ];
       };
     };
