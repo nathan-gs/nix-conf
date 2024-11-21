@@ -176,5 +176,16 @@ in
       ++ map (v: automateTurnOn v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" "floor1_nikolai_metering_plug_verwarming" ]
       ++ map (v: automateTurnOff v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" "floor1_nikolai_metering_plug_verwarming" ];
 
+    recorder = {
+      include = {
+        entities = [
+        ];
+        entity_globs = [
+          "binary_sensor.*_verwarming_target"
+        ];
+
+      };      
+    };
   };
+
 }

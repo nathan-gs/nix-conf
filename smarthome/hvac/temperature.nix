@@ -54,9 +54,11 @@ in
           (
             ha.sensor.avg_from_list "outdoor/temperature" [
               "states('sensor.garden_garden_temperature_noordkant_temperature')"
+              "states('sensor.garden_garden_temperature_noordkant_temperature')"
+              "states('sensor.garden_garden_temperature_noordkant_temperature')"
               "states('sensor.openweathermap_temperature')"
-              "states('sensor.system_wtw_air_quality_inlet_temperature')"
-              "states('sensor.itho_wtw_inlet_temperature')"
+              #"states('sensor.system_wtw_air_quality_inlet_temperature')"
+              #"states('sensor.itho_wtw_inlet_temperature')"
               "states('sensor.irceline_sint_kruiswinkel_temperature')"
             ]
             {
@@ -142,6 +144,10 @@ in
           "sensor.indoor_humidity"
           "sensor.indoor_humidity_max"
           "sensor.indoor_temperature"
+        ];
+        entity_globs = [
+          "sensor.*_temperature"
+          "sensor.*_humidity"
         ];
       };
     };

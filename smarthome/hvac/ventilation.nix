@@ -241,7 +241,9 @@
           name = "itho_wtw_inlet_temperature";
           state_topic = "itho/ithostatus";
           value_template = ''            
-            {{ value_json['Outdoor temp (°C)'] | float }}
+            {% set raw = value_json['Outdoor temp (°C)'] | float %}
+            {% set correction = -5.5 %}
+            {{ (raw + correction) | round(2) }}
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
