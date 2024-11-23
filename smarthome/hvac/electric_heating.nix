@@ -64,7 +64,7 @@ in
               {% endif %}
             '';
             device_class = "heat";
-            delay_off = "00:00:30";
+            delay_off = "00:00:10";
           }
           {
             name = "floor0/living/metering_plug/verwarming_target";
