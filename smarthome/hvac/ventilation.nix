@@ -240,14 +240,15 @@
         {
           name = "itho_wtw_inlet_temperature";
           state_topic = "itho/ithostatus";
+          # Correction based on: https://chatgpt.com/c/6741c1b6-0cf4-800a-a77b-38ffac6e98c6
           value_template = ''            
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
-            {% set correction = -5.5 %}
-            {{ (raw + correction) | round(2) }}
+            {{ (0.84 * raw - 2.51) | round(2) }}
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
           state_class = "measurement";
+          device_class = "temperature";
           icon = "mdi:thermometer-chevron-down";
         }
         {
@@ -260,6 +261,7 @@
           unique_id = "itho_wtw_outlet_temperature";
           state_class = "measurement";
           icon = "mdi:thermometer-chevron-up";
+          device_class = "temperature";
         }
         {
           name = "itho_wtw_airfilter";

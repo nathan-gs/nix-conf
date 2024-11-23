@@ -64,4 +64,10 @@ map
       name = "noordkant";
       floor = "garden";
     }
+    {
+      ieee = "0x842712fffe76fce2";
+      zone = "garden";
+      name = "grasmaaier";
+      floor = "garden";
+    }
   ]
