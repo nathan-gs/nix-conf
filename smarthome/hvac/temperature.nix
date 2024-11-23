@@ -40,10 +40,12 @@ in
           }
           (
             ha.sensor.avg_from_list "outdoor/humidity" [
-              "states('sensor.system_wtw_air_quality_inlet_humidity')" 
               "states('sensor.garden_garden_temperature_noordkant_humidity')" 
+              "states('sensor.garden_garden_temperature_noordkant_humidity')" 
+              "states('sensor.garden_garden_temperature_grasmaaier_humidity')"
+              "states('sensor.garden_garden_temperature_grasmaaier_humidity')" 
               "states('sensor.openweathermap_humidity')"
-              "states('sensor.irceline_sint_kruiswinkel_humidity')"
+              #"states('sensor.irceline_sint_kruiswinkel_humidity')"
             ]
             {
               unit_of_measurement = "%";
@@ -57,10 +59,11 @@ in
               "states('sensor.garden_garden_temperature_noordkant_temperature')"
               "states('sensor.garden_garden_temperature_grasmaaier_temperature')"
               "states('sensor.garden_garden_temperature_grasmaaier_temperature')"
+              "states('sensor.garden_garden_temperature_grasmaaier_temperature')"
               "states('sensor.openweathermap_temperature')"
               #"states('sensor.system_wtw_air_quality_inlet_temperature')"
               #"states('sensor.itho_wtw_inlet_temperature')"
-              "states('sensor.irceline_sint_kruiswinkel_temperature')"
+              #"states('sensor.irceline_sint_kruiswinkel_temperature')"
             ]
             {
               unit_of_measurement = "°C";

@@ -243,7 +243,7 @@
           # Correction based on: https://chatgpt.com/c/6741c1b6-0cf4-800a-a77b-38ffac6e98c6
           value_template = ''            
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
-            {{ (0.84 * raw - 2.51) | round(2) }}
+            {{ (0.84 * raw - 1.85) | round(2) }}
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
