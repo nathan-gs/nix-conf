@@ -95,7 +95,7 @@
               {{ overdischargesoc }}
               #}
               {# Capacity Tweaks #}
-              {% if (power15m > 1.9) and (power15m_estimated > 2.45) %}
+              {% if (power15m > 2) and (power15m_estimated > 2.47) %}
                 {{ overdischargesoc_min }}
               {# If car charging #}
               {% elif is_car_charging and is_solar_left == false %}

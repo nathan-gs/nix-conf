@@ -54,6 +54,15 @@
       }
     ];
 
+    input_boolean = {
+      solar_battery_charge_offpeak = {
+        name = "solar/battery/charge_offpeak";
+        icon = "mdi:battery";
+      };
+    };
+
+    
+
     mqtt.sensor = [
       {
         name = "battery_percentage_change";
@@ -98,11 +107,37 @@
         mode = "single";
       }
       (ha.automation "solar/battery/charge" {
-        triggers = [(ha.trigger.template ''false'')];
+        triggers = [(ha.trigger.at "05:00:00")];
+        conditions = [
+          (ha.condition.on "input_boolean.solar_battery_charge_offpeak")
+          (ha.condition.off "binary_sensor.electricity_high_usage")
+        ];
         actions = [
-          (ha.action.set_value "number.solar_battery_forcechargesoc" ''40'')
+          (ha.action.set_value "number.solar_battery_maxgridcharge" 1200)
           (ha.action.delay "00:00:30")
-          (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
+          (ha.action.set_value "number.solar_battery_forcechargesoc" ''20'')
+          (ha.action.delay "00:00:30")
+          (
+            ha.action.conditional 
+            [
+              (ha.condition.template ''{{ states('sensor.energy_production_today_remaining') | int(0) > 8 }}'')
+            ]
+            [
+              (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
+            ]
+            [
+              (ha.action.set_value "number.solar_battery_overdischargesoc" ''40'')
+            ]
+          )
+        ];
+        mode = "queued";
+      })
+      (ha.automation "solar/battery/max_charge" {
+        triggers = [
+          (ha.trigger.at "07:00:00")
+        ];
+        actions = [
+          (ha.action.set_value "number.solar_battery_maxgridcharge" 320)          
         ];
         mode = "queued";
       })

@@ -6,8 +6,8 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "nathan-gs";
     repo = "solis-control";
-    rev = "v0.1.3";
-    sha256 = "sha256-27mVcS6SL6GKy0ntGMfj5NDOyKe92mCq7Xl0zMvQpI8=";
+    rev = "v0.2.1";
+    sha256 = "sha256-JZLQCsjwGQCbw84R3XdHYKGe3+qFnE/FXvlmgkve6Qg=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
