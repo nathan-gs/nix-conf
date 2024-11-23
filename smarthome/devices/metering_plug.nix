@@ -85,9 +85,8 @@ map
     {
       zone = "fen";
       name = "deken";
-      ieee = "0xa4c1385317a3b396"; # Device does not measure correct
+      ieee = "0xa4c138f0231a1d4f";
       floor = "floor1";
-      disabled = true;
     }
     {
       zone = "keuken";
@@ -102,3 +101,7 @@ map
       floor = "basement";
     }
   ]
+
+# Devices with issues:
+#
+# 0xa4c1385317a3b396 incorrect measurement
