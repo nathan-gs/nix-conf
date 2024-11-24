@@ -137,7 +137,7 @@
           (ha.trigger.at "07:00:00")
         ];
         actions = [
-          (ha.action.set_value "number.solar_battery_maxgridcharge" 320)          
+          (ha.action.set_value "number.solar_battery_maxgridcharge" 300)          
         ];
         mode = "queued";
       })
