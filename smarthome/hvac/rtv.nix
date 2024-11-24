@@ -37,36 +37,26 @@ in
       }
     ];
 
-    "automation manual" = map
-      (v: {
-        id = "${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_calibration";
-        alias = "${v.floor}/${v.zone}/${v.type}/${v.name}.temperature_calibration";
-        trigger = [
-          {
-            platform = "time_pattern";
-            minutes = "/15";
-          }
-        ];
-        condition = ''
-          {{ states('sensor.${v.floor}_${v.zone}_temperature') != "unknown" }}
-        '';
-        action = [
-          {
-            service = "mqtt.publish";
-            data = {
-              topic = "zigbee2mqtt/${v.floor}/${v.zone}/${v.type}/${v.name}/set";
-              payload_template = ''
-                {% set sensor_temp = states('sensor.${v.floor}_${v.zone}_temperature') | float(0) %}
-                {% set rtv_temp = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature') | float(0) %}
-                {% set rtv_calibration = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature_calibration') | float(0) %}
-                { "local_temperature_calibration": {{ (sensor_temp - (rtv_temp - rtv_calibration))  | round(1) }} }
-              '';
-            };
-          }
-        ];
-        mode = "single";
+    "automation manual" = [
+      (ha.automation "hvac/rtv.temperature_calibration" {
+        triggers = [(ha.trigger.time_pattern_minutes "/15")];
+        actions = map((
+          v: ha.action.conditional 
+            [(ha.condition.template ''{{ states('sensor.${v.floor}_${v.zone}_temperature') != "unknown" }}'')]
+            [(
+              ha.action.mqtt_publish "zigbee2mqtt/${v.floor}/${v.zone}/${v.type}/${v.name}/set" 
+                ''
+                  {% set sensor_temp = states('sensor.${v.floor}_${v.zone}_temperature') | float(0) %}
+                  {% set rtv_temp = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature') | float(0) %}
+                  {% set rtv_calibration = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature_calibration') | float(0) %}
+                  { "local_temperature_calibration": {{ (sensor_temp - (rtv_temp - rtv_calibration))  | round(1) }} }
+                ''
+                false
+            )]
+            []
+        )) rtv;
       })
-      rtv
+    ]
     ++
     map
       (v: {

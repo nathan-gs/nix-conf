@@ -15,7 +15,7 @@ let
   mqttForward = sensor: mqttTopic: (ha.automation "system/system/dsmr_mqtt_forward/${mqttTopic}" {
     triggers = [ (ha.trigger.state sensor) ];
     conditions = [ ''{{ states('${sensor}') | float(NaN) is number }}'' ];
-    actions = [ (ha.action.mqttPublish mqttTopic ''{{ states('${sensor}') | float(NaN) }}'' true) ];
+    actions = [ (ha.action.mqtt_publish mqttTopic ''{{ states('${sensor}') | float(NaN) }}'' true) ];
     mode = "queued";
   });
 

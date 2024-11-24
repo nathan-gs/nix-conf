@@ -139,7 +139,7 @@ let
       delay = time;
     };
 
-    mqttPublish = topic: payload: retain: {
+    mqtt_publish = topic: payload: retain: {
       service = "mqtt.publish";
       data = {
         topic = topic;
@@ -147,6 +147,7 @@ let
         retain = retain;
       };
     };
+    
 
     notify = title: message: {
       service = "notify.notify";
@@ -187,6 +188,11 @@ let
     at = time: {
       platform = "time";
       at = time;
+    };
+
+    time_pattern_minutes = pattern: {
+      platform = "time_pattern";
+      minutes = pattern;
     };
 
     state_to = name: to: {

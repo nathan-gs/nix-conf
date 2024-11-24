@@ -120,9 +120,9 @@ in
           }
           (ha.action.delay "0:00:15")
           # Workaround to update desired temperature
-          (ha.action.mqttPublish "ebusd/370/DisplayedHc1RoomTempDesired/get" "?1" false)
+          (ha.action.mqtt_publish "ebusd/370/DisplayedHc1RoomTempDesired/get" "?1" false)
           (ha.action.delay "0:00:05")
-          (ha.action.mqttPublish "ebusd/370/Hc1DayTemp/get" "?1" false)
+          (ha.action.mqtt_publish "ebusd/370/Hc1DayTemp/get" "?1" false)
           (ha.action.delay "0:00:05")
         ];
         mode = "queued";
@@ -137,7 +137,7 @@ in
           }
         ];
         action =
-          map (x: (ha.action.mqttPublish "${x}/get" "?3" false)) [
+          map (x: (ha.action.mqtt_publish "${x}/get" "?3" false)) [
             "ebusd/370/DisplayedHc1RoomTempDesired"
             "ebusd/370/DisplayedRoomTemp"
             "ebusd/bai/FlowTemp"
