@@ -11,15 +11,6 @@ let
     ${content}
   '';
 
-  windowClosed = sensor: left: ''
-    {% set is_window_closed = states('${sensor}') | bool(false) == false %}
-    {% if is_window_closed %}
-      ${left}
-    {% else %}
-      {{ temperature_minimal }}
-    {% endif %}
-  '';
-
   inUse = sensor: right: ''
     {% set in_use = states('${sensor}') | bool(false) %}
     {% if in_use %}
@@ -115,72 +106,58 @@ in
         sensor = [
           (
             templateSensorTemperature "floor1/nikolai/temperature_auto_wanted" (
-              temperatureSets
-                (windowClosed
-                  "binary_sensor.floor1_nikolai_window_na_contact"
-                  (workday
-                    (inUseDuringWorkingHours
-                      "input_boolean.floor1_nikolai_in_use"
-                      (kidsRoomWorkdayTemperature))
-                    (kidsRoomWeekendTemperature)
-                  )
-                )
+              (temperatureSets                
+                (workday
+                  (inUseDuringWorkingHours
+                    "input_boolean.floor1_nikolai_in_use"
+                    (kidsRoomWorkdayTemperature))
+                  (kidsRoomWeekendTemperature)
+                )              
+              )
             )
           )
           (
             templateSensorTemperature "floor1/morgane/temperature_auto_wanted" (
-              temperatureSets
-                (windowClosed
-                  "binary_sensor.floor1_morgane_window_na_contact"
-                  (workday
-                    (kidsRoomWorkdayTemperature)
-                    (kidsRoomWeekendTemperature)
-                  )
+              (temperatureSets                
+                (workday
+                  (kidsRoomWorkdayTemperature)
+                  (kidsRoomWeekendTemperature)
                 )
+              )
             )
           )
           (
             templateSensorTemperature "floor1/fen/temperature_auto_wanted" (
-              temperatureSets
-                (windowClosed
-                  "binary_sensor.floor1_fen_window_na_contact"
-                  ''
-                    {% if now().hour >= 6 and now().hour < 18 %}
-                      {{ temperature_eco }}
-                    {% else %}
-                      {{ temperature_night }} 
-                    {% endif %}
-                  ''                  
-                )
+              (temperatureSets                
+                (kidsRoomWorkdayTemperature)
+              )
             )
           )
           (
             templateSensorTemperature "floor1/badkamer/temperature_auto_wanted" (
-              temperatureSets
-                (windowClosed
-                  "binary_sensor.floor1_badkamer_window_na_contact"
-                  (inUse
-                    "input_boolean.floor1_badkamer_in_use"
-                    (workday
-                      ''
-                        {% if now().hour >= 6 and now().hour < 7 %}
-                          {{ temperature_night }}
-                        {% elif now().hour >= 18 and now().hour < 21 %}
-                          {{ temperature_night }}
-                        {% else %}
-                          {{ temperature_eco }}
-                        {% endif %}
-                      ''
-                      ''
-                        {% if now().hour >= 9 and now().hour < 21 %}
-                          {{ temperature_night }}
-                        {% else %}
-                          {{ temperature_eco }}
-                        {% endif %}
-                      ''
-                    )
+              (temperatureSets                
+                (inUse
+                  "input_boolean.floor1_badkamer_in_use"
+                  (workday
+                    ''
+                      {% if now().hour >= 6 and now().hour < 7 %}
+                        {{ temperature_night }}
+                      {% elif now().hour >= 18 and now().hour < 21 %}
+                        {{ temperature_night }}
+                      {% else %}
+                        {{ temperature_eco }}
+                      {% endif %}
+                    ''
+                    ''
+                      {% if now().hour >= 9 and now().hour < 21 %}
+                        {{ temperature_night }}
+                      {% else %}
+                        {{ temperature_eco }}
+                      {% endif %}
+                    ''
                   )
                 )
+              )
             )
           )
           (
