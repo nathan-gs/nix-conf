@@ -326,7 +326,7 @@
         mode = "queued";
       })
       (ha.automation "solar/battery/forcechargesoc.control" {
-        triggers = [(ha.trigger.state "sensor.solar_battery_forcechargesoc_target")];
+        triggers = [(ha.trigger.state_for "sensor.solar_battery_forcechargesoc_target" "00:00:15")];
         actions = [
           (ha.action.set_value "number.solar_battery_forcechargesoc" ''{{ states('sensor.solar_battery_forcechargesoc_target') | int }}'')
         ];

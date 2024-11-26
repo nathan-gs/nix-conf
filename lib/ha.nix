@@ -214,6 +214,12 @@ let
       entity_id = name;
     };
 
+    state_for = name: for: {
+      platform = "state";
+      entity_id = name;
+      for = for;
+    };
+
     state_attr = name: attribute: {
       platform = "state";
       entity_id = name;
