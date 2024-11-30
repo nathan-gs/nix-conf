@@ -21,6 +21,7 @@
       ../services/plex.nix
       ../services/vscode.nix
       ../services/autogenstudio.nix
+      ../services/nzb.nix
       ../services/komga.nix
       ../services/nginx.nix
       ../services/smb.nix
