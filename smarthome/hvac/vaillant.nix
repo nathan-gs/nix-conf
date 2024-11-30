@@ -3,6 +3,7 @@
 let
 
   autoWantedHeader = import ./temperature_sets.nix;
+  rooms = import ../rooms.nix;
 
 in
 {
@@ -29,13 +30,26 @@ in
                 nikolai_temp,
                 bureau_temp
               )
-              %}
+              %}  
               {% set valid_temp = v | select('!=', "ignore") | select('!=','unknown') | map('float') | list %}
               {{ max(valid_temp) | round(2) }}
             '';
             icon = "mdi:thermometer-auto";
             state_class = "measurement";
           }
+          {
+            name = "heating/number_of_rooms_in_need_of";
+            state = ''
+              {% set v = [
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heated)}
+              ]
+              %}
+              {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+              {{ valid_v | select('>', 0.7) | list | count }}
+            '';
+            icon = "mdi:thermometer-auto";
+            state_class = "measurement";
+          }          
           {
             name = "heating_temperature_desired";
             unit_of_measurement = "°C";
@@ -56,9 +70,10 @@ in
               {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
               {% set is_sufficient_increase = temperature_diff_wanted > 0.4 %}
               {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
+              {% set is_heat_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
               {% if is_anyone_home_or_coming %}
                 {% if is_sufficient_increase and is_heating_needed and is_large_deviation_between_forecast_and_target %}
-                  {% if is_cv_water_circulating and not(is_large_increase_needed) %}
+                  {% if (is_cv_water_circulating and not(is_large_increase_needed)) or is_heat_electric %}
                     {# Do nothing #}
                     {% set new_temp = cv_temp %}
                   {% else %}
@@ -93,6 +108,18 @@ in
             name = "cv/water_circulating";
             state = ''{{ is_state('sensor.ebusd_bai_status01_pumpstate', "on")}}'';
             delay_off.minutes = 1;
+            device_class = "running";
+          }
+          {
+            name = "heating/use_electric";
+            state = ''
+              {% set rooms_need_heating = states('sensor.heating_number_of_rooms_in_need_of') | int %}
+              {% set prefer_electricity = is_state('binary_sensor.energy_electricity_prefer_over_gas', 'on') %}
+              {% set enough_power = is_state('sensor.electricity_delivery_power_near_max_threshold', 'off') %}
+              {% set just_1room = rooms_need_heating == 1 %}
+              {{ just_1room and prefer_electricity and enough_power }}
+            '';
+            device_class = "running";
           }
         ];
       }
@@ -227,6 +254,7 @@ in
           "sensor.cv_*"
           "binary_sensor.cv_*"
           "sensor.heating_*"
+          "binary_sensor.heating_*"
           "sensor.itho_wtw_outlet_*"
           "binary_sensor.ebusd_*"
           "sensor.ebusd_*"
