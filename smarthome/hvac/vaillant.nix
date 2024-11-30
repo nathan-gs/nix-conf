@@ -18,18 +18,9 @@ in
             unit_of_measurement = "°C";
             device_class = "temperature";
             state = ''
-              {% set nikolai_not_home_alone = not(states('binary_sensor.occupancy_home_alone_nikolai_in_use') | bool(false)) %}
-              {% set bureau_not_home_alone = not(states('binary_sensor.occupancy_home_alone_bureau_in_use') | bool(false)) %}
-              {% set nikolai_temp = states('sensor.floor1_nikolai_temperature_diff_wanted') if nikolai_not_home_alone else "ignore" %}
-              {% set bureau_temp = states('sensor.floor0_bureau_temperature_diff_wanted') if bureau_not_home_alone else "ignore" %}
-              {% 
-              set v = (
-                states('sensor.floor0_living_temperature_diff_wanted'),
-                states('sensor.floor1_fen_temperature_diff_wanted'),
-                states('sensor.floor1_morgane_temperature_diff_wanted'),
-                nikolai_temp,
-                bureau_temp
-              )
+              {% set v = [
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heatedLeading)}
+              ]
               %}  
               {% set valid_temp = v | select('!=', "ignore") | select('!=','unknown') | map('float') | list %}
               {{ max(valid_temp) | round(2) }}
@@ -117,7 +108,8 @@ in
               {% set prefer_electricity = is_state('binary_sensor.energy_electricity_prefer_over_gas', 'on') %}
               {% set enough_power = is_state('sensor.electricity_delivery_power_near_max_threshold', 'off') %}
               {% set just_1room = rooms_need_heating == 1 %}
-              {{ just_1room and prefer_electricity and enough_power }}
+              {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
+              {{ just_1room and prefer_electricity and enough_power and is_anyone_home_or_coming }}
             '';
             device_class = "running";
           }
