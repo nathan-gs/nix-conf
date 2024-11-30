@@ -57,6 +57,9 @@ in
             ha.sensor.avg_from_list "outdoor/temperature" [
               "states('sensor.garden_garden_temperature_noordkant_temperature')"
               "states('sensor.garden_garden_temperature_noordkant_temperature')"
+              "states('sensor.garden_garden_temperature_noordkant_temperature')"
+              "states('sensor.garden_garden_temperature_noordkant_temperature')"
+              "states('sensor.garden_garden_temperature_grasmaaier_temperature')"
               "states('sensor.garden_garden_temperature_grasmaaier_temperature')"
               "states('sensor.garden_garden_temperature_grasmaaier_temperature')"
               "states('sensor.garden_garden_temperature_grasmaaier_temperature')"
