@@ -40,7 +40,7 @@ in
             '';
             icon = "mdi:thermometer-auto";
             state_class = "measurement";
-          }          
+          }                    
           {
             name = "heating_temperature_desired";
             unit_of_measurement = "°C";
@@ -106,7 +106,7 @@ in
             state = ''
               {% set rooms_need_heating = states('sensor.heating_number_of_rooms_in_need_of') | int %}
               {% set prefer_electricity = is_state('binary_sensor.energy_electricity_prefer_over_gas', 'on') %}
-              {% set enough_power = is_state('sensor.electricity_delivery_power_near_max_threshold', 'off') %}
+              {% set enough_power = is_state('binary_sensor.electricity_delivery_power_near_max_threshold', 'off') %}
               {% set just_1room = rooms_need_heating == 1 %}
               {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
               {{ just_1room and prefer_electricity and enough_power and is_anyone_home_or_coming }}
