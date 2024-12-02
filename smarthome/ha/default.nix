@@ -74,6 +74,9 @@
                   |rejectattr('entity_id', 'contains', 'sensor.garden_garden_button_pomp_battery')
                   |rejectattr('entity_id', 'contains', 'sensor.rainfall_5d')
                   |rejectattr('entity_id', 'contains', 'indego_325608617')
+                  |rejectattr('entity_id', 'contains', 'spotify_')
+                  |rejectattr('entity_id', 'contains', 'sensor.all_standby_energy')
+                  |rejectattr('entity_id', 'contains', '_power_outage_memory')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
