@@ -3,17 +3,15 @@ map
     type = "light_plug";
     # https://www.zigbee2mqtt.io/guide/usage/integrations/home_assistant.html#exposing-switch-as-a-light
     homeassistant = {
-      #switch = {
-      #  name = "${v.floor}/${v.zone}/light_plug/${v.name}";
-      #  type = "light";
-      #  object_id = "";
-      #};
-      #light = {
-      #  name = "${v.floor}/${v.zone}/light_plug/${v.name}";
-      #  value_template = ''{{ value_json.state }}'';
-      #  state_value_template = ''{{ value_json.state }}'';
-      #};
-      icon = "mdi:lamp";
+      switch = {
+        type = "light";
+        object_id = "l1";
+      };
+      "l1" = {
+        object_id = null;
+        value_template = null;
+        state_value_template = ''{{ value_json.state }}'';
+      };      
     };
   })
   [
@@ -30,5 +28,12 @@ map
       floor = "floor0";
       disabled = true;
     }
+    {
+      zone = "voordeur";
+      name = "cirkel";
+      ieee = "0xa4c138a92f204b18";
+      floor = "garden";
+    }
+    
 
   ]

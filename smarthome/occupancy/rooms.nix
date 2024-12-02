@@ -237,8 +237,7 @@ in
           floor = "floor0";
           room = "wc";
           triggers = [
-            (ha.trigger.on "switch.floor0_wc_light_switch_main")
-            (ha.trigger.off "switch.floor0_wc_light_switch_main")
+            (ha.trigger.on "light.floor0_wc_light_switch_main_l1")
           ];
           action = "on";
         }
@@ -248,7 +247,7 @@ in
           floor = "floor0";
           room = "wc";
           triggers = [
-            (ha.trigger.off_for "switch.floor0_wc_light_switch_main" "00:05:00")
+            (ha.trigger.off_for "light.floor0_wc_light_switch_main_l1" "00:05:00")
           ];
           action = "off";
         }
