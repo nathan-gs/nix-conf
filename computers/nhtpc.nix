@@ -24,7 +24,7 @@
       ../services/nzb.nix
       ../services/komga.nix
       ../services/nginx.nix
-      ../services/smb.nix
+      #../services/smb.nix
       ../services/sos2mqtt.nix
       ../services/solis-control.nix
       ../services/remote-build-host.nix

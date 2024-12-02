@@ -143,7 +143,7 @@ let
       service = "mqtt.publish";
       data = {
         topic = topic;
-        payload_template = payload;
+        payload = payload;
         retain = retain;
       };
     };

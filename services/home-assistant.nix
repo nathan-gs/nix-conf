@@ -99,6 +99,7 @@
       "auth"
       "backup"
       "buienradar"
+      "bluetooth"
       "command_line"
       "conversation"
       "default_config"
@@ -123,24 +124,28 @@
       "sensor"
       "smartthings"
       "sonos"
+      "spotify"
       "tasmota"
       "utility_meter"
       "volvooncall"
+      "zha"
     ];
 
     extraPackages = ps: with ps; [
       mysqlclient
       aiohomekit
       aiohttp
+      aiohttp-zlib-ng      
       bellows
       croniter
+      isal
       getmac
       hap-python
       pyipp
       pyotp
       pyqrcode
       soco
-      spotipy
+      #spotipy
       universal-silabs-flasher
       zha-quirks
       zigpy-deconz

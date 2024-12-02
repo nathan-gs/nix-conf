@@ -89,20 +89,17 @@
           {{ not (is_state('sensor.solis_remaining_battery_capacity', 'unknown') or is_state('sensor.solis_remaining_battery_capacity', 'unavailable') or trigger.from_state.state | int(0) == 0) }}
         '';
         action = [
-          {
-            service = "mqtt.publish";
-            data = {
-              topic = "solar/battery/change";
-              payload_template = ''
+          (
+            ha.action.mqtt_publish "solar/battery/change" 
+              ''
                 {
                   "from":{{ trigger.from_state.state | int(0) }},
                   "to": {{ trigger.to_state.state | int(0) }},
                   "value": {{ (trigger.to_state.state | int(0)) - (trigger.from_state.state | int(0)) }}
                 }
-              '';
-              retain = true;
-            };
-          }
+              ''
+              true
+          )          
         ];
         mode = "single";
       }
