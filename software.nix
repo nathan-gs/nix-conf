@@ -15,6 +15,7 @@
     (pkgs.python312Packages.callPackage ./pkgs/python/autogenstudio.nix {})
     (pkgs.callPackage ./pkgs/sos2mqtt.nix {})
     devenv
+    (pkgs.callPackage ./pkgs/onedrive.nix {})
   ];
 
   programs.bash.completion.enable = true;
