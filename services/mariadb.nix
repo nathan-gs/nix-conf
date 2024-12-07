@@ -7,10 +7,11 @@
       mysqld = {
         innodb_buffer_pool_size = "16G";
         innodb_log_file_size="2g";
-        innodb_buffer_pool_instances = "4";
         performance_schema = "on";
         tmp_table_size = "512m";
         max_heap_table_size = "512m";
+        slow_query_log = "1";
+        log_queries_not_using_indexes = "1";
       };
     };
     ensureUsers = [
