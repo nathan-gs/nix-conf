@@ -10,7 +10,7 @@
           {
             platform = "template";
             value_template = ''
-              {{ states('sensor.system_doorbell_monitoring_plug_doorbell_power') | float(0) > 2 }}
+              {{ states('sensor.system_doorbell_monitoring_plug_doorbell_power') | float(0) > 5 }}
             '';
           }
         ];
