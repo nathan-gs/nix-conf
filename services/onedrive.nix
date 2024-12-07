@@ -10,8 +10,9 @@
     unitConfig = {
       RequiresMountsFor = "/media/documents";
     };
+    path = [pkgs.openssl];
     serviceConfig = {
-      ExecStart = "${pkgs.onedrive}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal";
+      ExecStart = "${(pkgs.callPackage ../pkgs/onedrive.nix {})}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal";
       User = "nathan";
     };
     environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
