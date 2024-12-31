@@ -134,7 +134,9 @@
           (ha.trigger.at "07:00:00")
         ];
         actions = [
-          (ha.action.set_value "number.solar_battery_maxgridcharge" 300)          
+          (ha.action.set_value "number.solar_battery_maxgridcharge" 300)     
+          (ha.action.delay "00:00:30")
+          (ha.action.set_value "number.solar_battery_overdischargesoc" ''{{ states('sensor.solar_battery_overdischargesoc_target') | int(20) }}'')
         ];
         mode = "queued";
       })
