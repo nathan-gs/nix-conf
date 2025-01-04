@@ -301,15 +301,15 @@
         ];
       }
       {
-        resource = "https://www.pluginvest.eu/en/technische-hulp/creg-tarief/";
+        resource = "https://www.pluginvest.eu/en/technische-hulp/creg-tarief-2025";
         scan_interval = 3600;
         sensor = [
           {
             name = "electricity_injection_creg_kwh";
             select = ''
-              section.s_title h2 span.text-o-color-1 span
+              section.s_title h2 font.text-o-color-1 b
             '' ;
-            value_template = ''{{ ((value | replace("€ ", "") | replace("/kWh", "") | replace(",", ".") | float) * 1) | round(3) }}'';
+            value_template = ''{{ ((value | replace("€", "") | replace("/kWh", "") | replace(",", ".") | trim | float) * 1) | round(3) }}'';
             unit_of_measurement = "€/kWh";
             state_class = "measurement";
           }
