@@ -36,7 +36,7 @@
           ];
           triggersOff = [
             (ha.trigger.at "23:59:00")
-            (ha.trigger.state_to "input_boolean.floor0_living_in_use" "off")
+            (ha.trigger.off_for "input_boolean.floor0_living_in_use" "00:04:00")
           ];
           conditionsOff = [
             (ha.condition.time_after "22:00:00")

@@ -69,7 +69,7 @@ in
           {
             name = "floor0_living_appletv_woonkamer";
             state = ''{{ states('sensor.living_audio_input_format') in ['DTS 5.1'] }}'';
-            delay_off = "00:05:00";
+            delay_off = "00:00:45";
           }
           {
             name = "occupancy/home_alone/bureau/in_use";
