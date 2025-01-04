@@ -244,7 +244,7 @@
           value_template = ''            
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
             {#{{ (0.84 * raw - 1.85) | round(2) }}#}
-            {% set correction = -4 %}
+            {% set correction = -4.3 %}
             {{ (raw + correction) | round(2) }}
           '';
           unit_of_measurement = "°C";
@@ -252,9 +252,33 @@
           state_class = "measurement";
           device_class = "temperature";
           icon = "mdi:thermometer-chevron-down";
+        }{
+          name = "itho_wtw_inlet_temperature_raw";
+          state_topic = "itho/ithostatus";
+          value_template = ''            
+            {% set raw = value_json['Outdoor temp (°C)'] | float %}
+            {{ raw }}
+          '';
+          unit_of_measurement = "°C";
+          unique_id = "itho_wtw_inlet_temperature_raw";
+          state_class = "measurement";
+          device_class = "temperature";
+          icon = "mdi:thermometer-chevron-down";
         }
         {
           name = "itho_wtw_outlet_temperature";
+          state_topic = "itho/ithostatus";
+          value_template = ''
+            {{ value_json['Room temp (°C)'] | float }}            
+          '';
+          unit_of_measurement = "°C";
+          unique_id = "itho_wtw_outlet_temperature";
+          state_class = "measurement";
+          icon = "mdi:thermometer-chevron-up";
+          device_class = "temperature";
+        }
+        {
+          name = "itho_wtw_outlet_temperature_raw";
           state_topic = "itho/ithostatus";
           value_template = ''
             {{ value_json['Room temp (°C)'] | float }}            
