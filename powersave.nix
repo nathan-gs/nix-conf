@@ -67,10 +67,10 @@
       '';
   };   
 
-  hardware.bluetooth.powerOnBoot = false;
-  hardware.bluetooth.enable = false;
+  #hardware.bluetooth.powerOnBoot = false;
+  #hardware.bluetooth.enable = false;
 
-  boot.blacklistedKernelModules = [ "bluetooth" "iwlwifi" ];
+  boot.blacklistedKernelModules = [ "iwlwifi" ];
 #  services.thermald.enable = true;
 
 

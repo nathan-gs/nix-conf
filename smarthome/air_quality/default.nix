@@ -24,6 +24,8 @@
           "sensor.system_wtw_air_quality_*_temperature"
           "sensor.system_wtw_air_quality_*_voc_index"
           "sensor.irceline_*"
+          "sensor.*_switchbot_*"
+          "sensor.*_switchbot"
         ];
       };
     };

@@ -132,6 +132,8 @@
     recordName = config.secrets.cloudflare.nhtpc.recordName;
   };  
 
+  hardware.bluetooth.enable = true;
+
   # Enable sound.
   # sound.enable = true;
   # hardware.pulseaudio.enable = true;

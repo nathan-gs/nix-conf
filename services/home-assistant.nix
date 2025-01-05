@@ -125,6 +125,7 @@
       "smartthings"
       "sonos"
       "spotify"
+      "switchbot"
       "tasmota"
       "utility_meter"
       "volvooncall"
