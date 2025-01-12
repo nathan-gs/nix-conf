@@ -13,7 +13,7 @@ map
     {
       zone = "keuken";
       name = "oven";
-      ieee = "0xa4c1381f8ccf7230";
+      ieee = "0xa4c138af63494584";
       floor = "floor0";
     }
     {
