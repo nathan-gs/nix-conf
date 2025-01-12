@@ -244,7 +244,7 @@
           value_template = ''            
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
             {#{{ (0.84 * raw - 1.85) | round(2) }}#}
-            {% set correction = -4.3 %}
+            {% set correction = -5 %}
             {{ (raw + correction) | round(2) }}
           '';
           unit_of_measurement = "°C";
@@ -284,7 +284,7 @@
             {{ value_json['Room temp (°C)'] | float }}            
           '';
           unit_of_measurement = "°C";
-          unique_id = "itho_wtw_outlet_temperature";
+          unique_id = "itho_wtw_outlet_temperature_raw";
           state_class = "measurement";
           icon = "mdi:thermometer-chevron-up";
           device_class = "temperature";
