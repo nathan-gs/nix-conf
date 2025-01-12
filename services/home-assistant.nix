@@ -145,6 +145,7 @@
       pyipp
       pyotp
       pyqrcode
+      (pkgs.callPackage ../pkgs/python/pyswitchbot.nix {})
       soco
       #spotipy
       universal-silabs-flasher
