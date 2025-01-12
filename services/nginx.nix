@@ -40,6 +40,9 @@
 
       # This might create errors
       proxy_cookie_path / "/; secure; HttpOnly; SameSite=strict";
+
+      proxy_headers_hash_max_size 1024;
+      proxy_headers_hash_bucket_size 128;
     '';
 
   };
