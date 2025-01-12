@@ -157,7 +157,8 @@
     ];
 
     customComponents = [
-      pkgs.home-assistant-custom-components.indego
+      # pkgs.nixosUnstable.home-assistant-custom-components.indego
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.python312Packages.pyindego;})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/solis-sensor.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
