@@ -77,6 +77,13 @@
                   |rejectattr('entity_id', 'contains', 'spotify_')
                   |rejectattr('entity_id', 'contains', 'sensor.all_standby_energy')
                   |rejectattr('entity_id', 'contains', '_power_outage_memory')
+                  |rejectattr('entity_id', 'contains', 'garden_voordeur_light_plug_cirkel')
+                  |rejectattr('entity_id', 'contains', 'sensor.electricity_cost_engie_drive_offpeak_kwh_energycomponent')
+                  |rejectattr('entity_id', 'contains', 'sensor.electricity_cost_engie_drive_peak_kwh_energycomponent')
+                  |rejectattr('entity_id', 'contains', 'sensor.gas_cost_engie_drive_kwh_energycomponent')
+                  |rejectattr('entity_id', 'contains', 'electricity_cost_octa')
+                  |rejectattr('entity_id', 'contains', 'gas_cost_octa')
+
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
