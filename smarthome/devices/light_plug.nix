@@ -25,13 +25,15 @@ map
       zone = "living";
       name = "kerstboom";
       ieee = "0x50325ffffe5ebbec";
-      floor = "floor0";      
+      floor = "floor0";
+      disabled = true;
     }
     {
       zone = "voordeur";
       name = "cirkel";
       ieee = "0xa4c138a92f204b18";
       floor = "garden";
+      disabled = true;
     }
     
 
