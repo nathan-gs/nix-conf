@@ -60,21 +60,18 @@ in
           }
           {
             name = "anyone_coming_home";
-            state = ''
-              {#
+            state = ''              
               {% set within_10km = states('sensor.sxw_nearest_distance') | float(0) <= 10 %}
-              {% set sensor_based = within_10km and (states('sensor.sxw_nearest_direction_of_travel') == 'towards') %}
+              {% set sensor_based = within_10km and is_state('sensor.sxw_nearest_direction_of_travel', 'towards') %}
               {% set override = states('input_boolean.coming_home') | bool(false) %}            
               {{ sensor_based or override }}
-              #}
-              false
             '';
             device_class = "occupancy";
           }
           {
             name = "anyone_home_or_coming_home";
             state = ''
-              {{ states('binary_sensor.anyone_home') | bool(true) or states('binary_sensor.anyone_coming_home') | bool(false) }}
+              {{ is_state('binary_sensor.anyone_home', 'on') or is_state('binary_sensor.anyone_coming_home', 'on') }}
             '';
             device_class = "occupancy";
           }
@@ -137,6 +134,7 @@ in
           "binary_sensor.far_away"
           "sensor.occupancy_anyone_home_daily"
           "device_tracker.sm_g780g"        
+          "device_tracker.fphone_a55"
           "binary_sensor.flaptop"
           "binary_sensor.ndesk"
           "binary_sensor.nstudio"
