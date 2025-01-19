@@ -80,10 +80,10 @@
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
-              {% set overdischargesoc_default = 22 %}
+              {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
               {% set overdischargesoc_with_car_charger_on = 40 %}              
-              {% set overdischargesoc_min = 10 %}
+              {% set overdischargesoc_min = 8 %}
               {#
               Test values
               {% set power15m = 2.1 %}
@@ -95,7 +95,7 @@
               {{ overdischargesoc }}
               #}
               {# Capacity Tweaks #}
-              {% if (power15m > 2) and (power15m_estimated > 2.47) %}
+              {% if (power15m > 1.95) and (power15m_estimated > 2.45) %}
                 {{ overdischargesoc_min }}
               {# If car charging #}
               {% elif is_car_charging and is_solar_left == false %}
@@ -120,8 +120,8 @@
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 20 %}
-              {% set forcechargesoc_low = 14 %}
-              {% set forcechargesoc_min = 8 %}
+              {% set forcechargesoc_low = 13 %}
+              {% set forcechargesoc_min = 7 %}
 
               {% set forcechargesoc_target = forcechargesoc_low %}
               {#

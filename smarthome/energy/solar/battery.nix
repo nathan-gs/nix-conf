@@ -110,7 +110,7 @@
           (ha.condition.off "binary_sensor.electricity_high_usage")
         ];
         actions = [
-          (ha.action.set_value "number.solar_battery_maxgridcharge" 1200)
+          (ha.action.set_value "number.solar_battery_maxgridpower" 1200)
           (ha.action.delay "00:00:30")
           (ha.action.set_value "number.solar_battery_forcechargesoc" ''20'')
           (ha.action.delay "00:00:30")
@@ -134,7 +134,7 @@
           (ha.trigger.at "07:00:00")
         ];
         actions = [
-          (ha.action.set_value "number.solar_battery_maxgridcharge" 300)     
+          (ha.action.set_value "number.solar_battery_maxgridpower" 300)     
           (ha.action.delay "00:00:30")
           (ha.action.set_value "number.solar_battery_overdischargesoc" ''{{ states('sensor.solar_battery_overdischargesoc_target') | int(20) }}'')
         ];
