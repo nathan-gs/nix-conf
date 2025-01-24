@@ -123,7 +123,7 @@
               (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
             ]
             [
-              (ha.action.set_value "number.solar_battery_overdischargesoc" ''40'')
+              (ha.action.set_value "number.solar_battery_overdischargesoc" ''25'')
             ]
           )
         ];

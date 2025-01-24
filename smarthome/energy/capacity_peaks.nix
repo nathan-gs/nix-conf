@@ -83,7 +83,8 @@
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
               {% set overdischargesoc_with_car_charger_on = 40 %}              
-              {% set overdischargesoc_min = 8 %}
+              {# min is 10 #}
+              {% set overdischargesoc_min = 10 %}
               {#
               Test values
               {% set power15m = 2.1 %}
