@@ -11,6 +11,7 @@ let
   rtv = import ./rtv.nix;
   temperature = import ./temperature.nix;
   windows = import ./window.nix;
+  wtw_valve = import ./wtw_valve.nix;
 
 in
 [ ]
@@ -25,3 +26,4 @@ in
 ++ rtv
 ++ temperature
 ++ windows
+++ wtw_valve

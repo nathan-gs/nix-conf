@@ -133,7 +133,15 @@ let
       data.value = value;
     };
 
-    
+    valve_open = entity: {
+      service = "valve.open_valve";
+      target.entity_id = entity;
+    };
+
+    valve_close = entity: {
+      service = "valve.close_valve";
+      target.entity_id = entity;
+    };
 
     delay = time: {
       delay = time;

@@ -10,5 +10,6 @@
     ./temperature.nix
     ./vaillant.nix
     ./ventilation.nix
+    ./ventilation_valve.nix
   ];
 }
