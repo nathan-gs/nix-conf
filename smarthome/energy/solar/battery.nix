@@ -150,7 +150,7 @@
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 20 %}
-              {% set forcechargesoc_low = 13 %}
+              {% set forcechargesoc_low = 10 %}
               {% set forcechargesoc_min = 7 %}
 
               {% set forcechargesoc_target = forcechargesoc_low %}
@@ -245,7 +245,7 @@
               (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
             ]
             [
-              (ha.action.set_value "number.solar_battery_overdischargesoc" ''25'')
+              (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
             ]
           )
         ];
