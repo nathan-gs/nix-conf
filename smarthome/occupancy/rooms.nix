@@ -104,7 +104,7 @@ in
             platform = "state";
             entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
             prob_given_true = 0.99;
-            prob_given_false = 0.01;
+            prob_given_false = 0.001;
             to_state = "on";
           }
           {
@@ -118,7 +118,7 @@ in
             platform = "state";
             entity_id = "person.femke";
             prob_given_true = 0.60;
-            prob_given_false = 0.1;
+            prob_given_false = 0.20;
             to_state = "home";
           }
           {
@@ -129,12 +129,19 @@ in
             prob_given_false = 0.20;
           }
           {
-            platform = "numeric_state";
-            entity_id = "sensor.occupancy_home_people_count";
-            above = 1;
-            prob_given_true = 0.30;
-            prob_given_false = 0.01;
-          }          
+            platform = "state";
+            entity_id = "binary_sensor.anyone_home";
+            prob_given_true = 0.20;
+            prob_given_false = 0.001;
+            to_state = "on";
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.calendar_night";
+            prob_given_true = 0.01;
+            prob_given_false = 0.001;
+            to_state = "on";
+          }
         ];
       }
       {
@@ -151,11 +158,11 @@ in
             to_state = "on";
           }
           {
-            platform = "numeric_state";
-            entity_id = "sensor.occupancy_home_people_count";
-            above = 1;
-            prob_given_true = 0.30;
-            prob_given_false = 0.01;
+            platform = "state";
+            entity_id = "binary_sensor.anyone_home";
+            prob_given_true = 0.20;
+            prob_given_false = 0.001;
+            to_state = "on";
           }
           {
             platform = "state";
@@ -183,6 +190,13 @@ in
             entity_id = "binary_sensor.calendar_weekday_evening";
             prob_given_true = 0.60;
             prob_given_false = 0.1;
+            to_state = "on";
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.calendar_night";
+            prob_given_true = 0.01;
+            prob_given_false = 0.001;
             to_state = "on";
           }
           {
