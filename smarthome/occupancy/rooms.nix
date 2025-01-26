@@ -93,6 +93,109 @@ in
       }
     ];
 
+    binary_sensor = [
+      {
+        platform = "bayesian";
+        name = "floor0/living/in_use/weekend";
+        prior = 0.4;
+        device_class = "occupancy";
+        observations = [
+          {
+            platform = "state";
+            entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
+            prob_given_true = 0.99;
+            prob_given_false = 0.01;
+            to_state = "on";
+          }
+          {
+            platform = "state";
+            entity_id = "person.nathan";
+            prob_given_true = 0.30;
+            prob_given_false = 0.1;
+            to_state = "home";
+          }
+          {
+            platform = "state";
+            entity_id = "person.femke";
+            prob_given_true = 0.60;
+            prob_given_false = 0.1;
+            to_state = "home";
+          }
+          {
+            platform = "numeric_state";
+            entity_id = "sensor.floor0_living_fire_alarm_main_co2";
+            above = 700;
+            prob_given_true = 0.70;
+            prob_given_false = 0.20;
+          }
+          {
+            platform = "numeric_state";
+            entity_id = "sensor.occupancy_home_people_count";
+            above = 1;
+            prob_given_true = 0.30;
+            prob_given_false = 0.01;
+          }          
+        ];
+      }
+      {
+        platform = "bayesian";
+        name = "floor0/living/in_use/weekday";
+        prior = 0.3;
+        device_class = "occupancy";
+        observations = [
+          {
+            platform = "state";
+            entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
+            prob_given_true = 0.99;
+            prob_given_false = 0.01;
+            to_state = "on";
+          }
+          {
+            platform = "numeric_state";
+            entity_id = "sensor.occupancy_home_people_count";
+            above = 1;
+            prob_given_true = 0.30;
+            prob_given_false = 0.01;
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.floor0_living_in_use_by_flaptop";
+            prob_given_true = 0.85;
+            prob_given_false = 0.15;
+            to_state = "on";
+          }
+          {
+            platform = "state";
+            entity_id = "person.nathan";
+            prob_given_true = 0.30;
+            prob_given_false = 0.30;
+            to_state = "home";
+          }
+          {
+            platform = "state";
+            entity_id = "person.femke";
+            prob_given_true = 0.60;
+            prob_given_false = 0.1;
+            to_state = "home";
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.calendar_weekday_evening";
+            prob_given_true = 0.60;
+            prob_given_false = 0.1;
+            to_state = "on";
+          }
+          {
+            platform = "numeric_state";
+            entity_id = "sensor.floor0_living_fire_alarm_main_co2";
+            above = 700;
+            prob_given_true = 0.70;
+            prob_given_false = 0.20;
+          }
+        ];
+      }
+    ];
+
     input_boolean = {
       floor0_bureau_in_use = {
         name = "floor0/bureau/in_use";
@@ -260,7 +363,7 @@ in
           "binary_sensor.ndesk"
         ];
         entity_globs = [
-          "binary_sensor.*_in_use"
+          "binary_sensor.*_in_use*"
           "binary_sensor.occupancy_*"
           "input_boolean.*_in_use"
         ];

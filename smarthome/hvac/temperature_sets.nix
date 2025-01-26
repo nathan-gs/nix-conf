@@ -1,5 +1,5 @@
 ''
-  {% set workday = is_state('binary_sensor.workday', 'on') %}    
+  {% set workday = is_state('binary_sensor.calendar_workday', 'on') %}    
   {% set anyone_home = is_state('binary_sensor.anyone_home', 'on') %}
   {% set temperature_away = 14.5 %}
   {% set temperature_eco = 15.5 %}

@@ -85,6 +85,12 @@ in
             delay_off.minutes = 10;
           }
         ];
+        sensor = [
+          {
+            name = "occupancy/home/people_count";
+            state = "{{ states.person | selectattr('state','eq','home') | list | count }}";
+          }
+        ];
       }
     ];
 
