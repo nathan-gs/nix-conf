@@ -289,6 +289,16 @@ in
               (ha.condition.on "binary_sensor.car_charger_automation_should_charge")
             ];
             actions = [
+              (
+                ha.action.conditional 
+                  [(ha.condition.below "sensor.solis_remaining_battery_capacity" 20)]
+                  [
+                    (ha.action.automation "solar_battery_charge")
+                    (ha.action.delay "00:02:00")
+                    (ha.action.delay ''{{ (states('sensor.solar_battery_charging_remaining_minutes_till_overdischargesoc') | int(0)) * 60 }}'')
+                  ]
+                  []
+              )
               (ha.action.on "switch.garden_garden_plug_laadpaal")
               (ha.action.off "input_boolean.car_charger_charge_offpeak")
               (ha.action.off "input_boolean.car_charger_charge_at")

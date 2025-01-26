@@ -156,6 +156,10 @@ let
       };
     };
     
+    automation = automation_name: {
+      service = "automation.trigger";
+      target.entity_id = "automation.${automation_name}";
+    };
 
     notify = title: message: {
       service = "notify.notify";

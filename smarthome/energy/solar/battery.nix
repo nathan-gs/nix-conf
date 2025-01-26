@@ -51,6 +51,54 @@
             unit_of_measurement = "kWh";
           }
         ];
+        binary_sensor = [
+          {
+            name = "solar/battery/is_charging";
+            device_class = "battery_charging";
+            state = ''
+              {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
+              {% if battery_change > 0 %}
+                on
+              {% else %}
+                off
+              {% endif %}
+            '';
+          }
+          {
+            name = "solar/battery/is_grid_charging";
+            device_class = "battery_charging";
+            state = ''
+              {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
+              {% set grid_power = states('sensor.electricity_grid_consumed_power_avg_1m') | float(0) %}
+              {% if battery_change > 0 and grid_power > 150 %}
+                on
+              {% else %}
+                off
+              {% endif %}
+            '';
+          }
+        ];
+      }
+      {
+        sensor = [
+          {
+            name = "solar/battery/charging/remaining_minutes_till_overdischargesoc";
+            state = '' 
+              {% set max_grid_power = states('number.solar_battery_maxgridpower') | int(0) %}
+              {% set battery_target = states('number.solar_battery_overdischargesoc') | int(0) %}
+              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+              {% set to_charge = battery_target - battery %}
+              {% if to_charge > 0 %}
+                {% set percent_in_wh = (48 + 35) %}
+                {% set wh_needed = to_charge * percent_in_wh %}
+                {% set charge_time = wh_needed / max_grid_power if max_grid_power > 0 else 'N/A' %}
+                {{ (charge_time * 60) | round(0) }}
+              {% else %}
+                0
+              {% endif %}
+            '';
+          }
+        ];
       }
     ];
 
@@ -141,6 +189,15 @@
         mode = "queued";
       })
     ];
+
+    recorder = {
+      include = {
+        entity_globs = [
+          "sensor.solar_battery_*"
+          "binary_sensor.solar_battery_*"
+        ];
+      };
+    };
 
 
   };
