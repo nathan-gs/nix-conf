@@ -294,6 +294,11 @@ let
       value_template = template;
     };
 
+    or = conditions: {
+      condition = "or";
+      conditions = conditions;
+    };
+
   };
 in
 

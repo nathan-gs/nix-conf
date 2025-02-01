@@ -149,7 +149,7 @@
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 3) and now().hour >= 5) %}
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
-              {% set forcechargesoc_high = 20 %}
+              {% set forcechargesoc_high = 19 %}
               {% set forcechargesoc_low = 10 %}
               {% set forcechargesoc_min = 7 %}
 
@@ -234,7 +234,7 @@
         actions = [
           (ha.action.set_value "number.solar_battery_maxgridpower" 1200)
           (ha.action.delay "00:00:30")
-          (ha.action.set_value "number.solar_battery_forcechargesoc" ''20'')
+          (ha.action.set_value "number.solar_battery_forcechargesoc" ''19'')
           (ha.action.delay "00:00:30")
           (
             ha.action.conditional 
