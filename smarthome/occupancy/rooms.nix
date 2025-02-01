@@ -93,118 +93,155 @@ in
       }
     ];
 
+    # https://community.home-assistant.io/t/how-bayes-sensors-work-from-a-statistics-professor-with-working-google-sheets/143177
+
     binary_sensor = [
       {
         platform = "bayesian";
-        name = "floor0/living/in_use/weekend";
+        # 8h till 13h = 5h
+        # 
+        name = "floor0/living/in_use/weekend/morning_and_lunch";
+        prior = 0.9;
+        device_class = "occupancy";
+        observations = [
+          {
+            platform = "state";
+            entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
+            # TV is on for 2h out of 5h
+            prob_given_true = 0.5;
+            prob_given_false = 0.6;
+            to_state = "on";
+          }          
+          {
+            platform = "numeric_state";
+            entity_id = "sensor.floor0_living_fire_alarm_main_co2";
+            above = 700;
+            # If CO2 is high in the living, its likely occupied
+            prob_given_true = 0.30;
+            prob_given_false = 0.60;
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.anyone_home";
+            # We are likely at home during weekend mornings
+            prob_given_true = 0.90;
+            prob_given_false = 0.001;
+            to_state = "on";
+          }     
+        ];
+      }
+      {
+        platform = "bayesian";
+        # 13h - 18h = 5h
+        name = "floor0/living/in_use/weekend/afternoon";
+        # We are out 60% of the time
         prior = 0.4;
         device_class = "occupancy";
         observations = [
           {
             platform = "state";
             entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
-            prob_given_true = 0.99;
+            # TV is on for 30m out of 5h
+            prob_given_true = 0.5 / 5;
+            prob_given_false = 4.5 / 5;
+            to_state = "on";
+          }          
+          {
+            platform = "numeric_state";
+            entity_id = "sensor.floor0_living_fire_alarm_main_co2";
+            above = 700;
+            # If CO2 is high in the living, its likely occupied
+            prob_given_true = 0.30;
+            prob_given_false = 0.60;
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.anyone_home";
+            # There's a 85% chance we are in the living room if it's occupied
+            prob_given_true = 0.85;
             prob_given_false = 0.001;
             to_state = "on";
-          }
+          }                    
+        ];
+      }      
+      {
+        platform = "bayesian";
+        # 18h - 23h
+        name = "floor0/living/in_use/evening";
+        prior = 0.9;
+        device_class = "occupancy";
+        observations = [
           {
+            # 85% of the time somebody watches tv in the evening minus time to cook
+            # 85% of 4/5th h
             platform = "state";
-            entity_id = "person.nathan";
-            prob_given_true = 0.30;
-            prob_given_false = 0.1;
-            to_state = "home";
-          }
-          {
-            platform = "state";
-            entity_id = "person.femke";
-            prob_given_true = 0.60;
-            prob_given_false = 0.20;
-            to_state = "home";
+            entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
+            prob_given_true = 0.68; # 0.85 * (4 / 5)
+            prob_given_false = 0.32;
+            to_state = "on";
           }
           {
             platform = "numeric_state";
             entity_id = "sensor.floor0_living_fire_alarm_main_co2";
             above = 700;
-            prob_given_true = 0.70;
-            prob_given_false = 0.20;
+            # If CO2 is high in the living, its likely occupied
+            prob_given_true = 0.30;
+            prob_given_false = 0.60;
           }
           {
             platform = "state";
             entity_id = "binary_sensor.anyone_home";
-            prob_given_true = 0.20;
-            prob_given_false = 0.001;
-            to_state = "on";
-          }
-          {
-            platform = "state";
-            entity_id = "binary_sensor.calendar_night";
-            prob_given_true = 0.01;
-            prob_given_false = 0.001;
-            to_state = "on";
-          }
-        ];
-      }
-      {
-        platform = "bayesian";
-        name = "floor0/living/in_use/weekday";
-        prior = 0.3;
-        device_class = "occupancy";
-        observations = [
-          {
-            platform = "state";
-            entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
-            prob_given_true = 0.99;
-            prob_given_false = 0.01;
-            to_state = "on";
-          }
-          {
-            platform = "state";
-            entity_id = "binary_sensor.anyone_home";
-            prob_given_true = 0.20;
+            # There's a 95% chance we are in the living room if it's occupied
+            prob_given_true = 0.95;
             prob_given_false = 0.001;
             to_state = "on";
           }
           {
             platform = "state";
             entity_id = "binary_sensor.floor0_living_in_use_by_flaptop";
-            prob_given_true = 0.85;
-            prob_given_false = 0.15;
+            prob_given_true = 0.95;
+            prob_given_false = 0.99;
             to_state = "on";
           }
+        ];
+      }
+      {
+        platform = "bayesian";
+        # 8h - 18h
+        # very rarely (1%) the living is in use during the day
+        name = "floor0/living/in_use/weekday/day";
+        prior = 0.10;
+        device_class = "occupancy";
+        observations = [
           {
             platform = "state";
-            entity_id = "person.nathan";
-            prob_given_true = 0.30;
-            prob_given_false = 0.30;
-            to_state = "home";
-          }
-          {
-            platform = "state";
-            entity_id = "person.femke";
-            prob_given_true = 0.60;
-            prob_given_false = 0.1;
-            to_state = "home";
-          }
-          {
-            platform = "state";
-            entity_id = "binary_sensor.calendar_weekday_evening";
-            prob_given_true = 0.60;
-            prob_given_false = 0.1;
-            to_state = "on";
-          }
-          {
-            platform = "state";
-            entity_id = "binary_sensor.calendar_night";
-            prob_given_true = 0.01;
-            prob_given_false = 0.001;
+            entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
+            prob_given_true = 0.40; # 0.80 * (2 / 10)
+            prob_given_false = 0.20;
             to_state = "on";
           }
           {
             platform = "numeric_state";
             entity_id = "sensor.floor0_living_fire_alarm_main_co2";
             above = 700;
-            prob_given_true = 0.70;
-            prob_given_false = 0.20;
+            # If CO2 is high in the living, its likely occupied
+            prob_given_true = 0.30;
+            prob_given_false = 0.60;
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.anyone_home";
+            # There's a 1% chance we are in the living room if it's occupied
+            prob_given_true = 0.01;
+            prob_given_false = 0.001;
+            to_state = "on";
+          }
+          {
+            platform = "state";
+            entity_id = "binary_sensor.floor0_living_in_use_by_flaptop";
+            prob_given_true = 0.90;
+            prob_given_false = 0.99;
+            to_state = "on";
           }
         ];
       }
@@ -317,16 +354,33 @@ in
         automateRoomUse {
           floor = "floor0";
           room = "living";
-          triggers = [
+          triggers = [   
             {
-              platform = "state";
-              entity_id = "binary_sensor.floor0_living_in_use_by_flaptop";
-              to = "on";
-            }
-            {
-              platform = "state";
-              entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
-              to = "on";
+              platform = "template";
+              value_template = ''
+                {% set is_night = is_state('binary_sensor.calendar_night', 'on') %}
+                {% set is_weekend_morning_and_lunch = is_state('binary_sensor.calendar_weekend_morning_and_lunch', 'on') %}
+                {% set is_weekend_afternoon = is_state('binary_sensor.calendar_weekend_afternoon', 'on') %}
+                {% set is_night = is_state('binary_sensor.calendar_night', 'on') %}
+                {% set is_weekday_day = is_state('binary_sensor.calendar_weekday_day', 'on') %}
+                {% set in_use_by_flaptop = is_state('binary_sensor.floor0_living_in_use_by_flaptop', 'on') %}
+                {% set is_tv_on = is_state('binary_sensor.floor0_living_appletv_woonkamer', 'on') %}
+                {% set is_femke_home = is_state('person.femke', 'home') %}
+                {% set is_anybody_home = is_state('binary_sensor.anyone_home', 'on') %}
+                {% if is_tv_on %}
+                  true                
+                {% elif is_weekend_morning_and_lunch %}
+                  {{ is_anybody_home }}
+                {% elif is_weekend_afternoon %}
+                  {{ is_femke_home }}
+                {% elif is_weekday_day %}
+                  {{ is_tv_on or in_use_by_flaptop }}
+                {% elif is_night %}
+                  false
+                {% else %}
+                  false
+                {% endif %}
+              '';
             }
           ];
           action = "on";
@@ -340,9 +394,28 @@ in
             {
               platform = "template";
               value_template = ''
-                {% set not_in_use_by_flaptop = states('binary_sensor.floor0_living_in_use_by_flaptop') | bool(false) == false %}
-                {% set not_appletv_woonkamer = states('binary_sensor.floor0_living_appletv_woonkamer') | bool(false) == false %}
-                {{ not_in_use_by_flaptop and not_appletv_woonkamer }}
+                {% set is_night = is_state('binary_sensor.calendar_night', 'on') %}
+                {% set is_weekend_morning_and_lunch = is_state('binary_sensor.calendar_weekend_morning_and_lunch', 'on') %}
+                {% set is_weekend_afternoon = is_state('binary_sensor.calendar_weekend_afternoon', 'on') %}
+                {% set is_night = is_state('binary_sensor.calendar_night', 'on') %}
+                {% set is_weekday_day = is_state('binary_sensor.calendar_weekday_day', 'on') %}
+                {% set in_use_by_flaptop = is_state('binary_sensor.floor0_living_in_use_by_flaptop', 'on') %}
+                {% set is_tv_on = is_state('binary_sensor.floor0_living_appletv_woonkamer', 'on') %}
+                {% set is_femke_home = is_state('person.femke', 'home') %}
+                {% set is_anybody_home = is_state('binary_sensor.anyone_home', 'on') %}
+                {% if is_tv_on %}
+                  false                
+                {% elif is_weekend_morning_and_lunch %}
+                  {{ is_anybody_home == false }} 
+                {% elif is_weekend_afternoon %}
+                  {{ is_femke_home == false }}
+                {% elif is_weekday_day %}
+                  {{ is_tv_on == false or in_use_by_flaptop == false }}
+                {% elif is_night %}
+                  true
+                {% else %}
+                  true
+                {% endif %}
               '';
             }
           ];

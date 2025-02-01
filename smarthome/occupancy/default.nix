@@ -48,6 +48,10 @@ in
         name = "coming_home";
         icon = "mdi:home";
       };
+      occupancy_somebody_home = {
+        name = "occupancy/somebody_home";
+        icon = "mdi:vacuum";
+      };
     };
 
     template = [
@@ -55,16 +59,28 @@ in
         binary_sensor = [
           {
             name = "anyone_home";
-            state = "{{ states.person | selectattr('state','eq','home') | list | count > 0 }}";
+            state = ''
+              {% if is_state('input_boolean.occupancy_somebody_home', 'on') %}
+                true
+              {% else %}
+                {{ states.person | selectattr('state','eq','home') | list | count > 0 }}
+              {% endif %}
+            '';
             device_class = "occupancy";
           }
           {
             name = "anyone_coming_home";
             state = ''              
-              {% set within_10km = states('sensor.sxw_nearest_distance') | float(0) <= 10 %}
-              {% set sensor_based = within_10km and is_state('sensor.sxw_nearest_direction_of_travel', 'towards') %}
+              {% set closeby = states('sensor.sxw_nearest_distance') | float(0) <= 12000 %}
+              {% set sensor_based = closeby and is_state('sensor.sxw_nearest_direction_of_travel', 'towards') %}
               {% set override = states('input_boolean.coming_home') | bool(false) %}            
-              {{ sensor_based or override }}
+              {% set is_workday = is_state('binary_sensor.calendar_workday', 'on') %}
+              {% set femke_in_wittewalle = is_state('person.femke', 'wittewalle') %}
+              {% if is_workday and now().hour >= 17 and femke_in_wittewalle %}
+                true
+              {% else %}
+                {{ sensor_based or override }}
+              {% endif %}
             '';
             device_class = "occupancy";
           }
@@ -78,7 +94,7 @@ in
           {
             name = "far_away";
             state = ''
-              {{ states('sensor.sxw_nearest_distance') | float(0) >= 200 }}
+              {{ states('sensor.sxw_nearest_distance') | float(0) >= 200000 }}
             '';
             device_class = "occupancy";
             delay_on.minutes = 10;
@@ -115,6 +131,10 @@ in
         actions = [ 
           (ha.action.on "input_boolean.floor0_living_in_use")
         ];
+      })
+      (ha.automation "occupancy/override_somebody_home.turn_off" {
+        triggers = [ (ha.trigger.at "0:00:00") ];
+        actions = [ (ha.action.off "input_boolean.occupancy_somebody_home")];
       })
     ];
 

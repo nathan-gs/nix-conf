@@ -25,7 +25,7 @@
           {
             name = "calendar/night";
             state = ''
-              {{ now().hour < 7 or now().hour > 23 }}
+              {{ now().hour < 8 or now().hour > 23 }}
             '';
             icon = ''
               {% set is_set = is_state('binary_sensor.calendar_night', 'on') %}
@@ -67,13 +67,13 @@
             '';
           }
           {
-            name = "calendar/weekend/morning";
+            name = "calendar/weekend/morning_and_lunch";
             state = ''
               {% set weekend = (now().isoweekday() > 5) %}
-              {{ weekend and 8 <= now().hour < 11 }}
+              {{ weekend and 8 <= now().hour < 13 }}
             '';
             icon = ''
-              {% set is_set = is_state('binary_sensor.calendar_weekend_morning', 'on') %}
+              {% set is_set = is_state('binary_sensor.calendar_weekend_morning_and_lunch', 'on') %}
               {% if is_set %}
                 mdi:calendar-weekend
               {% else %}
@@ -82,13 +82,13 @@
             '';
           }
           {
-            name = "calendar/weekend/daytime";
+            name = "calendar/weekend/afternoon";
             state = ''
               {% set weekend = (now().isoweekday() > 5) %}
-              {{ weekend and 10 <= now().hour < 18 }}
+              {{ weekend and 13 < now().hour < 18 }}
             '';
             icon = ''
-              {% set is_set = is_state('binary_sensor.calendar_weekend_daytime', 'on') %}
+              {% set is_set = is_state('binary_sensor.calendar_weekend_afternoon', 'on') %}
               {% if is_set %}
                 mdi:calendar-weekend
               {% else %}
@@ -97,12 +97,12 @@
             '';
           }
           {
-            name = "calendar/weekday/evening";
+            name = "calendar/evening";
             state = ''
               {{ now().isoweekday() < 6 and 18 <= now().hour < 23 }}
             '';
             icon = ''
-              {% set is_set = is_state('binary_sensor.calendar_weekday_evening', 'on') %}
+              {% set is_set = is_state('binary_sensor.calendar_evening', 'on') %}
               {% if is_set %}
                 mdi:calendar-clock
               {% else %}
@@ -114,6 +114,20 @@
             name = "calendar/weekday";
             state = ''
               {{ now().isoweekday() < 6 }}
+            '';
+            icon = ''
+              {% set is_set = is_state('binary_sensor.calendar_weekday', 'on') %}
+              {% if is_set %}
+                mdi:calendar-week
+              {% else %}
+                mdi:calendar-week-outline
+              {% endif %}
+            '';
+          }
+          {
+            name = "calendar/weekday/day";
+            state = ''
+              {{ now().isoweekday() < 6 and 8 <= now().hour < 18 }}
             '';
             icon = ''
               {% set is_set = is_state('binary_sensor.calendar_weekday', 'on') %}
@@ -143,6 +157,7 @@
         ];
 
         entity_globs = [
+          "binary_sensor.calendar_*"
         ];
       };
     };
