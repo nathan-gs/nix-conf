@@ -2,12 +2,12 @@
 
 nixpkgs-unstable.python312.pkgs.buildPythonApplication rec {
   pname = "autogen-studio";
-  version = "0.4.0.3";
+  version = "0.4.0.7";
 
   src = fetchPypi {
     inherit version;
     pname = "autogenstudio";
-    hash  = "sha256-Bf995PdtjoMEE11WqEZIiY+Ua/tan+8ZzA3qn/emHt4=";
+    hash  = "sha256-AKWn3dadiaanNFy97JJI0UpE/unr4MB4sWayWdisKg0=";
   };
 
   python = nixpkgs-unstable.python312;
@@ -51,6 +51,6 @@ nixpkgs-unstable.python312.pkgs.buildPythonApplication rec {
     description = "A low-code UI for prototyping multi-agent AI systems";
     homepage = "https://github.com/microsoft/autogen";
     license = licenses.mit;
-    maintainers = with maintainers; [ "your-username" ];  # Replace with your NixOS username or remove if not applicable
+    maintainers = with maintainers; [ "nathan-gs" ];  # Replace with your NixOS username or remove if not applicable
   };
 }

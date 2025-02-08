@@ -2,12 +2,12 @@
 
 nixpkgs-unstable.python312.pkgs.buildPythonPackage rec {
   pname = "autogen-agentchat";
-  version = "0.4.3";
+  version = "0.4.5";
 
   src = fetchPypi {
     inherit version;
     pname = "autogen_agentchat";
-    hash  = "sha256-KLd8ym8sbyExnA9+jAfQVZyJ2YmdADedGwtAWrfI5eo=";
+    hash  = "sha256-qNVJO07GxF9NQMM8bTu5imQJ96ZCjOT6lkXlG/4tdAg=";
   };
 
   propagatedBuildInputs = with nixpkgs-unstable.python312Packages; [

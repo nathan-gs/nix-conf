@@ -2,12 +2,12 @@
 
 nixpkgs-unstable.python312.pkgs.buildPythonPackage rec {
   pname = "autogen-ext";
-  version = "0.4.3";
+  version = "0.4.5";
 
   src = fetchPypi {
     inherit version;
     pname = "autogen_ext";
-    hash  = "sha256-oywWRvzN1dPyqByWHL8Y8OeV3JucTJ7Pv2Wag9XEmJY=";
+    hash  = "sha256-zO4JPc17zZedbcex8z1QhXR66ur+4Idm4un9FeUgyFI=";
   };
 
   propagatedBuildInputs = with nixpkgs-unstable.python312Packages; [
