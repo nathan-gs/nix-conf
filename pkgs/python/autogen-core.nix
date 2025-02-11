@@ -1,6 +1,6 @@
 { lib, buildPythonPackage, fetchPypi, fetchurl, nixpkgs-unstable, pkgs }:
 
-nixpkgs-unstable.python312.pkgs.buildPythonApplication rec {
+nixpkgs-unstable.python313.pkgs.buildPythonApplication rec {
   pname = "autogen-core";
   version = "0.4.5";
 
@@ -10,7 +10,7 @@ nixpkgs-unstable.python312.pkgs.buildPythonApplication rec {
     hash  = "sha256-2+CbpYW+8YoJm/vMSUOFyzgwhWM+6p4/0l0NOTk6U74=";
   };
 
-  propagatedBuildInputs = with nixpkgs-unstable.python312Packages; [
+  propagatedBuildInputs = with nixpkgs-unstable.python313Packages; [
     pillow
     typing-extensions
     pydantic
@@ -19,7 +19,7 @@ nixpkgs-unstable.python312.pkgs.buildPythonApplication rec {
     jsonref
   ];
 
-  nativeBuildInputs = with nixpkgs-unstable.python312Packages; [
+  nativeBuildInputs = with nixpkgs-unstable.python313Packages; [
     hatchling
   ];
 

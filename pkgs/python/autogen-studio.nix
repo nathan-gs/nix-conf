@@ -1,18 +1,18 @@
 { lib, buildPythonApplication, fetchPypi, nixpkgs-unstable, pkgs }:
 
-nixpkgs-unstable.python312.pkgs.buildPythonApplication rec {
+nixpkgs-unstable.python313.pkgs.buildPythonApplication rec {
   pname = "autogen-studio";
-  version = "0.4.0.7";
+  version = "0.4.1";
 
   src = fetchPypi {
     inherit version;
     pname = "autogenstudio";
-    hash  = "sha256-AKWn3dadiaanNFy97JJI0UpE/unr4MB4sWayWdisKg0=";
+    hash  = "sha256-+0a5ZBYqz0rioEm6MN7IOcULy45TWi2D+RHgVHy/S+8=";
   };
 
-  python = nixpkgs-unstable.python312;
+  python = nixpkgs-unstable.python313;
 
-  propagatedBuildInputs = with nixpkgs-unstable.python312Packages; [
+  propagatedBuildInputs = with nixpkgs-unstable.python313Packages; [
     pydantic
     pydantic-settings
     fastapi    
@@ -26,13 +26,17 @@ nixpkgs-unstable.python312.pkgs.buildPythonApplication rec {
     psycopg
     alembic
     loguru
+    pyyaml
     (callPackage ./autogen-core.nix {nixpkgs-unstable = nixpkgs-unstable;})
     (callPackage ./autogen-agentchat.nix {nixpkgs-unstable = nixpkgs-unstable;})
     (callPackage ./autogen-ext.nix {nixpkgs-unstable = nixpkgs-unstable;})
     azure-identity
+
+    # non declared dependencies
+    html2text
   ];
 
-  nativeBuildInputs = with nixpkgs-unstable.python312Packages; [
+  nativeBuildInputs = with nixpkgs-unstable.python313Packages; [
     hatchling
   ];
 

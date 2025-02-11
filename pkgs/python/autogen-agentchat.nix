@@ -1,6 +1,6 @@
 { lib, buildPythonPackage, fetchPypi, fetchurl, nixpkgs-unstable, pkgs }:
 
-nixpkgs-unstable.python312.pkgs.buildPythonPackage rec {
+nixpkgs-unstable.python313.pkgs.buildPythonPackage rec {
   pname = "autogen-agentchat";
   version = "0.4.5";
 
@@ -10,11 +10,11 @@ nixpkgs-unstable.python312.pkgs.buildPythonPackage rec {
     hash  = "sha256-qNVJO07GxF9NQMM8bTu5imQJ96ZCjOT6lkXlG/4tdAg=";
   };
 
-  propagatedBuildInputs = with nixpkgs-unstable.python312Packages; [
+  propagatedBuildInputs = with nixpkgs-unstable.python313Packages; [
     (callPackage ./autogen-core.nix {nixpkgs-unstable = nixpkgs-unstable;})
   ];
 
-  nativeBuildInputs = with nixpkgs-unstable.python312Packages; [
+  nativeBuildInputs = with nixpkgs-unstable.python313Packages; [
     hatchling
   ];
 

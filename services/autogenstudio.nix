@@ -6,7 +6,7 @@
       wantedBy = [ "multi-user.target" ];
       after = [ "network.target" ];
       serviceConfig = {
-        ExecStart = ''${(pkgs.python312Packages.callPackage ../pkgs/python/autogen-studio.nix {})}/bin/autogenstudio ui --workers 2 --appdir /var/lib/autogenstudio --port 8081'';
+        ExecStart = ''${(pkgs.python313Packages.callPackage ../pkgs/python/autogen-studio.nix {})}/bin/autogenstudio ui --workers 2 --appdir /var/lib/autogenstudio --port 8081'';
         DynamicUser = true;
         Restart = "on-failure";
         StateDirectory = "autogenstudio";
