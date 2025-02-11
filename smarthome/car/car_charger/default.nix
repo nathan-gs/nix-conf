@@ -299,6 +299,7 @@ in
                   ]
                   []
               )
+              (ha.action.set_value "number.solar_battery_maxgridpower" 300)
               (ha.action.on "switch.garden_garden_plug_laadpaal")
               (ha.action.off "input_boolean.car_charger_charge_offpeak")
               (ha.action.off "input_boolean.car_charger_charge_at")

@@ -234,7 +234,7 @@
         actions = [
           (ha.action.set_value "number.solar_battery_maxgridpower" 1200)
           (ha.action.delay "00:00:30")
-          (ha.action.set_value "number.solar_battery_forcechargesoc" ''19'')
+          (ha.action.set_value "number.solar_battery_forcechargesoc" ''{{ states('number.solar_battery_overdischargesoc') | float(10) - 1 }}'')
           (ha.action.delay "00:00:30")
           (
             ha.action.conditional 
