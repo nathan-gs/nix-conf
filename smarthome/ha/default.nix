@@ -83,6 +83,7 @@
                   |rejectattr('entity_id', 'contains', 'sensor.gas_cost_engie_drive_kwh_energycomponent')
                   |rejectattr('entity_id', 'contains', 'electricity_cost_octa')
                   |rejectattr('entity_id', 'contains', 'gas_cost_octa')
+                  |rejectattr('entity_id', 'contains', 'floor0_living_rtv_vooraan')
 
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
