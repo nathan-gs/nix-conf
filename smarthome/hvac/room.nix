@@ -161,7 +161,7 @@ in
             )
           )
           (
-            templateSensorTemperature "floor0/keuken/temperature_auto_wanted" (temperatureSets "{{ temperature_eco }}")
+            templateSensorTemperature "floor0/keuken/temperature_auto_wanted" (temperatureSets "{{ temperature_away }}")
           )
           (
             templateSensorTemperature "floor0/bureau/temperature_auto_wanted" (
