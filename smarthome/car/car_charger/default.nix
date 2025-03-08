@@ -1,8 +1,6 @@
 { config, pkgs, lib, ha, ... }:
 
 let
-  carName = config.secrets.nathan-car.name;
-  consumptionPower = "2050";
   utilityMeter = name: cycle: {
     "${name}_${cycle}" = {
       source = "sensor.${name}";
@@ -163,48 +161,7 @@ in
               {% endif %}
             '';
             state = ''
-              {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0)  %}
-              {% set battery_remaining = states('sensor.solis_remaining_battery_capacity') | float(0) %}
-              {% set car_charged = states('sensor.${carName}_battery_level') | float(10) %}
-              {% set solar_now = states('sensor.solar_currently_produced') | float(0) %}
-              {% set current_usage = states('sensor.electricity_total_power') | float(5) / 1000 %}
-              {% set charger_in_use = states('switch.garden_garden_plug_laadpaal') | bool(false) %}
-              {% set charger_consumption = 2.2 %}
-              {#
-              {% set solar_remaining = 8.1  %}
-              {% set solar_now = 2.6 | float(0) %}
-              {% set current_usage = 3.0 %}
-              {% set charger_in_use = true %}
-              #}
-              {# calculations #}
-              {% set car_kwh_needed = ((11 * (100 - car_charged))/100) %}
-              {% set battery_needed = (5 * (100 - battery_remaining))/100 %}
-              {% set house_needed = 0.3 * (24 - now().hour) %}
-              {% set total_needed = house_needed + car_kwh_needed + battery_needed %}
-              {% set production_needed = current_usage + charger_consumption %}
-              {% if charger_in_use %}
-              {% set production_needed = production_needed - charger_consumption %}
-              {% endif %}
-              {#
-              {{ current_usage }}kWh
-              {{ solar_remaining }}kWh
-              {{ battery_remaining }}%
-              {{ solar_now }} kW
-              {{ car_charged }}%
-              {{ car_kwh_needed}}kWh
-              {{ battery_needed }}kWH
-              {{ total_needed }}kWh
-              {{ production_needed }}kW
-              #}
-              {% if solar_now > production_needed %}
-                {% if solar_remaining > total_needed %}
-                  true
-                {% else %}
-                  false
-                {% endif %}
-              {% else %}
-                false
-              {% endif %}
+              false
             '';
           }
           {
@@ -261,10 +218,13 @@ in
       (
         ha.automation "system/car_charger.charging_stopped"
           {
-            triggers = [ (ha.trigger.state_to "binary_sensor.${carName}_plug_status" "off") ];
+            triggers = [ 
+              (ha.trigger.state_to "binary_sensor.nphone_android_auto" "on") 
+              (ha.trigger.state_to "binary_sensor.fphone_a55_android_auto" "on") 
+            ];
             actions = [
               (ha.action.delay "00:05:00")
-              (ha.action.off "switch.garden_garden_plug_laadpaal")
+              (ha.action.off "switch.garden_garden_metering_plug_laadpaal")
             ];
           }
       )
@@ -284,8 +244,6 @@ in
             ];
             conditions = [
               (ha.condition.off "binary_sensor.electricity_high_usage")
-              (ha.condition.on "binary_sensor.${carName}_plug_status")
-              (ha.condition.state "device_tracker.${carName}_position" "home")
               (ha.condition.on "binary_sensor.car_charger_automation_should_charge")
             ];
             actions = [
@@ -300,7 +258,7 @@ in
                   []
               )
               (ha.action.set_value "number.solar_battery_maxgridpower" 300)
-              (ha.action.on "switch.garden_garden_plug_laadpaal")
+              (ha.action.on "switch.garden_garden_metering_plug_laadpaal")
               (ha.action.off "input_boolean.car_charger_charge_offpeak")
               (ha.action.off "input_boolean.car_charger_charge_at")
             ];
@@ -313,16 +271,9 @@ in
         {
           name = "car_charger";
           unique_id = "car_charger";
-          entity_id = "binary_sensor.${carName}_battery_charging";
-          fixed.power = ''
-            {% set car_charging = states('binary_sensor.${carName}_battery_charging') | bool (false) %}
-            {% set charger = states('switch.garden_garden_plug_laadpaal') | bool (false) %}
-            {% set position = states('device_tracker.${carName}_position') == "home" %}
-            {% set l3_usage = states('sensor.dsmr_reading_phase_currently_delivered_l3') | int(0) %}
-            {% set power = 0 %}
-            {% if car_charging and charger and position %}
-              {% set power = min(${consumptionPower}, l3_usage) %}
-            {% endif %}
+          entity_id = "switch.garden_garden_metering_plug_laadpaal";
+          fixed.power = ''            
+            {% set power = states('sensor.garden_garden_metering_plug_laadpaal_power') | float(0) %}
             {{ power }}
           '';
           create_utility_meters = true;
@@ -331,20 +282,13 @@ in
         {
           name = "car_charger_solar";
           unique_id = "car_charger_solar";
-          entity_id = "binary_sensor.${carName}_battery_charging";
-          fixed.power = ''
-            {% set car_charging = states('binary_sensor.${carName}_battery_charging') | bool (false) %}
-            {% set charger = states('switch.garden_garden_plug_laadpaal') | bool (false) %}
-            {% set position = states('device_tracker.${carName}_position') == "home" %}
+          entity_id = "switch.garden_garden_metering_plug_laadpaal";
+          fixed.power = ''            
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set l3_usage = states('sensor.dsmr_reading_phase_currently_delivered_l3') | int(0) %}
-            {% set consumptionPower = min(${consumptionPower}, l3_usage) %}
-            {% set power = 0 %}
-            {% if car_charging and charger and position %}              
-              {% set power = min((consumptionPower - import_from_grid), consumptionPower) %}
-              {% if power < 0 %}
-                {% set power = 0 %}
-              {% endif %}
+            {% set consumptionPower = states('sensor.garden_garden_metering_plug_laadpaal_power') | float(0) %}
+            {% set power = (consumptionPower - import_from_grid) %}
+            {% if power < 0 %}
+              {% set power = 0 %}
             {% endif %}
             {{ power }}
           '';
@@ -353,18 +297,14 @@ in
         }
         {
           name = "car_charger_grid";
-          entity_id = "binary_sensor.${carName}_battery_charging";
+          entity_id = "switch.garden_garden_metering_plug_laadpaal";
           unique_id = "car_charger_grid";
           fixed.power = ''
-            {% set car_charging = states('binary_sensor.${carName}_battery_charging') | bool (false) %}
-            {% set charger = states('switch.garden_garden_plug_laadpaal') | bool (false) %}
-            {% set position = states('device_tracker.${carName}_position') == "home" %}
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set l3_usage = states('sensor.dsmr_reading_phase_currently_delivered_l3') | int(0) %}
-            {% set consumptionPower = min(${consumptionPower}, l3_usage) %}
-            {% set power = 0 %}
-            {% if car_charging and charger and position %}
-              {% set power = min(import_from_grid, consumptionPower) %}
+            {% set consumptionPower = states('sensor.garden_garden_metering_plug_laadpaal_power') | float(0) %}
+            {% set power = min(import_from_grid, consumptionPower) %}
+            {% if power < 0 %}
+              {% set power = 0 %}
             {% endif %}
             {{ power }}
           '';
@@ -380,6 +320,8 @@ in
           "binary_sensor.car_charger_can_load"
           "input_boolean.car_charger_charge_at_night"
           "input_boolean.car_charger_charge_offpeak"
+          "sensor.garden_garden_metering_plug_power"
+          "sensor.garden_garden_metering_plug_energy"
         ];
 
         entity_globs = [

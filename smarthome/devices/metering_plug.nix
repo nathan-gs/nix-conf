@@ -100,6 +100,12 @@ map
       ieee = "0xa4c13831f438c2ea";
       floor = "basement";
     }
+    {
+      zone = "garden";
+      name = "laadpaal";
+      ieee = "0xa4c1388c6231c3f0";
+      floor = "garden";
+    }
   ]
 
 # Devices with issues:

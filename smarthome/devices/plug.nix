@@ -6,7 +6,7 @@ map
   [
     {
       zone = "garden";
-      name = "laadpaal";
+      name = "laadpaal_repeater";
       ieee = "0x842e14fffe3b8777";
       floor = "garden";
     }
