@@ -164,6 +164,7 @@
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
     ];
   };
 
