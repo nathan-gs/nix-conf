@@ -219,12 +219,18 @@ in
         ha.automation "system/car_charger.charging_stopped"
           {
             triggers = [ 
+              (ha.trigger.state_to "binary_sensor.volvo_xc60_door_front_left" "on")
+              (ha.trigger.state_to "binary_sensor.volvo_xc60_engine_status" "on")
               (ha.trigger.state_to "binary_sensor.nphone_android_auto" "on") 
               (ha.trigger.state_to "binary_sensor.fphone_a55_android_auto" "on") 
+              (ha.trigger.state_to "switch.garden_garden_plug_laadpaal_repeater" "off")
+            ];
+            conditions = [
+              (ha.condition.below "sensor.garden_garden_metering_plug_laadpaal_power" "10")
             ];
             actions = [
-              (ha.action.delay "00:05:00")
               (ha.action.off "switch.garden_garden_metering_plug_laadpaal")
+              (ha.action.off "switch.garden_garden_plug_laadpaal_repeater")
             ];
           }
       )
@@ -259,6 +265,7 @@ in
               )
               (ha.action.set_value "number.solar_battery_maxgridpower" 300)
               (ha.action.on "switch.garden_garden_metering_plug_laadpaal")
+              (ha.action.on "switch.garden_garden_plug_laadpaal_repeater")
               (ha.action.off "input_boolean.car_charger_charge_offpeak")
               (ha.action.off "input_boolean.car_charger_charge_at")
             ];
