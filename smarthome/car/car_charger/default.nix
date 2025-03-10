@@ -273,8 +273,14 @@ in
                               []
                           )
                           (ha.action.set_value "number.solar_battery_maxgridpower" 300)
-                          (ha.action.on "switch.garden_garden_metering_plug_laadpaal")                    
-                          (ha.action.on "switch.garden_garden_plug_laadpaal_repeater")
+                          (ha.action.on "switch.garden_garden_metering_plug_laadpaal")     
+                          # Avoid retriggering
+                          (
+                            ha.action.conditional
+                              [(ha.condition.off "switch.garden_garden_plug_laadpaal_repeater")]
+                              [(ha.action.on "switch.garden_garden_plug_laadpaal_repeater")]
+                              []
+                          )                          
                           (ha.action.set_value "input_number.car_charger_automation_attempt" 0)
                           (ha.action.off "input_boolean.car_charger_charge_offpeak")
                           (ha.action.off "input_boolean.car_charger_charge_at")
