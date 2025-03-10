@@ -75,25 +75,14 @@
             name = "electricity_high_usage";
             state = ''
               {% set is_high = false %}
-              {# vaatwas #}
-              {% set dishwasher_remaining_time = states('sensor.dishwasher_remaining_time') | int(0) %}
-              {% set is_dishwasher_on = states('binary_sensor.dishwasher_status') | bool(false) %}
-              {% if is_dishwasher_on and dishwasher_remaining_time > 75 %}
-                {% set is_high = true %}
-              {% endif %}
               {# Wasmachine #}
               {% set is_washing = is_state('sensor.aeg_wasmachine_cyclephase', "Wash") %}
               {% if is_washing %}
                 {% set is_high = true %}
               {% endif %}
               {# oven #}
-              {% set oven_on = states('sensor.floor0_keuken_metering_plug_oven_power') | int(0) > 20 %}
+              {% set oven_on = states('sensor.floor0_keuken_metering_plug_oven_power') | int(0) > 1000 %}
               {% if oven_on %}
-                {% set is_high = true %}
-              {% endif %}
-              {# Airfryer #}
-              {% set airfryer_on = states('sensor.floor0_keuken_metering_plug_airfryer_power') | int(0) > 20 %}
-              {% if airfryer_on %}
                 {% set is_high = true %}
               {% endif %}
               {# Bathroom Heating #}
@@ -104,6 +93,12 @@
               {# car charger #}
               {% set car_charger_on = states('sensor.car_charger_power') | int(0) > 20 %}
               {% if car_charger_on %}
+                {% set is_high = true %}
+              {% endif %}
+              {% if states('sensor.electricity_grid_consumed_power') | int(0) < 1000 %}
+                {% set is_high = false %}
+              {% endif %}
+              {% if states('sensor.electricity_delivery_power_15m_estimated') | float(0) > 1.5 %}
                 {% set is_high = true %}
               {% endif %}
               {% if is_state('binary_sensor.electricity_delivery_power_near_max_threshold', "on") %}

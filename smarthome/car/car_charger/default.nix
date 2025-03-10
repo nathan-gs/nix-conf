@@ -164,22 +164,6 @@ in
               false
             '';
           }
-          {
-            name = "car_charger_automation_should_charge";
-            device_class = "plug";
-            icon = ''
-              {% if is_state('binary_sensor.car_charger_automation_should_charge', "on") %}
-              mdi:car-electric
-              {% else %}
-              mdi:car-electric-outline
-              {% endif %}
-            '';
-            state = ''
-              {% set charge_offpeak = is_state("input_boolean.car_charger_charge_offpeak", "on") %}
-              {% set charge_at = is_state("input_boolean.car_charger_charge_at", "on") %}
-              {{ charge_offpeak or charge_at }}
-            '';
-          }
         ];
       }
     ];
@@ -202,6 +186,15 @@ in
       };
       car_charger_charge_at = {
         icon = "mdi:ev-station";
+      };
+    };
+
+    input_number = {
+      car_charger_automation_attempt = {
+        icon = "mdi:ev-station";
+        min = 0;
+        max = 15;
+        step = 1;
       };
     };
 
@@ -247,27 +240,72 @@ in
                   ''
               )
               (ha.trigger.at "input_datetime.car_charger_charge_at")
+              (ha.trigger.state_to "switch.garden_garden_plug_laadpaal_repeater" "on")
             ];
             conditions = [
-              (ha.condition.off "binary_sensor.electricity_high_usage")
-              (ha.condition.on "binary_sensor.car_charger_automation_should_charge")
+              (
+                ha.condition.template 
+                ''
+                  {% set charge_offpeak = is_state("input_boolean.car_charger_charge_offpeak", "on") %}
+                  {% set laadpaal_repeater_on = is_state("switch.garden_garden_plug_laadpaal_repeater", "on") %}
+                  {% set charge_at = is_state("input_boolean.car_charger_charge_at", "on") %}
+                  {{ charge_offpeak or charge_at or laadpaal_repeater_on }}
+                ''
+              )
             ];
-            actions = [
+            actions = [     
               (
                 ha.action.conditional 
-                  [(ha.condition.below "sensor.solis_remaining_battery_capacity" 20)]
+                  [(ha.condition.below "input_number.car_charger_automation_attempt" 5)]
                   [
-                    (ha.action.automation "solar_battery_charge")
-                    (ha.action.delay "00:02:00")
-                    (ha.action.delay ''{{ (states('sensor.solar_battery_charging_remaining_minutes_till_overdischargesoc') | int(0)) * 60 }}'')
+                    (
+                      ha.action.conditional
+                        [(ha.condition.off "binary_sensor.electricity_high_usage")]
+                        [
+                          (
+                            ha.action.conditional 
+                              [(ha.condition.below "sensor.solis_remaining_battery_capacity" 18)]
+                              [
+                                (ha.action.automation "solar_battery_charge")
+                                (ha.action.delay "00:02:00")
+                                (ha.action.delay ''{{ (states('sensor.solar_battery_charging_remaining_minutes_till_overdischargesoc') | int(0)) * 60 }}'')
+                              ]
+                              []
+                          )
+                          (ha.action.set_value "number.solar_battery_maxgridpower" 300)
+                          (ha.action.on "switch.garden_garden_metering_plug_laadpaal")                    
+                          (ha.action.on "switch.garden_garden_plug_laadpaal_repeater")
+                          (ha.action.set_value "input_number.car_charger_automation_attempt" 0)
+                          (ha.action.off "input_boolean.car_charger_charge_offpeak")
+                          (ha.action.off "input_boolean.car_charger_charge_at")
+                        ]
+                        [
+                          (ha.action.increment "input_number.car_charger_automation_attempt")
+                          (
+                            # Exponential back-off
+                            ha.action.delay 
+                              ''
+                                {% set attempt = states("input_number.car_charger_automation_attempt") | int(1) %}
+                                {{ (3**attempt * 60) |timestamp_custom('%H:%M:%S', false) }}
+                              ''
+                          )
+                          (ha.action.automation "system_car_charger_turn_on")
+                        ]
+                    )
                   ]
-                  []
-              )
-              (ha.action.set_value "number.solar_battery_maxgridpower" 300)
-              (ha.action.on "switch.garden_garden_metering_plug_laadpaal")
-              (ha.action.on "switch.garden_garden_plug_laadpaal_repeater")
-              (ha.action.off "input_boolean.car_charger_charge_offpeak")
-              (ha.action.off "input_boolean.car_charger_charge_at")
+                  [
+                    (
+                      ha.action.notify 
+                        ''
+                          {% set attempt = states("input_number.car_charger_automation_attempt") | int(1) %}
+                          {% set delay = (3**attempt * 60) |timestamp_custom('%H:%M:%S', false) %}
+                          car_charger: cannot charge, max attempts reached ({{attempt}}), for a delay of {{ delay }}
+                        ''
+                        ""
+                    )
+                  ]
+              )         
+              
             ];
           }
       )

@@ -192,6 +192,11 @@ let
       "then" = actions;
       "else" = alternatives;
     };
+
+    increment = entity: {
+      service = "input_number.increment";
+      target.entity_id = entity;
+    };
     
   };
 
