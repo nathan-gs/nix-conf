@@ -1,15 +1,5 @@
 { config, pkgs, lib, ha, ... }:
 
-let
-  utilityMeter = name: cycle: {
-    "${name}_${cycle}" = {
-      source = "sensor.${name}";
-      cycle = cycle;
-    };
-  };
-  
-in
-
 {
 
   services.home-assistant.config = {
@@ -169,12 +159,12 @@ in
     ];
 
     utility_meter = {} 
-      // utilityMeter "car_charger_grid_revenue" "daily"
-      // utilityMeter "car_charger_grid_revenue" "monthly"
-      // utilityMeter "car_charger_solar_revenue" "daily"
-      // utilityMeter "car_charger_solar_revenue" "monthly"
-      // utilityMeter "car_charger_revenue" "daily"
-      // utilityMeter "car_charger_revenue" "monthly"
+      // ha.utility_meter "car_charger_grid_revenue" "sensor.car_charger_grid_revenue" "daily"
+      // ha.utility_meter "car_charger_grid_revenue" "sensor.car_charger_grid_revenue" "monthly"
+      // ha.utility_meter "car_charger_solar_revenue" "sensor.car_charger_solar_revenue" "daily"
+      // ha.utility_meter "car_charger_solar_revenue" "sensor.car_charger_solar_revenue" "monthly"
+      // ha.utility_meter "car_charger_revenue" "sensor.car_charger_revenue" "daily"
+      // ha.utility_meter "car_charger_revenue" "sensor.car_charger_revenue" "monthly"
     ;
 
     input_boolean = {

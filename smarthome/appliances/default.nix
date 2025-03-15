@@ -8,6 +8,7 @@
     ./lights.nix
     ./pump.nix
     ./tv.nix
+    ./indego.nix
   ];
 
   services.home-assistant.config.recorder = {

@@ -294,6 +294,12 @@ let
       below = number;
     };
 
+    above = entity: number: {
+      condition = "numeric_state";
+      entity_id = entity;
+      above = number;
+    };
+
     template = template: {
       condition = "template";
       value_template = template;
@@ -316,4 +322,11 @@ in
   action = action;
   trigger = trigger;
   condition = condition;
+
+  utility_meter = name: source: cycle: {
+    "${name}_${cycle}" = {
+      source = source;
+      cycle = cycle;
+    };
+  };
 }
