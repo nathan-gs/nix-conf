@@ -25,10 +25,12 @@ in
           "sensor.${carName}_fuel_level"
           "sensor.${carName}_odometer"
           "sensor.${carName}_range"
-          "sensor.${carName}_time_to_fully_charged"
+          "sensor.${carName}_time_to_fully_charged"          
         ];
 
         entity_globs = [
+          "binary_sensor.volvo_xc60_"
+          "sensor.volvo_xc60_"
         ];
       };
     };
