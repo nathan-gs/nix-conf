@@ -254,11 +254,14 @@
                         [
                           (
                             ha.action.conditional 
-                              [(ha.condition.below "sensor.solis_remaining_battery_capacity" 18)]
                               [
+                                (ha.condition.below "sensor.solis_remaining_battery_capacity" 18)
+                                (ha.condition.below "sensor.electricity_solar_power" 1200)
+                              ]
+                              [                                
                                 (ha.action.automation "solar_battery_charge")
                                 (ha.action.delay "00:02:00")
-                                (ha.action.delay ''{{ (states('sensor.solar_battery_charging_remaining_minutes_till_overdischargesoc') | int(0)) * 60 }}'')
+                                (ha.action.delay ''{{ (states('sensor.solar_battery_charging_remaining_minutes_till_overdischargesoc') | int(0)) * 60 }}'')                            
                               ]
                               []
                           )
