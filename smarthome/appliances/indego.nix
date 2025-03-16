@@ -13,6 +13,8 @@
               (ha.trigger.template_for ''{{ states('weather.sxw') not in ['rainy', 'pouring', 'lightning', 'lightning-rainy', 'snowy', 'snowy-rainy', 'hail', 'exceptional'] }}'' "01:00:00" )
               (ha.trigger.above "sensor.outdoor_temperature" 7)
               (ha.trigger.at "10:00:00")
+              (ha.trigger.at "12:30:00")
+              (ha.trigger.at "16:00:00")
             ];
             conditions = [
               (ha.condition.on "binary_sensor.indego_325608617_online")
