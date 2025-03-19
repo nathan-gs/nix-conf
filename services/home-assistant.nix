@@ -113,6 +113,7 @@
       "homekit_controller"
       "homekit"
       "http"
+      "ibeacon"
       "lawn_mower"
       "met"
       "mqtt"
