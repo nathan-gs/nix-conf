@@ -62,7 +62,7 @@
               {% else %}
                 {% set power_15m = 0 %}
               {% endif %}
-              {% set current_power = (states('sensor.electricity_grid_consumed_power_avg_1m') | float(states('sensor.electricity_grid_consumed_power') | float(0))) / 1000 %}
+              {% set current_power = (states('sensor.electricity_grid_consumed_power_mean_1m') | float(states('sensor.electricity_grid_consumed_power') | float(0))) / 1000 %}
               {% set current_power_till_end = (current_power * seconds_left) / (3600 / 4) %}
               {{ ((current_power_till_end + power_15m)) | round(2) }}
             '';
@@ -128,17 +128,7 @@
       }
     ];
 
-    sensor = [
-      {
-        platform = "statistics";
-        name = "electricity_grid_consumed_power_avg_1m";
-        entity_id = "sensor.electricity_grid_consumed_power";
-        state_characteristic = "average_linear";
-        max_age.minutes = 1;
-        sampling_size = 60;
-        keep_last_sample = true;
-      }
-    ];
+
 
     "automation manual" = [
       {

@@ -70,34 +70,25 @@ in
             name = "floor0/living/metering_plug/verwarming_target";
             state = ''
               {% set sensor = states('floor0_living_metering_plug_verwarming_power') | float(0) %}
-              {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
+              {% set house_return = states('sensor.electricity_grid_returned_power_min_1m') | float(0) %}
               {% set indoor_temp = states('sensor.floor0_living_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}
               {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0) %}
               {% set solar_power = states('sensor.electricity_solar_power') | int(0) %}
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
-              {% set battery_charged = battery > 80 %}
+              {% set battery_charged = battery > 85 %}
               {% set solar_power_available = (solar_power - 760 - 250) > 0 %}
               {% set start_on_solar = battery_charged and solar_power_available %}
-              {% set needs_heating = (states('sensor.floor0_living_temperature_diff_wanted') | float(0)) > 0.7 %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
               {% if (power_available > 760 or start_on_solar) and indoor_temp < ${maxIndoorTemp} %}
                 true  
-              {% elif needs_heating and use_electric %}
-                true
               {% else %}
                 false
               {% endif %}
             '';
             device_class = "heat";
             delay_on = ''
-              {% set needs_heating = (states('sensor.floor0_living_temperature_diff_wanted') | float(0)) > 0.7 %}
-              {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
-              {% if use_electric and needs_heating %}
-                00:00:00
-              {% else %}
-                00:02:00
-              {% endif %}
+              00:02:00              
             '';            
             delay_off.seconds = 120;
           }
@@ -105,7 +96,7 @@ in
             name = "floor1/nikolai/metering_plug/verwarming_target";
             state = ''
               {% set sensor = states('sensor.floor1_nikolai_metering_plug_verwarming_power') | float(0) %}
-              {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
+              {% set house_return = states('sensor.electricity_grid_returned_power_min_1m') | float(0) %}
               {% set indoor_temp = states('sensor.floor1_nikolai_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}
               {% set needs_heating = (states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0)) > 0.7 %}
@@ -137,7 +128,7 @@ in
             name = "floor0/bureau/metering_plug/verwarming_target";
             state = ''
               {% set sensor = states('sensor.floor0_bureau_metering_plug_verwarming_power') | float(0) %}
-              {% set house_return = states('sensor.electricity_grid_returned_power') | float(0) %}
+              {% set house_return = states('sensor.electricity_grid_returned_power_min_1m') | float(0) %}
               {% set indoor_temp = states('sensor.floor0_bureau_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}      
               {% set needs_heating = (states('sensor.floor0_bureau_temperature_diff_wanted') | float(0)) > 0.7 %}

@@ -69,7 +69,7 @@
             device_class = "battery_charging";
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
-              {% set grid_power = states('sensor.electricity_grid_consumed_power_avg_1m') | float(0) %}
+              {% set grid_power = states('sensor.electricity_grid_consumed_power_mean_1m') | float(0) %}
               {% if battery_change > 0 and grid_power > 150 %}
                 on
               {% else %}

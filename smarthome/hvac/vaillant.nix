@@ -109,7 +109,9 @@ in
               {% set enough_power = is_state('binary_sensor.electricity_delivery_power_near_max_threshold', 'off') %}
               {% set just_1room = rooms_need_heating == 1 %}
               {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
-              {{ just_1room and prefer_electricity and enough_power and is_anyone_home_or_coming }}
+              {% set is_bureau = states('sensor.floor0_bureau_temperature_diff_wanted') | float(0) > 0.7 %}
+              {% set is_nikolai = states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0) > 0.7 %}
+              {{ just_1room and prefer_electricity and enough_power and is_anyone_home_or_coming and (is_bureau or is_nikolai) }}
             '';
             device_class = "running";
           }

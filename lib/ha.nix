@@ -315,6 +315,7 @@ in
 
 {
 
+  genId = genId;
   sensor = sensor;
   automation = automation;
   automationOnOff = automationOnOff;
