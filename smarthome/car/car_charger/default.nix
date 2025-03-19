@@ -308,6 +308,62 @@
             ];
           }
       )
+      (
+        ha.automation "system/car_charger.ask"
+          {
+            triggers = [
+              (ha.trigger.at "21:30")
+            ];
+            conditions = [
+              (ha.condition.on "binary_sensor.anyone_home")
+              (ha.condition.off "switch.garden_garden_metering_plug_laadpaal")
+            ];
+            actions = [
+              {
+                service = "notify.mobile_app_nphone";
+                data = {
+                  title = "Enable car charger at {{ states('input_datetime.car_charger_charge_at') }}?";
+                  message = "Enable car charger at {{ states('input_datetime.car_charger_charge_at') }}?";
+                  data = {
+                    tag = "car_charger_ask";
+                    persistent = true;
+                    sticky = true;
+                    actions = [
+                      {
+                        action = "CAR_CHARGE_CHARGE_AT_ON";
+                        title = "Yes, charge at";
+                      }
+                    ];
+                  };
+                };
+              }
+            ];
+          }
+      )
+      (
+        ha.automation "system/car_charger.ask_action"
+          {
+            triggers = [
+              {
+                platform = "event";
+                event_type = "mobile_app_notification_action";
+                event_data.action = "CAR_CHARGE_CHARGE_AT_ON";
+              }
+            ];            
+            actions = [
+              {
+                service = "notify.mobile_app_nphone";
+                data = {
+                  message = "clear_notification";
+                  data = {
+                    tag = "car_charger_ask";                    
+                  };
+                };
+              }
+              (ha.action.on "input_boolean.car_charger_charge_at")
+            ];
+          }
+      )
     ];
 
     powercalc = {
