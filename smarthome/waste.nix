@@ -12,7 +12,6 @@
       dateformat = "%Y-%m-%d";
       resources = [
         "gft"
-        "glas"
         "grofvuil"
         "papier"
         "pmd"
