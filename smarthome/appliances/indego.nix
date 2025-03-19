@@ -27,15 +27,18 @@
                   {{ not (temp < 10 and humidity > 70 and now().hour < 10) }}
                 ''
               )
-              (ha.condition.above "sensor.outdoor_temperature" 7)
+              (ha.condition.between "sensor.outdoor_temperature" 7 28)
               (ha.condition.state "lawn_mower.indego_325608617" "docked")
               (
-                # Only run if not completed in last 12h
+                # Only run if not completed in last 18h
                 ha.condition.template ''
-                  {% set last_completed = states('sensor.indego_325608617_last_completed') %}
-                  {{ last_completed != 'unknown' and (as_timestamp(now()) - as_timestamp(last_completed)) > (12 * 60 * 60) }}
+                  {% set last_completed = as_timestamp(states('sensor.indego_325608617_last_completed')) | default(0) %}
+                  {% set hours_since = (as_timestamp(now()) - last_completed) / (3600) %}
+                  {{ hours_since >= 18 }}
                 ''
               )
+              # Avg run is 8h, limit to max 3 runs a week
+              (ha.condition.below "sensor.indego_runtime_weekly" 23)
             ];
             actions = [
               {
@@ -44,7 +47,7 @@
               }
             ];
           } 
-          
+
       )
       (
         ha.automation "garden/lawn_mower.turn_off"
@@ -52,10 +55,14 @@
             triggers = [
               (ha.trigger.state_to "weather.sxw" ["rainy" "pouring" "lightning" "lightning-rainy" "snowy" "snowy-rainy" "hail" "exceptional"] )
               (ha.trigger.state_to "sun.sun" "below_horizon")
+              (ha.trigger.above "sensor.indego_runtime_weekly" 23)
               (ha.trigger.template ''
-                {% set last_completed = states('sensor.indego_325608617_last_completed') %}
-                  {{ last_completed != 'unknown' and (as_timestamp(now()) - as_timestamp(last_completed)) < (12 * 60 * 60) }}
+                {% set last_completed = as_timestamp(states('sensor.indego_325608617_last_completed')) | default(0) %}
+                {% set hours_since = (as_timestamp(now()) - last_completed) / (3600) %}
+                {{ hours_since < 18 }}
               '')              
+              (ha.trigger.above "sensor.outdoor_temperature" 28)
+              (ha.trigger.below "sensor.outdoor_temperature" 7)
             ];
             conditions = [
               (ha.condition.on "binary_sensor.indego_325608617_online")

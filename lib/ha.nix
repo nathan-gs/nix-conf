@@ -169,8 +169,6 @@ let
       };     
     };
 
-    
-
     persistent_notification = {
       create = id: title: message: {
         service = "persistent_notification.create";
@@ -257,6 +255,12 @@ let
       above = threshold;
     };
 
+    below = entity: threshold: {
+      platform = "numeric_state";
+      entity_id = entity;
+      below = threshold;
+    };
+
     tag = id: {
       platform = "tag";
       tag_id = id;
@@ -298,6 +302,13 @@ let
       condition = "numeric_state";
       entity_id = entity;
       above = number;
+    };
+
+    between = entity: low: high: {
+      condition = "numeric_state";
+      entity_id = entity;
+      above = low;
+      below = high;
     };
 
     template = template: {
