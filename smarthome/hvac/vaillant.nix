@@ -31,12 +31,13 @@ in
           {
             name = "heating/number_of_rooms_in_need_of";
             state = ''
+              ${autoWantedHeader}
               {% set v = [
                 ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_diff_wanted')") rooms.heated)}
               ]
               %}
               {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-              {{ valid_v | select('>', 0.7) | list | count }}
+              {{ valid_v | select('>', temperature_heating_threshold) | list | count }}
             '';
             icon = "mdi:thermometer-auto";
             state_class = "measurement";
@@ -57,9 +58,9 @@ in
               {% set is_travelling = is_state('binary_sensor.far_away', 'on') %}
               {% set forecast_temp = states('sensor.openweathermap_forecast_temperature') | float(15) %}
               {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
-              {% set is_heating_needed = target_temp > current_temp %}
+              {% set is_heating_needed = is_state('binary_sensor.heating_use_gas', 'on') %}
               {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
-              {% set is_sufficient_increase = temperature_diff_wanted > 0.4 %}
+              {% set is_sufficient_increase = temperature_diff_wanted > (temperature_heating_threshold + 0.1) %}
               {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
               {% set is_heat_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
               {% if is_anyone_home_or_coming %}
@@ -73,7 +74,7 @@ in
                     {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
                   {% endif %}
                 {% else %}          
-                  {% set new_temp = (target_temp - 0.5) %}
+                  {% set new_temp = (cv_temp - 0.5) %}
                   {% set new_temp = max(new_temp, temperature_eco) %}
                 {% endif %}
               {% elif is_travelling %}
@@ -104,16 +105,31 @@ in
           {
             name = "heating/use_electric";
             state = ''
-              {% set rooms_need_heating = states('sensor.heating_number_of_rooms_in_need_of') | int %}
+              ${autoWantedHeader}
+              {% set rooms_need_heating = states('sensor.heating_number_of_rooms_in_need_of') | int(0) %}
               {% set prefer_electricity = is_state('binary_sensor.energy_electricity_prefer_over_gas', 'on') %}
               {% set enough_power = is_state('binary_sensor.electricity_delivery_power_near_max_threshold', 'off') %}
               {% set just_1room = rooms_need_heating == 1 %}
               {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
-              {% set is_bureau = states('sensor.floor0_bureau_temperature_diff_wanted') | float(0) > 0.7 %}
-              {% set is_nikolai = states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0) > 0.7 %}
+              {% set is_bureau = states('sensor.floor0_bureau_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
+              {% set is_nikolai = states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
               {{ just_1room and prefer_electricity and enough_power and is_anyone_home_or_coming and (is_bureau or is_nikolai) }}
             '';
             device_class = "running";
+          }
+          {
+            name = "heating/use_gas";
+            state = ''
+              {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
+              {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
+              {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
+              {% set target_temp = current_temp + temperature_diff_wanted %}
+              {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
+              {% set is_heating_needed = target_temp > current_temp %}
+              {{ not(use_electric) and is_heating_needed }}
+            '';
+            device_class = "running";
+            delay_on = "00:00:15";
           }
         ];
       }
