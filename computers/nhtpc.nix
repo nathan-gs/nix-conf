@@ -18,11 +18,12 @@
       ../services/onedrive.nix
       ../services/mariadb.nix
       ../services/photoprism.nix
-      ../services/plex.nix
+      #../services/plex.nix
       ../services/vscode.nix
       ../services/autogenstudio.nix
       ../services/nzb.nix
       ../services/komga.nix
+      ../services/jellyfin.nix
       ../services/nginx.nix
       #../services/smb.nix
       ../services/ollama.nix
