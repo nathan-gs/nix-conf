@@ -8,6 +8,7 @@
   services.ebusd-t = {
     enable = true;
     device = "enh:ebus:3335";
+    package = (pkgs.callPackage ../pkgs/ebusd.nix {});
     mqtt = {
       enable = true;
       host = "localhost";
@@ -34,7 +35,7 @@
   };
 
   environment.systemPackages = with pkgs; [ 
-    ebusd
+    (pkgs.callPackage ../pkgs/ebusd.nix {})
   ];
 
 }

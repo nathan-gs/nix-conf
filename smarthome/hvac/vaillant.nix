@@ -211,11 +211,11 @@ in
         '';
         mode_command_topic = "ebusd/370/Hc1OPMode/set";
         temperature_state_topic = "ebusd/370/DisplayedHc1RoomTempDesired";
-        temperature_state_template = "{{ value_json.temp1.value }}";
+        temperature_state_template = "{{ value_json.value.value }}";
         temperature_low_state_topic = "ebusd/370/Hc1NightTemp";
-        temperature_low_state_template = "{{ value_json.temp1.value }}";
+        temperature_low_state_template = "{{ value_json.value.value }}";
         temperature_high_state_topic = "ebusd/370/Hc1DayTemp";
-        temperature_high_state_template = "{{ value_json.temp1.value }}";
+        temperature_high_state_template = "{{ value_json.value.value }}";
         temperature_low_command_topic = "ebusd/370/Hc1NightTemp/set";
         temperature_low_command_template = ''
           {{ value }}
@@ -225,7 +225,7 @@ in
           {{ value }}
         '';
         current_temperature_topic = "ebusd/370/DisplayedRoomTemp";
-        current_temperature_template = "{{ value_json.temp.value }}";
+        current_temperature_template = "{{ value_json.value.value }}";
         temperature_unit = "C";
       }
       {
@@ -247,9 +247,9 @@ in
         '';
         mode_command_topic = "ebusd/370/HwcOPMode/set";
         temperature_state_topic = "ebusd/370/HwcTempDesired";
-        temperature_state_template = "{{ value_json.temp1.value }}";
+        temperature_state_template = "{{ value_json.value.value }}";
         current_temperature_topic = "ebusd/370/DisplayedHwcStorageTemp";
-        current_temperature_template = "{{ value_json.temp1.value }}";
+        current_temperature_template = "{{ value_json.value.value }}";
         temperature_unit = "C";
       }
     ];
