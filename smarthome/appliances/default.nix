@@ -5,10 +5,11 @@
   imports = [
     ./deken.nix
     ./dishwasher.nix
+    ./indego.nix
     ./lights.nix
     ./pump.nix
+    ./sonos.nix
     ./tv.nix
-    ./indego.nix
   ];
 
   services.home-assistant.config.recorder = {
