@@ -165,13 +165,17 @@
 
     customComponents = [
       # pkgs.nixosUnstable.home-assistant-custom-components.indego
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.python312Packages.pyindego;})
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/solis-sensor.nix {})
+      pkgs.home-assistant-custom-components.indego
+      pkgs.home-assistant-custom-components.solis-sensor
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
+    ];
+
+    customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
+      apexcharts-card
     ];
   };
 
@@ -212,7 +216,6 @@
   system.activationScripts.ha-www.text = ''
     mkdir -p "/var/lib/hass/www"
     cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/fan-mode-button-row.nix {})}" "/var/lib/hass/www/fan-mode-button-row.js"
-    cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/apexcharts-card.nix {})}" "/var/lib/hass/www/apexcharts-card.js"
     cp "${(pkgs.callPackage ../pkgs/home-assistant/ui/auto-entities.nix {})}" "/var/lib/hass/www/auto-entities.js"
   '';
 
