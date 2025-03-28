@@ -96,11 +96,12 @@
     extraComponents = [
       "api"
       "apple_tv"
+      "application_credentials"
       "auth"
       "backup"
       "bayesian"
-      "buienradar"
       "bluetooth"
+      "buienradar"
       "camera"
       "command_line"
       "conversation"
@@ -108,8 +109,8 @@
       "dsmr"
       "ebusd"
       "ffmpeg"      
-      "fritz"
       "forecast_solar"
+      "fritz"
       "homekit_controller"
       "homekit"
       "http"
@@ -129,8 +130,8 @@
       "smartthings"
       "sonos"
       "spotify"
-      "switchbot"
       "sun"
+      "switchbot"
       "tasmota"
       "template"
       "utility_meter"
@@ -165,7 +166,7 @@
 
     customComponents = [
       # pkgs.nixosUnstable.home-assistant-custom-components.indego
-      pkgs.home-assistant-custom-components.indego
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.python312Packages.pyindego;})
       pkgs.home-assistant-custom-components.solis-sensor
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
