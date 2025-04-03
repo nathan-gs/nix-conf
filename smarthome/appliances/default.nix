@@ -10,6 +10,7 @@
     ./pump.nix
     ./sonos.nix
     ./tv.nix
+    ./vacuum.nix
   ];
 
   services.home-assistant.config.recorder = {

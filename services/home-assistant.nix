@@ -132,6 +132,7 @@
       "spotify"
       "sun"
       "switchbot"
+      "switchbot_cloud"
       "tasmota"
       "template"
       "utility_meter"
