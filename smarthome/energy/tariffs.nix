@@ -41,6 +41,13 @@
         unit_of_measurement = "€/kWh";
         mode = "box";
       };
+      electricity_injection_creg_kwh = {
+        step = 0.001;
+        min = 0;
+        max = 2;
+        unit_of_measurement = "€/kWh";
+        mode = "box";
+      };
     };
 
     template = [  
@@ -145,6 +152,14 @@
             state_class = "measurement";
           }
           {
+            name = "electricity_injection_creg_kwh";
+            unit_of_measurement = "€/kWh"; 
+            state = ''
+              {{ states('input_number.electricity_injection_creg_kwh') | float }}              
+            '';
+            state_class = "measurement";
+          }
+          {
             name = "energy/electricity/cost";
             unit_of_measurement = "€/kWh";
             state = ''
@@ -180,142 +195,142 @@
       }
     ];
 
-    scrape = [
-      {
-        resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
-        scan_interval = 3600;
-        sensor = [
-          {
-            name = "electricity_cost_octa_peak_kwh_energycomponent";
-            select = "table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(Dagtarief)";
-            value_template = "{{ (value.split('€')[1]|replace(',', '.')|trim | float) / 100 }}";
-            unit_of_measurement = "€/kWh";
-            state_class = "measurement";
-          }
-          {
-            name = "electricity_cost_octa_offpeak_kwh_energycomponent";
-            select = "table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(Nachttarief)";
-            unit_of_measurement = "€/kWh";
-            value_template = "{{ (value.split('€')[1]|replace(',', '.')|trim | float) / 100 }}";
-            state_class = "measurement";
-          }
-          {
-            name = "gas_cost_octa_kwh_energycomponent";
-            select = ''
-              h3#octa-clear-gas + p + p + div table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(cent)
-            '';
-            unit_of_measurement = "€/kWh";
-            value_template = ''
-              {{ (value.split(':')[1].split('€')[1]|replace(',', '.')|trim | float) / 100 }}
-            '';
-            state_class = "measurement";
-          }
-        ];
-      }
-      {
-        resource = "https://callmepower.be/nl/energie/leveranciers/engie-electrabel/tarieven/drive";
-        scan_interval = 3600;
-        sensor = [
-          {
-            name = "electricity_cost_engie_drive_peak_kwh_energycomponent";
-            # TODO Sept 2025 replace the discount
-            select = ''
-              h2#actuele-engie-drive-prijzen-per-kwh + p + p + div table tbody td li:-soup-contains(Dagtarief)
-            '';
-            value_template = ''
-              {% set discount = 0 %}
-              {% if now().year < 2025 and now().month < 10 %}
-                {% set discount = 0.0293 %}
-              {% endif %}
-              {{ (((value.split('€')[1]|replace(',', '.')|trim | float) / 100) - discount) | round(5) }}
-            '';
-            unit_of_measurement = "€/kWh";
-            state_class = "measurement";
-          }
-          {
-            name = "electricity_cost_engie_drive_offpeak_kwh_energycomponent";
-            # TODO Sept 2025 replace the discount
-            select = ''
-              h2#actuele-engie-drive-prijzen-per-kwh + p + p + div table tbody td li:-soup-contains(Nachttarief)
-            '';
-            unit_of_measurement = "€/kWh";
-            value_template = 
-            ''
-              {% set discount = 0 %}
-              {% if now().year < 2025 and now().month < 10 %}
-                {% set discount = 0.0293 %}
-              {% endif %}
-              {{ (((value.split('€')[1]|replace(',', '.')|trim | float) / 100) - discount) | round(5) }}
-            '';
-            state_class = "measurement";
-          }
-          {
-            name = "gas_cost_engie_drive_kwh_energycomponent";
-            select = ''
-              h3#gasprijs-engie-drive + p + p + div table:has(th:-soup-contains(Drive)) tbody td li:-soup-contains(cent)
-            '';
-            unit_of_measurement = "€/kWh";
-            # TODO Sept 2025 replace the discount
-            value_template = ''
-              {% set discount = 0 %}
-              {% if now().year < 2025 and now().month < 10 %}
-                {% set discount = 0.0106 %}
-              {% endif %}
-              {{ (((value.split(':')[1].split('€')[1]|replace(',', '.')|trim | float) / 100) - discount) | round(5) }}
-            '';
-            state_class = "measurement";
-          }
-        ];
-      }
-      {
-        resource = "https://www.mijnenergie.be/blog/injectietarieven/";
-        scan_interval = 3600;
-        sensor = [
-          {
-            name = "electricity_injection_octa_kwh";
-            select = ''
-              table :has(> td:-soup-contains(Octa)) td:nth-child(3)
-            '' ;
-            value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
-            unit_of_measurement = "€/kWh";
-            state_class = "measurement";
-          }
-          {
-            name = "electricity_injection_engie_drive_peak_kwh";
-            select = ''
-              table :has(> td:-soup-contains(Flow)) td:nth-child(4)
-            '' ;
-            value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
-            unit_of_measurement = "€/kWh";
-            state_class = "measurement";
-          }
-          {
-            name = "electricity_injection_engie_drive_offpeak_kwh";
-            select = ''
-              table :has(> td:-soup-contains(Flow)) td:nth-child(5)
-            '' ;
-            value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
-            unit_of_measurement = "€/kWh";
-            state_class = "measurement";
-          }
-        ];
-      }
-      {
-        resource = "https://www.pluginvest.eu/en/technische-hulp/creg-tarief-2025";
-        scan_interval = 3600;
-        sensor = [
-          {
-            name = "electricity_injection_creg_kwh";
-            select = ''
-              section.s_title h2 font.text-o-color-1 b
-            '' ;
-            value_template = ''{{ ((value | replace("€", "") | replace("/kWh", "") | replace(",", ".") | trim | float) * 1) | round(3) }}'';
-            unit_of_measurement = "€/kWh";
-            state_class = "measurement";
-          }
-        ];
-      }
-    ];
+    #scrape = [
+      # {
+      #   resource = "https://callmepower.be/nl/energie/leveranciers/octaplus/tarieven";
+      #   scan_interval = 3600;
+      #   sensor = [
+      #     {
+      #       name = "electricity_cost_octa_peak_kwh_energycomponent";
+      #       select = "table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(Dagtarief)";
+      #       value_template = "{{ (value.split('€')[1]|replace(',', '.')|trim | float) / 100 }}";
+      #       unit_of_measurement = "€/kWh";
+      #       state_class = "measurement";
+      #     }
+      #     {
+      #       name = "electricity_cost_octa_offpeak_kwh_energycomponent";
+      #       select = "table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(Nachttarief)";
+      #       unit_of_measurement = "€/kWh";
+      #       value_template = "{{ (value.split('€')[1]|replace(',', '.')|trim | float) / 100 }}";
+      #       state_class = "measurement";
+      #     }
+      #     {
+      #       name = "gas_cost_octa_kwh_energycomponent";
+      #       select = ''
+      #         h3#octa-clear-gas + p + p + div table:has(th:-soup-contains(Clear)) tbody td li:-soup-contains(cent)
+      #       '';
+      #       unit_of_measurement = "€/kWh";
+      #       value_template = ''
+      #         {{ (value.split(':')[1].split('€')[1]|replace(',', '.')|trim | float) / 100 }}
+      #       '';
+      #       state_class = "measurement";
+      #     }
+      #   ];
+      # }
+      # {
+      #   resource = "https://callmepower.be/nl/energie/leveranciers/engie-electrabel/tarieven/drive";
+      #   scan_interval = 3600;
+      #   sensor = [
+      #     {
+      #       name = "electricity_cost_engie_drive_peak_kwh_energycomponent";
+      #       # TODO Sept 2025 replace the discount
+      #       select = ''
+      #         h2#actuele-engie-drive-prijzen-per-kwh + p + p + div table tbody td li:-soup-contains(Dagtarief)
+      #       '';
+      #       value_template = ''
+      #         {% set discount = 0 %}
+      #         {% if now().year < 2025 and now().month < 10 %}
+      #           {% set discount = 0.0293 %}
+      #         {% endif %}
+      #         {{ (((value.split('€')[1]|replace(',', '.')|trim | float) / 100) - discount) | round(5) }}
+      #       '';
+      #       unit_of_measurement = "€/kWh";
+      #       state_class = "measurement";
+      #     }
+      #     {
+      #       name = "electricity_cost_engie_drive_offpeak_kwh_energycomponent";
+      #       # TODO Sept 2025 replace the discount
+      #       select = ''
+      #         h2#actuele-engie-drive-prijzen-per-kwh + p + p + div table tbody td li:-soup-contains(Nachttarief)
+      #       '';
+      #       unit_of_measurement = "€/kWh";
+      #       value_template = 
+      #       ''
+      #         {% set discount = 0 %}
+      #         {% if now().year < 2025 and now().month < 10 %}
+      #           {% set discount = 0.0293 %}
+      #         {% endif %}
+      #         {{ (((value.split('€')[1]|replace(',', '.')|trim | float) / 100) - discount) | round(5) }}
+      #       '';
+      #       state_class = "measurement";
+      #     }
+      #     {
+      #       name = "gas_cost_engie_drive_kwh_energycomponent";
+      #       select = ''
+      #         h3#gasprijs-engie-drive + p + p + div table:has(th:-soup-contains(Drive)) tbody td li:-soup-contains(cent)
+      #       '';
+      #       unit_of_measurement = "€/kWh";
+      #       # TODO Sept 2025 replace the discount
+      #       value_template = ''
+      #         {% set discount = 0 %}
+      #         {% if now().year < 2025 and now().month < 10 %}
+      #           {% set discount = 0.0106 %}
+      #         {% endif %}
+      #         {{ (((value.split(':')[1].split('€')[1]|replace(',', '.')|trim | float) / 100) - discount) | round(5) }}
+      #       '';
+      #       state_class = "measurement";
+      #     }
+      #   ];
+      # }
+      # {
+      #   resource = "https://www.mijnenergie.be/blog/injectietarieven/";
+      #   scan_interval = 3600;
+      #   sensor = [
+      #     {
+      #       name = "electricity_injection_octa_kwh";
+      #       select = ''
+      #         table :has(> td:-soup-contains(Octa)) td:nth-child(3)
+      #       '' ;
+      #       value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
+      #       unit_of_measurement = "€/kWh";
+      #       state_class = "measurement";
+      #     }
+      #     {
+      #       name = "electricity_injection_engie_drive_peak_kwh";
+      #       select = ''
+      #         table :has(> td:-soup-contains(Flow)) td:nth-child(4)
+      #       '' ;
+      #       value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
+      #       unit_of_measurement = "€/kWh";
+      #       state_class = "measurement";
+      #     }
+      #     {
+      #       name = "electricity_injection_engie_drive_offpeak_kwh";
+      #       select = ''
+      #         table :has(> td:-soup-contains(Flow)) td:nth-child(5)
+      #       '' ;
+      #       value_template = "{{ (value | replace(',', '.') | float(-1) / 100) | round(5) }}";
+      #       unit_of_measurement = "€/kWh";
+      #       state_class = "measurement";
+      #     }
+      #   ];
+      # }
+      # {
+      #   resource = "https://www.pluginvest.eu/en/technische-hulp/creg-tarief-2025";
+      #   scan_interval = 3600;
+      #   sensor = [
+      #     {
+      #       name = "electricity_injection_creg_kwh";
+      #       select = ''
+      #         section.s_title h2 font.text-o-color-1 b
+      #       '' ;
+      #       value_template = ''{{ ((value | replace("€", "") | replace("/kWh", "") | replace(",", ".") | trim | float) * 1) | round(3) }}'';
+      #       unit_of_measurement = "€/kWh";
+      #       state_class = "measurement";
+      #     }
+      #   ];
+      # }
+    #];
 
     recorder = {
       include = {
