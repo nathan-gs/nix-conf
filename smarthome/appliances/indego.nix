@@ -38,7 +38,7 @@
                 ''
               )
               # Avg run is 8h, limit to max 3 runs a week
-              (ha.condition.below "sensor.indego_runtime_weekly" 23)
+              #(ha.condition.below "sensor.indego_runtime_weekly" 23)
             ];
             actions = [
               {
@@ -55,7 +55,7 @@
             triggers = [
               (ha.trigger.state_to "weather.sxw" ["rainy" "pouring" "lightning" "lightning-rainy" "snowy" "snowy-rainy" "hail" "exceptional"] )
               (ha.trigger.state_to "sun.sun" "below_horizon")
-              (ha.trigger.above "sensor.indego_runtime_weekly" 23)
+              #(ha.trigger.above "sensor.indego_runtime_weekly" 23)
               (ha.trigger.template ''
                 {% set last_completed = as_timestamp(states('sensor.indego_325608617_last_completed')) | default(0) %}
                 {% set hours_since = (as_timestamp(now()) - last_completed) / (3600) %}
