@@ -54,8 +54,7 @@ in
               {% set max_desired_temp = 21 %}
               {% set target_temp = current_temp + temperature_diff_wanted %}
               {% set new_temp = cv_temp %}
-              {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
-              {% set is_travelling = is_state('binary_sensor.far_away', 'on') %}
+              {% set anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
               {% set forecast_temp = states('sensor.openweathermap_forecast_temperature') | float(15) %}
               {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
               {% set is_heating_needed = is_state('binary_sensor.heating_use_gas', 'on') %}
@@ -63,7 +62,7 @@ in
               {% set is_sufficient_increase = temperature_diff_wanted > (temperature_heating_threshold + 0.1) %}
               {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
               {% set is_heat_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
-              {% if is_anyone_home_or_coming %}
+              {% if anyone_home_or_coming %}
                 {% if is_sufficient_increase and is_heating_needed and is_large_deviation_between_forecast_and_target %}
                   {% if (is_cv_water_circulating and not(is_large_increase_needed)) or is_heat_electric %}
                     {# Do nothing #}
@@ -77,7 +76,7 @@ in
                   {% set new_temp = (cv_temp - 0.5) %}
                   {% set new_temp = max(new_temp, temperature_eco) %}
                 {% endif %}
-              {% elif is_travelling %}
+              {% elif far_away %}
                 {% set new_temp = temperature_minimal %}
               {% else %}
                 {% set new_temp = temperature_away %}
@@ -113,7 +112,20 @@ in
               {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
               {% set is_bureau = states('sensor.floor0_bureau_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
               {% set is_nikolai = states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
-              {{ just_1room and prefer_electricity and enough_power and is_anyone_home_or_coming and (is_bureau or is_nikolai) }}
+              {% set is_battery_charged = states('sensor.solis_remaining_battery_capacity') | float(10) > 32 %}
+              {% set is_not_using_grid = states('sensor.electricity_grid_consumed_power_mean_1m') | float(1000) < 100 %}
+              {% set is_solar = states('sensor.electricity_solar_power') | float(0) > 300 %}
+              {% set is_solar_remaining = states('sensor.energy_production_today_remaining') | float(0) > 6 %}
+              {% set use_solar_and_battery = is_battery_charged and is_solar_remaining and is_not_using_grid %}
+              {% if enough_power and is_anyone_home_or_coming %}
+                {% if use_solar_and_battery %}
+                  true
+                {% else %}
+                  {{ just_1room and prefer_electricity and (is_bureau or is_nikolai) }}
+                {% endif %}
+              {% else %}
+                false
+              {% endif %}
             '';
             device_class = "running";
           }

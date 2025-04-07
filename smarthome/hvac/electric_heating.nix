@@ -1,7 +1,7 @@
 { config, pkgs, lib, ha, ... }:
 
 let
-  maxIndoorTemp = "21.5";
+  autoWantedHeader = import ./temperature_sets.nix;
 
   automateTurnOn = v:
     {
@@ -69,6 +69,7 @@ in
           {
             name = "floor0/living/metering_plug/verwarming_target";
             state = ''
+              ${autoWantedHeader}
               {% set sensor = states('floor0_living_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power_min_1m') | float(0) %}
               {% set indoor_temp = states('sensor.floor0_living_temperature') | float(21) %}
@@ -80,8 +81,13 @@ in
               {% set solar_power_available = (solar_power - 760 - 250) > 0 %}
               {% set start_on_solar = battery_charged and solar_power_available %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
-              {% if (power_available > 760 or start_on_solar) and indoor_temp < ${maxIndoorTemp} %}
+              {% set needs_heating = (states('sensor.floor0_living_temperature_diff_wanted') | float(0)) > 0.7 %}
+              {% if far_away %}
+                false
+              {% elif (power_available > 760 or start_on_solar) and indoor_temp < temperature_max %}
                 true  
+              {% elif needs_heating and use_electric %}
+                true
               {% else %}
                 false
               {% endif %}
@@ -95,13 +101,16 @@ in
           {
             name = "floor1/nikolai/metering_plug/verwarming_target";
             state = ''
+              ${autoWantedHeader}
               {% set sensor = states('sensor.floor1_nikolai_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power_min_1m') | float(0) %}
               {% set indoor_temp = states('sensor.floor1_nikolai_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}
               {% set needs_heating = (states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0)) > 0.7 %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
-              {% if power_available > 750 and indoor_temp < ${maxIndoorTemp} %}
+              {% if far_away %}
+                false
+              {% elif power_available > 750 and indoor_temp < temperature_max %}
                 true 
               {% elif needs_heating and use_electric %}
                 true
@@ -127,13 +136,16 @@ in
           {
             name = "floor0/bureau/metering_plug/verwarming_target";
             state = ''
+              ${autoWantedHeader}
               {% set sensor = states('sensor.floor0_bureau_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power_min_1m') | float(0) %}
               {% set indoor_temp = states('sensor.floor0_bureau_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}      
               {% set needs_heating = (states('sensor.floor0_bureau_temperature_diff_wanted') | float(0)) > 0.7 %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
-              {% if power_available > 700 and indoor_temp < ${maxIndoorTemp} %}
+              {% if far_away %}
+                false
+              {% elif power_available > 700 and indoor_temp < temperature_max %}
                 true  
               {% elif needs_heating and use_electric %}
                 true
@@ -159,6 +171,7 @@ in
           {
             name = "floor1/badkamer/metering_plug/verwarming_target";
             state = ''
+              ${autoWantedHeader}
               {% set needs_heating = (states('sensor.floor1_badkamer_temperature_diff_wanted') | float(0)) > 0.7 %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
               {% if needs_heating and use_electric %}

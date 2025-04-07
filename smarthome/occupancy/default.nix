@@ -94,7 +94,8 @@ in
           {
             name = "far_away";
             state = ''
-              {{ states('sensor.sxw_nearest_distance') | float(0) >= 200000 }}
+              {% set override = is_state('input_boolean.coming_home', 'on') %}
+              {{ not(override) and states('sensor.sxw_nearest_distance') | float(0) >= 200000 }}
             '';
             device_class = "occupancy";
             delay_on.minutes = 10;
