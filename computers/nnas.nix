@@ -14,7 +14,7 @@
       ../users-servers.nix
       ../disks.nix
      ../apps/cloudflare-dyndns.nix
-     ../services/smb.nix
+     #../services/smb.nix
      ../services/onedrive.nix
       ../gc.nix
     ];
