@@ -12,8 +12,8 @@
     tmux
     tree
     jq     
-    (pkgs.python312Packages.callPackage ./pkgs/python/autogen-studio.nix {})
-    (pkgs.callPackage ./pkgs/sos2mqtt.nix {})
+    #(pkgs.python312Packages.callPackage ./pkgs/python/autogen-studio.nix {})
+    #(pkgs.callPackage ./pkgs/sos2mqtt.nix {})
     devenv
     (pkgs.callPackage ./pkgs/onedrive-2.4.nix {})
   ];
