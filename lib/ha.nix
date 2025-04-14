@@ -75,6 +75,32 @@ let
       '';
       icon = icon;
     };
+
+    max_from_list = name: sensors: { unit_of_measurement, device_class, icon ? "" }: {
+      name = name;
+      state = ''
+        {% set v = [
+          ${builtins.concatStringsSep "," sensors}
+        ]
+        %}
+        {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+        {% if valid_v | length %}
+          {{ max(valid_v) | round(2) }}
+        {% endif %}
+      '';
+      unit_of_measurement = unit_of_measurement;
+      device_class = device_class;
+      state_class = "measurement";    
+      availability = ''
+        {% set v = [
+          ${builtins.concatStringsSep "," sensors}
+        ]
+        %}
+        {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+        {{ (valid_v | length) > 0 }}
+      '';
+      icon = icon;
+    };
   };
 
   automation = name: { triggers ? [ ], conditions ? [ ], actions ? [ ], mode ? "single" }: {

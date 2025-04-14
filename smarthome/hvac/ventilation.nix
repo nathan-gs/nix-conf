@@ -26,8 +26,9 @@
               {% set humidity_max_over_80 = (states('sensor.indoor_humidity_max') | float(100) > 80) %}
               {% set is_not_electricity_delivery_power_max_threshold = states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) == false %}
               {% set is_hot_outside = outdoor_temperature > 27 %}
+              {% set is_high_co2 = is_state('binary_sensor.house_co2_high', 'on') %}
               {% if is_not_electricity_delivery_power_max_threshold %}
-                {% if humidity_max_over_80 %}
+                {% if humidity_max_over_80 or is_high_co2 %}
                   high
                 {% elif is_cooking or is_using_sanitary %}
                   high
@@ -85,6 +86,38 @@
                 {% endif %}
               '';
             };
+          }
+          (
+            ha.sensor.max_from_list "house/co2/max" 
+              (
+                map(v: "states('${v}')") 
+                [
+                  "sensor.floor0_bureau_switchbot_carbon_dioxide"
+                  "sensor.floor0_living_switchbot_carbon_dioxide"
+                  "sensor.floor1_fen_switchbot_carbon_dioxide"
+                ]
+              )
+              {
+                unit_of_measurement = "ppm";
+                device_class = "carbon_dioxide";
+                icon = ''
+                  {% if states('sensor.house_co2_max') | float(100) > 100 %}
+                    mdi:molecule-co2
+                  {% else %}
+                    mdi:molecule-co2
+                  {% endif %}
+                '';
+              }
+          )
+        ];
+      }
+      {
+        binary_sensor = [
+          {
+            name = "house/co2/high";
+            state = ''{{ states('sensor.house_co2_max') | int(700) >= 1000 }}'';
+            auto_off.minutes = 15;
+            device_class = "safety";
           }
         ];
       }
@@ -343,6 +376,8 @@
           "sensor.itho_wtw_actual_mode"
           "sensor.wtw_target_fan"
           "switch.system_wtw_metering_plug_verwarming"
+          "binary_sensor.house_co2_high"
+          "sensor.house_co2_max"
         ];
         entity_globs = [
           "sensor.itho_wtw_inlet_*"

@@ -91,27 +91,21 @@ in
             '';
             }
           )          
-          {
-            name = "indoor_humidity_max";
-            state = ''
-              {% set v = [
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_humidity')") rooms.heated)}
-              ]
-              %}
-              {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-              {{ max(valid_v) | round(2) }}
-            '';
-            icon = ''
-              {% if states('sensor.indoor_humidity') | float(100) > 70 %}
-                  mdi:water-percent-alert
-              {% else %}
-                  mdi:water-percent
-              {% endif %}
-            '';
-            unit_of_measurement = "%";
-            state_class = "measurement";
-            device_class = "humidity";
-          }
+          (
+            ha.sensor.max_from_list "indoor/humidity/max" 
+              (map(v: "states('sensor.${v}_humidity')") rooms.heated)
+              {
+                unit_of_measurement = "%";
+                device_class = "humidity";
+                icon = ''
+                  {% if states('sensor.indoor_humidity_max') | float(100) > 70 %}
+                    mdi:water-percent-alert
+                  {% else %}
+                    mdi:water-percent
+                  {% endif %}
+                '';
+              }
+          )
           (
             ha.sensor.avg_from_list "indoor/temperature" ([
               "states('sensor.system_wtw_air_quality_outlet_temperature')"
