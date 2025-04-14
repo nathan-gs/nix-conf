@@ -53,6 +53,7 @@
             # Point this to your original configuration.
             ./computers/nnas.nix
             secrets.nixosModules.secrets
+            overlayModule
           ];
 
 
