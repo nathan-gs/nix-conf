@@ -119,7 +119,7 @@ in
               {% set use_solar_and_battery = is_battery_charged and is_solar_remaining and is_not_using_grid %}
               {% if enough_power and is_anyone_home_or_coming %}
                 {% if use_solar_and_battery %}
-                  true
+                  {{ rooms_need_heating >= 1 }}
                 {% else %}
                   {{ just_1room and prefer_electricity and (is_bureau or is_nikolai) }}
                 {% endif %}
