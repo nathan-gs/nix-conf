@@ -15,7 +15,7 @@
             actions = [
               {
                 service = "vacuum.start";                
-                target.entity_id = "vacuum.botje_boven";
+                target.entity_id = "vacuum.botje_beneden";
               }
             ];
           } 
@@ -25,11 +25,8 @@
 
     recorder = {
       include = {
-        entities = [
-          "vacuum.botje_boven"         
-        ];
-
         entity_globs = [          
+          "vacuum.*"         
         ];
       };
     };
