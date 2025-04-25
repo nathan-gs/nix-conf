@@ -84,7 +84,10 @@
                   |rejectattr('entity_id', 'contains', 'electricity_cost_octa')
                   |rejectattr('entity_id', 'contains', 'gas_cost_octa')
                   |rejectattr('entity_id', 'contains', 'floor0_living_rtv_vooraan')
-
+                  |rejectattr('entity_id', 'contains', 'ohme_home_go_target_percentage')
+                  |rejectattr('entity_id', 'contains', 'ohme_home_go_ct_reading')
+                  |rejectattr('entity_id', 'contains', 'ohme_home_go_next_charge_slot_end')
+                  |rejectattr('entity_id', 'contains', 'ohme_home_go_next_charge_slot_start')                
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';

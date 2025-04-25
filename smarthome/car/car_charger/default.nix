@@ -202,18 +202,14 @@
         ha.automation "system/car_charger.charging_stopped"
           {
             triggers = [ 
-              (ha.trigger.state_to "binary_sensor.volvo_xc60_door_front_left" "on")
-              (ha.trigger.state_to "binary_sensor.volvo_xc60_engine_status" "on")
-              (ha.trigger.state_to "binary_sensor.nphone_android_auto" "on") 
-              (ha.trigger.state_to "binary_sensor.fphone_a55_android_auto" "on") 
-              (ha.trigger.state_to "switch.garden_garden_plug_laadpaal_repeater" "off")
-            ];
-            conditions = [
-              (ha.condition.below "sensor.garden_garden_metering_plug_laadpaal_power" "10")
+              
+              (ha.trigger.off "binary_sensor.ohme_home_go_car_connected") 
+              (ha.trigger.off "switch.garden_garden_plug_laadpaal_repeater")
             ];
             actions = [
-              (ha.action.off "switch.garden_garden_metering_plug_laadpaal")
+              (ha.action.on "switch.ohme_home_go_pause_charge")
               (ha.action.off "switch.garden_garden_plug_laadpaal_repeater")
+              (ha.action.off "input_boolean.car_charger_charge_offpeak")
             ];
           }
       )
@@ -231,6 +227,7 @@
               )
               (ha.trigger.at "input_datetime.car_charger_charge_at")
               (ha.trigger.state_to "switch.garden_garden_plug_laadpaal_repeater" "on")
+              (ha.trigger.off "binary_sensor.electricity_delivery_power_near_max_threshold")
             ];
             conditions = [
               (
@@ -266,7 +263,7 @@
                               []
                           )
                           (ha.action.set_value "number.solar_battery_maxgridpower" 300)
-                          (ha.action.on "switch.garden_garden_metering_plug_laadpaal")     
+                          (ha.action.off "switch.ohme_home_go_pause_charge")     
                           # Avoid retriggering
                           (
                             ha.action.conditional
@@ -274,8 +271,7 @@
                               [(ha.action.on "switch.garden_garden_plug_laadpaal_repeater")]
                               []
                           )                          
-                          (ha.action.set_value "input_number.car_charger_automation_attempt" 0)
-                          (ha.action.off "input_boolean.car_charger_charge_offpeak")
+                          (ha.action.set_value "input_number.car_charger_automation_attempt" 0)                          
                           (ha.action.off "input_boolean.car_charger_charge_at")
                         ]
                         [
@@ -309,21 +305,36 @@
           }
       )
       (
+        ha.automation "system/car_charger.turn_off"
+        {
+          triggers = [
+            (ha.trigger.off "binary_sensor.electricity_is_offpeak")
+            (ha.trigger.off "switch.garden_garden_plug_laadpaal_repeater")
+            (ha.trigger.on "binary_sensor.electricity_delivery_power_max_threshold")
+          ];
+          conditions = [
+            (ha.condition.on "binary_sensor.ohme_home_go_car_connected")
+          ];
+          actions = [
+            (ha.action.on "switch.ohme_home_go_pause_charge") 
+          ];
+        }
+      )
+      (
         ha.automation "system/car_charger.ask"
           {
             triggers = [
               (ha.trigger.at "21:30")
             ];
             conditions = [
-              (ha.condition.on "binary_sensor.anyone_home")
-              (ha.condition.off "switch.garden_garden_metering_plug_laadpaal")
+              (ha.condition.on "binary_sensor.ohme_home_go_car_connected")
             ];
             actions = [
               {
                 service = "notify.mobile_app_nphone";
                 data = {
-                  title = "Enable car charger at {{ states('input_datetime.car_charger_charge_at') }}?";
-                  message = "Enable car charger at {{ states('input_datetime.car_charger_charge_at') }}?";
+                  title = "Enable car charger during off peak?";
+                  message = "Enable car charger during off peak?";
                   data = {
                     tag = "car_charger_ask";
                     persistent = true;
@@ -360,7 +371,7 @@
                   };
                 };
               }
-              (ha.action.on "input_boolean.car_charger_charge_at")
+              (ha.action.on "input_boolean.car_charger_charge_offpeak")
             ];
           }
       )
@@ -371,9 +382,9 @@
         {
           name = "car_charger";
           unique_id = "car_charger";
-          entity_id = "switch.garden_garden_metering_plug_laadpaal";
+          entity_id = "binary_sensor.ohme_home_go_car_connected";
           fixed.power = ''            
-            {% set power = states('sensor.garden_garden_metering_plug_laadpaal_power') | float(0) %}
+            {% set power = states('sensor.ohme_home_go_power_draw') | float(0) %}
             {{ power }}
           '';
           create_utility_meters = true;
@@ -382,10 +393,10 @@
         {
           name = "car_charger_solar";
           unique_id = "car_charger_solar";
-          entity_id = "switch.garden_garden_metering_plug_laadpaal";
+          entity_id = "binary_sensor.ohme_home_go_car_connected";
           fixed.power = ''            
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = states('sensor.garden_garden_metering_plug_laadpaal_power') | float(0) %}
+            {% set consumptionPower = states('sensor.ohme_home_go_power_draw') | float(0) %}
             {% set power = (consumptionPower - import_from_grid) %}
             {% if power < 0 %}
               {% set power = 0 %}
@@ -397,11 +408,11 @@
         }
         {
           name = "car_charger_grid";
-          entity_id = "switch.garden_garden_metering_plug_laadpaal";
+          entity_id = "binary_sensor.ohme_home_go_car_connected";
           unique_id = "car_charger_grid";
           fixed.power = ''
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = states('sensor.garden_garden_metering_plug_laadpaal_power') | float(0) %}
+            {% set consumptionPower = states('sensor.ohme_home_go_power_draw') | float(0) %}
             {% set power = min(import_from_grid, consumptionPower) %}
             {% if power < 0 %}
               {% set power = 0 %}
@@ -426,6 +437,10 @@
 
         entity_globs = [
           "sensor.car_charger_*"
+          "binary_sensor.ohme_*"
+          "sensor.ohme_*"
+          "switch.ohme_*"
+          "number.ohme_*"
         ];
       };
     };

@@ -106,7 +106,7 @@
 	        service = "mqtt.publish";
           data = {
             topic = "bluecorner/refresh_token";
-            payload_template = ''
+            payload = ''
               {{ states('sensor.bluecorner_token') }}
             '';
             retain = true;

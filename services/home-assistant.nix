@@ -101,6 +101,7 @@
       "backup"
       "bayesian"
       "bluetooth"
+      "bmw_connected_drive"
       "buienradar"
       "camera"
       "command_line"
@@ -170,6 +171,7 @@
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.python312Packages.pyindego;})
       pkgs.home-assistant-custom-components.solis-sensor
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
+      (pkgs.callPackage ../pkgs/home-assistant/custom_components/ohme.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})
       (pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})
