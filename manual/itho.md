@@ -14,3 +14,7 @@ changing:
 ## 2024/08/19 New sensor
 
 - Offset bypass regulation (K) from 0.5 to 1.5
+
+## 2025/04/14 
+
+- Summer temp (°C) from 22 to 25
