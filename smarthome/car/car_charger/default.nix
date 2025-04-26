@@ -154,6 +154,13 @@
               false
             '';
           }
+          {
+            name = "car_charger_charging";
+            device_class = "plug";
+            state = ''
+              {{ is_state('sensor.ohme_home_go_status', 'charging')  }}
+            '';
+          }
         ];
       }
     ];
@@ -203,11 +210,11 @@
           {
             triggers = [ 
               
-              (ha.trigger.off "binary_sensor.ohme_home_go_car_connected") 
+              # TODO (ha.trigger.off "binary_sensor.ohme_home_go_car_connected") 
               (ha.trigger.off "switch.garden_garden_plug_laadpaal_repeater")
             ];
             actions = [
-              (ha.action.on "switch.ohme_home_go_pause_charge")
+              # TODO (ha.action.on "switch.ohme_home_go_pause_charge")
               (ha.action.off "switch.garden_garden_plug_laadpaal_repeater")
               (ha.action.off "input_boolean.car_charger_charge_offpeak")
             ];
@@ -382,9 +389,9 @@
         {
           name = "car_charger";
           unique_id = "car_charger";
-          entity_id = "binary_sensor.ohme_home_go_car_connected";
+          entity_id = "binary_sensor.car_charger_charging";
           fixed.power = ''            
-            {% set power = states('sensor.ohme_home_go_power_draw') | float(0) %}
+            {% set power = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
             {{ power }}
           '';
           create_utility_meters = true;
@@ -393,10 +400,10 @@
         {
           name = "car_charger_solar";
           unique_id = "car_charger_solar";
-          entity_id = "binary_sensor.ohme_home_go_car_connected";
+          entity_id = "binary_sensor.car_charger_charging";
           fixed.power = ''            
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = states('sensor.ohme_home_go_power_draw') | float(0) %}
+            {% set consumptionPower = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
             {% set power = (consumptionPower - import_from_grid) %}
             {% if power < 0 %}
               {% set power = 0 %}
@@ -408,11 +415,11 @@
         }
         {
           name = "car_charger_grid";
-          entity_id = "binary_sensor.ohme_home_go_car_connected";
+          entity_id = "binary_sensor.car_charger_charging";
           unique_id = "car_charger_grid";
           fixed.power = ''
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = states('sensor.ohme_home_go_power_draw') | float(0) %}
+            {% set consumptionPower = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
             {% set power = min(import_from_grid, consumptionPower) %}
             {% if power < 0 %}
               {% set power = 0 %}

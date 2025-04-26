@@ -1,5 +1,12 @@
-{ config, pkgs, lib, ... }:
+{ config, pkgs, channels, nixpkgs-unstable, lib, ... }:
 {
+
+  imports = [
+    "${channels.nixpkgs-unstable}/nixos/modules/services/home-automation/home-assistant.nix"
+  ];
+  disabledModules = [
+    "services/home-automation/home-assistant.nix"
+  ];
 
   _module.args.ha = import ../lib/ha.nix { lib = lib; };
 
@@ -31,6 +38,9 @@
 
   services.home-assistant = {
     enable  = true;
+
+    package = pkgs.nixpkgs-unstable.home-assistant;
+
     openFirewall = true;
     configWritable = false;
     config = {
@@ -109,6 +119,7 @@
       "default_config"
       "dsmr"
       "ebusd"
+      "esphome"
       "ffmpeg"      
       "forecast_solar"
       "fritz"
@@ -121,6 +132,7 @@
       "mqtt"
       "my"            
       "openweathermap"
+      "ohme"
       "ping"
       "plex"
       "prometheus"
@@ -146,7 +158,7 @@
       mysqlclient
       aiohomekit
       aiohttp
-      aiohttp-zlib-ng      
+      aiohttp-fast-zlib      
       bellows
       croniter
       isal
@@ -166,19 +178,19 @@
       zigpy-znp
     ];
 
-    customComponents = [
+    customComponents = with pkgs.nixpkgs-unstable.home-assistant-custom-components; [
       # pkgs.nixosUnstable.home-assistant-custom-components.indego
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.python312Packages.pyindego;})
-      pkgs.home-assistant-custom-components.solis-sensor
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/hon.nix {})
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/ohme.nix {})
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix {})
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix {})
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix {})
-      (pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.nixpkgs-unstable.python313Packages.pyindego;})
+      solis-sensor
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/hon.nix { pkgs = pkgs.nixpkgs-unstable; })
+      #(pkgs.callPackage ../pkgs/home-assistant/custom_components/ohme.nix {})
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix { pkgs = pkgs.nixpkgs-unstable; })
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix { pkgs = pkgs.nixpkgs-unstable; })
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix { pkgs = pkgs.nixpkgs-unstable; })
+      #(pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
     ];
 
-    customLovelaceModules = with pkgs.home-assistant-custom-lovelace-modules; [
+    customLovelaceModules = with pkgs.nixpkgs-unstable.home-assistant-custom-lovelace-modules; [
       apexcharts-card
     ];
   };

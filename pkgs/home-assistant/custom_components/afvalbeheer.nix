@@ -14,8 +14,8 @@ buildHomeAssistantComponent  rec {
   };
 
   propagatedBuildInputs = [
-    pkgs.python312Packages.rsa
-    pkgs.python312Packages.pycryptodome
+    pkgs.python313Packages.rsa
+    pkgs.python313Packages.pycryptodome
   ];
   
 }
