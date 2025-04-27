@@ -9,6 +9,7 @@ esp32:
     type: esp-idf
     version: "5.4.0"
     platform_version: espressif32 @ 6.10.0
+
 bluetooth_proxy:
   active: true
 
@@ -32,17 +33,25 @@ wifi:
   networks:
   - ssid: !secret wifi_ssid
     password: !secret wifi_password
+  use_address: "bluetooth-proxy-boven"
+  domain: ".fritz.box"
+  fast_connect: true
 
 esp32_ble_tracker:
+  scan_parameters:
+    interval: 1100ms
+    window: 1100ms
+    active: true
+
 
 sensor:
   - platform: uptime
     type: seconds
-    name: Uptime Sensor
+    name: "floor1/bluetooth_proxy/uptime"
     entity_category: diagnostic
   - platform: internal_temperature
     entity_category: diagnostic
-    name: "Internal Temperature"
+    name: "floor1/bluetooth_proxy/internal_temperature"
 
 time:
   - platform: sntp
