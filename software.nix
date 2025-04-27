@@ -16,6 +16,7 @@
     #(pkgs.callPackage ./pkgs/sos2mqtt.nix {})
     devenv
     (pkgs.callPackage ./pkgs/onedrive-2.4.nix {})
+    pkgs.nixpkgs-unstable.esphome
   ];
 
   programs.bash.completion.enable = true;
