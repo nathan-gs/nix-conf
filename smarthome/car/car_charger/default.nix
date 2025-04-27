@@ -193,6 +193,14 @@
         max = 15;
         step = 1;
       };
+      car_charger_charge_target = {
+        icon = "mdi:ev-station";
+        min = 0;
+        max = 100;
+        step = 5;
+        unit_of_measurement = "%";
+        mode = "slider";
+      };
     };
 
     input_datetime = {
@@ -206,126 +214,122 @@
 
     "automation manual" = [
       (
-        ha.automation "system/car_charger.charging_stopped"
+        ha.automation "system/car_charger.night_turn_on"
           {
-            triggers = [ 
-              
-              # TODO (ha.trigger.off "binary_sensor.ohme_home_go_car_connected") 
-              (ha.trigger.off "switch.garden_garden_plug_laadpaal_repeater")
+            triggers = [
+              (ha.trigger.time_pattern_minutes "10")
+            ];
+            conditions = [
+              (ha.condition.on "binary_sensor.calendar_night")
+              (ha.condition.state "device_tracker.x1_xdrive30e" "home")
+              (ha.condition.below "sensor.x1_xdrive30e_remaining_battery_percent" "input_number.car_charger_charge_target")
             ];
             actions = [
-              # TODO (ha.action.on "switch.ohme_home_go_pause_charge")
-              (ha.action.off "switch.garden_garden_plug_laadpaal_repeater")
-              (ha.action.off "input_boolean.car_charger_charge_offpeak")
+              (ha.action.set_value "select.x1_xdrive30e_ac_charging_limit" "9")
+              (
+                ha.action.conditional 
+                  [
+                    (ha.condition.off "switch.x1_xdrive30e_charging")
+                  ]
+                  [
+                    (ha.action.delay "00:01:00")
+                    (ha.action.on "switch.x1_xdrive30e_charging")
+                  ]
+                  []
+              )
             ];
           }
       )
       (
-        ha.automation "system/car_charger.turn_on"
+        ha.automation "system/car_charger.night_completed"
           {
             triggers = [
-              (
-                ha.trigger.template 
-                  ''
-                    {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
-                    {% set should_charge = states('input_boolean.car_charger_charge_offpeak') | bool(false) %}
-                    {{ should_charge and is_offpeak }}
-                  ''
-              )
-              (ha.trigger.at "input_datetime.car_charger_charge_at")
-              (ha.trigger.state_to "switch.garden_garden_plug_laadpaal_repeater" "on")
-              (ha.trigger.off "binary_sensor.electricity_delivery_power_near_max_threshold")
+              (ha.trigger.above "sensor.x1_xdrive30e_remaining_battery_percent" "input_number.car_charger_charge_target")
+              (ha.trigger.at "06:55:00")
+            ];
+            conditions = [
+              (ha.condition.state "device_tracker.x1_xdrive30e" "home")
+              (ha.condition.on "binary_sensor.calendar_night")
+            ];
+            actions = [
+              (ha.action.off "switch.x1_xdrive30e_charging")
+              (ha.action.delay "00:01:00")
+              (ha.action.set_value "select.x1_xdrive30e_ac_charging_limit" "32")
+              (ha.action.set_value "input_number.car_charger_charge_target" "0")
+            ];
+          }
+      )
+      (
+        ha.automation "system/car_charger.sunny"
+          {
+            triggers = [
+              (ha.trigger.state "sensor.electricity_solar_power")
             ];
             conditions = [
               (
                 ha.condition.template 
-                ''
-                  {% set charge_offpeak = is_state("input_boolean.car_charger_charge_offpeak", "on") %}
-                  {% set laadpaal_repeater_on = is_state("switch.garden_garden_plug_laadpaal_repeater", "on") %}
-                  {% set charge_at = is_state("input_boolean.car_charger_charge_at", "on") %}
-                  {{ charge_offpeak or charge_at or laadpaal_repeater_on }}
-                ''
+                  ''
+                    {% set battery_remaining = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                    {% set solar = states('sensor.electricity_solar_power') | int(0) %}
+                    {{ (battery_remaining > 90) or (solar > 1300) }}
+                  ''
               )
+              (ha.condition.state "device_tracker.x1_xdrive30e" "home")
             ];
-            actions = [     
+            actions = [
+              (
+                ha.action.set_value 
+                  "select.x1_xdrive30e_ac_charging_limit"
+                  ''
+                    {% set sun = states('sensor.electricity_solar_power') | int(0) %}
+                    {% set available_a = sun / 230 %}
+                    {% set a = available_a | round(0) %}
+                    {{ max(min(a, 32), 6) }}
+                  ''
+              )
               (
                 ha.action.conditional 
-                  [(ha.condition.below "input_number.car_charger_automation_attempt" 5)]
                   [
-                    (
-                      ha.action.conditional
-                        [(ha.condition.off "binary_sensor.electricity_high_usage")]
-                        [
-                          (
-                            ha.action.conditional 
-                              [
-                                (ha.condition.below "sensor.solis_remaining_battery_capacity" 18)
-                                (ha.condition.below "sensor.electricity_solar_power" 1200)
-                              ]
-                              [                                
-                                (ha.action.automation "solar_battery_charge")
-                                (ha.action.delay "00:02:00")
-                                (ha.action.delay ''{{ (states('sensor.solar_battery_charging_remaining_minutes_till_overdischargesoc') | int(0)) * 60 }}'')                            
-                              ]
-                              []
-                          )
-                          (ha.action.set_value "number.solar_battery_maxgridpower" 300)
-                          (ha.action.off "switch.ohme_home_go_pause_charge")     
-                          # Avoid retriggering
-                          (
-                            ha.action.conditional
-                              [(ha.condition.off "switch.garden_garden_plug_laadpaal_repeater")]
-                              [(ha.action.on "switch.garden_garden_plug_laadpaal_repeater")]
-                              []
-                          )                          
-                          (ha.action.set_value "input_number.car_charger_automation_attempt" 0)                          
-                          (ha.action.off "input_boolean.car_charger_charge_at")
-                        ]
-                        [
-                          (ha.action.increment "input_number.car_charger_automation_attempt")
-                          (
-                            # Exponential back-off
-                            ha.action.delay 
-                              ''
-                                {% set attempt = states("input_number.car_charger_automation_attempt") | int(1) %}
-                                {{ (3**attempt * 60) |timestamp_custom('%H:%M:%S', false) }}
-                              ''
-                          )
-                          (ha.action.automation "system_car_charger_turn_on")
-                        ]
-                    )
+                    (ha.condition.off "switch.x1_xdrive30e_charging")
                   ]
                   [
-                    (
-                      ha.action.notify 
-                        ''
-                          {% set attempt = states("input_number.car_charger_automation_attempt") | int(1) %}
-                          {% set delay = (3**attempt * 60) |timestamp_custom('%H:%M:%S', false) %}
-                          car_charger: cannot charge, max attempts reached ({{attempt}}), for a delay of {{ delay }}
-                        ''
-                        ""
-                    )
+                    (ha.action.delay "00:01:00")
+                    (ha.action.on "switch.x1_xdrive30e_charging")
                   ]
-              )         
-              
+                  []
+              )
+            ];
+          }
+      )
+      (
+        ha.automation "system/car_charger.charging_elsewhere"
+          {
+            triggers = [
+              (ha.trigger.on "binary_sensor.x1_xdrive30e_charging_status")
+            ];
+            conditions = [
+              (ha.condition.state "device_tracker.x1_xdrive30e" "away")
+            ];
+            actions = [
+              (ha.action.set_value "select.x1_xdrive30e_ac_charging_limit" "32")
             ];
           }
       )
       (
         ha.automation "system/car_charger.turn_off"
-        {
-          triggers = [
-            (ha.trigger.off "binary_sensor.electricity_is_offpeak")
-            (ha.trigger.off "switch.garden_garden_plug_laadpaal_repeater")
-            (ha.trigger.on "binary_sensor.electricity_delivery_power_max_threshold")
-          ];
-          conditions = [
-            (ha.condition.on "binary_sensor.ohme_home_go_car_connected")
-          ];
-          actions = [
-            (ha.action.on "switch.ohme_home_go_pause_charge") 
-          ];
-        }
+          {
+            triggers = [
+              (ha.trigger.on "binary_sensor.electricity_delivery_power_max_threshold")
+              (ha.trigger.below "sensor.electricity_solar_power" 1000)
+            ];
+            conditions = [
+              (ha.condition.state "device_tracker.x1_xdrive30e" "home")
+              (ha.condition.on "switch.x1_xdrive30e_charging")
+            ];
+            actions = [
+              (ha.action.off "switch.x1_xdrive30e_charging")              
+            ];
+          }
       )
       (
         ha.automation "system/car_charger.ask"
@@ -334,22 +338,31 @@
               (ha.trigger.at "21:30")
             ];
             conditions = [
-              (ha.condition.on "binary_sensor.ohme_home_go_car_connected")
+              (ha.condition.state "device_tracker.x1_xdrive30e" "home")
             ];
             actions = [
+              (ha.action.set_value "input_number.car_charger_charge_target" "0")
               {
                 service = "notify.mobile_app_nphone";
                 data = {
-                  title = "Enable car charger during off peak?";
-                  message = "Enable car charger during off peak?";
+                  title = "Charge Car?";
+                  message = "Charge option?";
                   data = {
                     tag = "car_charger_ask";
                     persistent = true;
                     sticky = true;
                     actions = [
                       {
-                        action = "CAR_CHARGE_CHARGE_AT_ON";
-                        title = "Yes, charge at";
+                        action = "CAR_CHARGE_CHARGE_TO_30";
+                        title = "Charge to 30%";
+                      }
+                      {
+                        action = "CAR_CHARGE_CHARGE_TO_60";
+                        title = "Charge to 60%";
+                      }
+                      {
+                        action = "CAR_CHARGE_CHARGE_TO_95";
+                        title = "Charge to 95%";
                       }
                     ];
                   };
@@ -365,7 +378,17 @@
               {
                 platform = "event";
                 event_type = "mobile_app_notification_action";
-                event_data.action = "CAR_CHARGE_CHARGE_AT_ON";
+                event_data.action = "CAR_CHARGE_CHARGE_TO_30";
+              }
+              {
+                platform = "event";
+                event_type = "mobile_app_notification_action";
+                event_data.action = "CAR_CHARGE_CHARGE_TO_60";
+              }
+              {
+                platform = "event";
+                event_type = "mobile_app_notification_action";
+                event_data.action = "CAR_CHARGE_CHARGE_TO_95";
               }
             ];            
             actions = [
@@ -378,7 +401,12 @@
                   };
                 };
               }
-              (ha.action.on "input_boolean.car_charger_charge_offpeak")
+              (
+                ha.action.set_value "input_number.car_charger_charge_target"
+                  ''
+                  {{ 30 if trigger.event.data.action == 'CAR_CHARGE_CHARGE_TO_30' else 60 if trigger.event.data.action == 'CAR_CHARGE_CHARGE_TO_60' else 95 }}
+                  ''
+              )
             ];
           }
       )
@@ -440,6 +468,7 @@
           "input_boolean.car_charger_charge_offpeak"
           "sensor.garden_garden_metering_plug_power"
           "sensor.garden_garden_metering_plug_energy"
+          "input_number.car_charger_charge_target"
         ];
 
         entity_globs = [

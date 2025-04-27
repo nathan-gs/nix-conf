@@ -36,7 +36,8 @@ in
           "number.x1_xdrive30e_*"
           "switch.x1_xdrive30e_*"
           "lock.x1_xdrive30e_*"           
-          "select.x1_xdrive30e_*"            
+          "select.x1_xdrive30e_*"
+          "device_tracker.x1_xdrive30e"            
         ];
       };
     };

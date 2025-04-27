@@ -25,7 +25,7 @@
           {
             name = "calendar/night";
             state = ''
-              {{ now().hour < 8 or now().hour > 23 }}
+              {{ now().hour < 7 or now().hour >= 22 }}
             '';
             icon = ''
               {% set is_set = is_state('binary_sensor.calendar_night', 'on') %}

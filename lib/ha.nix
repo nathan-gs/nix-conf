@@ -274,7 +274,7 @@ let
     on_for = name: for: state_to_for name "on" for;
 
     off_for = name: for: state_to_for name "off" for;
-
+ 
     above = entity: threshold: {
       platform = "numeric_state";
       entity_id = entity;
@@ -340,11 +340,6 @@ let
     template = template: {
       condition = "template";
       value_template = template;
-    };
-
-    or = conditions: {
-      condition = "or";
-      conditions = conditions;
     };
 
   };
