@@ -39,16 +39,32 @@ wifi:
 
 esp32_ble_tracker:
   scan_parameters:
-    interval: 550ms
+    interval: 1100ms
     window: 550ms
     active: true
+  on_ble_advertise:
+  - mac_address: "B0:E9:FE:53:B5:7D"  # floor0/bureau/switchbot
+    then:
+      - lambda: |-
+          ESP_LOGD("ble_adv", "Found allowed device: floor0/bureau/switchbot");
+  - mac_address: "B0:E9:FE:55:37:87"  # floor0/living/switchbot
+    then:
+      - lambda: |-
+          ESP_LOGD("ble_adv", "Found allowed device: floor0/living/switchbot");
+  - mac_address: "B0:E9:FE:55:35:C9"  # floor1/fen/switchbot
+    then:
+      - lambda: |-
+          ESP_LOGD("ble_adv", "Found allowed device: floor1/fen/switchbot");
+  - then:
+    - lambda: |-
+        ESP_LOGD("ble_adv", "Ignored device: %s", x.get_name().c_str());
 
 
 sensor:
-  - platform: uptime
-    type: seconds
-    name: "floor1/bluetooth_proxy/uptime"
-    entity_category: diagnostic
+#  - platform: uptime
+#    type: seconds
+#    name: "floor1/bluetooth_proxy/uptime"
+#    entity_category: diagnostic
   - platform: internal_temperature
     entity_category: diagnostic
     name: "floor1/bluetooth_proxy/internal_temperature"
