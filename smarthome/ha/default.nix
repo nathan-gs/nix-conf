@@ -88,6 +88,8 @@
                   |rejectattr('entity_id', 'contains', 'ohme_home_go_ct_reading')
                   |rejectattr('entity_id', 'contains', 'ohme_home_go_next_charge_slot_end')
                   |rejectattr('entity_id', 'contains', 'ohme_home_go_next_charge_slot_start')                
+                  |rejectattr('entity_id', 'contains', 'ohme_home_go_charge_mode')                
+                  |rejectattr('entity_id', 'contains', 'ohme_home_go_charge_slots')                
                   |rejectattr('entity_id', 'contains', 'sensor.x1_xdrive30e_remaining_fuel')
                   |rejectattr('entity_id', 'contains', 'sensor.backup_')                  
               %}

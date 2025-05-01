@@ -264,28 +264,81 @@
           {
             triggers = [
               (ha.trigger.state "sensor.electricity_solar_power")
+              (
+                ha.trigger.template 
+                  ''
+                    {% set battery_remaining = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                    {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0) %}
+                    {% set solar = (states('sensor.electricity_solar_power') | int(0)) - 300 %}
+                    {{ (battery_remaining > 40) and (solar > 800) or (solar_remaining > 12) }}
+                  ''
+              )
             ];
             conditions = [
+              (ha.condition.state "device_tracker.x1_xdrive30e" "home")
               (
                 ha.condition.template 
                   ''
                     {% set battery_remaining = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                    {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0) %}
                     {% set solar = states('sensor.electricity_solar_power') | int(0) %}
-                    {{ (battery_remaining > 90) or (solar > 1300) }}
+                    {{ (battery_remaining > 90) or (solar > 1300) or ((battery_remaining > 40) and (solar > 800) and (solar_remaining > 12)) }}
                   ''
               )
-              (ha.condition.state "device_tracker.x1_xdrive30e" "home")
             ];
             actions = [
               (
-                ha.action.set_value 
-                  "select.x1_xdrive30e_ac_charging_limit"
-                  ''
-                    {% set sun = states('sensor.electricity_solar_power') | int(0) %}
-                    {% set available_a = sun / 230 %}
-                    {% set a = available_a | round(0) %}
-                    {{ max(min(a, 32), 6) }}
-                  ''
+                ha.action.conditional 
+                  [
+                    (
+                      ha.condition.template
+                        # Keep consistent with below! (to avoid BMW limits) 
+                        ''
+                          {% set sun = (states('sensor.electricity_solar_power') | int(0)) - 300 %}
+                          {% set battery_remaining = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                          {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0) %}
+                          {% set grid_consumed = states('sensor.electricity_grid_consumed_power_max_1m') | int(0) %}
+                          {% set available_a = sun / 230 %}
+                          {% set a = available_a | round(0) %}
+                          {% if grid_consumed > 300 %}
+                              {% set target = 6 %}
+                          {% elif solar_remaining > 8 and battery_remaining > 50 %}
+                              {% set target = 11 %}
+                          {% elif solar_remaining < 3.5 and battery_remaining <= 90 %}
+                              {% set target = 6 %}
+                          {% else %}
+                              {% set target = max(min(a, 11), 6) %}
+                          {% endif %}
+                          {{ target == states('select.x1_xdrive30e_ac_charging_limit') | int(32) }}
+                        ''
+                    )
+                  ]
+                  []
+                  [
+                    (ha.action.delay "00:03:00")
+                    (
+                      ha.action.set_value 
+                        "select.x1_xdrive30e_ac_charging_limit"
+                        ''
+                          {% set sun = (states('sensor.electricity_solar_power') | int(0)) - 300 %}
+                          {% set battery_remaining = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                          {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0) %}
+                          {% set grid_consumed = states('sensor.electricity_grid_consumed_power_max_1m') | int(0) %}
+                          {% set available_a = sun / 230 %}
+                          {% set a = available_a | round(0) %}
+                          {% if grid_consumed > 300 %}
+                              {% set target = 6 %}
+                          {% elif solar_remaining > 8 and battery_remaining > 50 %}
+                              {% set target = 11 %}
+                          {% elif solar_remaining < 3.5 and battery_remaining <= 90 %}
+                              {% set target = 6 %}
+                          {% else %}
+                              {% set target = max(min(a, 11), 6) %}
+                          {% endif %}
+                          {{ target }}
+                        ''
+                    )
+                  ]
               )
               (
                 ha.action.conditional 
@@ -293,12 +346,13 @@
                     (ha.condition.off "switch.x1_xdrive30e_charging")
                   ]
                   [
-                    (ha.action.delay "00:01:00")
+                    (ha.action.delay "00:03:00")
                     (ha.action.on "switch.x1_xdrive30e_charging")
                   ]
                   []
               )
             ];
+            mode = "queued";
           }
       )
       (
@@ -327,8 +381,10 @@
               (ha.condition.on "switch.x1_xdrive30e_charging")
             ];
             actions = [
-              (ha.action.off "switch.x1_xdrive30e_charging")              
+              (ha.action.off "switch.x1_xdrive30e_charging")     
+              (ha.action.delay "00:02:00")
             ];
+            mode = "restart";
           }
       )
       (

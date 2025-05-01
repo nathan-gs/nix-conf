@@ -103,7 +103,7 @@ let
     };
   };
 
-  automation = name: { triggers ? [ ], conditions ? [ ], actions ? [ ], mode ? "single" }: {
+  automation = name: { triggers ? [ ], conditions ? [ ], actions ? [ ], mode ? "single", max_exceeded ? "warning" }: {
     id = genId name;
     alias = name;
     trigger = triggers;
@@ -153,10 +153,14 @@ let
       target.entity_id = entity;
     };
 
-    set_value = entity: value: {
-      service = "${lib.head (lib.strings.splitString "." entity)}.set_value";
+    set_value = entity: value: let
+      head = lib.head (lib.strings.splitString "." entity);
+      is_select = head == "select" || head == "input_select";
+      service_name = if is_select then "select_option" else "set_value";
+    in {
+      service = "${head}.${service_name}";
       target.entity_id = entity;
-      data.value = value;
+      data = if is_select then { option = value; } else { value = value; };
     };
 
     valve_open = entity: {
