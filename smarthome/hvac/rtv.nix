@@ -49,7 +49,9 @@ in
                   {% set sensor_temp = states('sensor.${v.floor}_${v.zone}_temperature') | float(0) %}
                   {% set rtv_temp = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature') | float(0) %}
                   {% set rtv_calibration = state_attr('climate.${v.floor}_${v.zone}_rtv_${v.name}', 'local_temperature_calibration') | float(0) %}
-                  { "local_temperature_calibration": {{ (sensor_temp - (rtv_temp - rtv_calibration))  | round(1) }} }
+                  {% set target = (sensor_temp - (rtv_temp - rtv_calibration)) | round(1) %}
+                  {% set safe_target = max(min(target, 5), -12) %}
+                  { "local_temperature_calibration": {{ safe_target }} }
                 ''
                 false
             )]

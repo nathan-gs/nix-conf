@@ -5,6 +5,7 @@ in
 {
   imports = [
     ./rooms.nix
+    ./bluetooth.nix
   ];
 
   services.home-assistant.config = {
