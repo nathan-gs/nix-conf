@@ -2,13 +2,13 @@
 
 buildPythonPackage rec {
   pname = "pyelectroluxocp";
-  version = "0.0.19";
+  version = "0.1.3";
 
   src = fetchFromGitHub {
     owner = "Woyken";
     repo = "py-electrolux-ocp";
-    rev = "3851a94e07b78cdb8463463f3b89ce3917e427ff";
-    sha256 = "sha256-P41o82aHY/MoQvY2VUtkt6HoTI4e8HYkgf+EC+ZaJsg=";
+    rev = "${version}";
+    sha256 = "sha256-3j7wzs86QAYpDwZlHY5EJPHI2af6RHdeHpiDkS7ZLGw=";
   };
 
   propagatedBuildInputs = [
@@ -16,7 +16,7 @@ buildPythonPackage rec {
     pkgs.python313Packages.aiohttp-retry
   ];
 
-  doCheck = false;
+  doCheck = true;
 
   pythonImportsCheck = [ "pyelectroluxocp" ];
 

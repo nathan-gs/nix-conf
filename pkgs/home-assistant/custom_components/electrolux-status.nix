@@ -4,13 +4,13 @@ buildHomeAssistantComponent rec {
 
   owner = "albaintor";
   domain = "electrolux_status";
-  version = "2.0.9";
+  version = "2.1.0";
 
   src = fetchFromGitHub {
     owner = owner;
     repo = "homeassistant_electrolux_status";
     rev = "v${version}";
-    sha256 = "sha256-jIzaj0NW1kBzHQrhyRWBfqtIdSXIGOAHB3X5MBadOf0=";
+    sha256 = "sha256-w1X6P/e6noHfpeXLJ7MK35BEi2WBKoQwXhgwZidNNaA=";
   };
 
   # TODO: remove when new version of pyelectroluxocp is released
@@ -18,6 +18,7 @@ buildHomeAssistantComponent rec {
 
   propagatedBuildInputs = [
     (pkgs.python313Packages.callPackage ../../python/pyelectroluxocp.nix {})
+    pkgs.python313Packages.aiofiles
   ];
 
 }
