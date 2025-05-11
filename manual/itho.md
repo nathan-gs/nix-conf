@@ -18,3 +18,5 @@ changing:
 ## 2025/04/14 
 
 - Summer temp (°C) from 22 to 25
+
+## 2025/05/10 Broken exhaust ventilator
