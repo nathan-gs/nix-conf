@@ -5,7 +5,7 @@
   services.komga = {
     enable = true;
     user = "nathan";
-    port = 32142;
+    settings.server.port = 32142;
     openFirewall = true;
   };
 

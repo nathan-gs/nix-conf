@@ -1,14 +1,14 @@
 { channels, config, pkgs, lib, ... }:
 {
 
-  imports = [
-     ./ebusd-service.nix
-  ];
+  #imports = [
+  #   ./ebusd-service.nix
+  #];
 
-  services.ebusd-t = {
+  services.ebusd = {
     enable = true;
     device = "enh:ebus:3335";
-    package = (pkgs.callPackage ../pkgs/ebusd.nix {});
+    #package = (pkgs.callPackage ../pkgs/ebusd.nix {});
     mqtt = {
       enable = true;
       host = "localhost";
@@ -35,7 +35,7 @@
   };
 
   environment.systemPackages = with pkgs; [ 
-    (pkgs.callPackage ../pkgs/ebusd.nix {})
+    #(pkgs.callPackage ../pkgs/ebusd.nix {})
   ];
 
 }

@@ -1,6 +1,12 @@
-{ config, pkgs, lib, ... }:
-
+{ config, pkgs, channels, nixpkgs-unstable, lib, ... }:
 {
+
+  imports = [
+    "${channels.nixpkgs-unstable}/nixos/modules/services/web-apps/openvscode-server.nix"
+  ];
+  disabledModules = [
+    "services/web-apps/openvscode-server.nix"
+  ];
 
   services.openvscode-server = {
     enable = true;
@@ -8,6 +14,7 @@
         userDataDir = "/home/nathan/.vscode_server";
     #host = "127.0.0.1";
     host = "0.0.0.0";
+    package = pkgs.nixpkgs-unstable.openvscode-server;
     extraPackages = [ pkgs.sqlite pkgs.nodejs pkgs.nixpkgs-fmt pkgs.nixd pkgs.git ];
     withoutConnectionToken = true;
     extraEnvironment = {
