@@ -11,4 +11,4 @@ ssh nnas.wg "cd /etc/nixos/secrets ; git pull"
 ssh nnas.wg "cd /etc/nixos/nix-conf ; git pull"
 
 echo "${bold}Switching to config${normal}"
-ssh nnas.wg "cd /etc/nixos/nix-conf ; sudo ./switch.sh"
+ssh nnas.wg "cd /etc/nixos/nix-conf ; ./switch.sh"
