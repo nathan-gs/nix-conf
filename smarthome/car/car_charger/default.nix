@@ -158,7 +158,7 @@
             name = "car_charger_charging";
             device_class = "plug";
             state = ''
-              {{ is_state('sensor.ohme_home_go_status', 'charging')  }}
+              {{ states('sensor.ohme_home_go_power') | float(0)  > 0.01 }}
             '';
           }
         ];

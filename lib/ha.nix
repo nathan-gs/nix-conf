@@ -50,21 +50,29 @@ let
       unit_of_measurement = "kWh";
     };
 
-    avg_from_list = name: sensors: { unit_of_measurement, device_class, adjustment ? 0, icon ? "" }: {
+    avg_from_list = name: sensors: { unit_of_measurement, device_class, adjustments ? [], icon ? "" }: {
       name = name;
       state = ''
-        {% set v = [
+        {% set values = [
           ${builtins.concatStringsSep "," sensors}
         ]
         %}
-        {% set valid_v = v | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
-        {% if valid_v | length %}
-          {{ ((valid_v | sum / valid_v | length) | round(2) + ${toString adjustment}) }}
+        {% set valid_values = values | select('!=','unknown') | select('!=','unavailable') | map('float') | list %}
+        {% set valid_adjustments = [
+          ${builtins.concatStringsSep "," (builtins.map (i: if i < builtins.length adjustments then toString (builtins.elemAt adjustments i) else "0.0") (builtins.genList (x: x) (builtins.length sensors)))}
+        ]
+        %}
+        {% if valid_values | length %}
+          {% set adjusted_values = namespace(values=[]) %}
+          {% for i in range(valid_values | length) %}
+            {% set adjusted_values.values = adjusted_values.values + [(valid_values[i] + (valid_adjustments[i] | float))] %}
+          {% endfor %}
+          {{ (adjusted_values.values | sum / adjusted_values.values | length) | round(2) }}
         {% endif %}
       '';
       unit_of_measurement = unit_of_measurement;
       device_class = device_class;
-      state_class = "measurement";    
+      state_class = "measurement";
       availability = ''
         {% set v = [
           ${builtins.concatStringsSep "," sensors}

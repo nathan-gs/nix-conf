@@ -74,19 +74,19 @@ let
 
   templateSensorTemperature = ha.sensor.temperature;
 
-  roomTempFunction = { floor, room, sensors, adjustment ? 0 }: 
+  roomTempFunction = { floor, room, sensors, adjustments }: 
     ha.sensor.avg_from_list "${floor}/${room}/temperature" (map(v: "states('sensor.${v}')") sensors) {
       unit_of_measurement = "°C";
-      device_class = "temperature";  
-      adjustment = adjustment;
-      icon = "mdi:home-thermometer-outline";
+      device_class = "temperature";
+      adjustments = adjustments;
+      icon = "mdi:thermometer";
     };
 
-  roomHumidityFunction = { floor, room, sensors, adjustment ? 0 }: 
+  roomHumidityFunction = { floor, room, sensors, adjustments }: 
     ha.sensor.avg_from_list "${floor}/${room}/humidity" (map(v: "states('sensor.${v}')") sensors) {
       unit_of_measurement = "%";
-      device_class = "humidity";  
-      adjustment = adjustment;
+      device_class = "humidity";
+      adjustments = adjustments;
       icon = ''
           {% if states('sensor.${floor}_${room}_humidity') | float(100) > 70 %}
               mdi:water-percent-alert
@@ -214,10 +214,12 @@ in
             )
           )
         ]
-        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_temperature"]; adjustment = -0.3; }) (builtins.filter (v: v != "living") rooms.floor0)
-        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "ebusd_370_displayedroomtemp_temp" "floor0_${v}_temperature_na_temperature" "floor0_living_fire_alarm_main_temperature" ]; }) [ "living" ]
-        ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_temperature" ]; adjustment = -0.3; }) rooms.floor1
-        ++ map (v: roomTempFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_temperature" ]; }) rooms.basement
+        ++ [(roomTempFunction { floor = "floor1"; room = "fen"; sensors = [ "floor1_fen_temperature_na_temperature" "floor1_fen_switchbot" ]; adjustments = ["-0.3" "0" ];})]
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_temperature"]; adjustments = ["-0.3"]; }) (builtins.filter (room: room != "living" && room != "bureau") rooms.floor0)
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "floor0_${v}_temperature_na_temperature" "floor0_bureau_switchbot" ]; adjustments = ["-0.3" "0"];}) [ "bureau" ]
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "ebusd_370_displayedroomtemp_temp" "floor0_${v}_temperature_na_temperature" "floor0_living_fire_alarm_main_temperature" "floor0_living_switchbot" ]; adjustments = ["0" "-0.3" "0" "0"];}) [ "living" ]
+        ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_temperature" ]; adjustments = ["-0.3"]; }) (builtins.filter (v: v != "fen") rooms.floor1)
+        ++ map (v: roomTempFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_temperature" ]; adjustments = ["-0.3"]; }) rooms.basement
         ++ map
           (
             v: templateSensorTemperature "${v}_temperature_diff_wanted" ''
@@ -227,10 +229,12 @@ in
             ''
           )
           heatedRooms
-        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_humidity"]; adjustment = -5; }) (builtins.filter (v: v != "living") rooms.floor0)
-        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = [ "floor0_${v}_temperature_na_humidity" "floor0_living_fire_alarm_main_humidity" "floor0_living_fire_alarm_main_humidity" ]; }) [ "living" ]
-        ++ map (v: roomHumidityFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_humidity" ]; adjustment = -5; }) rooms.floor1
-        ++ map (v: roomHumidityFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_humidity"]; adjustment = -5; }) rooms.basement;
+        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_humidity"]; adjustments = [ "-5" ]; })  (builtins.filter (room: room != "living" && room != "bureau") rooms.floor0)
+        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = [ "floor0_${v}_temperature_na_humidity" "floor0_living_fire_alarm_main_humidity" "floor0_living_fire_alarm_main_humidity" "floor0_living_switchbot_humidity" ]; adjustments = [ "-5" "0" "0"]; }) [ "living" ]
+        ++ map (v: roomHumidityFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_humidity" ]; adjustments = ["-5"]; }) (builtins.filter (v: v != "fen") rooms.floor1)
+        ++ [(roomHumidityFunction { floor = "floor1"; room = "fen"; sensors = [ "floor1_fen_temperature_na_humidity" "floor1_fen_switchbot_humidity" ]; adjustments = ["-5" "0"];})]
+        ++ map (v: roomHumidityFunction { floor = "floor0"; room = v; sensors = [ "floor0_${v}_temperature_na_humidity" "floor0_bureau_switchbot_humidity" ]; adjustments = ["-5" "0"];}) [ "bureau" ]
+        ++ map (v: roomHumidityFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_humidity"]; adjustments = ["-5"]; }) rooms.basement;
       }
     ];
 
