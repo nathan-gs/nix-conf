@@ -225,6 +225,23 @@
               (ha.condition.below "sensor.x1_xdrive30e_remaining_battery_percent" "input_number.car_charger_charge_target")
             ];
             actions = [
+              (
+                ha.action.conditional
+                  [
+                    (ha.condition.template ''{{ states('button.ohme_home_go_approve_charge_2') == "unavailable" }}'')
+                  ]
+                  []
+                  [
+                    {
+                      action = "button.press";
+                      target.entity_id = "button.ohme_home_go_approve_charge_2";
+                    }
+                    (ha.action.delay "00:00:15")
+                  ]
+              )
+              (
+                ha.action.set_value "select.ohme_home_go_charge_mode" "max_charge"
+              )
               (ha.action.set_value "select.x1_xdrive30e_ac_charging_limit" "9")
               (
                 ha.action.conditional 
@@ -287,6 +304,23 @@
               )
             ];
             actions = [
+              (
+                ha.action.conditional
+                  [
+                    (ha.condition.template ''{{ states('button.ohme_home_go_approve_charge_2') == "unavailable" }}'')
+                  ]
+                  []
+                  [
+                    {
+                      action = "button.press";
+                      target.entity_id = "button.ohme_home_go_approve_charge_2";
+                    }
+                    (ha.action.delay "00:00:15")
+                  ]
+              )
+              (
+                ha.action.set_value "select.ohme_home_go_charge_mode" "max_charge"
+              )
               (
                 ha.action.conditional 
                   [

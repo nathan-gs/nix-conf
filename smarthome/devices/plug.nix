@@ -9,6 +9,7 @@ map
       name = "laadpaal_repeater";
       ieee = "0x842e14fffe3b8777";
       floor = "garden";
+      disabled = true;
     }
     {
       zone = "living";
