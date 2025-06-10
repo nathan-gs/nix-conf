@@ -27,16 +27,16 @@
 	target_file="/media/media/Books/Magazines/$title.epub"
         cp TheEconomist.epub "$target_file"
 
-        relay="${config.secrets.sendgrid.host}"
-        port="${toString config.secrets.sendgrid.port}"
+        relay="${config.secrets.smtp.host}"
+        port="${toString config.secrets.smtp.port}"
      
         ${pkgs.calibre}/bin/calibre-smtp \
           --attachment "$target_file" \
           --relay "$relay" \
           --encryption-method TLS \
           --port $port \
-          --username="${config.secrets.sendgrid.api.user}" \
-          --password="${config.secrets.sendgrid.api.key}" \
+          --username="${config.secrets.smtp.user}" \
+          --password="${config.secrets.smtp.password}" \
           --subject "$title" \
           --verbose \
           ${config.secrets.email} \
@@ -48,8 +48,8 @@
           --relay "$relay" \
           --encryption-method TLS \
           --port $port \
-          --username="${config.secrets.sendgrid.api.user}" \
-          --password="${config.secrets.sendgrid.api.key}" \
+          --username="${config.secrets.smtp.user}" \
+          --password="${config.secrets.smtp.password}" \
           --subject "$title" \
           --verbose \
           ${config.secrets.email} \
@@ -61,8 +61,8 @@
           --relay "$relay" \
           --encryption-method TLS \
           --port $port \
-          --username="${config.secrets.sendgrid.api.user}" \
-          --password="${config.secrets.sendgrid.api.key}" \
+          --username="${config.secrets.smtp.user}" \
+          --password="${config.secrets.smtp.password}" \
           --subject "$title" \
           --verbose \
           ${config.secrets.email} \

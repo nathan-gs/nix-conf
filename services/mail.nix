@@ -6,19 +6,19 @@
     extraConfig = ''
       defaults
       
-      account sendgrid
+      account apimailer
       aliases /etc/aliases
       auth on
       auto_from on
-      user ${config.secrets.sendgrid.api.user}
-      host ${config.secrets.sendgrid.host}
+      user ${config.secrets.smtp.user}
+      host ${config.secrets.smtp.host}
       maildomain nathan.gs
-      password ${config.secrets.sendgrid.api.key}
-      port ${toString config.secrets.sendgrid.port}
+      password ${config.secrets.smtp.password}
+      port ${toString config.secrets.smtp.port}
       syslog on
       tls on
 
-      account default : sendgrid
+      account default : apimailer
     '';
     setSendmail = true;
   };
