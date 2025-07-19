@@ -92,6 +92,8 @@
                   |rejectattr('entity_id', 'contains', 'ohme_home_go_charge_slots')                
                   |rejectattr('entity_id', 'contains', 'sensor.x1_xdrive30e_remaining_fuel')
                   |rejectattr('entity_id', 'contains', 'sensor.backup_')                  
+                  |rejectattr('entity_id', 'contains', 'sensor.floor1_roaming_metering_plug_airco')       
+                  |rejectattr('entity_id', 'contains', 'select.botje_lamp')                  
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';

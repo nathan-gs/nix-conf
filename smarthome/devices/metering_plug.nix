@@ -101,11 +101,16 @@ map
       floor = "basement";
     }
     {
-      zone = "garden";
-      name = "laadpaal";
+      zone = "keuken";
+      name = "vaatwas";
       ieee = "0xa4c1388c6231c3f0";
-      floor = "garden";
-      disabled = true;
+      floor = "floor0";
+    }
+    {
+      zone = "fen";
+      name = "airco";
+      ieee = "0xa4c1389eba708210";
+      floor = "floor1";
     }
   ]
 
