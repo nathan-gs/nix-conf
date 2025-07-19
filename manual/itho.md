@@ -20,3 +20,10 @@ changing:
 - Summer temp (°C) from 22 to 25
 
 ## 2025/05/10 Broken exhaust ventilator
+
+
+# 2025/06/21 Summer
+
+
+- Offset bypass regulation (K) from 1.5 to 0.5
+- Summer temp (°C) from 25 to 22 
