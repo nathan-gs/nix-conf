@@ -3,6 +3,7 @@
 nixpkgs-unstable.python313.pkgs.buildPythonPackage rec {
   pname = "autogen-agentchat";
   version = "0.4.5";
+  format = "setuptools";
 
   src = fetchPypi {
     inherit version;

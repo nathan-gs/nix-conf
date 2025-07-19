@@ -3,6 +3,7 @@
 nixpkgs-unstable.python313.pkgs.buildPythonApplication rec {
   pname = "autogen-core";
   version = "0.4.5";
+  format = "setuptools";
 
   src = fetchPypi {
     inherit version;

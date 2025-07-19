@@ -17,6 +17,9 @@
 buildPythonPackage rec {
   pname = "pyswitchbot";
   version = "0.59.0";
+
+  #format = "setuptools";
+
   pyproject = true;
 
   disabled = pythonOlder "3.8";

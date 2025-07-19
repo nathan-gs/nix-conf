@@ -1,8 +1,12 @@
-{ stdenv, pkgs, lib, buildPythonPackage, fetchFromGitHub }:
+{ stdenv, pkgs, lib, buildPythonPackage, setuptools, fetchFromGitHub }:
 
 buildPythonPackage rec {
   pname = "pyelectroluxocp";
   version = "0.1.3";
+  #format = "setuptools";
+
+  pyproject = true;
+  build-system = [ setuptools ];
 
   src = fetchFromGitHub {
     owner = "Woyken";
@@ -14,6 +18,7 @@ buildPythonPackage rec {
   propagatedBuildInputs = [
     pkgs.python313Packages.aiohttp
     pkgs.python313Packages.aiohttp-retry
+    pkgs.python313Packages.poetry-core
   ];
 
   doCheck = true;

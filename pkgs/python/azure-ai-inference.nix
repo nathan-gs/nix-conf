@@ -3,6 +3,7 @@
 nixpkgs-unstable.python313.pkgs.buildPythonApplication rec {
   pname = "azure-ai-inference";
   version = "1.0.0b8";
+  format = "setuptools";
 
   #src = fetchPypi {
   #  inherit version;
