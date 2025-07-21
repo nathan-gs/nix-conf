@@ -96,6 +96,7 @@
               {% set databeheer = 13.95 %}
               {{ ((engie / 12) - (discount / 12) + (imewo / 12) + (databeheer / 12)) | round(5) }}
             '';
+            state_class = "measurement";
           }           
           {
             name = "electricity_cost_peak_kwh";
@@ -138,6 +139,7 @@
               {% set databeheer = 13.95 %}
               {{ ((engie / 12) + ((imewo_capacitytariffs_per_kw / 12 ) * capacity_peak_current_month) - (discount / 12) + (databeheer / 12)) | round(5) }}
             '';
+            state_class = "measurement";
           }
           {
             name = "electricity_injection_kwh";

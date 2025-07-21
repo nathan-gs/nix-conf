@@ -97,6 +97,7 @@
                 0
               {% endif %}
             '';
+            state_class = "measurement";
           }
           {
             name = "solar/battery/overdischargesoc_target";
@@ -138,6 +139,7 @@
                 {% endif %}
               {% endif %}
             '';
+            state_class = "measurement";
           }
           {
             name = "solar/battery/forcechargesoc_target";
@@ -171,6 +173,7 @@
                 {{ forcechargesoc }}
               {% endif %}
             '';
+            state_class = "measurement";
           }
         ];
       }

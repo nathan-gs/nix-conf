@@ -76,6 +76,7 @@
               {{ (5.3448 / 1000) * 1.06 }}
               {% endif %}
             '';
+            state_class = "measurement";
           }
         ];
       }

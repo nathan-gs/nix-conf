@@ -164,6 +164,7 @@ let
             name = "electricity_delivery";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_delivery') | float ) + ( states('sensor.electricity_offpeak_delivery') | float ) }}";
+            state_class = "total";
           }
           {
             name = "electricity_delivery_hourly";
@@ -195,6 +196,7 @@ let
             name = "electricity_return";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_return') | float ) + ( states('sensor.electricity_offpeak_return') | float ) }}";
+            state_class = "total";
           }
           {
             name = "electricity_return_hourly";
@@ -228,30 +230,35 @@ let
             state = "{{ states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000 }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
+            state_class = "measurement";
           }
           {
             name = "electricity_grid_returned_power";
             state = "{{ states('sensor.dsmr_reading_electricity_currently_returned') | float(0) * 1000 }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
+            state_class = "measurement";
           }
           {
             name = "electricity_total_power";
             state = "{{ states('sensor.solis_total_consumption_power') | float(0) }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
+            state_class = "measurement";
           }
           {
             name = "electricity_battery_power";
             state = "{{ states('sensor.solis_battery_power') | float(0) }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
+            state_class = "measurement";
           }
           {
             name = "electricity_solar_power";
             state = "{{ states('sensor.solar_currently_produced') | float(0) * 1000 }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
+            state_class = "measurement";
           }
         ];
       }

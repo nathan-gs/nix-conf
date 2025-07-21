@@ -107,6 +107,7 @@ in
           {
             name = "occupancy/home/people_count";
             state = "{{ states.person | selectattr('state','eq','home') | list | count }}";
+            state_class = "measurement";
           }
         ];
       }
