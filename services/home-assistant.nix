@@ -227,6 +227,63 @@
     startAt = "*-*-* 03:42:00";
   };
 
+  systemd.services.home-assistant-states-cleanup = {
+    description = "home-assistant-states-cleanup"; 
+    path = [ pkgs.mariadb ];
+    unitConfig = {
+      RequiresMountsFor = "/media/documents";
+    };
+    environment = {
+      DB_USER="hass";
+      DB_PASS=config.secrets.mariadb.hass;
+      DB_NAME="hass";
+    };
+    script = ''
+
+
+      # SQL queries to clean states and statistics_short_term, and optimize tables
+      SQL_QUERIES=$(cat << 'EOF'
+
+      -- Step 1: Delete from states table (excluding latitude/longitude attributes)
+      DELETE s
+      FROM states s
+      LEFT JOIN state_attributes ON s.attributes_id = state_attributes.attributes_id
+      WHERE s.last_updated_ts < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 10 DAY))
+        AND (state_attributes.shared_attrs IS NULL
+            OR state_attributes.shared_attrs NOT LIKE '%latitude%'
+            AND state_attributes.shared_attrs NOT LIKE '%longitude%');
+
+      -- Step 3: Delete from statistics_short_term table (older than 10 days)
+      DELETE FROM statistics_short_term
+      WHERE start_ts < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 10 DAY));
+
+      COMMIT;
+      EOF
+      )
+
+      # Execute SQL queries
+      echo "Starting database cleanup for $DB_NAME"
+      echo "$SQL_QUERIES" | mariadb -u "$DB_USER" -p"$DB_PASS" "$DB_NAME"      
+      if [ $? -eq 0 ]; then
+          echo "Database cleanup completed successfully"
+      else
+          echo "ERROR: Database cleanup failed"
+          exit 1
+      fi
+      
+      echo "Starting database optimize for $DB_NAME"
+      echo "OPTIMIZE TABLE states, statistics_short_term;" | mariadb -u "$DB_USER" -p"$DB_PASS" "$DB_NAME"
+      if [ $? -eq 0 ]; then
+          echo "Database cleanup optimize successfully"
+      else
+          echo "ERROR: Database optimize failed"
+          exit 1
+      fi
+    '';
+
+    startAt = "*-*-* 00:01:00";
+  };
+
   # needs copy, HA does not follow symlinks
   # https://github.com/home-assistant/core/pull/42295
   system.activationScripts.ha-www.text = ''
