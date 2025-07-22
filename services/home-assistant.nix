@@ -244,18 +244,36 @@
       # SQL queries to clean states and statistics_short_term, and optimize tables
       SQL_QUERIES=$(cat << 'EOF'
 
-      -- Step 1: Delete from states table (excluding latitude/longitude attributes)
+      -- Delete from states table (excluding latitude/longitude attributes and all binary entity types)
       DELETE s
       FROM states s
       LEFT JOIN state_attributes ON s.attributes_id = state_attributes.attributes_id
+      LEFT JOIN states_meta sm ON s.metadata_id = sm.metadata_id
       WHERE s.last_updated_ts < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 10 DAY))
         AND (state_attributes.shared_attrs IS NULL
-            OR state_attributes.shared_attrs NOT LIKE '%latitude%'
-            AND state_attributes.shared_attrs NOT LIKE '%longitude%');
-
-      -- Step 3: Delete from statistics_short_term table (older than 10 days)
+            OR (state_attributes.shared_attrs NOT LIKE '%latitude%'
+                AND state_attributes.shared_attrs NOT LIKE '%longitude%'))
+        AND (sm.entity_id NOT LIKE 'binary_sensor.%'
+            AND sm.entity_id NOT LIKE 'switch.%'
+            AND sm.entity_id NOT LIKE 'input_boolean.%'
+            AND sm.entity_id NOT LIKE 'lock.%'
+            AND sm.entity_id NOT LIKE 'alarm_control_panel.%'
+            AND sm.entity_id NOT LIKE 'cover.%'
+            AND sm.entity_id NOT LIKE 'light.%'
+            AND sm.entity_id NOT LIKE 'fan.%'
+            AND sm.entity_id NOT LIKE 'climate.%'
+            AND sm.entity_id NOT LIKE 'vacuum.%'
+            AND sm.entity_id NOT LIKE 'media_player.%');
+        
+      -- Delete from statistics_short_term table (older than 60 days)
       DELETE FROM statistics_short_term
-      WHERE start_ts < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 10 DAY));
+      WHERE start_ts < UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL 60 DAY));    
+
+      -- Delete orphaned rows from state_attributes table
+      DELETE sa
+      FROM state_attributes sa
+      LEFT JOIN states s ON s.attributes_id = sa.attributes_id
+      WHERE s.attributes_id IS NULL;
 
       COMMIT;
       EOF
@@ -272,7 +290,7 @@
       fi
       
       echo "Starting database optimize for $DB_NAME"
-      echo "OPTIMIZE TABLE states, statistics_short_term;" | mariadb -u "$DB_USER" -p"$DB_PASS" "$DB_NAME"
+      echo "OPTIMIZE TABLE states, state_attributes, statistics_short_term;" | mariadb -u "$DB_USER" -p"$DB_PASS" "$DB_NAME"
       if [ $? -eq 0 ]; then
           echo "Database cleanup optimize successfully"
       else
