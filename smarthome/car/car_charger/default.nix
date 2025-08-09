@@ -158,7 +158,16 @@
             name = "car_charger_charging";
             device_class = "plug";
             state = ''
-              {{ states('sensor.ohme_home_go_power') | float(0)  > 0.01 }}
+              {% set ohme = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
+              {% set bmw = 0 %}
+              {% if is_state('device_tracker.x1_xdrive30e', 'home') %}
+                {% if is_state('binary_sensor.x1_xdrive30e_charging_status', 'on') %}
+                  {% set a = states('select.x1_xdrive30e_ac_charging_limit') | int(0) %}
+                  {% set v = states('sensor.dsmr_reading_phase_voltage_l1') | int(230) %}
+                  {% set bmw = a * v %}
+                {% endif %}
+              {% endif %}
+              {{ max(ohme, bmw) > 0 }}
             '';
           }
         ];
@@ -509,8 +518,19 @@
           unique_id = "car_charger";
           entity_id = "binary_sensor.car_charger_charging";
           fixed.power = ''            
-            {% set power = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
-            {{ power }}
+            {% set ohme = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
+            {% set bmw = 0 %}
+            {% if is_state('device_tracker.x1_xdrive30e', 'home') %}
+              {% if is_state('binary_sensor.x1_xdrive30e_charging_status', 'on') %}
+                {% set a = states('select.x1_xdrive30e_ac_charging_limit') | int(0) %}
+                {% if a > 10.5 %}
+                  {% set a = 10.5 %}
+                {% endif %}
+                {% set v = states('sensor.dsmr_reading_phase_voltage_l1') | int(230) %}
+                {% set bmw = (a - 0.2) * v %}
+              {% endif %}
+            {% endif %}
+            {{ max(ohme, bmw) }}
           '';
           create_utility_meters = true;
           utility_meter_types = [ "hourly" "daily" "monthly" ];
@@ -521,7 +541,7 @@
           entity_id = "binary_sensor.car_charger_charging";
           fixed.power = ''            
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
+            {% set consumptionPower = (states('sensor.car_charger_power') | int(0)) %}
             {% set power = (consumptionPower - import_from_grid) %}
             {% if power < 0 %}
               {% set power = 0 %}
@@ -537,7 +557,7 @@
           unique_id = "car_charger_grid";
           fixed.power = ''
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
+            {% set consumptionPower = (states('sensor.car_charger_power') | int(0)) %}
             {% set power = min(import_from_grid, consumptionPower) %}
             {% if power < 0 %}
               {% set power = 0 %}
