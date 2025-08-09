@@ -255,7 +255,7 @@
         {
           name = "itho_wtw_inlet_fan";
           state_topic = "itho/ithostatus";
-          value_template = "{{ value_json['Supply fan (RPM)'] }}";
+          value_template = "{{ value_json['Supply fan actual (RPM)'] }}";
           unit_of_measurement = "rpm";
           unique_id = "itho_wtw_inlet_fan";
           state_class = "measurement";
@@ -264,7 +264,7 @@
         {
           name = "itho_wtw_outlet_fan";
           state_topic = "itho/ithostatus";
-          value_template = "{{ value_json['Exhaust fan (RPM)'] }}";
+          value_template = "{{ value_json['Exhaust fan actual (RPM)'] }}";
           unit_of_measurement = "rpm";
           unique_id = "itho_wtw_outlet_fan";
           state_class = "measurement";
