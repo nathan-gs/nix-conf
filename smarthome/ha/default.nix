@@ -94,6 +94,9 @@
                   |rejectattr('entity_id', 'contains', 'sensor.backup_')                  
                   |rejectattr('entity_id', 'contains', 'sensor.floor1_roaming_metering_plug_airco')       
                   |rejectattr('entity_id', 'contains', 'select.botje_lamp')                  
+                  |rejectattr('entity_id', 'contains', '_rtv_na_away_setting')                  
+                  |rejectattr('entity_id', 'contains', 'sensor.x1_xdrive30e_charging_end_time')
+                  |rejectattr('entity_id', 'contains', 'sensor.ebusd_bai_modulationtempdesired')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
