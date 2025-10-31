@@ -7,6 +7,7 @@
     extraGroups = [ "wheel" "docker" "media" "networkmanager" "surface-control" "dialout" ];
     openssh.authorizedKeys.keys = [
       config.secrets.ssh.ngo.pub
+      config.secrets.ssh.ndell.pub
       config.secrets.ssh.nathan-2021.pub
     ];
   };
