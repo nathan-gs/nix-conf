@@ -7,8 +7,8 @@
   {% set temperature_eco = 15.5 %}
   {% set temperature_night = 16 %}
   {% set temperature_comfort_low = 17.5 %}
-  {% set temperature_comfort = 19 %}
+  {% set temperature_comfort = 19.5 %}
   {% set temperature_minimal = 5.5 %}
-  {% set temperature_heating_threshold = 0.5 %}
+  {% set temperature_heating_threshold = 0.4 %}
   {% set temperature_max = 21.5 %}
 ''
