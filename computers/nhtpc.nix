@@ -20,13 +20,13 @@
       ../services/photoprism.nix
       #../services/plex.nix
       ../services/vscode.nix
-      ../services/autogenstudio.nix
+      #../services/autogenstudio.nix
       ../services/nzb.nix
       ../services/komga.nix
       ../services/jellyfin.nix
       ../services/nginx.nix
       #../services/smb.nix
-      ../services/ollama.nix
+      #../services/ollama.nix
       ../services/sos2mqtt.nix
       ../services/solis-control.nix
       ../services/remote-build-host.nix
