@@ -19,13 +19,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "onedrive";
-  version = "2.5.6";
+  version = "2.5.7";
 
   src = fetchFromGitHub {
     owner = "abraunegg";
     repo = "onedrive";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-AFaz1RkrtsdTZfaWobdcADbzsAhbdCzJPkQX6Pa7hN8=";
+    hash = "sha256-IllPh4YJvoAAyXDmSNwWDHN/EUtUuUqS7TOnBpr3Yts=";
   };
 
   outputs = [
@@ -61,8 +61,8 @@ stdenv.mkDerivation (finalAttrs: {
     installShellCompletion --fish --name onedrive contrib/completions/complete.fish
     installShellCompletion --zsh --name _onedrive contrib/completions/complete.zsh
 
-    substituteInPlace $out/lib/systemd/user/onedrive.service --replace-fail "/usr/bin/sleep" "${coreutils}/bin/sleep"
-    substituteInPlace $out/lib/systemd/system/onedrive@.service --replace-fail "/usr/bin/sleep" "${coreutils}/bin/sleep"
+    #substituteInPlace $out/lib/systemd/user/onedrive.service --replace-fail "/usr/bin/sleep" "${coreutils}/bin/sleep"
+    #substituteInPlace $out/lib/systemd/system/onedrive@.service --replace-fail "/usr/bin/sleep" "${coreutils}/bin/sleep"
   '';
 
   passthru = {
