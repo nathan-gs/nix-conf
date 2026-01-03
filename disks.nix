@@ -195,7 +195,7 @@ with lib;
         IS_DISKS_MOUNTED=`${pkgs.gnugrep}/bin/grep -c /media/disks /proc/mounts || :`
 
         if [ $IS_DISKS_MOUNTED -eq 0 ]; then
-          ${pkgs.utillinux}/bin/mount /media/disks
+          ${pkgs.util-linux}/bin/mount /media/disks
         else
           echo "/media/disks is mounted, not remounting."
         fi
@@ -208,7 +208,7 @@ with lib;
 
 
         if [ $IS_DISKS_MOUNTED -eq 0 ]; then
-          ${pkgs.utillinux}/bin/umount /media/disks
+          ${pkgs.util-linux}/bin/umount /media/disks
         fi
       '';
       startAt = "*-*-* 03:00:00";
@@ -226,7 +226,7 @@ with lib;
         IS_DISKS_MOUNTED=`${pkgs.gnugrep}/bin/grep -c /media/disks /proc/mounts || :`
 
         if [ $IS_DISKS_MOUNTED -eq 0 ]; then
-          ${pkgs.utillinux}/bin/mount /media/disks
+          ${pkgs.util-linux}/bin/mount /media/disks
         else
           echo "/media/disks is mounted, not remounting."
         fi
@@ -235,7 +235,7 @@ with lib;
         ${concatStringsSep "\n" (lib.imap (n: v: "${pkgs.btrfs-progs}/bin/btrfs subvolume snapshot -r /media/${v} /media/disks/backup/${v}/${v}_monthly_\$DT") monthlySnapshotVolumes)}
 
         if [ $IS_DISKS_MOUNTED -eq 0 ]; then
-          ${pkgs.utillinux}/bin/umount /media/disks
+          ${pkgs.util-linux}/bin/umount /media/disks
         fi
       '';
       startAt = "*-*-01 04:00:00";
@@ -252,7 +252,7 @@ with lib;
       script = concatStringsSep "\n" (lib.imap (n: v: ''
         if [ `${pkgs.gnugrep}/bin/grep -c /media/${v} /proc/mounts || :` -eq 0 ]; then
           mkdir -p /media/${v}
-          ${pkgs.utillinux}/bin/mount /media/${v}
+          ${pkgs.util-linux}/bin/mount /media/${v}
         fi
       '') dataVolumes);            
     };
@@ -280,7 +280,7 @@ with lib;
             "subvol=${v}" 
             "noatime" 
             "autodefrag" 
-            "space_cache"
+            "space_cache=v2"
             "x-systemd.mount-timeout=5min"
             "x-systemd.device-timeout=5min"
             "nofail"
@@ -300,7 +300,7 @@ with lib;
             "noauto" 
             "noatime" 
             "autodefrag" 
-            "space_cache" 
+            "space_cache=v2" 
             "x-systemd.mount-timeout=15min" 
             "degraded" 
           ];

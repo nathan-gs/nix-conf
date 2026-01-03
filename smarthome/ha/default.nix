@@ -97,6 +97,10 @@
                   |rejectattr('entity_id', 'contains', '_rtv_na_away_setting')                  
                   |rejectattr('entity_id', 'contains', 'sensor.x1_xdrive30e_charging_end_time')
                   |rejectattr('entity_id', 'contains', 'sensor.ebusd_bai_modulationtempdesired')
+                  |rejectattr('entity_id', 'contains', '_led_sync_mode_')
+                  |rejectattr('entity_id', 'contains', '_led_state')
+                  |rejectattr('entity_id', 'contains', 'floor1_fen_metering_plug_airco')
+                  |rejectattr('entity_id', 'contains', '_calibration')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';

@@ -1,17 +1,25 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
-    secrets.url = "git+file:///etc/nixos/secrets";
-    photoprism-slideshow.url = "github:nathan-gs/photoprism-slideshow";
-    nixos-hardware.url = "github:NixOS/nixos-hardware/master";
+    secrets = {
+      url = "git+file:///etc/nixos/secrets";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    photoprism-slideshow = {
+      url = "github:nathan-gs/photoprism-slideshow";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware/master";
+    };
   };
-
 
   outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, nixos-hardware, ... }:
     let
-      overlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.system}; };
+      overlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}; };
       overlayModule = ({ config, pkgs, ... }: { nixpkgs.overlays = [ overlay ]; });
+      platformModule = { nixpkgs.hostPlatform = "x86_64-linux"; };
 
     in
     {
@@ -24,12 +32,10 @@
             secrets.nixosModules.secrets
             photoprism-slideshow.nixosModules.photoprism-slideshow
             overlayModule
+            platformModule
           ];
 
           specialArgs.channels = { inherit nixpkgs nixpkgs-unstable; };
-
-          # Select the target system here.
-          system = "x86_64-linux";
         };
 
         ngo = nixpkgs.lib.nixosSystem {
@@ -39,14 +45,11 @@
             secrets.nixosModules.secrets
             nixos-hardware.nixosModules.microsoft-surface-go
             overlayModule
+            platformModule
           ];
 
           specialArgs.channels = { inherit nixpkgs nixpkgs-unstable; };
-
-          # Select the target system here.
-          system = "x86_64-linux";
         };
-
 
         nnas = nixpkgs.lib.nixosSystem {
           modules = [
@@ -54,14 +57,9 @@
             ./computers/nnas.nix
             secrets.nixosModules.secrets
             overlayModule
+            platformModule
           ];
-
-
-          # Select the target system here.
-          system = "x86_64-linux";
         };
       };
     };
 }
-
-

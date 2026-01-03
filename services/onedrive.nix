@@ -12,8 +12,8 @@
     };
     path = [pkgs.openssl];
     serviceConfig = {
-      ExecStart = "${(pkgs.callPackage ../pkgs/onedrive-2.5.nix {})}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal --verbose";
-      #ExecStart = "${pkgs.onedrive}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal";
+     # ExecStart = "${(pkgs.callPackage ../pkgs/onedrive-2.5.nix {})}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal --verbose";
+      ExecStart = "${pkgs.onedrive}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal --verbose";
       User = "nathan";
     };
     environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";

@@ -34,6 +34,8 @@
       "--pollinterval=50" ];
   };
 
+  systemd.services.ebusd.serviceConfig.RestartSec = 10;
+
   environment.systemPackages = with pkgs; [ 
     #(pkgs.callPackage ../pkgs/ebusd.nix {})
   ];

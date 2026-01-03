@@ -112,6 +112,13 @@
         ];
       }
       {
+        trigger = [
+          {
+            trigger = "numeric_state";
+            entity_id = "sensor.house_co2_max";
+            above = 1000;
+          }
+        ];
         binary_sensor = [
           {
             name = "house/co2/high";

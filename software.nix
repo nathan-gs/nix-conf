@@ -15,8 +15,8 @@
     #(pkgs.python312Packages.callPackage ./pkgs/python/autogen-studio.nix {})
     #(pkgs.callPackage ./pkgs/sos2mqtt.nix {})
     #devenv
-    (pkgs.callPackage ./pkgs/onedrive-2.5.nix {})
-    #onedrive
+    #(pkgs.callPackage ./pkgs/onedrive-2.5.nix {})
+    onedrive
     pkgs.nixpkgs-unstable.esphome
   ];
 

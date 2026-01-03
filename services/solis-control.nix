@@ -16,6 +16,7 @@
       ];
       DynamicUser = true;
       Restart = "on-failure";
+      RestartSec = "10";
       # Hardening
       CapabilityBoundingSet = "";
       DeviceAllow = [];
