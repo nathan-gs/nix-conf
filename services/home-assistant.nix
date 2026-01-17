@@ -188,6 +188,7 @@
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix { pkgs = pkgs.nixpkgs-unstable; })
       #(pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
+      pkgs.nixpkgs-unstable.home-assistant-custom-components.tuya_local
     ];
 
     customLovelaceModules = with pkgs.nixpkgs-unstable.home-assistant-custom-lovelace-modules; [
