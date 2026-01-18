@@ -15,7 +15,6 @@
   "away_preset_day"
   "away_preset_hour"
   "away_preset_minute"
-  "child_lock"
 
   "monday"
   "monday_hour_1"

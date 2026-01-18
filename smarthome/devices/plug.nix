@@ -1,7 +1,9 @@
 map
   (v: v // {
     type = "plug";
-    homeassistant.child_lock = null;
+    homeassistant = {};
+    #homeassistant.child_lock = null;
+    #filtered_attributes = [ "child_lock" ];
   })
   [
     {
@@ -9,7 +11,6 @@ map
       name = "laadpaal_repeater";
       ieee = "0x842e14fffe3b8777";
       floor = "garden";
-      disabled = true;
     }
     {
       zone = "living";

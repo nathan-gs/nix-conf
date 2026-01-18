@@ -1,7 +1,9 @@
 map
   (v: v // {
     type = "metering_plug";
-    homeassistant.child_lock = null;
+    homeassistant = {};
+    #homeassistant.child_lock = null;
+    #filtered_attributes = [ "child_lock" ];
   })
   [
     {
@@ -111,6 +113,12 @@ map
       name = "airco";
       ieee = "0xa4c1389eba708210";
       floor = "floor1";
+    }
+    {
+      zone = "car_charger";
+      name = "measure";
+      ieee = "0xa4c1389413b77b07";
+      floor = "system";
     }
   ]
 

@@ -21,7 +21,7 @@
         channel = 25;
         network_key = config.secrets.zigbee2mqtt.networkKey;
         log_output = [ "console" ];
-        log_level = "warn";
+        log_level = "warning";
       };
       mqtt = {
         version = 5;
