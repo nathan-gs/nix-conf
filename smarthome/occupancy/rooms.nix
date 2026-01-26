@@ -444,26 +444,6 @@ in
       ) 
     ];
 
-    recorder = {
-      include = {
-        entities = [
-          "binary_sensor.ndesk"
-        ];
-        entity_globs = [
-          "binary_sensor.*_in_use*"
-          "binary_sensor.occupancy_*"
-          "input_boolean.*_in_use"
-        ];
-      };
-      exclude = {
-        entities = [
-        ];
-        entity_globs = [
-          "automation.*_*_in_use_turn_on"
-          "automation.*_*_in_use_turn_off"
-        ];
-      };
-    };
   };
 
 }

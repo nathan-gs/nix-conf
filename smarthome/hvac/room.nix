@@ -237,23 +237,6 @@ in
         ++ map (v: roomHumidityFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_humidity"]; adjustments = ["-5"]; }) rooms.basement;
       }
     ];
-
-    recorder = {
-      include = {
-        entities = [
-        ]
-        ++ map(v: "sensor.${v}_temperature") rooms.all
-        ++ map(v: "sensor.${v}_temperature_diff_wanted") rooms.all
-        ++ map(v: "sensor.${v}_temperature_auto_wanted") rooms.all
-        ++ map(v: "sensor.${v}_humidity") rooms.all;
-      };
-      exclude = {
-        entity_globs = [
-          "sensor.*_*_rtv_*_temperature*"
-          "sensor.*_*_temperature_na_*"
-        ];
-      };
-    };
   };
 
 }

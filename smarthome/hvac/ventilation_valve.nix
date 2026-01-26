@@ -26,14 +26,6 @@
       })
     ];
 
-    recorder = {
-      include = {
-        entity_globs = [
-          "switch.*_wtw_valve_*"
-        ];
-
-      };      
-    };
 
   };
 }

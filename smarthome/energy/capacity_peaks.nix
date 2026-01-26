@@ -232,15 +232,5 @@
       
     ];
 
-    recorder = {
-      include = {
-        
-
-        entity_globs = [
-                    
-        ];
-      };
-    };
-
   };
 }

@@ -79,19 +79,6 @@
     ];
     
     utility_meter = {} // ha.utility_meter "indego_runtime" "sensor.indego_325608617_runtime_total" "weekly";
-
-    recorder = {
-      include = {
-        entities = [
-          "lawn_mower.indego_325608617"         
-          "sensor.indego_runtime_weekly"
-        ];
-
-        entity_globs = [
-          "binary_sensor.indego_325608617_*"
-          "sensor.indego_325608617_*"
-        ];
-      };
-    };
+    
   };
 }

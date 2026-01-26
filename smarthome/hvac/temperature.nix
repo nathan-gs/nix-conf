@@ -134,25 +134,6 @@ in
       }
     ];
 
-    recorder = {
-      include = {
-        entities = [
-          "sensor.indoor_dewpoint"
-          "sensor.outdoor_dewpoint"
-          "sensor.outdoor_humidity"
-          "sensor.outdoor_temperature"
-          "sensor.outdoor_temperature_24h_avg"
-          "sensor.indoor_humidity"
-          "sensor.indoor_humidity_max"
-          "sensor.indoor_temperature"
-        ];
-        entity_globs = [
-          "sensor.*_temperature"
-          "sensor.*_humidity"
-        ];
-      };
-    };
-
   };
 
 }

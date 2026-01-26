@@ -153,32 +153,6 @@ in
       }
     ];
 
-    recorder = {
-      include = {
-        entities = [
-          "input_boolean.coming_home"
-          "binary_sensor.anyone_home"
-          "binary_sensor.anyone_coming_home"
-          "binary_sensor.anyone_home_or_coming_home"
-          "binary_sensor.far_away"
-          "sensor.occupancy_anyone_home_daily"
-          "device_tracker.sm_g780g"        
-          "device_tracker.fphone_a55"
-          "binary_sensor.flaptop"
-          "binary_sensor.ndesk"
-          "binary_sensor.nstudio"
-        ];
-
-        entity_globs = [
-          "device_tracker.fphone*"
-          "device_tracker.nphone*"
-          "device_tracker.volvo_*"
-          "device_tracker.*_position"
-          "person.*"
-          "sensor.sxw_*"
-        ];
-      };
-    };
   };
 
 

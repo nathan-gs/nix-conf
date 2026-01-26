@@ -4,7 +4,6 @@
   services.home-assistant.config = {
     recorder.exclude = {
       domains = [
-        "automation"
         "media_player"
       ];
       event_types = [
@@ -14,7 +13,6 @@
         "service_registered"
         "recorder_5min_statistics_generated"
         "recorder_hourly_statistics_generated"
-        "automation_triggered"
       ];
     };
 

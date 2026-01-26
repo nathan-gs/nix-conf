@@ -334,19 +334,6 @@
       # }
     #];
 
-    recorder = {
-      include = {
-
-        entity_globs = [
-          "sensor.electricity_injection_*"
-          "sensor.electricity_cost_*"
-          "sensor.energy_electricity_cost"
-          "input_number.electricity_cost_*"
-          "input_number.electricity_injection_*"
-          "binary_sensor.energy_electricity_prefer_over_gas"
-          "binary_sensor.electricity_is_offpeak"
-        ];
-      };
-    };
+    
   };
 }

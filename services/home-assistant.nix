@@ -96,7 +96,7 @@
       recorder = {
         db_url = "mysql://hass:${config.secrets.mariadb.hass}@localhost/hass?unix_socket=/run/mysqld/mysqld.sock&charset=utf8mb4";
         purge_keep_days = 3650;
-        auto_purge = true;
+        auto_purge = false;
         auto_repack = true;
       };
     };

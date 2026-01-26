@@ -281,20 +281,5 @@
       })
     ];
 
-    recorder = {
-      include = {
-        entities = [
-          "sensor.solar_battery_overdischargesoc_target"
-          "sensor.solar_battery_forcechargesoc_target"
-        ];
-        entity_globs = [
-          "sensor.solar_battery_*"
-          "binary_sensor.solar_battery_*"
-          "number.solar_*"
-        ];
-      };
-    };
-
-
   };
 }

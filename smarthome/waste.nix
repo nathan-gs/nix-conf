@@ -51,15 +51,5 @@
 
     ];
 
-    recorder = {
-      exclude = {
-        entities = [
-          "calendar.afvalbeheer_recycleapp"
-        ];
-        entity_globs = [
-          "sensor.recycleapp_*"
-        ];
-      };
-    };
   };
 }

@@ -570,25 +570,5 @@
       ];
     };
 
-    recorder = {
-      include = {
-        entities = [
-          "binary_sensor.car_charger_can_load"
-          "input_boolean.car_charger_charge_at_night"
-          "input_boolean.car_charger_charge_offpeak"
-          "sensor.garden_garden_metering_plug_power"
-          "sensor.garden_garden_metering_plug_energy"
-          "input_number.car_charger_charge_target"
-        ];
-
-        entity_globs = [
-          "sensor.car_charger_*"
-          "binary_sensor.ohme_*"
-          "sensor.ohme_*"
-          "switch.ohme_*"
-          "number.ohme_*"
-        ];
-      };
-    };
   };
 }

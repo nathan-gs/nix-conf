@@ -26,11 +26,6 @@ in
     ];
 
 
-    recorder.include.entity_globs = [
-      "sensor.electricity_grid_consumed_power_*"
-      "sensor.electricity_grid_returned_power_*"
-    ];
-
   };
 
 }

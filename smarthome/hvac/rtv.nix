@@ -95,14 +95,5 @@ in
         mode = "queued";
       })
       rtv;
-
-    recorder.include = {
-      entities = [
-
-      ];
-      entity_globs = [
-        "sensor.*_*_rtv_*_temperature_wanted"
-      ];
-    };
   };
 }
