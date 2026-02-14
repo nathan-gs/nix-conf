@@ -30,6 +30,7 @@
       ../services/sos2mqtt.nix
       ../services/solis-control.nix
       ../services/remote-build-host.nix
+      ../services/matomo.nix
       ../monitoring.nix
       ../smarthome.nix
       ../gc.nix
