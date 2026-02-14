@@ -284,7 +284,7 @@
           value_template = ''            
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
             {#{{ (0.84 * raw - 1.85) | round(2) }}#}
-            {% set correction = -5 %}
+            {% set correction = -15 %}
             {{ (raw + correction) | round(2) }}
           '';
           unit_of_measurement = "°C";
