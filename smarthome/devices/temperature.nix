@@ -65,7 +65,7 @@ map
       floor = "garden";
     }
     {
-      ieee = "0x842712fffe76fce2";
+      ieee = "0x7c31fafffeef3dea";
       zone = "garden";
       name = "grasmaaier";
       floor = "garden";
