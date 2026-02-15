@@ -180,7 +180,7 @@
 
     customComponents = with pkgs.nixpkgs-unstable.home-assistant-custom-components; [
       # pkgs.nixosUnstable.home-assistant-custom-components.indego
-      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.nixpkgs-unstable.python313Packages.pyindego;})
+      # (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.nixpkgs-unstable.python313Packages.pyindego;})
       solis-sensor
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/hon.nix { pkgs = pkgs.nixpkgs-unstable; })
       #(pkgs.callPackage ../pkgs/home-assistant/custom_components/ohme.nix {})
