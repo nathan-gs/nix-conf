@@ -12,6 +12,7 @@
         max_heap_table_size = "512m";
         slow_query_log = "1";
         log_queries_not_using_indexes = "1";
+        max_allowed_packet = "64M";
       };
     };
     ensureUsers = [
