@@ -109,6 +109,23 @@
                 '';
               }
           )
+          (
+            ha.sensor.temperature "itho_wtw_inlet_temperature_correction" 
+            ''
+              {% set raw = states('sensor.itho_wtw_inlet_temperature_raw') | float(0) %}
+              {% set outdoor = states('sensor.outdoor_temperature') | float(0) %}
+              {% set prev = states('sensor.itho_wtw_inlet_temperature_correction') | float(none) %}
+              {% if outdoor > 0.5 %}
+                {{ (outdoor - raw) | round(2) }}
+              {% else %}
+                {% if prev is not none %}
+                  {{ prev | round(2) }}
+                {% else %}
+                  {{ (raw - 15.0) | round(2) }}
+                {% endif %}
+              {% endif %}
+            ''
+          )
         ];
       }
       {
@@ -284,7 +301,7 @@
           value_template = ''            
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
             {#{{ (0.84 * raw - 1.85) | round(2) }}#}
-            {% set correction = -15 %}
+            {% set correction = states('sensor.itho_wtw_inlet_temperature_correction') | float(-13) %}
             {{ (raw + correction) | round(2) }}
           '';
           unit_of_measurement = "°C";
@@ -292,7 +309,8 @@
           state_class = "measurement";
           device_class = "temperature";
           icon = "mdi:thermometer-chevron-down";
-        }{
+        }
+        {
           name = "itho_wtw_inlet_temperature_raw";
           state_topic = "itho/ithostatus";
           value_template = ''            
