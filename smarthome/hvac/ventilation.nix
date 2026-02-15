@@ -302,7 +302,7 @@
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
             {#{{ (0.84 * raw - 1.85) | round(2) }}#}
             {% set correction = states('sensor.itho_wtw_inlet_temperature_correction') | float(-13) %}
-            {{ (raw + correction) | round(2) }}
+            {{ ((raw + correction) - 0.5) | round(2) }}
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
