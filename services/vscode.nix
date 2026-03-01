@@ -72,4 +72,6 @@
   };
 
   networking.firewall.allowedTCPPorts = [ 3000 4000 ];
+
+  services.vscode-server.enable = true;
 }
