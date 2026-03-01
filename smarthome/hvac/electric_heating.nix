@@ -53,6 +53,7 @@ in
         binary_sensor = [
           {
             name = "system/wtw/metering_plug/verwarming_target";
+            unique_id = "system_wtw_metering_plug_verwarming_target";
             state = ''
               {% set inlet_temp_aq = states('sensor.system_wtw_air_quality_inlet_temperature') | float(5) %}
               {% set inlet_temp_wtw = states('sensor.itho_wtw_inlet_temperature') | float(5) %}
@@ -68,6 +69,7 @@ in
           }
           {
             name = "floor0/living/metering_plug/verwarming_target";
+            unique_id = "floor0_living_metering_plug_verwarming_target";
             state = ''
               ${autoWantedHeader}
               {% set sensor = states('floor0_living_metering_plug_verwarming_power') | float(0) %}
@@ -100,6 +102,7 @@ in
           }
           {
             name = "floor1/nikolai/metering_plug/verwarming_target";
+            unique_id = "floor1_nikolai_metering_plug_verwarming_target";
             state = ''
               ${autoWantedHeader}
               {% set sensor = states('sensor.floor1_nikolai_metering_plug_verwarming_power') | float(0) %}
@@ -135,6 +138,7 @@ in
           }
           {
             name = "floor0/bureau/metering_plug/verwarming_target";
+            unique_id = "floor0_bureau_metering_plug_verwarming_target";
             state = ''
               ${autoWantedHeader}
               {% set sensor = states('sensor.floor0_bureau_metering_plug_verwarming_power') | float(0) %}
@@ -170,6 +174,7 @@ in
           }
           {
             name = "floor1/badkamer/metering_plug/verwarming_target";
+            unique_id = "floor1_badkamer_metering_plug_verwarming_target";
             state = ''
               ${autoWantedHeader}
               {% set needs_heating = (states('sensor.floor1_badkamer_temperature_diff_wanted') | float(0)) > 0.7 %}

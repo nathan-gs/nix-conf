@@ -12,6 +12,7 @@
         sensor = [
           {
             name = "degree_day_daily";
+            unique_id = "degree_day_daily";
             state = ''
               {% set regularized_temp = 18.0 | float %}
               {% set average_outside_temp = states('sensor.outdoor_temperature_24h_avg') | float %}
@@ -35,6 +36,7 @@
         sensor = [
           {
             name = "gas_m3_per_degree_day";
+            unique_id = "gas_m3_per_degree_day";
             state = ''
               {% set gas_usage = states('sensor.gas_delivery_daily') | float %}
               {% set dd = states('sensor.degree_day_daily') | float %}
@@ -57,6 +59,7 @@
         sensor = [
           {
             name = "gas_m3_per_degree_day_occupancy_adjusted";
+            unique_id = "gas_m3_per_degree_day_occupancy_adjusted";
             state = ''
               {% set gas_m3_per_degree_day = states('sensor.gas_m3_per_degree_day') | float(0) %}
               {% set occupancy_rate = (1 + (states('sensor.occupancy_anyone_home_daily') | float(0)) / (1 + 24)) %}

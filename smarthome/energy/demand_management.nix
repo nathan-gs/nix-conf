@@ -7,6 +7,7 @@
         binary_sensor = [
           {
             name = "electricity/demand_management/run_now";
+            unique_id = "electricity_demand_management_run_now";
             state = ''
               {% set offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set battery_sufficiently_charged = (states('sensor.solis_remaining_battery_capacity') | int(0)) > 60 %}

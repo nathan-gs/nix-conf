@@ -5,6 +5,7 @@
       binary_sensor = [
         {
           name = "watermeter_leak_detect";
+          unique_id = "watermeter_leak_detect";
           state_topic = "watermeter/reading/leak_detect";
           device_class = "problem";
           payload_on = "true";
@@ -66,6 +67,7 @@
         sensor = [
           {
             name = "water_cost";
+            unique_id = "water_cost";
             unit_of_measurement = "€/L";
             # https://www.farys.be/nl/watertarieven
             # Discounted rate for the first 30m3 + 30m3 per person

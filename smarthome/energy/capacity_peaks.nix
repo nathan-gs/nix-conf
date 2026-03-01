@@ -13,6 +13,7 @@
     mqtt.sensor = [    
       {
         name = "electricity_delivery_power_monthly_15m_max";
+        unique_id = "electricity_delivery_power_monthly_15m_max";
         state_topic = "dsmr/consumption/peak/running_month";
         unit_of_measurement = "kW";
         device_class = "power";
@@ -27,6 +28,7 @@
         sensor = [
           {
             name = "electricity_delivery_power_15m";
+            unique_id = "electricity_delivery_power_15m";
             state = "{{ states('sensor.dsmr_consumption_quarter_hour_peak_electricity_average_delivered') | float(0) }}";
             unit_of_measurement = "kW";
             state_class = "measurement";
@@ -34,6 +36,7 @@
           }
           {
             name = "electricity_delivery_power_daily_15m_max";
+            unique_id = "electricity_delivery_power_daily_15m_max";
             state = ''
               {% set electricity_delivery_power_15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
               {% set electricity_delivery_power_daily_15m_max = this.state | float(0) %}
@@ -53,6 +56,7 @@
           }
           {
             name = "electricity_delivery_power_15m_estimated";
+            unique_id = "electricity_delivery_power_15m_estimated";
             unit_of_measurement = "kW";
             state = ''
               {% set seconds_left = (15 - now().minute % 15) * 60 - now().second % 60 %}
@@ -73,6 +77,7 @@
         binary_sensor = [
           {
             name = "electricity_high_usage";
+            unique_id = "electricity_high_usage";
             state = ''
               {% set is_high = false %}
               {# Wasmachine #}
@@ -111,6 +116,7 @@
           }       
           {
             name = "electricity_delivery_power_max_threshold";
+            unique_id = "electricity_delivery_power_max_threshold";
             state = ''
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
@@ -121,6 +127,7 @@
           }
           {
             name = "electricity_delivery_power_near_max_threshold";
+            unique_id = "electricity_delivery_power_near_max_threshold";
             state = ''
               {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}

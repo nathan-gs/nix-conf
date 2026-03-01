@@ -12,6 +12,7 @@ in
         sensor = [        
           {
             name = "indoor/dewpoint";
+            unique_id = "indoor_dewpoint";
             state = ''
               {% set rh = states('sensor.indoor_humidity') | float(60) / 100 %}
               {% set temp = states('sensor.indoor_temperature') | float(20) %}
@@ -26,6 +27,7 @@ in
           }
           {
             name = "outdoor/dewpoint";
+            unique_id = "outdoor_dewpoint";
             state = ''
               {% set rh = states('sensor.outdoor_humidity') | float(60) / 100 %}
               {% set temp = states('sensor.outdoor_temperature') | float(16) %}

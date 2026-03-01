@@ -8,6 +8,7 @@
         sensor = [
           {
             name = "solar_currently_produced";
+            unique_id = "solar_currently_produced";
             state = ''        
             {{ (( states('sensor.solar_solis_inverter_cgi').split(";")[4] | float ) / 1000 ) | float }}
           '';
@@ -18,6 +19,7 @@
           }
           {
             name = "solar_delivery_daily";
+            unique_id = "solar_delivery_daily";
             state = ''        
             {{ ( states('sensor.solar_solis_inverter_cgi').split(";")[5] | float ) }}
           '';
@@ -28,6 +30,7 @@
           }
           {
             name = "solar_delivery_total";
+            unique_id = "solar_delivery_total";
             # Workaround for Solis occasionally reporting the previous total in the first minutes after midnight          
             state = ''
               {% set hour = now().hour %}
@@ -55,6 +58,7 @@
         sensor = [
           {
             name = "solar_delivery_total_till_yesterday";
+            unique_id = "solar_delivery_total_till_yesterday";
             state = ''        
             {{ states('sensor.solar_delivery_total')| float(0) }}
           '';

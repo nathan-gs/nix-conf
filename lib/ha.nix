@@ -17,6 +17,7 @@ let
 
     battery_from_attr = name: source: {
       name = name;
+      unique_id = genId name;
       state = ''
         {{ state_attr('${source}', 'battery') | int(0) }}
       '';
@@ -52,6 +53,7 @@ let
 
     avg_from_list = name: sensors: { unit_of_measurement, device_class, adjustments ? [], icon ? "" }: {
       name = name;
+      unique_id = genId name;
       state = ''
         {% set values = [
           ${builtins.concatStringsSep "," sensors}
@@ -86,6 +88,7 @@ let
 
     max_from_list = name: sensors: { unit_of_measurement, device_class, icon ? "" }: {
       name = name;
+      unique_id = genId name;
       state = ''
         {% set v = [
           ${builtins.concatStringsSep "," sensors}

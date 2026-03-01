@@ -9,6 +9,7 @@
           # https://github.com/jazzyisj/unavailable-entities-sensor/
           {
             name = "system/ha/unavailable_entities";
+            unique_id = "system_ha_unavailable_entities";
             state = ''
               {% set entities = state_attr(this.entity_id,'entity_id') %}
               {{ entities|count if entities != none else none }}

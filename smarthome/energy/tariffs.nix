@@ -55,6 +55,7 @@
         sensor = [
           {
             name = "gas_cost_kwh";
+            unique_id = "gas_cost_kwh";
             unit_of_measurement = "€/kWh";
             state = ''
               {% set energycomponent = states('input_number.gas_cost_engie_drive_kwh_energycomponent') | float %}
@@ -75,12 +76,14 @@
           }
           {
             name = "gas_cost_m3";
+            unique_id = "gas_cost_m3";
             unit_of_measurement = "€/m³";
             state = "{{ ( states('sensor.gas_cost_kwh') | float ) * 11.5822997166}}";
             state_class = "measurement";
           }
           {
             name = "gas_cost_monthly_fixed";
+            unique_id = "gas_cost_monthly_fixed";
             unit_of_measurement = "€";
             state = ''
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
@@ -100,6 +103,7 @@
           }           
           {
             name = "electricity_cost_peak_kwh";
+            unique_id = "electricity_cost_peak_kwh";
             unit_of_measurement = "€/kWh";
             state = ''
               {% set energycomponent = states('input_number.electricity_cost_engie_drive_peak_kwh_energycomponent') | float %}
@@ -113,6 +117,7 @@
           }
           {
             name = "electricity_cost_offpeak_kwh";
+            unique_id = "electricity_cost_offpeak_kwh";
             unit_of_measurement = "€/kWh";            
             state = ''
               {% set energycomponent = states('input_number.electricity_cost_engie_drive_offpeak_kwh_energycomponent') | float %}
@@ -126,6 +131,7 @@
           }
           {
             name = "electricity_cost_monthly_fixed";
+            unique_id = "electricity_cost_monthly_fixed";
             unit_of_measurement = "€";
             state = ''
               {% set engie = 100.7 %}
@@ -143,6 +149,7 @@
           }
           {
             name = "electricity_injection_kwh";
+            unique_id = "electricity_injection_kwh";
             unit_of_measurement = "€/kWh"; 
             state = ''
               {% if (states('binary_sensor.electricity_is_offpeak') | bool(false)) %}
@@ -155,6 +162,7 @@
           }
           {
             name = "electricity_injection_creg_kwh";
+            unique_id = "electricity_injection_creg_kwh";
             unit_of_measurement = "€/kWh"; 
             state = ''
               {{ states('input_number.electricity_injection_creg_kwh') | float }}              
@@ -163,6 +171,7 @@
           }
           {
             name = "energy/electricity/cost";
+            unique_id = "energy_electricity_cost";
             unit_of_measurement = "€/kWh";
             state = ''
               {% if (states('binary_sensor.electricity_is_offpeak') | bool(false)) %}
@@ -178,6 +187,7 @@
         binary_sensor = [
           {
             name = "energy/electricity/prefer_over_gas";
+            unique_id = "energy_electricity_prefer_over_gas";
             state = ''
               {% set electricity_cost = states('sensor.energy_electricity_cost') | float(10) %}
               {% set gas_cost = states('sensor.gas_cost_kwh') | float(0.15) %}
@@ -186,6 +196,7 @@
           }
           {
             name = "electricity_is_offpeak";
+            unique_id = "electricity_is_offpeak";
             state = ''
               {% set day = now().weekday() %}
               {% set hour = now().hour %}

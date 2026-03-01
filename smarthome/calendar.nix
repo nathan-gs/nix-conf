@@ -8,6 +8,7 @@
         binary_sensor = [
           {
             name = "calendar/workday";
+            unique_id = "calendar_workday";
             state = ''
               {% set not_holiday_at_home = states('input_boolean.holiday_at_home') | bool(false) == false %}
               {% set workday = (now().weekday() < 5) %}
@@ -24,6 +25,7 @@
           }
           {
             name = "calendar/night";
+            unique_id = "calendar_night";
             state = ''
               {{ now().hour < 7 or now().hour >= 22 }}
             '';
@@ -38,6 +40,7 @@
           }
           {
             name = "calendar/weekend";
+            unique_id = "calendar_weekend";
             state = ''
               {% set weekend = (now().isoweekday() > 5) %}
               {{ weekend }}
@@ -53,6 +56,7 @@
           }
           {
             name = "calendar/weekend/evening";
+            unique_id = "calendar_weekend_evening";
             state = ''
               {% set weekend = (now().isoweekday() > 5) %}
               {{ weekend and 18 <= now().hour < 23 }}
@@ -68,6 +72,7 @@
           }
           {
             name = "calendar/weekend/morning_and_lunch";
+            unique_id = "calendar_weekend_morning_and_lunch";
             state = ''
               {% set weekend = (now().isoweekday() > 5) %}
               {{ weekend and 8 <= now().hour < 13 }}
@@ -83,6 +88,7 @@
           }
           {
             name = "calendar/weekend/afternoon";
+            unique_id = "calendar_weekend_afternoon";
             state = ''
               {% set weekend = (now().isoweekday() > 5) %}
               {{ weekend and 13 < now().hour < 18 }}
@@ -98,6 +104,7 @@
           }
           {
             name = "calendar/evening";
+            unique_id = "calendar_evening";
             state = ''
               {{ now().isoweekday() < 6 and 18 <= now().hour < 23 }}
             '';
@@ -112,6 +119,7 @@
           }          
           {
             name = "calendar/weekday";
+            unique_id = "calendar_weekday";
             state = ''
               {{ now().isoweekday() < 6 }}
             '';
@@ -126,6 +134,7 @@
           }
           {
             name = "calendar/weekday/day";
+            unique_id = "calendar_weekday_day";
             state = ''
               {{ now().isoweekday() < 6 and 8 <= now().hour < 18 }}
             '';

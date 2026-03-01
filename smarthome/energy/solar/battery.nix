@@ -24,6 +24,7 @@
         sensor = [
           {
             name = "battery_charging_energy";
+            unique_id = "battery_charging_energy";
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
               {% if battery_change > 0 %}
@@ -38,6 +39,7 @@
           }
           {
             name = "battery_discharging_energy";
+            unique_id = "battery_discharging_energy";
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
               {% if battery_change < 0 %}
@@ -54,6 +56,7 @@
         binary_sensor = [
           {
             name = "solar/battery/is_charging";
+            unique_id = "solar_battery_is_charging";
             device_class = "battery_charging";
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
@@ -66,6 +69,7 @@
           }
           {
             name = "solar/battery/is_grid_charging";
+            unique_id = "solar_battery_is_grid_charging";
             device_class = "battery_charging";
             state = ''
               {% set battery_change = states('sensor.battery_percentage_change') | float(0) %}
@@ -83,6 +87,7 @@
         sensor = [
           {
             name = "solar/battery/charging/remaining_minutes_till_overdischargesoc";
+            unique_id = "solar_battery_charging_remaining_minutes_till_overdischargesoc";
             state = '' 
               {% set max_grid_power = states('number.solar_battery_maxgridpower') | int(0) %}
               {% set battery_target = states('number.solar_battery_overdischargesoc') | int(0) %}
@@ -101,6 +106,7 @@
           }
           {
             name = "solar/battery/overdischargesoc_target";
+            unique_id = "solar_battery_overdischargesoc_target";
             unit_of_measurement = "%";
             device_class = "battery";
             state = ''
@@ -143,6 +149,7 @@
           }
           {
             name = "solar/battery/forcechargesoc_target";
+            unique_id = "solar_battery_forcechargesoc_target";
             unit_of_measurement = "%";
             device_class = "battery";
             state = ''
@@ -191,6 +198,7 @@
     mqtt.sensor = [
       {
         name = "battery_percentage_change";
+        unique_id = "battery_percentage_change";
         state_topic = "solar/battery/change";
         value_template = "{{ value_json.value }}";
         unit_of_measurement = "%";

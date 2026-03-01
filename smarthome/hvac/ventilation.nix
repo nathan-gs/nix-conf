@@ -8,6 +8,7 @@
         sensor = [
           {
             name = "wtw_target_fan";
+            unique_id = "wtw_target_fan";
             state = ''
               {% set is_home = states('binary_sensor.anyone_home') | bool(true) %}
               {% set is_cooking = false %}
@@ -139,6 +140,7 @@
         binary_sensor = [
           {
             name = "house/co2/high";
+            unique_id = "house_co2_high";
             state = ''{{ states('sensor.house_co2_max') | int(700) >= 1000 }}'';
             auto_off.minutes = 15;
             device_class = "safety";

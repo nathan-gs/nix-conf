@@ -15,6 +15,7 @@ in
         sensor = [
           {
             name = "heating_temperature_diff_wanted";
+            unique_id = "heating_temperature_diff_wanted";
             unit_of_measurement = "°C";
             device_class = "temperature";
             state = ''
@@ -30,6 +31,7 @@ in
           }
           {
             name = "heating/number_of_rooms_in_need_of";
+            unique_id = "heating_number_of_rooms_in_need_of";
             state = ''
               ${autoWantedHeader}
               {% set v = [
@@ -44,6 +46,7 @@ in
           }                    
           {
             name = "heating_temperature_desired";
+            unique_id = "heating_temperature_desired";
             unit_of_measurement = "°C";
             device_class = "temperature";
             state = ''
@@ -97,12 +100,14 @@ in
         binary_sensor = [
           {
             name = "cv/water_circulating";
+            unique_id = "cv_water_circulating";
             state = ''{{ is_state('sensor.ebusd_bai_status01_pumpstate', "on")}}'';
             delay_off.minutes = 1;
             device_class = "running";
           }
           {
             name = "heating/use_electric";
+            unique_id = "heating_use_electric";
             state = ''
               ${autoWantedHeader}
               {% set rooms_need_heating = states('sensor.heating_number_of_rooms_in_need_of') | int(0) %}
@@ -131,6 +136,7 @@ in
           }
           {
             name = "heating/use_gas";
+            unique_id = "heating_use_gas";
             state = ''
               {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}

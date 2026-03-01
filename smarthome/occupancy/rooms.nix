@@ -31,6 +31,7 @@ in
         binary_sensor = [
           {
             name = "floor0/bureau/pc_in_use";
+            unique_id = "floor0_bureau_pc_in_use";
             state = ''
               {% set pc_in_use = states('sensor.floor0_bureau_metering_plug_pc_power') |float(0) > 10 %}
               {% set ndesk_in_use = states('binary_sensor.ndesk') | bool(false) %}
@@ -41,11 +42,13 @@ in
           }
           {
             name = "floor1/nikolai/scherm_in_use";
+            unique_id = "floor1_nikolai_scherm_in_use";
             state = ''{{ states('sensor.floor1_nikolai_metering_plug_scherm_power') |float(0) > 10 }}'';
             device_class = "occupancy";
           }
           {
             name = "floor0/living/in_use_by_flaptop";
+            unique_id = "floor0_living_in_use_by_flaptop";
             state = ''
               {% set flaptop_on = states('binary_sensor.flaptop') |bool(false) %}
               {% set ndesk_on = states('binary_sensor.ndesk') | bool(false) %}
@@ -68,11 +71,13 @@ in
           }
           {
             name = "floor0_living_appletv_woonkamer";
+            unique_id = "floor0_living_appletv_woonkamer";
             state = ''{{ states('sensor.living_audio_input_format') in ['DTS 5.1'] }}'';
             delay_off = "00:00:45";
           }
           {
             name = "occupancy/home_alone/bureau/in_use";
+            unique_id = "occupancy_home_alone_bureau_in_use";
             state = ''
               {% set home_alone = (states.person | selectattr('state','eq','home') | list | count) == 1 %}
               {% set in_use = states('input_boolean.floor0_bureau_in_use') | bool(false) %}
@@ -82,6 +87,7 @@ in
           }
           {
             name = "occupancy/home_alone/nikolai/in_use";
+            unique_id = "occupancy_home_alone_nikolai_in_use";
             state = ''
               {% set home_alone = (states.person | selectattr('state','eq','home') | list | count) == 1 %}
               {% set in_use = states('input_boolean.floor1_nikolai_in_use') | bool(false) %}

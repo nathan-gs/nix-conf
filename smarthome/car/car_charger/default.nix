@@ -15,6 +15,7 @@
         sensor = [
           {
             name = "car_charger_solar_revenue_previous";
+            unique_id = "car_charger_solar_revenue_previous";
             state = ''        
             {{ states('sensor.car_charger_solar_revenue')| float(0) }}
           '';
@@ -25,6 +26,7 @@
           }
           {
             name = "car_charger_grid_revenue_previous";
+            unique_id = "car_charger_grid_revenue_previous";
             state = ''        
             {{ states('sensor.car_charger_grid_revenue')| float(0) }}
           '';
@@ -45,6 +47,7 @@
         sensor = [
           {
             name = "car_charger_solar_revenue";
+            unique_id = "car_charger_solar_revenue";
             state = ''              
               {% set hourly = states('sensor.car_charger_solar_revenue_hourly') %}
               {% set previous = states('sensor.car_charger_solar_revenue_previous') | float(0) %}
@@ -61,7 +64,8 @@
           }
           {
             name = "car_charger_grid_revenue";
-            state = ''              
+            unique_id = "car_charger_grid_revenue";
+            state = ''
               {% set hourly = states('sensor.car_charger_grid_revenue_hourly') %}
               {% set previous = states('sensor.car_charger_grid_revenue_previous') | float(0) %}
               {% if hourly not in ['unavailable', 'unknown', 'none'] %}
@@ -81,6 +85,7 @@
         sensor = [
           {
             name = "car_charger_solar_revenue_hourly";
+            unique_id = "car_charger_solar_revenue_hourly";
             device_class = "monetary";
             state = ''
               {% set energy = states('sensor.car_charger_solar_energy_hourly') %}
@@ -97,6 +102,7 @@
           }
           {
             name = "car_charger_grid_revenue_hourly";
+            unique_id = "car_charger_grid_revenue_hourly";
             device_class = "monetary";
             state = ''
               {% set energy = states('sensor.car_charger_grid_energy_hourly') %}
@@ -115,6 +121,7 @@
           }
           {
             name = "car_charger_revenue_hourly";
+            unique_id = "car_charger_revenue_hourly";
             device_class = "monetary";
             state = ''
               {% set grid = states('sensor.car_charger_grid_revenue_hourly') | float(0) %}
@@ -127,6 +134,7 @@
           }
           {
             name = "car_charger_revenue";
+            unique_id = "car_charger_revenue";
             state = ''              
               {% set grid = states('sensor.car_charger_grid_revenue') | float(0) %}
               {% set solar = states('sensor.car_charger_solar_revenue') | float(0) %}
@@ -142,6 +150,7 @@
         binary_sensor = [
           {
             name = "car_charger_can_load";
+            unique_id = "car_charger_can_load";
             device_class = "plug";
             icon = ''
               {% if states('binary_sensor.car_charger_can_load') %}
@@ -156,6 +165,7 @@
           }
           {
             name = "car_charger_charging";
+            unique_id = "car_charger_charging";
             device_class = "plug";
             state = ''
               {% set ohme = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}

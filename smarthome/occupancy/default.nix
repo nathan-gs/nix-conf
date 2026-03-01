@@ -60,6 +60,7 @@ in
         binary_sensor = [
           {
             name = "anyone_home";
+            unique_id = "anyone_home";
             state = ''
               {% if is_state('input_boolean.occupancy_somebody_home', 'on') %}
                 true
@@ -71,6 +72,7 @@ in
           }
           {
             name = "anyone_coming_home";
+            unique_id = "anyone_coming_home";
             state = ''              
               {% set closeby = states('sensor.sxw_nearest_distance') | float(0) <= 12000 %}
               {% set sensor_based = closeby and is_state('sensor.sxw_nearest_direction_of_travel', 'towards') %}
@@ -87,6 +89,7 @@ in
           }
           {
             name = "anyone_home_or_coming_home";
+            unique_id = "anyone_home_or_coming_home";
             state = ''
               {{ is_state('binary_sensor.anyone_home', 'on') or is_state('binary_sensor.anyone_coming_home', 'on') }}
             '';
@@ -94,6 +97,7 @@ in
           }
           {
             name = "far_away";
+            unique_id = "far_away";
             state = ''
               {% set override = is_state('input_boolean.coming_home', 'on') %}
               {{ not(override) and states('sensor.sxw_nearest_distance') | float(0) >= 200000 }}
@@ -106,6 +110,7 @@ in
         sensor = [
           {
             name = "occupancy/home/people_count";
+            unique_id = "occupancy_home_people_count";
             state = "{{ states.person | selectattr('state','eq','home') | list | count }}";
             state_class = "measurement";
           }

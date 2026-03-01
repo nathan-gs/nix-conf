@@ -162,71 +162,74 @@ let
         sensor = [
           {
             name = "electricity_delivery";
+            unique_id = "electricity_delivery";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_delivery') | float ) + ( states('sensor.electricity_offpeak_delivery') | float ) }}";
             state_class = "total";
           }
           {
             name = "electricity_delivery_hourly";
+            unique_id = "electricity_delivery_hourly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_delivery_hourly') | float ) + ( states('sensor.electricity_offpeak_delivery_hourly') | float ) }}";
           }
           {
             name = "electricity_delivery_daily";
+            unique_id = "electricity_delivery_daily";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_delivery_daily') | float ) + ( states('sensor.electricity_offpeak_delivery_daily') | float ) }}";
           }
           {
             name = "electricity_delivery_weekly";
+            unique_id = "electricity_delivery_weekly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_delivery_weekly') | float ) + ( states('sensor.electricity_offpeak_delivery_weekly') | float ) }}";
           }
           {
             name = "electricity_delivery_monthly";
+            unique_id = "electricity_delivery_monthly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_delivery_monthly') | float ) + ( states('sensor.electricity_offpeak_delivery_monthly') | float ) }}";
           }
           {
             name = "electricity_delivery_yearly";
+            unique_id = "electricity_delivery_yearly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_delivery_yearly') | float ) + ( states('sensor.electricity_offpeak_delivery_yearly') | float ) }}";
           }
 
           {
             name = "electricity_return";
+            unique_id = "electricity_return";
             unit_of_measurement = "kWh";
             state = "{{ ( states('sensor.electricity_peak_return') | float ) + ( states('sensor.electricity_offpeak_return') | float ) }}";
             state_class = "total";
           }
           {
             name = "electricity_return_hourly";
+            unique_id = "electricity_return_hourly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_return_hourly') | float ) + ( states('sensor.electricity_offpeak_return_hourly') | float ) }}";
           }
           {
             name = "electricity_return_daily";
+            unique_id = "electricity_return_daily";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_return_daily') | float ) + ( states('sensor.electricity_offpeak_return_daily') | float ) }}";
           }
           {
             name = "electricity_return_weekly";
+            unique_id = "electricity_return_weekly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_return_weekly') | float ) + ( states('sensor.electricity_offpeak_return_weekly') | float ) }}";
           }
           {
             name = "electricity_return_monthly";
+            unique_id = "electricity_return_monthly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_return_monthly') | float ) + ( states('sensor.electricity_offpeak_return_monthly') | float ) }}";
           }
           {
             name = "electricity_return_yearly";
+            unique_id = "electricity_return_yearly";
             unit_of_measurement = "kWh";
-            state = "{{ ( states('sensor.electricity_peak_return_yearly') | float ) + ( states('sensor.electricity_offpeak_return_yearly') | float ) }}";
           }
           
           
           {
             name = "electricity_grid_consumed_power";
+            unique_id = "electricity_grid_consumed_power";
             state = "{{ states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000 }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
@@ -234,6 +237,7 @@ let
           }
           {
             name = "electricity_grid_returned_power";
+            unique_id = "electricity_grid_returned_power";
             state = "{{ states('sensor.dsmr_reading_electricity_currently_returned') | float(0) * 1000 }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
@@ -241,6 +245,7 @@ let
           }
           {
             name = "electricity_total_power";
+            unique_id = "electricity_total_power";
             state = "{{ states('sensor.solis_total_consumption_power') | float(0) }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
@@ -248,6 +253,7 @@ let
           }
           {
             name = "electricity_battery_power";
+            unique_id = "electricity_battery_power";
             state = "{{ states('sensor.solis_battery_power') | float(0) }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
@@ -255,6 +261,7 @@ let
           }
           {
             name = "electricity_solar_power";
+            unique_id = "electricity_solar_power";
             state = "{{ states('sensor.solar_currently_produced') | float(0) * 1000 }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
