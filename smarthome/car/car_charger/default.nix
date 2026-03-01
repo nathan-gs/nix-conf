@@ -85,10 +85,10 @@
             state = ''
               {% set energy = states('sensor.car_charger_solar_energy_hourly') %}
               {% set injection_rev = states('sensor.electricity_injection_creg_kwh') %}
-              {% if energy not in ['unavailable', 'unknown', 'none'] or injection_rev not in ['unavailable', 'unknown', 'none', 0] %}
-                {{ (energy | float * injection_rev | float) | round(2) }}
+              {% if energy not in ['unavailable', 'unknown', 'none'] and injection_rev not in ['unavailable', 'unknown', 'none', 0] %}
+                {{ (energy | float(0) * injection_rev | float(0)) | round(2) }}
               {% else %}
-                {{ this.state | float }}
+                {{ this.state | float(0) }}
               {% endif %}
             '';
             unit_of_measurement = "€";
@@ -102,11 +102,11 @@
               {% set energy = states('sensor.car_charger_grid_energy_hourly') %}
               {% set injection_rev = states('sensor.electricity_injection_creg_kwh')  %}
               {% set energy_cost = states('sensor.energy_electricity_cost') %}
-              {% if (energy not in ['unavailable', 'unknown', 'none']) or (injection_rev not in ['unavailable', 'unknown', 'none', 0]) or (energy_cost not in ['unavailable', 'unknown', 'none', 0]) %}
-               {% set rev = (injection_rev | float) - (energy_cost | float) %}
-                {{ (energy | float * rev) | round(2) }}
+              {% if (energy not in ['unavailable', 'unknown', 'none']) and (injection_rev not in ['unavailable', 'unknown', 'none', 0]) and (energy_cost not in ['unavailable', 'unknown', 'none', 0]) %}
+               {% set rev = (injection_rev | float(0)) - (energy_cost | float(0)) %}
+                {{ (energy | float(0) * rev) | round(2) }}
               {% else %}
-                {{ this.state | float }}
+                {{ this.state | float(0) }}
               {% endif %}
             '';
             unit_of_measurement = "€";
@@ -174,14 +174,38 @@
       }
     ];
 
-    utility_meter = {} 
-      // ha.utility_meter "car_charger_grid_revenue" "sensor.car_charger_grid_revenue" "daily"
-      // ha.utility_meter "car_charger_grid_revenue" "sensor.car_charger_grid_revenue" "monthly"
-      // ha.utility_meter "car_charger_solar_revenue" "sensor.car_charger_solar_revenue" "daily"
-      // ha.utility_meter "car_charger_solar_revenue" "sensor.car_charger_solar_revenue" "monthly"
-      // ha.utility_meter "car_charger_revenue" "sensor.car_charger_revenue" "daily"
-      // ha.utility_meter "car_charger_revenue" "sensor.car_charger_revenue" "monthly"
-    ;
+    utility_meter = {
+      car_charger_grid_revenue_daily = {
+        source = "sensor.car_charger_grid_revenue";
+        cycle = "daily";
+        periodically_resetting = false;
+      };
+      car_charger_grid_revenue_monthly = {
+        source = "sensor.car_charger_grid_revenue";
+        cycle = "monthly";
+        periodically_resetting = false;
+      };
+      car_charger_solar_revenue_daily = {
+        source = "sensor.car_charger_solar_revenue";
+        cycle = "daily";
+        periodically_resetting = false;
+      };
+      car_charger_solar_revenue_monthly = {
+        source = "sensor.car_charger_solar_revenue";
+        cycle = "monthly";
+        periodically_resetting = false;
+      };
+      car_charger_revenue_daily = {
+        source = "sensor.car_charger_revenue";
+        cycle = "daily";
+        periodically_resetting = false;
+      };
+      car_charger_revenue_monthly = {
+        source = "sensor.car_charger_revenue";
+        cycle = "monthly";
+        periodically_resetting = false;
+      };
+    };
 
     input_boolean = {
       car_charger_charge_at_night = {
@@ -518,19 +542,7 @@
           unique_id = "car_charger";
           entity_id = "binary_sensor.car_charger_charging";
           fixed.power = ''            
-            {% set ohme = (states('sensor.ohme_home_go_power') | float(0)) * 1000 %}
-            {% set bmw = 0 %}
-            {% if is_state('device_tracker.x1_xdrive30e', 'home') %}
-              {% if is_state('binary_sensor.x1_xdrive30e_charging_status', 'on') %}
-                {% set a = states('select.x1_xdrive30e_ac_charging_limit') | int(0) %}
-                {% if a > 10.5 %}
-                  {% set a = 10.5 %}
-                {% endif %}
-                {% set v = states('sensor.dsmr_reading_phase_voltage_l1') | int(230) %}
-                {% set bmw = (a - 0.2) * v %}
-              {% endif %}
-            {% endif %}
-            {{ max(ohme, bmw) }}
+            {{ states('sensor.system_car_charger_metering_plug_meter_power') | int(0) }}
           '';
           create_utility_meters = true;
           utility_meter_types = [ "hourly" "daily" "monthly" ];

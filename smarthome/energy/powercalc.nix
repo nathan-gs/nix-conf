@@ -30,7 +30,8 @@
           create_group = "electric_heating";
           entities = [
             {
-              entity_id = "sensor.electric_heating_auxiliary";
+              power_sensor_id = "sensor.electric_heating_auxiliary_power";
+              energy_sensor_id = "sensor.electric_heating_auxiliary_energy";
             }
             {
               power_sensor_id = "sensor.floor1_badkamer_metering_plug_verwarming_power";
