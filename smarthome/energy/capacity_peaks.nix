@@ -114,14 +114,18 @@
             state = ''
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {{ (power15m > 1.25) and (power15m_estimated > 2.48) }}              
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
+              {% set threshold = [2.48, monthly_peak - 0.2] | max %}
+              {{ (power15m > 1.25) and (power15m_estimated > threshold) }}              
             '';
           }
           {
             name = "electricity_delivery_power_near_max_threshold";
             state = ''
               {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {{ electricity_delivery_power_15m_estimated > 1.9 }}
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
+              {% set threshold = [1.9, monthly_peak - 0.78] | max %}
+              {{ electricity_delivery_power_15m_estimated > threshold }}
             '';
           }
         ];
@@ -167,9 +171,9 @@
         alias = "electricity_delivery_power_max_threshold.light";
         trigger = [
           {
-            platform = "numeric_state";
-            entity_id = "sensor.electricity_delivery_power_15m_estimated";
-            above = "2.4";
+            platform = "state";
+            entity_id = "binary_sensor.electricity_delivery_power_max_threshold";
+            to = "on";
           }
         ];
         condition = [];
@@ -191,9 +195,9 @@
         alias = "electricity_delivery_power_near_max_threshold.light";
         trigger = [
           {
-            platform = "numeric_state";
-            entity_id = "sensor.electricity_delivery_power_15m_estimated";
-            above = "1.9";
+            platform = "state";
+            entity_id = "binary_sensor.electricity_delivery_power_near_max_threshold";
+            to = "on";
           }
         ];
         condition = [];
@@ -215,9 +219,9 @@
         alias = "electricity_delivery_power_normal.light";
         trigger = [
           {
-            platform = "numeric_state";
-            entity_id = "sensor.electricity_delivery_power_15m_estimated";
-            below = "1.8";
+            platform = "state";
+            entity_id = "binary_sensor.electricity_delivery_power_near_max_threshold";
+            to = "off";
           }
         ];
         condition = [];
