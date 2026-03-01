@@ -13,9 +13,13 @@
     nixos-hardware = {
       url = "github:NixOS/nixos-hardware/master";
     };
+    nixos-vscode-server = {
+      url = "github:nix-community/nixos-vscode-server";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
-  outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, nixos-hardware, ... }:
+  outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, nixos-hardware, nixos-vscode-server, ... }:
     let
       overlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}; };
       overlayModule = ({ config, pkgs, ... }: { nixpkgs.overlays = [ overlay ]; });
@@ -31,6 +35,7 @@
             ./computers/nhtpc.nix
             secrets.nixosModules.secrets
             photoprism-slideshow.nixosModules.photoprism-slideshow
+            nixos-vscode-server.nixosModules.default
             overlayModule
             platformModule
           ];
