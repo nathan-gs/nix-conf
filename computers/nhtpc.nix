@@ -108,10 +108,10 @@
   networking.interfaces.enp1s0.useDHCP = true;
   networking.interfaces.wlp2s0.useDHCP = true;
 
-  # Reject DHCP option 24 (Merit Dump File) — router sends malformed values
+  # Reject DHCP option 24 (path_mtu_aging_timeout) — router sends malformed values
   # causing constant "dhcp_envoption 24.0/3: malformed embedded option" errors
   networking.dhcpcd.extraConfig = ''
-    nooption merit_dump
+    nooption path_mtu_aging_timeout
   '';
   
   networking.wg-quick.interfaces.wg0 = {
