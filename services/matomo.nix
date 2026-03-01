@@ -58,4 +58,10 @@ in
   };
 
   services.matomo.periodicArchiveProcessing = true;
+
+  # Increase PHP memory limit for Matomo archive processing
+  # Default 128M causes empty responses on week/month/year report archiving
+  services.phpfpm.pools.matomo.phpOptions = lib.mkAfter ''
+    memory_limit = 512M
+  '';
 }

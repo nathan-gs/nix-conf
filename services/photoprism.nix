@@ -67,6 +67,9 @@
     interval = 60;
   };
 
+  # JVM exits with 143 (128+SIGTERM) on normal shutdown; treat as success
+  systemd.services.photoprism-slideshow.serviceConfig.SuccessExitStatus = "143";
+
   systemd.services.photoprism.serviceConfig = {
     DynamicUser = lib.mkOverride 0 false;
     User = lib.mkOverride 0 "nathan";
