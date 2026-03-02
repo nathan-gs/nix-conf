@@ -190,6 +190,7 @@
       #(pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
       #pkgs.nixpkgs-unstable.home-assistant-custom-components.tuya_local
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/tuya-local.nix { tinytuya = pkgs.nixpkgs-unstable.python313Packages.tinytuya; tuya-device-sharing-sdk = pkgs.nixpkgs-unstable.python313Packages.tuya-device-sharing-sdk; })
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/audiconnect.nix { beautifulsoup4 = pkgs.nixpkgs-unstable.python313Packages.beautifulsoup4; })
     ];
 
     customLovelaceModules = with pkgs.nixpkgs-unstable.home-assistant-custom-lovelace-modules; [
