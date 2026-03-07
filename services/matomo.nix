@@ -9,6 +9,8 @@ in
 
     hostname = matomoDomain;
 
+    package = pkgs.nixpkgs-unstable.matomo;
+
     nginx = {
       serverName = matomoDomain;
       serverAliases = [ "t.scrydon.com" ];
