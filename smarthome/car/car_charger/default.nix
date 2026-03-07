@@ -10,19 +10,25 @@
 
     template = [
       {
-        trigger = {
-          platform = "time_pattern";
-          hours = "*";
-          minutes = "59";
-          seconds = "50";
-        };
+        trigger = [
+          {
+            platform = "homeassistant";
+            event = "start";
+          }
+          {
+            platform = "time_pattern";
+            hours = "*";
+            minutes = "59";
+            seconds = "50";
+          }
+        ];
         sensor = [
           {
             name = "car_charger_solar_revenue_previous";
             unique_id = "car_charger_solar_revenue_previous";
             state = ''        
-            {{ states('sensor.car_charger_solar_revenue')| float(0) }}
-          '';
+              {{ states('sensor.car_charger_solar_revenue')| float(0) }}
+            '';
             unit_of_measurement = "€";
             device_class = "monetary";
             state_class = "total";
@@ -32,15 +38,26 @@
             name = "car_charger_grid_revenue_previous";
             unique_id = "car_charger_grid_revenue_previous";
             state = ''        
-            {{ states('sensor.car_charger_grid_revenue')| float(0) }}
-          '';
+              {{ states('sensor.car_charger_grid_revenue')| float(0) }}
+            '';
             unit_of_measurement = "€";
             device_class = "monetary";
             state_class = "total";
             icon = "mdi:car-electric-outline";
           }
+          {
+            name = "car_charger_cost_previous";
+            unique_id = "car_charger_cost_previous";
+            state = ''
+              {{ states('sensor.car_charger_cost')| float(0) }}              
+            '';
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }       
         ];
-      }
+      }   
       {
         trigger = {
           platform = "time_pattern";
@@ -52,14 +69,14 @@
           {
             name = "car_charger_solar_revenue";
             unique_id = "car_charger_solar_revenue";
-            state = ''              
+            state = ''
               {% set hourly = states('sensor.car_charger_solar_revenue_hourly') %}
               {% set previous = states('sensor.car_charger_solar_revenue_previous') | float(0) %}
               {% if hourly not in ['unavailable', 'unknown', 'none'] %}
                 {{ previous + (hourly | float) | round(2) }}       
               {% else %}
                 {{ this.state | float }}
-              {% endif %}                     
+              {% endif %}    
             '';
             unit_of_measurement = "€";
             device_class = "monetary";
@@ -73,20 +90,54 @@
               {% set hourly = states('sensor.car_charger_grid_revenue_hourly') %}
               {% set previous = states('sensor.car_charger_grid_revenue_previous') | float(0) %}
               {% if hourly not in ['unavailable', 'unknown', 'none'] %}
-                {{ previous + (hourly | float) | round(2) }}       
+                {{ previous + (hourly | float) | round(2) }}
               {% else %}
-                {{ this.state | float }}
-              {% endif %}              
+                {{ this.state | float(0) }}
+              {% endif %}
             '';
             unit_of_measurement = "€";
             device_class = "monetary";
             state_class = "total";
             icon = "mdi:car-electric-outline";
-          }          
+          }
+          {
+            name = "car_charger_cost";
+            unique_id = "car_charger_cost";
+            state = ''
+              {% set hourly = states('sensor.car_charger_cost_hourly') %}
+              {% set previous = states('sensor.car_charger_cost_previous') | float(0) %}
+              {% if hourly not in ['unavailable', 'unknown', 'none'] %}
+                {{ previous + (hourly | float) | round(2) }}
+              {% else %}
+                {{ this.state | float(0) }}
+              {% endif %}
+            '';
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }
         ];
       }
       {
         sensor = [
+          {
+            name = "car_charger_cost_hourly";
+            unique_id = "car_charger_cost_hourly";
+            device_class = "monetary";
+            state = ''
+              {% set energy = states('sensor.car_charger_energy_hourly') %}
+              {% set creg = states('sensor.electricity_injection_creg_kwh') %}
+              {% if energy not in ['unavailable', 'unknown', 'none'] and creg not in ['unavailable', 'unknown', 'none', 0] %}
+                {{ (energy | float(0) * creg | float(0)) | round(2) }}
+              {% else %}
+                {{ this.state | float(0) }}
+              {% endif %}
+            '';
+            unit_of_measurement = "€";
+            icon = "mdi:car-electric-outline";
+            state_class = "total";
+          }
           {
             name = "car_charger_solar_revenue_hourly";
             unique_id = "car_charger_solar_revenue_hourly";
@@ -157,7 +208,7 @@
             unique_id = "car_charger_charging";
             device_class = "plug";
             state = ''
-              {{ states('sensor.system_car_charger_power') | float(0) > 0.01 }}
+              {{ states('sensor.system_car_charger_metering_plug_meter_power') | int(0) > 5 }}
             '';
           }
         ];
@@ -192,6 +243,16 @@
       };
       car_charger_revenue_monthly = {
         source = "sensor.car_charger_revenue";
+        cycle = "monthly";
+        periodically_resetting = false;
+      };
+      car_charger_cost_daily = {
+        source = "sensor.car_charger_cost";
+        cycle = "daily";
+        periodically_resetting = false;
+      };
+      car_charger_cost_monthly = {
+        source = "sensor.car_charger_cost";
         cycle = "monthly";
         periodically_resetting = false;
       };

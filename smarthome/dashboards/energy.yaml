@@ -49,16 +49,16 @@ views:
                         type: button
                         tap_action:
                           action: toggle
-                        name: On Demand
+                        name: Charge to Max
                         show_state: true
                         icon_height: 30px
-                        entity: input_boolean.system_car_charger_charge_on_demand
+                        entity: input_boolean.car_charge_to_max
                       - show_name: true
                         show_icon: true
                         type: button
                         tap_action:
                           action: toggle
-                        name: Start Charge
+                        name: Charge
                         show_state: true
                         icon_height: 30px
                         entity: input_boolean.system_car_charger_charging_requested
@@ -69,8 +69,9 @@ views:
                         name: Target Current
                       - entity: number.system_car_charger_charging_current
                         name: Actual Current
-                      - entity: input_number.system_car_charger_current_override_a
+                      - entity: input_select.system_car_charger_current_override_a
                         name: Current Override
+                      - entity: sensor.car_charger_power
                       - entity: sensor.system_car_charger_power
                         name: Power
                         icon: mdi:ev-station
@@ -81,15 +82,19 @@ views:
                       - entity: sensor.car_charger_revenue_hourly
                       - entity: sensor.car_charger_revenue_daily
                       - entity: sensor.car_charger_revenue_monthly
+                      - entity: sensor.car_charger_cost_hourly
+                      - entity: sensor.car_charger_cost_monthly
                   - type: entities
                     entities:
-                      - entity: sensor.openweathermap_condition
-                      - entity: weather.sxw
-                  - type: entities
-                    entities:
-                      - entity: sensor.electricity_delivery_power_15m_estimated
-                      - entity: sensor.electricity_delivery_power_15m
-                      - entity: binary_sensor.electricity_high_usage
+                      - entity: sensor.audi_a6_sportback_e_tron_state_of_charge
+                      - entity: sensor.audi_a6_sportback_e_tron_target_state_of_charge
+                      - entity: sensor.audi_a6_sportback_e_tron_range
+                      - entity: sensor.audi_a6_sportback_e_tron_charging_state
+                      - entity: sensor.audi_a6_sportback_e_tron_charging_power
+                      - entity: sensor.audi_a6_sportback_e_tron_charging_complete_time
+                      - entity: sensor.audi_a6_sportback_e_tron_remaining_charge_time
+                      - entity: >-
+                          sensor.audi_a6_sportback_e_tron_remaining_climatisation_time
               - type: vertical-stack
                 cards:
                   - type: entities
@@ -117,6 +122,10 @@ views:
                       - entity: sensor.gas_cost_monthly_fixed
                       - entity: sensor.water_cost
                       - entity: binary_sensor.electricity_high_usage
+                  - type: entities
+                    entities:
+                      - entity: sensor.openweathermap_condition
+                      - entity: weather.sxw
               - type: vertical-stack
                 cards:
                   - type: energy-distribution
@@ -155,6 +164,13 @@ views:
                       - entity: sensor.solis_dc_power_pv2
                       - entity: sensor.solis_remaining_battery_capacity
                       - entity: number.solar_battery_overdischargesoc
+                      - entity: sensor.solar_power_mean_15m
+                  - type: entities
+                    entities:
+                      - entity: sensor.electricity_grid_consumed_power_mean_15m
+                      - entity: sensor.electricity_delivery_power_15m_estimated
+                      - entity: sensor.electricity_delivery_power_15m
+                      - entity: binary_sensor.electricity_high_usage
           - type: energy-solar-graph
           - type: energy-usage-graph
   - title: Utilities
