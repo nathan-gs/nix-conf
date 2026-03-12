@@ -24,7 +24,7 @@ in
       (statistics "electricity/grid/consumed/power" "value_min" 1)
       (statistics "electricity/grid/returned/power" "value_min" 1)
       (statistics "electricity/grid/consumed/power" "mean" 15)
-      (statistics "solar/power" "mean" 15)
+      (statistics "electricity/solar/power" "mean" 15)
     ];
 
 

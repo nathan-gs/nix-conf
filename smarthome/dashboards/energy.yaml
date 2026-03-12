@@ -56,12 +56,10 @@ views:
                       - show_name: true
                         show_icon: true
                         type: button
-                        tap_action:
-                          action: toggle
-                        name: Charge
+                        name: Should Charge
+                        entity: binary_sensor.system_car_charger_should_charge
                         show_state: true
                         icon_height: 30px
-                        entity: input_boolean.system_car_charger_charging_requested
                   - type: entities
                     entities:
                       - entity: select.system_car_charger_charging_mode
@@ -72,11 +70,7 @@ views:
                       - entity: input_select.system_car_charger_current_override_a
                         name: Current Override
                       - entity: sensor.car_charger_power
-                      - entity: sensor.system_car_charger_power
                         name: Power
-                        icon: mdi:ev-station
-                      - entity: sensor.system_car_charger_energy
-                        name: Energy
                   - type: entities
                     entities:
                       - entity: sensor.car_charger_revenue_hourly
@@ -164,7 +158,7 @@ views:
                       - entity: sensor.solis_dc_power_pv2
                       - entity: sensor.solis_remaining_battery_capacity
                       - entity: number.solar_battery_overdischargesoc
-                      - entity: sensor.solar_power_mean_15m
+                      - entity: sensor.electricity_solar_power_mean_15m
                   - type: entities
                     entities:
                       - entity: sensor.electricity_grid_consumed_power_mean_15m

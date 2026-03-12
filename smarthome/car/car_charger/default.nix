@@ -208,7 +208,7 @@
             unique_id = "car_charger_charging";
             device_class = "plug";
             state = ''
-              {{ states('sensor.system_car_charger_metering_plug_meter_power') | int(0) > 5 }}
+              {{ states('sensor.system_car_charger_metering_plug_measure_power') | int(0) > 5 }}
             '';
           }
         ];
@@ -268,7 +268,7 @@
           unique_id = "car_charger";
           entity_id = "binary_sensor.car_charger_charging";
           fixed.power = ''            
-            {{ states('sensor.system_car_charger_metering_plug_meter_power') | int(0) }}
+            {{ states('sensor.system_car_charger_metering_plug_measure_power') | int(0) }}
           '';
           create_utility_meters = true;
           utility_meter_types = [ "hourly" "daily" "monthly" ];

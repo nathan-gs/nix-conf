@@ -84,6 +84,19 @@
         ];
       }
       {
+        binary_sensor = [
+          {
+            name = "solar/battery/sufficient";
+            unique_id = "solar_battery_sufficient";
+            icon = "mdi:battery-high";
+            state = ''
+              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(10) %}
+              {{ battery > 10 }}
+            '';
+          }          
+        ];
+      }
+      {
         sensor = [
           {
             name = "solar/battery/charging/remaining_minutes_till_overdischargesoc";
