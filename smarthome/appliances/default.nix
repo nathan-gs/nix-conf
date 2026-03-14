@@ -5,6 +5,7 @@
   imports = [
     ./deken.nix
     ./dishwasher.nix
+    ./kiosk.nix
     ./lights.nix
     ./pump.nix
     ./sonos.nix

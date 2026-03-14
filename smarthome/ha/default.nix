@@ -102,6 +102,9 @@
                   |rejectattr('entity_id', 'contains', '_led_state')
                   |rejectattr('entity_id', 'contains', 'floor1_fen_metering_plug_airco')
                   |rejectattr('entity_id', 'contains', '_calibration')
+                  |rejectattr('entity_id', 'contains', 'binary_sensor.system_car_charger_connectivity')
+                  |rejectattr('entity_id', 'contains', '0xa4c1381f8ccf7230')
+                  |rejectattr('entity_id', 'contains', 'botje')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';

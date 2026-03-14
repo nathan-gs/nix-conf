@@ -42,6 +42,10 @@
               acl = ["readwrite solar/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.soliscontrol.password;
             };
+            freekiosk = {
+              acl = ["readwrite kiosk/#" "readwrite homeassistant/#" ];
+              password = config.secrets.mqtt.users.freekiosk.password;
+            };
         };
         
         port = 1883;

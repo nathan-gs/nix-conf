@@ -85,7 +85,7 @@ in
             state = ''
               {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
               {% set offpeak = is_state('binary_sensor.electricity_is_offpeak', 'on') %}
-              {{ offpeak and soc <= 70 }}
+              {{ offpeak and soc < 70 }}
             '';
           }
           {
