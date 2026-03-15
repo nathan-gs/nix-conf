@@ -30,7 +30,7 @@
       PHOTOPRISM_DEBUG = "true";
       PHOTOPRISM_DISABLE_TLS = "true";
     };
-    #package = pkgs.nixpkgs-unstable.photoprism;
+    package = pkgs.nixpkgs-unstable.photoprism;
   };
 
   services.nginx.virtualHosts."photoprism.nathan.gs" = {
