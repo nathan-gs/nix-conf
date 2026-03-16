@@ -29,6 +29,8 @@
       PHOTOPRISM_DISABLE_WEBDAV = "true";
       PHOTOPRISM_DEBUG = "true";
       PHOTOPRISM_DISABLE_TLS = "true";
+      PHOTOPRISM_DISABLE_VIPS = "true";
+      PHOTOPRISM_THUMB_SIZE = "1280";
     };
     package = pkgs.nixpkgs-unstable.photoprism;
   };

@@ -31,10 +31,27 @@ function ts() {
   echo $timestamp
 }
 
+function ts_journal() {
+  # Extract the time field from the log line
+  time_string=$(echo $1 | grep -o 'time="[^"]*"')
+  # Remove the 'time="' prefix and '"' suffix
+  clean_time=${time_string#time=\"}
+  clean_time=${clean_time%\"}
+  # Format for date command: replace T with space and remove timezone
+  clean_time_formatted=$(echo "$clean_time" | sed 's/T/ /; s/+.*//')
+  # Convert to timestamp
+  timestamp=$(date -d "$clean_time_formatted" '+%s')
+  echo $timestamp
+}
+
 function get_last_log() {
   grep 'photoprism' /var/log/nginx/access.log |
     grep -v '/slideshow' |
     tail -n 1
+}
+
+function get_last_journal() {
+  journalctl -u photoprism --grep="index: (updated|added) main" --no-pager | tail -n 1
 }
 
 current_prio=0
@@ -58,19 +75,27 @@ while true; do
 
   last_log=$(get_last_log)
 
-  if [ "${#last_log}" -eq 0 ]; then
-    photoprism_deprioritize
-    sleep 10
-    continue
-  fi
+  last_journal=$(get_last_journal)
 
-  ts_from_log=$(ts "$last_log")
   current_timestamp=$(date '+%s')
 
-  # Calculate the difference in seconds
-  seconds_ago=$((current_timestamp - ts_from_log))
+  if [ -n "$last_log" ]; then
+    ts_log=$(ts "$last_log")
+    seconds_ago_log=$((current_timestamp - ts_log))
+  else
+    seconds_ago_log=999999
+  fi
 
-  if [ "$seconds_ago" -gt 360 ]; then
+  if [ -n "$last_journal" ]; then
+    ts_journal_val=$(ts_journal "$last_journal")
+    seconds_ago_journal=$((current_timestamp - ts_journal_val))
+  else
+    seconds_ago_journal=999999
+  fi
+
+  min_seconds=$(( seconds_ago_log < seconds_ago_journal ? seconds_ago_log : seconds_ago_journal ))
+
+  if [ "$min_seconds" -gt 360 ]; then
     photoprism_deprioritize
     sleep 10
   else
