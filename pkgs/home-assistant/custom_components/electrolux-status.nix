@@ -17,8 +17,8 @@ buildHomeAssistantComponent rec {
   dontCheckManifest = true;
 
   propagatedBuildInputs = [
-    (pkgs.python313Packages.callPackage ../../python/pyelectroluxocp.nix {})
-    pkgs.python313Packages.aiofiles
+    (pkgs.python314Packages.callPackage ../../python/pyelectroluxocp.nix {})
+    pkgs.python314Packages.aiofiles
   ];
 
 }
