@@ -17,6 +17,11 @@ in
     };
 
     input_select = {
+      car_charge_override = {
+        name = "car/charge_override";
+        icon = "mdi:car-electric";
+        options = [ "auto" "on" "off" ];
+      };
       system_car_charger_current_override_a = {
         name = "system/car_charger/current_override_a";
         icon = "mdi:current-ac";
@@ -57,6 +62,7 @@ in
                     {% set target_a = 13 %}
                   {% endif %}
                 {% endif %}
+                {% set target_a = min(target_a, 13) %}                
               {% endif %}
               {% set ns = namespace(val=steps[0]) %}
               {% for s in steps %}
@@ -99,7 +105,7 @@ in
               {% set delivery = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set charge_to_max = is_state('input_boolean.car_charge_to_max', 'on') %}
               {% set soc_threshold = 100 if charge_to_max else 80 %}
-              {{ solar > 1400 and delivery < 0.4 and soc <= soc_threshold and battery > 20 }}
+              {{ solar > 1400 and delivery < 0.4 and soc <= soc_threshold and battery > 15 }}
             '';
           }
           {
@@ -117,11 +123,12 @@ in
             unique_id = "system_car_charger_should_charge";
             icon = "mdi:car-electric";
             state = ''
+              {% set override = states('input_select.car_charge_override') %}
               {% set battery_sufficient = is_state('binary_sensor.solar_battery_sufficient', 'on') %}
               {% set low_soc = is_state('binary_sensor.system_car_charger_low_soc', 'on') %}
               {% set should_charge_offpeak = is_state('binary_sensor.system_car_charger_should_charge_offpeak', 'on') %}
               {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') %}
-              {{ battery_sufficient and (low_soc or should_charge_offpeak or solar_eligible) }}
+              {{ override != 'off' and battery_sufficient and (low_soc or should_charge_offpeak or solar_eligible or override == 'on') }}
             '';
           }
         ];
@@ -136,6 +143,26 @@ in
           {
             triggers = [
               (ha.trigger.on "binary_sensor.system_car_charger_should_charge")
+              (ha.trigger.on "binary_sensor.system_car_charger_solar_charge_eligible")
+              (ha.trigger.state_to "input_select.car_charge_override" "on")
+              (ha.trigger.state "sensor.solis_remaining_battery_capacity")
+            ];
+            conditions = [
+              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
+              {
+                condition = "template";
+                value_template = ''
+                  {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') %}
+                  {% set override = states('input_select.car_charge_override') == 'on' %}
+                  {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                  {% if solar_eligible and not override %}
+                    {{ battery >= 20 }}
+                  {% else %}
+                    true
+                  {% endif %}
+                '';
+              }
+              (ha.condition.off "switch.system_car_charger")
             ];
             actions = [
               # Ensure charger switch is on
@@ -238,6 +265,57 @@ in
               (ha.action.set_value "number.system_car_charger_timer" 6)
               (ha.action.delay "00:00:05")
               (ha.action.set_value "select.system_car_charger_charging_mode" "delayed_charge")
+            ];
+          }
+      )
+
+      # Notify if override is off at 21:50 and someone is home
+      (
+        ha.automation "system/car_charger.notify_override_off"
+          {
+            triggers = [
+              (ha.trigger.at "21:50:00")
+            ];
+            conditions = [
+              (ha.condition.on "binary_sensor.anyone_home")
+              {
+                condition = "state";
+                entity_id = "input_select.car_charge_override";
+                state = "off";
+              }
+            ];
+            actions = [
+              {
+                service = "notify.notify";
+                data = {
+                  title = "Car charger";
+                  message = "Override is set to off — charger will not start tonight.";
+                  data.actions = [
+                    {
+                      action = "car_charger_override_auto";
+                      title = "Set to auto";
+                    }
+                  ];
+                };
+              }
+            ];
+          }
+      )
+
+      # Handle actionable notification: set override back to auto
+      (
+        ha.automation "system/car_charger.notify_override_off.handle_action"
+          {
+            triggers = [
+              {
+                platform = "event";
+                event_type = "mobile_app_notification_action";
+                event_data.action = "car_charger_override_auto";
+              }
+            ];
+            conditions = [ ];
+            actions = [
+              (ha.action.set_value "input_select.car_charge_override" "auto")
             ];
           }
       )

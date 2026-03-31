@@ -132,6 +132,7 @@
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
               {% set overdischargesoc_with_car_charger_on = 40 %}              
+              {% set overdischargesoc_solar_left = 15 %}
               {# min is 10 #}
               {% set overdischargesoc_min = 10 %}
               {#
@@ -147,9 +148,12 @@
               {# Capacity Tweaks #}
               {% if (power15m > 1.95) and (power15m_estimated > 2.45) %}
                 {{ overdischargesoc_min }}
-              {# If car charging #}
+              {# If solar left, prioritize to min even if car charging #}
+              {% elif is_solar_left %}
+                {{ overdischargesoc_solar_left }}
+              {# If car charging and no solar left #}
               {% elif is_car_charging and is_solar_left == false %}
-                {{ overdischargesoc_with_car_charger_on }}
+                {{ overdischargesoc_default }}
               {% else %}
                 {% if battery < 12 %}
                   {{ overdischargesoc_charge_to }}

@@ -55,6 +55,13 @@ views:
                         entity: input_boolean.car_charge_to_max
                       - show_name: true
                         show_icon: true
+                        type: tile
+                        name: Charge Override
+                        show_state: true
+                        icon_height: 30px
+                        entity: input_select.car_charge_override
+                      - show_name: true
+                        show_icon: true
                         type: button
                         name: Should Charge
                         entity: binary_sensor.system_car_charger_should_charge
