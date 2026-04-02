@@ -9,15 +9,15 @@
 }:
 
 buildHomeAssistantComponent rec {
-  owner = "nathan-gs";
+  owner = "make-all";
   domain = "tuya_local";
-  version = "2026.1.1-nb";
+  version = "2026.4.0";
 
   src = fetchFromGitHub {
     inherit owner;
     repo = "tuya-local";
     rev = "main";
-    hash = "sha256-fmTmN7Z21zWpS773yPcEucxE1+dQzsU2z4t6+d70OFY=";
+    hash = "sha256-0z3kb0rsb9d6xqfk5bl4qn0w3mncwg438c29a75zkwqwsf1kg7wf";
   };
 
   dependencies = [
