@@ -206,6 +206,25 @@
           }
         ];
       }
+      {
+        trigger = [
+          {
+            platform = "cron";
+            expression = "50 59 23 L * *";
+          }
+        ];
+        sensor = [
+          {
+            name = "electricity_injection_creg_kwh_previous";
+            unique_id = "electricity_injection_creg_kwh_previous";
+            unit_of_measurement = "€/kWh";
+            state = ''
+              {{ states('sensor.electricity_injection_creg_kwh') | float(0) }}
+            '';
+            state_class = "measurement";
+          }
+        ];
+      }
     ];
 
     #scrape = [

@@ -213,6 +213,27 @@
           }
         ];
       }
+      {
+        trigger = [
+          {
+            platform = "cron";
+            expression = "50 59 23 L * *";
+          }
+        ];
+        sensor = [
+          {
+            name = "car_charger_energy_monthly_previous";
+            unique_id = "car_charger_energy_monthly_previous";
+            state = ''        
+              {{ states('sensor.car_charger_energy_monthly') | float(0) }}
+            '';
+            unit_of_measurement = "kWh";
+            device_class = "energy";
+            state_class = "total";
+            icon = "mdi:car-electric-outline";
+          }
+        ];
+      }
     ];
 
     utility_meter = {
