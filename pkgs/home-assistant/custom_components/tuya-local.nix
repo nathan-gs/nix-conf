@@ -17,7 +17,7 @@ buildHomeAssistantComponent rec {
     inherit owner;
     repo = "tuya-local";
     rev = "main";
-    hash = "sha256-0z3kb0rsb9d6xqfk5bl4qn0w3mncwg438c29a75zkwqwsf1kg7wf";
+    hash = "sha256-jp83g9Mc8/nLUUkwNMjjzNbBgcWErjId7qalpTNYc3w=";
   };
 
   dependencies = [
