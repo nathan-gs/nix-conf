@@ -209,8 +209,10 @@
       {
         trigger = [
           {
-            platform = "cron";
-            expression = "50 59 23 L * *";
+            platform = "time_pattern";
+            hours = "23";
+            minutes = "59";
+            seconds = "50";
           }
         ];
         sensor = [
@@ -219,7 +221,12 @@
             unique_id = "electricity_injection_creg_kwh_previous";
             unit_of_measurement = "€/kWh";
             state = ''
-              {{ states('sensor.electricity_injection_creg_kwh') | float(0) }}
+              {% set last_day = (now().replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1) %}
+              {% if now().day == last_day.day %}
+                {{ states('sensor.electricity_injection_creg_kwh') | float(0) }}
+              {% else %}
+                {{ this.state | float(0) }}
+              {% endif %}
             '';
             state_class = "measurement";
           }

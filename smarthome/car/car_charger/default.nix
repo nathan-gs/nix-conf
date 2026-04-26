@@ -216,16 +216,23 @@
       {
         trigger = [
           {
-            platform = "cron";
-            expression = "50 59 23 L * *";
+            platform = "time_pattern";
+            hours = "23";
+            minutes = "59";
+            seconds = "50";
           }
         ];
         sensor = [
           {
             name = "car_charger_energy_monthly_previous";
             unique_id = "car_charger_energy_monthly_previous";
-            state = ''        
-              {{ states('sensor.car_charger_energy_monthly') | float(0) }}
+            state = ''
+              {% set last_day = (now().replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1) %}
+              {% if now().day == last_day.day %}
+                {{ states('sensor.car_charger_energy_monthly') | float(0) }}
+              {% else %}
+                {{ this.state | float(0) }}
+              {% endif %}
             '';
             unit_of_measurement = "kWh";
             device_class = "energy";
