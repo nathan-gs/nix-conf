@@ -10,7 +10,7 @@
         ''${(pkgs.callPackage ../pkgs/solis-control.nix {})}/bin/solis-control'' 
         ''--mqtt-user soliscontrol''
         ''--mqtt-password ${config.secrets.mqtt.users.soliscontrol.password}''
-        ''--solis-inverter ${config.secrets.solis.inverter}''
+        ''--solis-inverter-sn ${config.secrets.solis.inverterSn}''
         ''--solis-keyid ${config.secrets.solis.keyid}''
         ''--solis-secret ${config.secrets.solis.secret}''
       ];
