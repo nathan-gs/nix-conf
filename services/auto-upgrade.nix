@@ -9,6 +9,10 @@ let
 
     export PATH="${lib.makeBinPath [ pkgs.git pkgs.nix pkgs.nixos-rebuild pkgs.coreutils ]}:$PATH"
     export HOME="/root"
+
+    # Allow nix to read git repos not owned by root (e.g. /etc/nixos/secrets)
+    git config --global safe.directory '*'
+
     export GIT_AUTHOR_NAME="nixos-auto-upgrade"
     export GIT_AUTHOR_EMAIL="root@${hostname}"
     export GIT_COMMITTER_NAME="nixos-auto-upgrade"
