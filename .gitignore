@@ -1,3 +1,4 @@
 secrets/
 bin/mount-*
 esphome/secrets.yaml
+result

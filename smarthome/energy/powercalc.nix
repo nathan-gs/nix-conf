@@ -4,10 +4,10 @@
 
   services.home-assistant.config = {
     powercalc = {
-      enable_autodiscovery = false;
+      discovery.enabled = false;
       energy_sensor_naming = "{}_energy";
       power_sensor_naming = "{}_power";
-      force_update_frequency = "00:01:00";
+      energy_update_interval = 60;
       sensors = [
         {
           create_group = "electric_heating_auxiliary";
