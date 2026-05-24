@@ -1,6 +1,6 @@
-{ stdenv, pkgs, lib, fetchFromGitHub, makeWrapper, jq, curl, bash, gnugrep, mosquitto, openssl, getopt, gawk }:
+{ stdenv, lib, fetchFromGitHub, makeWrapper, jq, curl, bash, gnugrep, mosquitto, openssl, getopt, gawk }:
 
-stdenv.mkDerivation rec {
+stdenv.mkDerivation {
   name = "solis-control";
 
   src = fetchFromGitHub {

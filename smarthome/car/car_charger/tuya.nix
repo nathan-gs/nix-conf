@@ -1,9 +1,4 @@
-{ config, pkgs, lib, ha, ... }:
-
-let 
-  chargingStates = [ "plugged_in" "waiting" "paused" "charging" "charged"];
-  notChargingStates = [ "available" "fault" "fault_unplugged" ];
-in 
+{ ha, ... }:
 
 {
 
@@ -176,6 +171,9 @@ in
               (ha.action.delay "00:00:10")
               # Set to immediate charging
               (ha.action.set_value "select.system_car_charger_charging_mode" "immediate")
+              (ha.action.delay "00:00:10")
+              (ha.action.on "switch.system_car_charger")
+              (ha.action.delay "00:00:15")
             ];
           }
       )
@@ -191,7 +189,6 @@ in
               (ha.trigger.state "sensor.system_car_charger_target_current")
             ];
             conditions = [
-              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
               (ha.condition.on "switch.system_car_charger")
             ];
             mode = "restart";

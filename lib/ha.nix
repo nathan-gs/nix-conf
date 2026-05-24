@@ -121,6 +121,7 @@ let
     condition = conditions;
     action = actions;
     mode = mode;
+    max_exceeded = max_exceeded;
   };
 
   automationOnOff = name: { triggersOn ? [ ], triggersOff ? [ ], conditionsOn ? [ ], conditionsOff ? [ ], entities ? [ ], mode ? "single" }: [
