@@ -41,12 +41,33 @@ let
       exit 1
     fi
 
-    echo "Build succeeded. Committing flake.lock..."
-    git add flake.lock
-    git commit -m "auto-upgrade: update flake.lock ($(date -u +%Y-%m-%d))"
+    echo "Build succeeded. Switching to new configuration..."
 
-    echo "Switching to new configuration..."
-    nixos-rebuild switch --flake .#${hostname} 2>&1
+    # Capture switch output and exit code so we can include the result
+    # in the commit message and rollback on failure.
+    if ! switch_output=$(nixos-rebuild switch --flake .#${hostname} 2>&1); then
+      echo "Switch FAILED — discarding flake.lock changes."
+      echo "$switch_output"
+      git checkout -- flake.lock
+      exit 1
+    fi
+
+    echo "Switch succeeded. Committing flake.lock..."
+    git add flake.lock
+
+    # Prepare a commit message file including the switch output (trimmed to last 200 lines)
+    commit_msg_file=$(mktemp)
+    {
+      echo "auto-upgrade: update flake.lock ($(date -u +%Y-%m-%d))"
+      echo
+      echo "Switch output:"
+      echo "--------"
+      echo "$switch_output" | tail -n 200
+    } > "$commit_msg_file"
+
+    # Commit only flake.lock to avoid including other staged files
+    git commit -F "$commit_msg_file" -- flake.lock
+    rm -f "$commit_msg_file"
 
     echo "=== Auto-upgrade complete ==="
   '';
