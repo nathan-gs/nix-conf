@@ -6,8 +6,8 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "nathan-gs";
     repo = "sos2mqtt";
-    rev = "v0.1.2";
-    sha256 = "sha256-qyvY8NgHlVNK6MEvQ9oYxB7IdpYsoEXtzDdDk9Nw7DY=";
+    rev = "v0.1.3";
+    sha256 = "sha256-HDkdugH4PcizhfC/yKRzWWbKKlyk9J1OUCVL2fgB8Zg=";
   };
 
   nativeBuildInputs = [ makeWrapper ];
