@@ -90,6 +90,10 @@
             url = "/local/auto-entities.js";
             type = "module";
           }
+          {
+            url = "/local/map-card.js";
+            type = "module";
+          }
         ];
       };
       "automation ui" = "!include automations.yaml";
