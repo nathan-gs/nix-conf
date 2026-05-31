@@ -300,11 +300,15 @@
           name = "itho_wtw_inlet_temperature";
           state_topic = "itho/ithostatus";
           # Correction based on: https://chatgpt.com/c/6741c1b6-0cf4-800a-a77b-38ffac6e98c6
+          #value_template = ''            
+          #  {% set raw = value_json['Outdoor temp (°C)'] | float %}
+          #  {#{{ (0.84 * raw - 1.85) | round(2) }}#}
+          #  {% set correction = states('sensor.itho_wtw_inlet_temperature_correction') | float(-13) %}
+          #  {{ ((raw + correction) - 0.5) | round(2) }}
+          #'';
           value_template = ''            
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
-            {#{{ (0.84 * raw - 1.85) | round(2) }}#}
-            {% set correction = states('sensor.itho_wtw_inlet_temperature_correction') | float(-13) %}
-            {{ ((raw + correction) - 0.5) | round(2) }}
+            {{ raw }}
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
