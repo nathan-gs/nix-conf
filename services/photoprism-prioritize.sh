@@ -27,8 +27,9 @@ function ts() {
   second=$(echo "$date_string" | awk -F'[][/: ]+' '{print $7}')
 
   # Create a timestamp for the given date
-  timestamp=$(date -d "$year-$month-$day $hour:$minute:$second" '+%s')
-  echo $timestamp
+  [ -z "$year" ] && echo 0 && return
+  timestamp=$(date -d "$year-$month-$day $hour:$minute:$second" '+%s' 2>/dev/null)
+  echo ${timestamp:-0}
 }
 
 function ts_journal() {
@@ -40,8 +41,9 @@ function ts_journal() {
   # Format for date command: replace T with space and remove timezone
   clean_time_formatted=$(echo "$clean_time" | sed 's/T/ /; s/+.*//')
   # Convert to timestamp
-  timestamp=$(date -d "$clean_time_formatted" '+%s')
-  echo $timestamp
+  [ -z "$clean_time_formatted" ] && echo 0 && return
+  timestamp=$(date -d "$clean_time_formatted" '+%s' 2>/dev/null)
+  echo ${timestamp:-0}
 }
 
 function get_last_log() {

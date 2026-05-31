@@ -2,6 +2,11 @@
 {
   networking.firewall.allowedTCPPorts = [ 8080 ];
   
+  systemd.services.zigbee2mqtt = {
+    after = [ "mosquitto.service" ];
+    wants = [ "mosquitto.service" ];
+  };
+
   services.zigbee2mqtt = {
     enable = true;
     package = pkgs.zigbee2mqtt;

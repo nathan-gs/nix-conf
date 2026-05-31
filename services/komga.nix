@@ -9,6 +9,12 @@
     openFirewall = true;
   };
 
+  systemd.services.komga.environment.LD_LIBRARY_PATH = lib.mkAfter (lib.makeLibraryPath [
+    pkgs.libarchive
+    pkgs.libjxl
+    pkgs.libheif
+  ]);
+
   services.nginx.virtualHosts."read.nathan.gs" = {
     forceSSL = true;
     enableACME = true;

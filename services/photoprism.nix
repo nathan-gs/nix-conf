@@ -97,10 +97,15 @@
   # JVM exits with 143 (128+SIGTERM) on normal shutdown; treat as success
   systemd.services.photoprism-slideshow.serviceConfig.SuccessExitStatus = "143";
 
-  systemd.services.photoprism.serviceConfig = {
-    DynamicUser = lib.mkOverride 0 false;
-    User = lib.mkOverride 0 "nathan";
-    Group = lib.mkOverride 0 "media";
+  systemd.services.photoprism = {
+    unitConfig.RequiresMountsFor = "/media/documents";
+    after = [ "media-documents.mount" ];
+    wants = [ "media-documents.mount" ];
+    serviceConfig = {
+      DynamicUser = lib.mkOverride 0 false;
+      User = lib.mkOverride 0 "nathan";
+      Group = lib.mkOverride 0 "media";
+    };
   };
 
 

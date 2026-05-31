@@ -17,9 +17,6 @@
   # https://www.reddit.com/r/linux/comments/lhgx9/how_can_i_reduce_my_power_consumption/
   boot.kernelParams = [
     "pcie_aspm=force"
-    "i915.i915_enable_rc6=1"
-    "i915.i915_enable_fbc=1"
-    "i915.lvds_downclock=1"
   ];
 
   systemd.services.powersave = {

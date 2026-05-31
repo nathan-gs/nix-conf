@@ -5,8 +5,8 @@
 
   systemd.services.onedrive_nathan_personal = {
     description = "Onedrive Nathan";
-    after = [ "network-online.target" ];
-    wants = [ "network-online.target" ];
+    after = [ "network-online.target" "media-documents.mount" ];
+    wants = [ "network-online.target" "media-documents.mount" ];
     unitConfig = {
       RequiresMountsFor = "/media/documents";
     };

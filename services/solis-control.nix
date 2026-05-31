@@ -4,7 +4,8 @@
   systemd.services.solis-control = {
     description = "Solis Control Service";
     wantedBy = [ "multi-user.target" ];
-    after = [ "network.target" ];
+    after = [ "network.target" "mosquitto.service" ];
+    wants = [ "mosquitto.service" ];
     serviceConfig = {
       ExecStart = lib.concatStringsSep " " [ 
         ''${(pkgs.callPackage ../pkgs/solis-control.nix {})}/bin/solis-control'' 

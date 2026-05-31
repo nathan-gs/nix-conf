@@ -3,7 +3,7 @@
 {
 
   services.nzbget = {
-    enable = true;
+    enable = false;
     group = "media";
   };
 

@@ -44,40 +44,6 @@
     ];
   };
 
-  # Promtail (Loki)
-  services.promtail = {
-    enable = false;
-    configuration = {
-      server = {
-        http_listen_port = 3101;
-        http_listen_address = "0.0.0.0";
-        grpc_listen_port = 9096;
-      };
-      scrape_configs = 
-        [
-          {
-            job_name = "journal";
-            journal = {
-              max_age = "1h";
-              labels = { 
-                job = "systemd-journal";
-                host = "${config.networking.hostName}";
-              };
-            };
-            relabel_configs = [
-              {
-                source_labels = [ "__journal__systemd_unit" ];
-                target_label = "unit";
-              }
-            ];
-          }
-        ];
-      clients = [
-        { url = config.secrets.grafanaCloud.promtail.url; }        
-      ];
-    };
-  };
-
   
   # Select internationalisation properties.
   # i18n = {

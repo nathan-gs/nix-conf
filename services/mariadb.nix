@@ -5,6 +5,7 @@
     package = pkgs.mariadb;
     settings = {
       mysqld = {
+        wsrep_on = "OFF";
         innodb_buffer_pool_size = "16G";
         innodb_log_file_size="2g";
         performance_schema = "on";

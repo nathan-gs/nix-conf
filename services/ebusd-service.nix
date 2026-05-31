@@ -166,7 +166,7 @@ in
       systemd.services.ebusd = {
         description = "EBUSd Service";
         wantedBy = [ "multi-user.target" ];
-        after = [ "network.target" ];
+        after = [ "network-online.target" ];
         serviceConfig = {
           ExecStart =
             let

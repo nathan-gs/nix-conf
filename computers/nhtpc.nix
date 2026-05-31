@@ -54,6 +54,8 @@
   boot.initrd.availableKernelModules = [ "xhci_pci" "ahci" "nvme" "usb_storage" "usbhid" "sd_mod" ];
   boot.kernelModules = [ "kvm-intel" "coretemp" "nct6775" ];
 
+  hardware.cpu.intel.updateMicrocode = true;
+
   networking.hostName = "nhtpc"; # Define your hostname.
   networking.wireless.enable = false;  # Enables wireless support via wpa_supplicant.
   
