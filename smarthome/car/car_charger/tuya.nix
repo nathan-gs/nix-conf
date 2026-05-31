@@ -283,7 +283,7 @@
             ];
             actions = [
               {
-                service = "notify.notify";
+                service = "notify.mobile_app_nphone";
                 data = {
                   title = "Car charger";
                   message = "Override is set to off — charger will not start tonight.";
