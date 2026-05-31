@@ -35,6 +35,7 @@
       ../smarthome.nix
       ../gc.nix
       ../services/auto-upgrade.nix
+      ../services/hw-health-report.nix
     ];
 
 
