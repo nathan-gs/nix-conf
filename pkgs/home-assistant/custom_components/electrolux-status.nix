@@ -4,13 +4,13 @@ buildHomeAssistantComponent rec {
 
   owner = "albaintor";
   domain = "electrolux_status";
-  version = "2.1.0";
+  version = "2.3.4";
 
   src = fetchFromGitHub {
     owner = owner;
     repo = "homeassistant_electrolux_status";
     rev = "v${version}";
-    sha256 = "sha256-w1X6P/e6noHfpeXLJ7MK35BEi2WBKoQwXhgwZidNNaA=";
+    sha256 = "sha256-NSgX20AKEsxXRRlcM1nr7FyZ3+JjqiO/UubV6J+pFdA=";
   };
 
   # TODO: remove when new version of pyelectroluxocp is released

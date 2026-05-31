@@ -2,23 +2,6 @@
 
 {
   services.home-assistant.config = {
-    afvalbeheer = {
-      wastecollector = "RecycleApp";
-      upcomingsensor = 1;
-      printwastetypes = 0;
-      postcode = config.secrets.address.zip;
-      streetname = "Winkelwarande"; # nearby street as workaround for https://github.com/pippyn/Home-Assistant-Sensor-Afvalbeheer/issues/466
-      streetnumber = config.secrets.address.streetNumber;
-      dateformat = "%Y-%m-%d";
-      resources = [
-        "gft"
-        "grofvuil"
-        "papier"
-        "pmd"
-        "restafval"
-      ];
-    };
-
     "automation manual" = [
       {
         id = "system_waste_notify";

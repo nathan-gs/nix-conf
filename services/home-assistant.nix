@@ -192,8 +192,7 @@
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix { pkgs = pkgs.nixpkgs-unstable; })
       #(pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
-      #pkgs.nixpkgs-unstable.home-assistant-custom-components.tuya_local
-      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/tuya-local.nix { tinytuya = pkgs.nixpkgs-unstable.python314Packages.tinytuya; tuya-device-sharing-sdk = pkgs.nixpkgs-unstable.python314Packages.tuya-device-sharing-sdk; })
+      pkgs.nixpkgs-unstable.home-assistant-custom-components.tuya_local
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/audiconnect.nix { beautifulsoup4 = pkgs.nixpkgs-unstable.python314Packages.beautifulsoup4; })
     ];
 
