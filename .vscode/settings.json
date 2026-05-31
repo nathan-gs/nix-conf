@@ -2,5 +2,9 @@
   "editor.tabSize": 2,
   "files.associations": {
     "*.yaml": "home-assistant"
+  },
+  "chat.tools.terminal.autoApprove": {
+    "nix-prefetch-url": true,
+
   }
 }
