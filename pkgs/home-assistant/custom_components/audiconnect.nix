@@ -8,13 +8,13 @@
 buildHomeAssistantComponent rec {
   owner = "audiconnect";
   domain = "audiconnect";
-  version = "1.19.2";
+  version = "2.1.2";
 
   src = fetchFromGitHub {
     inherit owner;
     repo = "audi_connect_ha";
     rev = "v${version}";
-    hash = "sha256-TJS9pIwhKXhsGU5aUhM0lmuv1dmW6l9c4gNPvp8LBSA=";
+    hash = "sha256-DzW0JJRObvKhhm67gLYp+EDYo88ue/qzBsRC8JAVzG0=";
   };
 
   dependencies = [ beautifulsoup4 ];
