@@ -10,6 +10,8 @@
 
   _module.args.ha = import ../lib/ha.nix { lib = lib; };
 
+  environment.systemPackages = [ pkgs.nixpkgs-unstable.home-assistant-cli ];
+
   networking.firewall.allowedTCPPorts = [ 1400 ];
 
   services.nginx.virtualHosts."ha.nathan.gs" = {
