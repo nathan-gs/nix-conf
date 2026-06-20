@@ -18,6 +18,7 @@
     #(pkgs.callPackage ./pkgs/onedrive-2.5.nix {})
     onedrive
     pkgs.nixpkgs-unstable.esphome
+    claude-code
   ];
 
   programs.bash.completion.enable = true;
