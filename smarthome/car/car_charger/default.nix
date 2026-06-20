@@ -295,8 +295,18 @@
           name = "car_charger";
           unique_id = "car_charger";
           entity_id = "binary_sensor.car_charger_charging";
-          fixed.power = ''            
-            {{ states('sensor.system_car_charger_metering_plug_measure_power') | int(0) }}
+          # Tuya plug under-reports voltage (~213V observed vs. 232V on the DSMR
+          # grid meter), so its W reading is ~9% low. Scale by the ratio of
+          # authoritative grid voltage to plug-reported voltage.
+          fixed.power = ''
+            {% set plug_power = states('sensor.system_car_charger_metering_plug_measure_power') | float(0) %}
+            {% set plug_v = states('sensor.system_car_charger_metering_plug_measure_voltage') | float(0) %}
+            {% set grid_v = states('sensor.dsmr_reading_phase_voltage_l1') | float(0) %}
+            {% if plug_v > 50 and grid_v > 50 %}
+              {{ (plug_power * grid_v / plug_v) | int }}
+            {% else %}
+              {{ plug_power | int }}
+            {% endif %}
           '';
           create_utility_meters = true;
           utility_meter_types = [ "hourly" "daily" "monthly" ];
