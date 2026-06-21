@@ -75,7 +75,9 @@ in
           }
         ];
         condition = ''
-          {{ 
+          {{
+            states('climate.${v.floor}_${v.zone}_${v.type}_${v.name}') not in ['unavailable', 'unknown']
+            and
             (states('sensor.${v.floor}_${v.zone}_${v.type}_${v.name}_temperature_wanted') | float(0) != state_attr('climate.${v.floor}_${v.zone}_${v.type}_${v.name}', 'temperature') | float(0))
           }}
         '';

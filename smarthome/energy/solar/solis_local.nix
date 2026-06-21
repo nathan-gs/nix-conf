@@ -9,9 +9,15 @@
           {
             name = "solar_currently_produced";
             unique_id = "solar_currently_produced";
-            state = ''        
-            {{ (( states('sensor.solar_solis_inverter_cgi').split(";")[4] | float ) / 1000 ) | float }}
-          '';
+            state = ''
+              {% set parts = states('sensor.solar_solis_inverter_cgi').split(";") %}
+              {% if parts | length > 4 %}
+                {{ (( parts[4] | float ) / 1000 ) | float }}
+              {% endif %}
+            '';
+            availability = ''
+              {{ states('sensor.solar_solis_inverter_cgi').split(";") | length > 4 }}
+            '';
             unit_of_measurement = "kW";
             device_class = "power";
             icon = "mdi:solar-panel";
@@ -20,9 +26,15 @@
           {
             name = "solar_delivery_daily";
             unique_id = "solar_delivery_daily";
-            state = ''        
-            {{ ( states('sensor.solar_solis_inverter_cgi').split(";")[5] | float ) }}
-          '';
+            state = ''
+              {% set parts = states('sensor.solar_solis_inverter_cgi').split(";") %}
+              {% if parts | length > 5 %}
+                {{ parts[5] | float }}
+              {% endif %}
+            '';
+            availability = ''
+              {{ states('sensor.solar_solis_inverter_cgi').split(";") | length > 5 }}
+            '';
             unit_of_measurement = "kWh";
             device_class = "energy";
             icon = "mdi:solar-panel";
@@ -46,7 +58,7 @@
             unit_of_measurement = "kWh";
             device_class = "energy";
             icon = "mdi:solar-panel";
-            state_class = "total";
+            state_class = "total_increasing";
           }
         ];
       }

@@ -269,14 +269,6 @@ let
             attributes.workaround = ''{{ now().minute }}'';
             state_class = "measurement";
           }
-          {
-            name = "electricity_solar_power";
-            unique_id = "electricity_solar_power";
-            state = "{{ states('sensor.solar_currently_produced') | float(0) * 1000 }}";
-            unit_of_measurement = "W";
-            attributes.workaround = ''{{ now().minute }}'';
-            state_class = "measurement";
-          }
         ];
       }
       
