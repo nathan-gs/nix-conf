@@ -125,13 +125,16 @@
             state = ''
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.45) %}
+              {% set capacity_threshold = [2.45, monthly_peak - 0.1] | max %}
+              {% set capacity_near = [1.95, monthly_peak - 0.6] | max %}
               {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
-              {% set overdischargesoc_with_car_charger_on = 40 %}              
+              {% set overdischargesoc_with_car_charger_on = 40 %}
               {% set overdischargesoc_solar_left = 15 %}
               {# min is 10 #}
               {% set overdischargesoc_min = 10 %}
@@ -146,7 +149,7 @@
               {{ overdischargesoc }}
               #}
               {# Capacity Tweaks #}
-              {% if (power15m > 1.95) and (power15m_estimated > 2.45) %}
+              {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
                 {{ overdischargesoc_min }}
               {# If solar left, prioritize to min even if car charging #}
               {% elif is_solar_left %}
@@ -172,6 +175,9 @@
             state = ''
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(2) %}
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(2) %}
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.0) %}
+              {% set capacity_threshold = [2.0, monthly_peak - 0.4] | max %}
+              {% set capacity_safe = [1.5, monthly_peak - 1.0] | max %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 3) and now().hour >= 5) %}
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
@@ -189,9 +195,9 @@
                   {% set forcechargesoc_target = forcechargesoc_low %}
                 {% endif %}
               #}
-              {% if (power15m < 1.5) and (power15m_estimated < 1.5) %}
+              {% if (power15m < capacity_safe) and (power15m_estimated < capacity_safe) %}
                 {{ forcechargesoc_target }}
-              {% elif (power15m_estimated > 2) %}
+              {% elif (power15m_estimated > capacity_threshold) %}
                 {{ forcechargesoc_min }}
               {% else %}
                 {{ forcechargesoc }}
