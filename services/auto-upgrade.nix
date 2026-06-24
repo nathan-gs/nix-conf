@@ -7,23 +7,38 @@ let
   autoUpgradeScript = pkgs.writeShellScript "nixos-auto-upgrade" ''
     set -euo pipefail
 
-    export PATH="${lib.makeBinPath [ pkgs.git pkgs.nix pkgs.nixos-rebuild pkgs.coreutils ]}:$PATH"
+    export PATH="${lib.makeBinPath [ pkgs.git pkgs.nix pkgs.nixos-rebuild pkgs.coreutils pkgs.util-linux ]}:$PATH"
     export HOME="/root"
 
-    # Allow nix to read git repos not owned by root (e.g. /etc/nixos/secrets)
+    # Allow nix (which still runs as root) to read git repos not owned by root
+    # (e.g. /etc/nixos/secrets).
     git config --global safe.directory '*'
 
+    cd ${flakeDir}
+
+    # Run git as the repo owner so .git/* objects don't flip to root.
+    # Author/committer identity is forced via env so the commit metadata is
+    # consistent regardless of who owns the repo.
+    repo_owner=$(stat -c '%U' .)
+    git() {
+      runuser -u "$repo_owner" --preserve-environment -- \
+        ${pkgs.git}/bin/git "$@"
+    }
     export GIT_AUTHOR_NAME="nixos-auto-upgrade"
     export GIT_AUTHOR_EMAIL="root@${hostname}"
     export GIT_COMMITTER_NAME="nixos-auto-upgrade"
     export GIT_COMMITTER_EMAIL="root@${hostname}"
 
-    cd ${flakeDir}
-
     # Marker recording the sha256 of a flake.lock whose build or switch failed.
     # Used to skip retries on identical inputs (e.g. broken upstream pin)
     # while still allowing retries once upstream advances.
     fail_marker="$STATE_DIRECTORY/failed-lock.sha256"
+
+    # `nix flake update` and `git checkout` here run as root and would otherwise
+    # leave flake.lock owned by root, blocking the next interactive `nix flake update`.
+    # Capture the pre-run owner and restore it on every exit path.
+    lock_owner=$(stat -c '%u:%g' flake.lock)
+    trap 'chown "$lock_owner" flake.lock 2>/dev/null || true' EXIT
 
     echo "=== NixOS Auto-Upgrade: $(date) ==="
 
@@ -71,19 +86,15 @@ let
     echo "Switch succeeded. Committing flake.lock..."
     git add flake.lock
 
-    # Prepare a commit message file including the switch output (trimmed to last 200 lines)
-    commit_msg_file=$(mktemp)
+    # Pipe the commit message via stdin so we don't need a temp file readable
+    # by the user git now runs as.
     {
       echo "auto-upgrade: update flake.lock ($(date -u +%Y-%m-%d))"
       echo
       echo "Switch output:"
       echo "--------"
       echo "$switch_output" | tail -n 200
-    } > "$commit_msg_file"
-
-    # Commit only flake.lock to avoid including other staged files
-    git commit -F "$commit_msg_file" -- flake.lock
-    rm -f "$commit_msg_file"
+    } | git commit -F - -- flake.lock
 
     echo "=== Auto-upgrade complete ==="
   '';
