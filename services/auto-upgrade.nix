@@ -17,17 +17,19 @@ let
     cd ${flakeDir}
 
     # Run git as the repo owner so .git/* objects don't flip to root.
-    # Author/committer identity is forced via env so the commit metadata is
-    # consistent regardless of who owns the repo.
+    # Author/committer identity is forced via env so commit metadata is
+    # consistent regardless of who owns the repo. We don't use
+    # --preserve-environment because that keeps HOME=/root (mode 0700),
+    # which makes git warn about unreadable global config under /root.
     repo_owner=$(stat -c '%U' .)
     git() {
-      runuser -u "$repo_owner" --preserve-environment -- \
+      runuser -u "$repo_owner" -- env \
+        GIT_AUTHOR_NAME="nixos-auto-upgrade" \
+        GIT_AUTHOR_EMAIL="root@${hostname}" \
+        GIT_COMMITTER_NAME="nixos-auto-upgrade" \
+        GIT_COMMITTER_EMAIL="root@${hostname}" \
         ${pkgs.git}/bin/git "$@"
     }
-    export GIT_AUTHOR_NAME="nixos-auto-upgrade"
-    export GIT_AUTHOR_EMAIL="root@${hostname}"
-    export GIT_COMMITTER_NAME="nixos-auto-upgrade"
-    export GIT_COMMITTER_EMAIL="root@${hostname}"
 
     # Marker recording the sha256 of a flake.lock whose build or switch failed.
     # Used to skip retries on identical inputs (e.g. broken upstream pin)
