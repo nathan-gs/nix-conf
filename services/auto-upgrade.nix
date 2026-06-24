@@ -20,6 +20,11 @@ let
 
     cd ${flakeDir}
 
+    # Marker recording the sha256 of a flake.lock whose build or switch failed.
+    # Used to skip retries on identical inputs (e.g. broken upstream pin)
+    # while still allowing retries once upstream advances.
+    fail_marker="$STATE_DIRECTORY/failed-lock.sha256"
+
     echo "=== NixOS Auto-Upgrade: $(date) ==="
 
     # Update flake inputs (only writes flake.lock, does not commit)
@@ -32,11 +37,19 @@ let
       exit 0
     fi
 
+    current_hash=$(sha256sum flake.lock | cut -d' ' -f1)
+    if [[ -f "$fail_marker" && "$(cat "$fail_marker")" == "$current_hash" ]]; then
+      echo "flake.lock matches a previously-failed attempt ($current_hash) — skipping."
+      git checkout -- flake.lock
+      exit 0
+    fi
+
     echo "flake.lock has changes, evaluating build..."
 
     # Build to verify the configuration is valid before committing
     if ! nixos-rebuild build --flake .#${hostname} 2>&1; then
       echo "Build FAILED — discarding flake.lock changes."
+      echo "$current_hash" > "$fail_marker"
       git checkout -- flake.lock
       exit 1
     fi
@@ -48,9 +61,12 @@ let
     if ! switch_output=$(nixos-rebuild switch --flake .#${hostname} 2>&1); then
       echo "Switch FAILED — discarding flake.lock changes."
       echo "$switch_output"
+      echo "$current_hash" > "$fail_marker"
       git checkout -- flake.lock
       exit 1
     fi
+
+    rm -f "$fail_marker"
 
     echo "Switch succeeded. Committing flake.lock..."
     git add flake.lock
@@ -82,10 +98,7 @@ in
       ExecStart = autoUpgradeScript;
       User = "root";
       WorkingDirectory = flakeDir;
-    };
-    # Prevent conflicts with manual nixos-rebuild runs
-    unitConfig = {
-      X-StopOnReconfiguration = true;
+      StateDirectory = "nixos-auto-upgrade";
     };
   };
 
@@ -93,9 +106,8 @@ in
     description = "NixOS Auto Upgrade Timer";
     wantedBy = [ "timers.target" ];
     timerConfig = {
-      OnCalendar = "*-*-* 04:00:00";
-      RandomizedDelaySec = "1h";
-      Persistent = true;
+      OnCalendar = [ "*-*-* 04:00:00" "*-*-* 05:00:00" ];
+      RandomizedDelaySec = "10m";
     };
   };
 }
