@@ -11,8 +11,10 @@ let
     export HOME="/root"
 
     # Allow nix (which still runs as root) to read git repos not owned by root
-    # (e.g. /etc/nixos/secrets).
-    git config --global safe.directory '*'
+    # (e.g. /etc/nixos/secrets). Scoped to known paths rather than wildcard so
+    # a stray repo elsewhere on disk can't have its hooks/config trusted by root.
+    git config --global --replace-all safe.directory ${flakeDir}
+    git config --global --add safe.directory /etc/nixos/secrets
 
     cd ${flakeDir}
 

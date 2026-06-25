@@ -7,6 +7,8 @@
   services.openssh.enable = true;
 
   services.openssh.settings.PermitRootLogin = "no";
+  services.openssh.settings.PasswordAuthentication = false;
+  services.openssh.settings.KbdInteractiveAuthentication = false;
   services.openssh.ports = [22];
 
   services.openssh.extraConfig = ''

@@ -19,7 +19,7 @@
       ../services/mariadb.nix
       ../services/photoprism.nix
       #../services/plex.nix
-      ../services/vscode.nix
+      #../services/vscode.nix
       #../services/autogenstudio.nix
       ../services/nzb.nix
       ../services/komga.nix
@@ -29,7 +29,8 @@
       #../services/ollama.nix
       ../services/sos2mqtt.nix
       ../services/solis-control.nix
-      ../services/remote-build-host.nix
+      # ngo deleted -> no remote build clients; nixdist trusted-user removed.
+      #../services/remote-build-host.nix
       ../services/matomo.nix
       ../monitoring.nix
       ../smarthome.nix

@@ -1,38 +1,10 @@
 { config, pkgs, ... }:
 {
-  services.prometheus.exporters = {
-    node.enable = true;
-  };
-
   services.vmagent = {
-    enable = true;
+    enable = false;
     remoteWrite.url = "https://${config.secrets.grafanaCloud.api.username}:${config.secrets.grafanaCloud.api.key}@prometheus-prod-01-eu-west-0.grafana.net/api/prom/push";
     prometheusConfig = {
       scrape_configs = [
-        {
-          job_name = "node";
-          scrape_timeout = "40s"; # Deal with slow network of nnas
-          static_configs = [
-            { targets = 
-              [ 
-                "nhtpc.wg:${toString config.services.prometheus.exporters.node.port}" 
-                # "nhtpc.wg:${toString config.services.prometheus.exporters.smokeping.port}"
-                #"nnas.wg:${toString config.services.prometheus.exporters.node.port}"
-                #"ndesk:4445"
-              ];
-            }
-          ];
-          metric_relabel_configs = [
-            {
-              action = "labeldrop";
-              regex = "platform_nct6775_656.*";
-            }
-            {
-              action = "labeldrop";
-              regex = "platform_.*Critical";
-            }
-          ];
-        }
         {
           job_name = "homeassistant";
           scrape_timeout = "10s";
