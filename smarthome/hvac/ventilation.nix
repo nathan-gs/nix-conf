@@ -28,14 +28,23 @@
               {% set is_not_electricity_delivery_power_max_threshold = states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) == false %}
               {% set is_hot_outside = outdoor_temperature > 27 %}
               {% set is_high_co2 = is_state('binary_sensor.house_co2_high', 'on') %}
+              {% set cooldown = is_state('binary_sensor.wtw_high_cooldown', 'on') %}
               {% if is_not_electricity_delivery_power_max_threshold %}
-                {% if humidity_max_over_80 or is_high_co2 %}
+                {% if house_needs_cooling_and_temp_outside_lower %}
+                  high
+                {% elif is_hot_outside %}
+                  {% if (humidity_max_over_80 or is_high_co2 or is_using_sanitary) and not cooldown %}
+                    high
+                  {% else %}
+                    low
+                  {% endif %}
+                {% elif cooldown %}
+                  medium
+                {% elif humidity_max_over_80 or is_high_co2 %}
                   high
                 {% elif is_cooking or is_using_sanitary %}
                   high
-                {% elif is_hot_outside %}
-                  low
-                {% elif dewpoint_high_and_dewpoint_outdoor_lower or house_needs_cooling_and_temp_outside_lower %}
+                {% elif dewpoint_high_and_dewpoint_outdoor_lower %}
                   high
                 {% elif is_home %}
                   medium
@@ -144,6 +153,29 @@
             state = ''{{ states('sensor.house_co2_max') | int(700) >= 1000 }}'';
             auto_off.minutes = 15;
             device_class = "safety";
+          }
+        ];
+      }
+      {
+        # Caps non-cooling "high" runs: when wtw_target_fan stays high for 10
+        # minutes, this flips on for 20 minutes, during which the target
+        # template downgrades non-cooling high requests to medium. Cooling
+        # clauses (bypass + outside cooler, or dewpoint-driven) bypass the
+        # cooldown and stay high.
+        trigger = [
+          {
+            trigger = "state";
+            entity_id = "sensor.wtw_target_fan";
+            to = "high";
+            for.minutes = 10;
+          }
+        ];
+        binary_sensor = [
+          {
+            name = "wtw_high_cooldown";
+            unique_id = "wtw_high_cooldown";
+            state = "true";
+            auto_off.minutes = 20;
           }
         ];
       }
