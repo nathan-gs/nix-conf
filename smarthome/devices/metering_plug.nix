@@ -111,7 +111,7 @@ map
     {
       zone = "fen";
       name = "airco";
-      ieee = "0xa4c1389eba708210";
+      ieee = "0xa4c1381f8ccf7230";
       floor = "floor1";
     }
     {
