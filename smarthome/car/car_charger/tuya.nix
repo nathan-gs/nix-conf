@@ -43,10 +43,32 @@
               {% else %}
                 {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
                 {% set capacity_kw = max(monthly_peak, 2.45) %}
-                {% set estimated_15m = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-                {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
-                {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) %}
-                {% set target_a = (headroom_kw * 1000 / 230) | round(0) | int %}
+                {% set capacity_near = [1.95, monthly_peak - 0.6] | max %}
+                {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
+                   grid import, so we charge hard while little of the quarter is committed, then drop
+                   to 6A for the tail so the average lands under the cap.
+
+                   `electricity_delivery_power_15m` (banked) is the average ALREADY committed this
+                   quarter; it only climbs (and resets each quarter), so it is the stable trigger.
+                   (`electricity_delivery_power_15m_estimated` is the assume-current-power projection —
+                   it drops the instant we throttle, so using it as the trigger would chatter; it is
+                   what the battery watches instead.)
+
+                   We drop to 6A once banked nears `capacity_near` — the same level at which the
+                   battery's own peak branch arms (solar/battery/overdischargesoc_target) — so the car
+                   shaves the tail and the battery stays quiet, and it never drained to 10% as on
+                   2026-07-03. See docs/ev-battery-peak-coordination.md. #}
+                {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
+                {% if banked >= (capacity_near) %}
+                  {% set target_a = 6 %}
+                {% else %}
+                  {# front of the quarter: charge at whatever the cap allows, computed from headroom
+                     (scales with monthly_peak) rather than a fixed current. #}
+                  {% set estimated_15m = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+                  {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
+                  {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) %}
+                  {% set target_a = (headroom_kw * 1000 / 230) | round(0) | int %}
+                {% endif %}
                 {% if is_state('binary_sensor.system_car_charger_solar_boost', 'on') %}
                   {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
                   {% set solar_a = (solar / 230) | round(0) | int %}
@@ -119,11 +141,15 @@
             icon = "mdi:car-electric";
             state = ''
               {% set override = states('input_select.car_charge_override') %}
+              {# battery_sufficient (house battery > 10%) must gate ONLY solar charging — draining
+                 the house battery to feed the car is wasteful. Grid charging (offpeak / low car
+                 SoC / manual on) draws from the grid, so a low house battery must NOT stop it,
+                 otherwise a battery drained by peak shaving hard-stops the car overnight. #}
               {% set battery_sufficient = is_state('binary_sensor.solar_battery_sufficient', 'on') %}
               {% set low_soc = is_state('binary_sensor.system_car_charger_low_soc', 'on') %}
               {% set should_charge_offpeak = is_state('binary_sensor.system_car_charger_should_charge_offpeak', 'on') %}
-              {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') %}
-              {{ override != 'off' and battery_sufficient and (low_soc or should_charge_offpeak or solar_eligible or override == 'on') }}
+              {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') and battery_sufficient %}
+              {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or override == 'on') }}
             '';
           }
         ];

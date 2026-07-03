@@ -137,7 +137,7 @@
               {% set overdischargesoc_with_car_charger_on = 40 %}
               {% set overdischargesoc_solar_left = 15 %}
               {# min is 10 #}
-              {% set overdischargesoc_min = 10 %}
+              {% set overdischargesoc_min = 8 %}
               {#
               Test values
               {% set power15m = 2.1 %}
@@ -149,6 +149,15 @@
               {{ overdischargesoc }}
               #}
               {# Capacity Tweaks #}
+              {# Deep-discharge the battery to shave a peak only once it is imminent. Note the TWO
+                 guards: it arms only if power15m > capacity_near AND power15m_estimated >
+                 capacity_threshold. The car's charge control (system/car_charger/target_current)
+                 keeps its projected 15-min average (power15m_estimated) below capacity_threshold —
+                 the current steps snap down so it settles ~0.3 kW under the cap — so this second
+                 guard is never met while the car is charging, and the battery never discharges to
+                 mask the car (which is what drained it to 10% on 2026-07-03 ~04:00). This branch
+                 then fires only as a backstop for real peaks the car alone cannot hold.
+                 See docs/ev-battery-peak-coordination.md. #}
               {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
                 {{ overdischargesoc_min }}
               {# If solar left, prioritize to min even if car charging #}
@@ -185,23 +194,8 @@
               {% set forcechargesoc_low = 10 %}
               {% set forcechargesoc_min = 7 %}
 
-              {% set forcechargesoc_target = forcechargesoc_low %}
-              {#
-                {% if is_solar_left %}
-                  {% set forcechargesoc_target = forcechargesoc_low %}
-                {% elif is_offpeak %}
-                  {% set forcechargesoc_target = forcechargesoc_high %}
-                {% else %}
-                  {% set forcechargesoc_target = forcechargesoc_low %}
-                {% endif %}
-              #}
-              {% if (power15m < capacity_safe) and (power15m_estimated < capacity_safe) %}
-                {{ forcechargesoc_target }}
-              {% elif (power15m_estimated > capacity_threshold) %}
-                {{ forcechargesoc_min }}
-              {% else %}
-                {{ forcechargesoc }}
-              {% endif %}
+              {% set forcechargesoc_target = forcechargesoc_min %}
+              {{ forcechargesoc_target }}              
             '';
             state_class = "measurement";
           }
