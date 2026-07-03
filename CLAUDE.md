@@ -62,6 +62,19 @@ Each host runs a 04:00 systemd timer that: `nix flake update` → `nixos-rebuild
 - Untested local edits to `.nix` files will be picked up at 04:00 by the same auto-upgrade run — push them or revert before then if you don't want that.
 - The recent `git log` is dominated by these auto-commits; look past them for human changes.
 
+## Available tooling
+
+System-wide packages you can assume exist on every host: `git` (gitMinimal), `iotop`, `htop`, `powertop`, `tmux`, `tree`, `jq`, `onedrive`, `esphome` (from `nixpkgs-unstable`), `claude-code` (from `software.nix`), plus `hass-cli` (Home Assistant CLI, on `nhtpc`). And the standard NixOS base (`nix`, `nixos-rebuild`, `systemctl`, `journalctl`, `coreutils`, `bash`).
+
+For anything else, **don't install it system-wide** — run it ad-hoc via `nix-shell`:
+
+```sh
+nix-shell -p ripgrep fd --run 'rg ...'
+nix-shell -p sqlite --run 'sqlite3 /path/to.db ...'
+```
+
+Only add to `environment.systemPackages` in `software.nix` if the tool needs to be persistently available across sessions/reboots; otherwise prefer `nix-shell -p`.
+
 ## Conventions
 
 - New services: add a module under `services/`, then import it from each `computers/<host>.nix` that should run it. Don't auto-include from `system.nix` — host opt-in is the pattern here.
