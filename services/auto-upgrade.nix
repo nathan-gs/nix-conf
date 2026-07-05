@@ -93,6 +93,13 @@ in
     description = "NixOS Auto Upgrade (flake update + build + switch)";
     after = [ "network-online.target" ];
     wants = [ "network-online.target" ];
+
+    # This unit calls `nixos-rebuild switch` on itself. Without this,
+    # switch-to-configuration would restart the running nixos-auto-upgrade.service
+    # mid-switch, SIGTERM'ing the process driving the switch before it can commit
+    # flake.lock or record the failure marker. Leave the running unit untouched.
+    restartIfChanged = false;
+
     serviceConfig = {
       Type = "oneshot";
       ExecStart = autoUpgradeScript;
