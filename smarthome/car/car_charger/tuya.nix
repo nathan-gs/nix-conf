@@ -9,6 +9,32 @@
         name = "car/charge_to_max";
         icon = "mdi:battery-high";
       };
+      # Set by the 21:00 "plan tomorrow" automation from the solar forecast, so the
+      # actionable notification's "Home" reply knows whether to grid-charge to 60% (sunny,
+      # solar tops up) or 70% (dull day). See car_charger.plan_tomorrow below.
+      car_charge_sunny_tomorrow = {
+        name = "car/charge_sunny_tomorrow";
+        icon = "mdi:weather-sunny";
+      };
+    };
+
+    input_number = {
+      # Overnight grid-charge ceiling (%). The offpeak charger fills to this SoC from the
+      # grid; solar tops up the rest during the day. Default 70; the plan_tomorrow flow
+      # drops it to 60 on a sunny day or raises it to 100 for a long drive, and resets it
+      # to 70 each evening before re-asking.
+      # No `initial` so the value restores across HA restarts (a nightly "drive far" 100%
+      # survives a 3am restart mid-charge). On the very first boot it comes up at `min`, so
+      # min is 60 — the lowest intended target — not something that would starve the charge.
+      car_charge_grid_target = {
+        name = "car/charge_grid_target";
+        icon = "mdi:battery-charging-70";
+        min = 60;
+        max = 100;
+        step = 5;
+        unit_of_measurement = "%";
+        mode = "slider";
+      };
     };
 
     input_select = {
@@ -102,7 +128,7 @@
             icon = "mdi:battery-low";
             state = ''
               {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
-              {{ soc < 50 }}
+              {{ soc < 45 }}
             '';
           }
           {
@@ -112,7 +138,10 @@
             state = ''
               {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
               {% set offpeak = is_state('binary_sensor.electricity_is_offpeak', 'on') %}
-              {{ offpeak and soc < 70 }}
+              {# Grid-charge ceiling is set the evening before via the plan_tomorrow flow
+                 (60 sunny / 70 default / 100 long drive); falls back to 70. #}
+              {% set target = states('input_number.car_charge_grid_target') | float(70) %}
+              {{ offpeak and soc < target }}
             '';
           }
           {
@@ -389,6 +418,141 @@
             actions = [
               (ha.action.set_value "input_select.car_charge_override" "auto")
               (ha.action.set_value "input_select.system_car_charger_current_override_a" "auto")
+            ];
+          }
+      )
+
+      # 21:00 — plan tomorrow's charge. Reset the grid ceiling to the 70% default, work out
+      # whether tomorrow will be sunny (conservative solar forecast + weather.sxw condition),
+      # then ask (actionable notification) whether I'll be home or driving far. No answer keeps
+      # the safe 70% default. "Home" resolves to 60% (sunny) or 70% via the stored sunny flag;
+      # "Drive far" fills to 100%. See handle_action below.
+      (
+        ha.automation "system/car_charger.plan_tomorrow"
+          {
+            triggers = [
+              { platform = "time"; at = "21:00:00"; }
+            ];
+            conditions = [ ];
+            actions = [
+              # Reset to the default before (re)asking, so an unanswered night lands on 70%
+              # and yesterday's "drive far"/"sunny" choice never lingers.
+              (ha.action.set_value "input_number.car_charge_grid_target" 70)
+              # Pull tomorrow's forecast (weather.sxw supports daily forecasts).
+              {
+                service = "weather.get_forecasts";
+                target.entity_id = "weather.sxw";
+                data.type = "daily";
+                response_variable = "fc";
+              }
+              # Store the sunny assessment so the async "Home" reply can read it.
+              (ha.action.conditional
+                [
+                  (ha.condition.template ''
+                    {% set t = (now() + timedelta(days=1)).date() %}
+                    {% set ns = namespace(cond='unknown') %}
+                    {% for f in fc['weather.sxw'].forecast %}
+                      {% if as_datetime(f.datetime).date() == t %}{% set ns.cond = f.condition %}{% endif %}
+                    {% endfor %}
+                    {# energy_production_tomorrow always underestimates, so a moderate figure
+                       already means a good day; treat as sunny when the sky is clear-ish OR the
+                       conservative forecast is high on its own. #}
+                    {% set prod = states('sensor.energy_production_tomorrow') | float(0) %}
+                    {% set clear = ns.cond in ['sunny', 'partlycloudy', 'clear-night', 'windy-variant'] %}
+                    {{ (clear and prod >= 6) or prod >= 10 }}
+                  '')
+                ]
+                [ (ha.action.on "input_boolean.car_charge_sunny_tomorrow") ]
+                [ (ha.action.off "input_boolean.car_charge_sunny_tomorrow") ])
+              {
+                service = "notify.mobile_app_nphone";
+                data = {
+                  title = "Car charge plan for tomorrow";
+                  message = ''
+                    Solar forecast ~{{ states('sensor.energy_production_tomorrow') | float(0) | round(0) }} kWh (min).
+                    {% if is_state('input_boolean.car_charge_sunny_tomorrow', 'on') %}☀️ Sunny — "Home" grid-charges to 60%, solar tops up during the day.{% else %}☁️ Dull — "Home" grid-charges to 70%.{% endif %}
+                    "Drive close" 70% · "Drive far" 100% (grid).
+                  '';
+                  data = {
+                    tag = "car_charge_plan";
+                    actions = [
+                      { action = "car_charge_plan_home"; title = "🏡 Home"; }
+                      { action = "car_charge_plan_drive_close"; title = "🚙 Drive close"; }
+                      { action = "car_charge_plan_drive_far"; title = "🚗 Drive far"; }
+                    ];
+                  };
+                };
+              }
+            ];
+          }
+      )
+
+      # Handle the plan_tomorrow reply: set the overnight grid ceiling and make sure charging
+      # will actually run (override back to auto). Confirm back on the same notification tag.
+      (
+        ha.automation "system/car_charger.plan_tomorrow.handle_action"
+          {
+            triggers = [
+              {
+                platform = "event";
+                event_type = "mobile_app_notification_action";
+                event_data.action = "car_charge_plan_home";
+                id = "home";
+              }
+              {
+                platform = "event";
+                event_type = "mobile_app_notification_action";
+                event_data.action = "car_charge_plan_drive_close";
+                id = "drive_close";
+              }
+              {
+                platform = "event";
+                event_type = "mobile_app_notification_action";
+                event_data.action = "car_charge_plan_drive_far";
+                id = "drive_far";
+              }
+            ];
+            conditions = [ ];
+            actions = [
+              # An explicit plan implies I want charging tonight — clear a lingering "off".
+              (ha.action.set_value "input_select.car_charge_override" "auto")
+              {
+                choose = [
+                  # Home: car stays to catch the sun, so grid only to 60% on a sunny day.
+                  {
+                    conditions = [ { condition = "trigger"; id = "home"; } ];
+                    sequence = [
+                      (ha.action.set_value "input_number.car_charge_grid_target"
+                        "{{ 60 if is_state('input_boolean.car_charge_sunny_tomorrow', 'on') else 70 }}")
+                    ];
+                  }
+                  # Drive close: car is away during the sunny hours (no solar top-up) but only
+                  # needs local range — grid to 70% regardless of the forecast.
+                  {
+                    conditions = [ { condition = "trigger"; id = "drive_close"; } ];
+                    sequence = [
+                      (ha.action.set_value "input_number.car_charge_grid_target" 70)
+                    ];
+                  }
+                  # Drive far: fill from the grid overnight.
+                  {
+                    conditions = [ { condition = "trigger"; id = "drive_far"; } ];
+                    sequence = [
+                      (ha.action.set_value "input_number.car_charge_grid_target" 100)
+                    ];
+                  }
+                ];
+              }
+              {
+                service = "notify.mobile_app_nphone";
+                data = {
+                  title = "Car charge plan for tomorrow";
+                  message = ''
+                    Grid-charging to {{ states('input_number.car_charge_grid_target') | float(70) | round(0) }}% tonight.
+                  '';
+                  data.tag = "car_charge_plan";
+                };
+              }
             ];
           }
       )
