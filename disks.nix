@@ -113,7 +113,7 @@ with lib;
         wall.enable = false;
       };
     
-      defaults.monitored = "-a -f -p -t -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,35,40";
+      defaults.monitored = "-a -f -p -t -o on -S on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,40,50";
       devices = smartdDevices;
     };
 
