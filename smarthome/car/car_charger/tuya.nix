@@ -215,6 +215,11 @@
               (ha.trigger.state_to "input_select.car_charge_override" "solar+grid boost")
               (ha.trigger.state_to "input_select.car_charge_override" "solar+grid 16a")
               (ha.trigger.state "sensor.solis_remaining_battery_capacity")
+              # Grid peak protection can turn switch.system_car_charger off mid-charge (via
+              # car_charger.stop). Re-check every 15m and resume: the `should_charge` on +
+              # switch off conditions below mean this only restarts an interrupted charge and is
+              # a no-op while already charging or when charging genuinely shouldn't run.
+              (ha.trigger.time_pattern_minutes "/15")
             ];
             conditions = [
               (ha.condition.on "binary_sensor.system_car_charger_should_charge")
