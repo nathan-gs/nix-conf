@@ -43,7 +43,7 @@
               {% else %}
                 {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
                 {% set capacity_kw = max(monthly_peak, 2.45) %}
-                {% set capacity_near = [1.95, monthly_peak - 0.6] | max %}
+                {% set capacity_near = [1.95, monthly_peak - 0.4] | max %}
                 {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
                    grid import, so we charge hard while little of the quarter is committed, then drop
                    to 6A for the tail so the average lands under the cap.
@@ -292,40 +292,83 @@
           }
       )
 
-      # Notify if override is off at 21:50 and someone is home
+      # Notify (if someone is home):
+      #  - 21:50 if the charge override is off (charger won't start tonight)
+      #  - 21:55 if either override (charge or current) is not on auto (won't follow the schedule)
       (
         ha.automation "system/car_charger.notify_override_off"
           {
             triggers = [
-              (ha.trigger.at "21:50:00")
+              { platform = "time"; at = "21:50:00"; id = "off_2150"; }
+              { platform = "time"; at = "21:55:00"; id = "notauto_2155"; }
             ];
             conditions = [
               (ha.condition.on "binary_sensor.anyone_home")
-              {
-                condition = "state";
-                entity_id = "input_select.car_charge_override";
-                state = "off";
-              }
             ];
             actions = [
               {
-                service = "notify.mobile_app_nphone";
-                data = {
-                  title = "Car charger";
-                  message = "Override is set to off — charger will not start tonight.";
-                  data.actions = [
-                    {
-                      action = "car_charger_override_auto";
-                      title = "Set to auto";
-                    }
-                  ];
-                };
+                choose = [
+                  {
+                    conditions = [
+                      { condition = "trigger"; id = "off_2150"; }
+                      {
+                        condition = "state";
+                        entity_id = "input_select.car_charge_override";
+                        state = "off";
+                      }
+                    ];
+                    sequence = [
+                      {
+                        service = "notify.mobile_app_nphone";
+                        data = {
+                          title = "Car charger";
+                          message = "Override is set to off — charger will not start tonight.";
+                          data.actions = [
+                            {
+                              action = "car_charger_override_auto";
+                              title = "Set to auto";
+                            }
+                          ];
+                        };
+                      }
+                    ];
+                  }
+                  {
+                    conditions = [
+                      { condition = "trigger"; id = "notauto_2155"; }
+                      {
+                        condition = "template";
+                        value_template = ''
+                          {{ not is_state('input_select.car_charge_override', 'auto')
+                             or not is_state('input_select.system_car_charger_current_override_a', 'auto') }}
+                        '';
+                      }
+                    ];
+                    sequence = [
+                      {
+                        service = "notify.mobile_app_nphone";
+                        data = {
+                          title = "Car charger";
+                          message = ''
+                            Charger is not on auto — charge: {{ states('input_select.car_charge_override') }}, current: {{ states('input_select.system_car_charger_current_override_a') }}. It won't follow the schedule tonight.
+                          '';
+                          data.actions = [
+                            {
+                              action = "car_charger_override_auto";
+                              title = "Set both to auto";
+                            }
+                          ];
+                        };
+                      }
+                    ];
+                  }
+                ];
               }
             ];
           }
       )
 
-      # Handle actionable notification: set override back to auto
+      # Handle actionable notification: set both overrides back to auto
       (
         ha.automation "system/car_charger.notify_override_off.handle_action"
           {
@@ -339,6 +382,7 @@
             conditions = [ ];
             actions = [
               (ha.action.set_value "input_select.car_charge_override" "auto")
+              (ha.action.set_value "input_select.system_car_charger_current_override_a" "auto")
             ];
           }
       )

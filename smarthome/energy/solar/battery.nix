@@ -127,7 +127,7 @@
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.45) %}
               {% set capacity_threshold = [2.45, monthly_peak - 0.1] | max %}
-              {% set capacity_near = [1.95, monthly_peak - 0.6] | max %}
+              {% set capacity_near = [1.95, monthly_peak - 0.4] | max %}
               {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
