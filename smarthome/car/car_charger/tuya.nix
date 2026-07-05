@@ -145,7 +145,15 @@
               {# Grid-charge ceiling is set the evening before via the plan_tomorrow flow
                  (60 sunny / 70 default / 100 long drive); falls back to 70. #}
               {% set target = states('input_number.car_charge_grid_target') | float(70) %}
-              {{ offpeak and soc < target }}
+              {# On the solar-first plan (sunny + home, target 60) grid only guarantees the
+                 floor OVERNIGHT — the daytime belongs to solar. This matters on weekends,
+                 where offpeak runs all day and would otherwise let the grid pre-empt the sun.
+                 Weekdays are unaffected (daytime is peak, so offpeak is already false). For
+                 higher targets (dull / drive) there is no solar to protect, so daytime
+                 offpeak grid charging stays enabled. #}
+              {% set solar_first = target <= 60 %}
+              {% set daytime = is_state('sun.sun', 'above_horizon') %}
+              {{ offpeak and soc < target and not (solar_first and daytime) }}
             '';
           }
           {
