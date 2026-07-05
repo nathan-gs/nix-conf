@@ -15,7 +15,7 @@
       car_charge_override = {
         name = "car/charge_override";
         icon = "mdi:car-electric";
-        options = [ "auto" "on" "solar+grid boost" "off" ];
+        options = [ "auto" "on" "solar+grid boost" "solar+grid 16a" "off" ];
       };
       system_car_charger_current_override_a = {
         name = "system/car_charger/current_override_a";
@@ -37,10 +37,14 @@
             icon = "mdi:current-ac";
             state = ''
               {% set steps = [6, 8, 10, 13, 16] %}
-              {# solar+grid boost: charge as hard as the capacity tariff allows — keep the
+              {# solar+grid boost / 16a: charge as hard as the capacity tariff allows — keep the
                  headroom + peak-shaving logic below, but skip the solar_boost reduction that
-                 otherwise caps current to available solar. #}
-              {% set boost = states('input_select.car_charge_override') == 'solar+grid boost' %}
+                 otherwise caps current to available solar. "solar+grid 16a" additionally lifts
+                 the automatic 13A cap to 16A (headroom + peak-shaving tail still hold it under
+                 the capacity tariff). #}
+              {% set charge_override = states('input_select.car_charge_override') %}
+              {% set boost = charge_override in ['solar+grid boost', 'solar+grid 16a'] %}
+              {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
               {% set override = states('input_select.system_car_charger_current_override_a') | int(0) %}
               {% if override > 0 %}
                 {% set target_a = override | int %}
@@ -83,7 +87,7 @@
                     {% set target_a = 13 %}
                   {% endif %}
                 {% endif %}
-                {% set target_a = min(target_a, 13) %}                
+                {% set target_a = min(target_a, cap) %}
               {% endif %}
               {% set ns = namespace(val=steps[0]) %}
               {% for s in steps %}
@@ -153,7 +157,7 @@
               {% set low_soc = is_state('binary_sensor.system_car_charger_low_soc', 'on') %}
               {% set should_charge_offpeak = is_state('binary_sensor.system_car_charger_should_charge_offpeak', 'on') %}
               {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') and battery_sufficient %}
-              {% set force_on = override in ['on', 'solar+grid boost'] %}
+              {% set force_on = override in ['on', 'solar+grid boost', 'solar+grid 16a'] %}
               {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or force_on) }}
             '';
           }
@@ -172,6 +176,7 @@
               (ha.trigger.on "binary_sensor.system_car_charger_solar_charge_eligible")
               (ha.trigger.state_to "input_select.car_charge_override" "on")
               (ha.trigger.state_to "input_select.car_charge_override" "solar+grid boost")
+              (ha.trigger.state_to "input_select.car_charge_override" "solar+grid 16a")
               (ha.trigger.state "sensor.solis_remaining_battery_capacity")
             ];
             conditions = [
@@ -180,7 +185,7 @@
                 condition = "template";
                 value_template = ''
                   {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') %}
-                  {% set override = states('input_select.car_charge_override') in ['on', 'solar+grid boost'] %}
+                  {% set override = states('input_select.car_charge_override') in ['on', 'solar+grid boost', 'solar+grid 16a'] %}
                   {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
                   {% if solar_eligible and not override %}
                     {{ battery >= 20 }}
