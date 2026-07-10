@@ -7,7 +7,7 @@
     # standby: Sonos network standby + TV standby = 5W
     powercalc.sensors = [
       {
-        name = "living_room_av";
+        name = "floor0/living/av";
         entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
         standby_power = 5;
         fixed.power = 100;
