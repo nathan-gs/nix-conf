@@ -32,7 +32,7 @@
       PHOTOPRISM_DISABLE_VIPS = "true";
       PHOTOPRISM_THUMB_SIZE = "1280";
     };
-    package = pkgs.nixpkgs-unstable.photoprism;
+    package = pkgs.photoprism;
   };
 
   services.nginx.virtualHosts."photoprism.nathan.gs" = {
