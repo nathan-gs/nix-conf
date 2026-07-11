@@ -81,6 +81,16 @@ Only add to `environment.systemPackages` in `software.nix` if the tool needs to 
 - For Home Assistant entities, prefer the helpers in `lib/ha.nix` to keep `unique_id` generation consistent.
 - The `nixpkgs-unstable` channel is available as `pkgs.nixpkgs-unstable.*` via an overlay in `flake.nix` — use it for individual packages that need to be newer (e.g. `esphome`) without bumping the whole system.
 
+## Worktree workflow
+
+After completing work in a worktree, always merge back to `main` locally:
+
+```sh
+git merge <worktree-branch> --no-ff
+```
+
+Then delete the worktree branch. Do not leave worktree branches unmerged.
+
 ## CI
 
 `.github/workflows/test.yml` only runs `nix flake metadata` against an older nixpkgs channel — it does **not** evaluate or build the configurations. Treat green CI as "the flake parses," not "this builds."
