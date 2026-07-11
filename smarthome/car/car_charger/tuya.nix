@@ -116,7 +116,7 @@
                     {% set target_a = min(16, solar_a) %}
                     {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
                     {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
-                    {% if battery > 50 and remaining_energy > 5 %}
+                    {% if battery > 50 and battery <= 80 and remaining_energy > 5 %}
                       {% set target_a = 13 %}
                     {% endif %}
                   {% endif %}
