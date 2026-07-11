@@ -41,7 +41,7 @@
       car_charge_override = {
         name = "car/charge_override";
         icon = "mdi:car-electric";
-        options = [ "auto" "on" "solar+grid boost" "solar+grid 16a" "off" ];
+        options = [ "auto" "auto + battery" "on" "solar+grid boost" "solar+grid 16a" "off" ];
       };
       system_car_charger_current_override_a = {
         name = "system/car_charger/current_override_a";
@@ -70,6 +70,7 @@
                  the capacity tariff). #}
               {% set charge_override = states('input_select.car_charge_override') %}
               {% set boost = charge_override in ['solar+grid boost', 'solar+grid 16a'] %}
+              {% set battery_mode = charge_override == 'auto + battery' %}
               {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
               {% set override = states('input_select.system_car_charger_current_override_a') | int(0) %}
               {% if override > 0 %}
@@ -105,12 +106,19 @@
                 {% endif %}
                 {% if is_state('binary_sensor.system_car_charger_solar_boost', 'on') and not boost %}
                   {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
-                  {% set solar_a = (solar / 230) | round(0) | int %}
-                  {% set target_a = min(16, solar_a) %}
-                  {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
-                  {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
-                  {% if battery > 50 and remaining_energy > 5 %}
-                    {% set target_a = 13 %}
+                  {% if battery_mode %}
+                    {# Reserve 500W for the home battery; cap car charging at 8A. #}
+                    {% set available = solar - 500 %}
+                    {% set solar_a = [0, (available / 230) | round(0) | int] | max %}
+                    {% set target_a = min(8, solar_a) %}
+                  {% else %}
+                    {% set solar_a = (solar / 230) | round(0) | int %}
+                    {% set target_a = min(16, solar_a) %}
+                    {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                    {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
+                    {% if battery > 50 and remaining_energy > 5 %}
+                      {% set target_a = 13 %}
+                    {% endif %}
                   {% endif %}
                 {% endif %}
                 {% set target_a = min(target_a, cap) %}
@@ -431,6 +439,32 @@
             actions = [
               (ha.action.set_value "input_select.car_charge_override" "auto")
               (ha.action.set_value "input_select.system_car_charger_current_override_a" "auto")
+            ];
+          }
+      )
+
+      # "auto + battery" mode: revert to normal auto once the home battery is full enough.
+      (
+        ha.automation "system/car_charger.battery_mode_auto_revert"
+          {
+            triggers = [
+              (ha.trigger.state "sensor.solis_remaining_battery_capacity")
+            ];
+            conditions = [
+              {
+                condition = "state";
+                entity_id = "input_select.car_charge_override";
+                state = "auto + battery";
+              }
+              {
+                condition = "template";
+                value_template = ''
+                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 80 }}
+                '';
+              }
+            ];
+            actions = [
+              (ha.action.set_value "input_select.car_charge_override" "auto")
             ];
           }
       )
