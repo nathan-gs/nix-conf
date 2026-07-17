@@ -16,6 +16,13 @@
         name = "car/charge_sunny_tomorrow";
         icon = "mdi:weather-sunny";
       };
+      # Set by the 05:00 morning battery boost automation when solar forecast >= 10 kWh and
+      # home battery is still >= 80%. Charging runs until the home battery hits 60% (gated in
+      # should_charge below), then stops. Reset nightly at 21:00 by plan_tomorrow.
+      car_charge_morning_boost = {
+        name = "car/charge_morning_boost";
+        icon = "mdi:battery-arrow-up";
+      };
     };
 
     input_number = {
@@ -203,7 +210,11 @@
               {% set should_charge_offpeak = is_state('binary_sensor.system_car_charger_should_charge_offpeak', 'on') %}
               {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') and battery_sufficient %}
               {% set force_on = override in ['on', 'solar+grid boost', 'solar+grid 16a'] %}
-              {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or force_on) }}
+              {# Morning battery boost: drain home battery into car before solar arrives. Stops
+                 automatically when battery reaches 60% (the template gate below turns false). #}
+              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+              {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 60 %}
+              {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost) }}
             '';
           }
         ];
@@ -474,6 +485,44 @@
           }
       )
 
+      # 05:00 — morning battery boost. If today's solar forecast is >= 10 kWh and the home
+      # battery is still well-charged (>= 80%), enable morning_boost so the car charges from
+      # the home battery until it drops to 60%. Solar will recharge the battery during the day.
+      # Only runs in auto mode; skip if override is set to anything else.
+      (
+        ha.automation "system/car_charger.morning_battery_boost"
+          {
+            triggers = [
+              { platform = "time"; at = "05:00:00"; }
+            ];
+            conditions = [
+              # Respect manual overrides
+              {
+                condition = "state";
+                entity_id = "input_select.car_charge_override";
+                state = "auto";
+              }
+              # Only worthwhile on a good solar day (>= 10 kWh today)
+              {
+                condition = "template";
+                value_template = ''
+                  {{ states('sensor.energy_production_today_remaining') | float(0) >= 10 }}
+                '';
+              }
+              # Battery must be significant (>= 80%) so there is meaningful headroom above the 60% stop
+              {
+                condition = "template";
+                value_template = ''
+                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 80 }}
+                '';
+              }
+            ];
+            actions = [
+              (ha.action.on "input_boolean.car_charge_morning_boost")
+            ];
+          }
+      )
+
       # 21:00 — plan tomorrow's charge. Reset the grid ceiling to the 70% default, work out
       # whether tomorrow will be sunny (conservative solar forecast + weather.sxw condition),
       # then ask (actionable notification) whether I'll be home or driving far. No answer keeps
@@ -490,6 +539,8 @@
               # Reset to the default before (re)asking, so an unanswered night lands on 70%
               # and yesterday's "drive far"/"sunny" choice never lingers.
               (ha.action.set_value "input_number.car_charge_grid_target" 70)
+              # Clear morning boost so it re-evaluates fresh at 05:00 tomorrow.
+              (ha.action.off "input_boolean.car_charge_morning_boost")
               # Pull tomorrow's forecast (weather.sxw supports daily forecasts).
               {
                 service = "weather.get_forecasts";
