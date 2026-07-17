@@ -17,7 +17,7 @@
         icon = "mdi:weather-sunny";
       };
       # Set by the 05:00 morning battery boost automation when solar forecast >= 10 kWh and
-      # home battery is still >= 80%. Charging runs until the home battery hits 60% (gated in
+      # home battery is still >= 60%. Charging runs until the home battery hits 60% (gated in
       # should_charge below), then stops. Reset nightly at 21:00 by plan_tomorrow.
       car_charge_morning_boost = {
         name = "car/charge_morning_boost";
@@ -509,11 +509,11 @@
                   {{ states('sensor.energy_production_today_remaining') | float(0) >= 10 }}
                 '';
               }
-              # Battery must be significant (>= 80%) so there is meaningful headroom above the 60% stop
+              # Battery must be above the 60% stop threshold to have anything to give the car
               {
                 condition = "template";
                 value_template = ''
-                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 80 }}
+                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 60 }}
                 '';
               }
             ];
