@@ -391,7 +391,7 @@
                     ];
                     sequence = [
                       {
-                        service = "notify.mobile_app_nphone";
+                        service = "notify.mobile_app_nphone_p10pro";
                         data = {
                           title = "Car charger";
                           message = "Override is set to off — charger will not start tonight.";
@@ -418,7 +418,7 @@
                     ];
                     sequence = [
                       {
-                        service = "notify.mobile_app_nphone";
+                        service = "notify.mobile_app_nphone_p10pro";
                         data = {
                           title = "Car charger";
                           message = ''
@@ -568,7 +568,7 @@
                 [ (ha.action.on "input_boolean.car_charge_sunny_tomorrow") ]
                 [ (ha.action.off "input_boolean.car_charge_sunny_tomorrow") ])
               {
-                service = "notify.mobile_app_nphone";
+                service = "notify.mobile_app_nphone_p10pro";
                 data = {
                   title = "Car charge plan for tomorrow";
                   message = ''
@@ -647,7 +647,7 @@
                 ];
               }
               {
-                service = "notify.mobile_app_nphone";
+                service = "notify.mobile_app_nphone_p10pro";
                 data = {
                   title = "Car charge plan for tomorrow";
                   message = ''
