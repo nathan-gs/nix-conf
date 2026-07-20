@@ -208,7 +208,7 @@
             unique_id = "car_charger_charging";
             device_class = "plug";
             state = ''
-              {{ states('sensor.system_car_charger_metering_plug_measure_power') | int(0) > 5 }}
+              {{ states('sensor.system_car_charger_status') == 'charging' }}
             '';
           }
         ];
@@ -295,19 +295,13 @@
           name = "car_charger";
           unique_id = "car_charger";
           entity_id = "binary_sensor.car_charger_charging";
-          # The Tuya plug sees a real voltage drop (~18 V at 15 A) across ~45 m
-          # of 2.5 mm² cable feeding it, so plug_power undercounts the energy
-          # that left the grid meter by exactly the I²R loss. Scaling by
-          # V_grid / V_plug recovers the grid-meter view. Charger is on L3.
+          # Metering plug unavailable; derive power from set charging current × DSMR L3 voltage.
+          # EV chargers regulate to the set current (PF ≈ 1), so this is accurate.
+          # Cable I²R losses are no longer corrected (plug is gone), a minor ~5% undercount at 16A.
           fixed.power = ''
-            {% set plug_power = states('sensor.system_car_charger_metering_plug_measure_power') | float(0) %}
-            {% set plug_v = states('sensor.system_car_charger_metering_plug_measure_voltage') | float(0) %}
-            {% set grid_v = states('sensor.dsmr_reading_phase_voltage_l3') | float(0) %}
-            {% if plug_v > 50 and grid_v > 50 %}
-              {{ (plug_power * grid_v / plug_v) | int }}
-            {% else %}
-              {{ plug_power | int }}
-            {% endif %}
+            {% set current = states('number.system_car_charger_charging_current') | float(0) %}
+            {% set grid_v = states('sensor.dsmr_reading_phase_voltage_l3') | float(230) %}
+            {{ (current * grid_v) | int }}
           '';
           create_utility_meters = true;
           utility_meter_types = [ "hourly" "daily" "monthly" ];
