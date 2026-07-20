@@ -213,7 +213,7 @@
               {# Morning battery boost: drain home battery into car before solar arrives. Stops
                  automatically when battery reaches 60% (the template gate below turns false). #}
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
-              {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 60 %}
+              {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 50 %}
               {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost) }}
             '';
           }
@@ -513,7 +513,7 @@
               {
                 condition = "template";
                 value_template = ''
-                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 60 }}
+                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 50 }}
                 '';
               }
             ];
