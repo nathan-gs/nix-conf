@@ -30,13 +30,13 @@
       # grid; solar tops up the rest during the day. Default 70; the plan_tomorrow flow
       # drops it to 60 on a sunny day or raises it to 100 for a long drive, and resets it
       # to 70 each evening before re-asking.
-      # No `initial` so the value restores across HA restarts (a nightly "drive far" 100%
+      # No `initial` so the value restores across HA restarts (a nightly "long drive" 100%
       # survives a 3am restart mid-charge). On the very first boot it comes up at `min`, so
-      # min is 60 — the lowest intended target — not something that would starve the charge.
+      # min is 50 — the lowest intended target — not something that would starve the charge.
       car_charge_grid_target = {
         name = "car/charge_grid_target";
         icon = "mdi:battery-charging-70";
-        min = 60;
+        min = 50;
         max = 100;
         step = 5;
         unit_of_measurement = "%";
@@ -525,9 +525,8 @@
 
       # 21:00 — plan tomorrow's charge. Reset the grid ceiling to the 70% default, work out
       # whether tomorrow will be sunny (conservative solar forecast + weather.sxw condition),
-      # then ask (actionable notification) whether I'll be home or driving far. No answer keeps
-      # the safe 70% default. "Home" resolves to 60% (sunny) or 70% via the stored sunny flag;
-      # "Drive far" fills to 100%. See handle_action below.
+      # then ask (actionable notification) how the car will be used. No answer keeps the safe
+      # 70% default. See handle_action below.
       (
         ha.automation "system/car_charger.plan_tomorrow"
           {
@@ -537,7 +536,7 @@
             conditions = [ ];
             actions = [
               # Reset to the default before (re)asking, so an unanswered night lands on 70%
-              # and yesterday's "drive far"/"sunny" choice never lingers.
+              # and yesterday's choice never lingers.
               (ha.action.set_value "input_number.car_charge_grid_target" 70)
               # Clear morning boost so it re-evaluates fresh at 05:00 tomorrow.
               (ha.action.off "input_boolean.car_charge_morning_boost")
@@ -548,7 +547,7 @@
                 data.type = "daily";
                 response_variable = "fc";
               }
-              # Store the sunny assessment so the async "Home" reply can read it.
+              # Store the sunny assessment for the notification message.
               (ha.action.conditional
                 [
                   (ha.condition.template ''
@@ -572,16 +571,15 @@
                 data = {
                   title = "Car charge plan for tomorrow";
                   message = ''
-                    Solar forecast ~{{ states('sensor.energy_production_tomorrow') | float(0) | round(0) }} kWh (min).
-                    {% if is_state('input_boolean.car_charge_sunny_tomorrow', 'on') %}☀️ Sunny — "Home" grid-charges to 60%, solar tops up during the day.{% else %}☁️ Dull — "Home" grid-charges to 70%.{% endif %}
-                    "Drive close" 70% · "Drive far" 100% (grid).
+                    Solar forecast ~{{ states('sensor.energy_production_tomorrow') | float(0) | round(0) }} kWh (min). {% if is_state('input_boolean.car_charge_sunny_tomorrow', 'on') %}☀️ Sunny.{% else %}☁️ Dull.{% endif %}
+                    "Stay home" 50% (solar tops up) · "2 days driving" 70% · "Long drive" 100%.
                   '';
                   data = {
                     tag = "car_charge_plan";
                     actions = [
-                      { action = "car_charge_plan_home"; title = "🏡 Home"; }
-                      { action = "car_charge_plan_drive_close"; title = "🚙 Drive close"; }
-                      { action = "car_charge_plan_drive_far"; title = "🚗 Drive far"; }
+                      { action = "car_charge_plan_stay_home"; title = "🏠 Stay home"; }
+                      { action = "car_charge_plan_drive_2days"; title = "🚗 2 days driving"; }
+                      { action = "car_charge_plan_long_drive"; title = "🛣️ Long drive"; }
                     ];
                   };
                 };
@@ -599,20 +597,20 @@
               {
                 platform = "event";
                 event_type = "mobile_app_notification_action";
-                event_data.action = "car_charge_plan_home";
-                id = "home";
+                event_data.action = "car_charge_plan_stay_home";
+                id = "stay_home";
               }
               {
                 platform = "event";
                 event_type = "mobile_app_notification_action";
-                event_data.action = "car_charge_plan_drive_close";
-                id = "drive_close";
+                event_data.action = "car_charge_plan_drive_2days";
+                id = "drive_2days";
               }
               {
                 platform = "event";
                 event_type = "mobile_app_notification_action";
-                event_data.action = "car_charge_plan_drive_far";
-                id = "drive_far";
+                event_data.action = "car_charge_plan_long_drive";
+                id = "long_drive";
               }
             ];
             conditions = [ ];
@@ -621,25 +619,23 @@
               (ha.action.set_value "input_select.car_charge_override" "auto")
               {
                 choose = [
-                  # Home: car stays to catch the sun, so grid only to 60% on a sunny day.
+                  # Stay home: grid guarantees 50%, solar tops up the rest during the day.
                   {
-                    conditions = [ { condition = "trigger"; id = "home"; } ];
+                    conditions = [ { condition = "trigger"; id = "stay_home"; } ];
                     sequence = [
-                      (ha.action.set_value "input_number.car_charge_grid_target"
-                        "{{ 60 if is_state('input_boolean.car_charge_sunny_tomorrow', 'on') else 70 }}")
+                      (ha.action.set_value "input_number.car_charge_grid_target" 50)
                     ];
                   }
-                  # Drive close: car is away during the sunny hours (no solar top-up) but only
-                  # needs local range — grid to 70% regardless of the forecast.
+                  # 2 days driving: need reliable range, grid to 70%.
                   {
-                    conditions = [ { condition = "trigger"; id = "drive_close"; } ];
+                    conditions = [ { condition = "trigger"; id = "drive_2days"; } ];
                     sequence = [
                       (ha.action.set_value "input_number.car_charge_grid_target" 70)
                     ];
                   }
-                  # Drive far: fill from the grid overnight.
+                  # Long drive: fill from the grid overnight.
                   {
-                    conditions = [ { condition = "trigger"; id = "drive_far"; } ];
+                    conditions = [ { condition = "trigger"; id = "long_drive"; } ];
                     sequence = [
                       (ha.action.set_value "input_number.car_charge_grid_target" 100)
                     ];
