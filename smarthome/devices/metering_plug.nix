@@ -114,12 +114,6 @@ map
       ieee = "0xa4c1381f8ccf7230";
       floor = "floor1";
     }
-    {
-      zone = "car_charger";
-      name = "measure";
-      ieee = "0xa4c1389413b77b07";
-      floor = "system";
-    }
   ]
 
 # Devices with issues:
