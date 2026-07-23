@@ -9,9 +9,10 @@ let
       (
         map (v: { name = "${v.ieee}"; value = v // { 
           friendly_name = "${v.floor}/${v.zone}/${v.type}/${v.name}";
-          homeassistant = v.homeassistant // {
+          homeassistant = {
             update = null;
             expire_after = 3600;
+          } // v.homeassistant // {
             object_id = "${v.floor}_${v.zone}_${v.type}_${v.name}";
             device.suggested_area = "${v.floor}/${v.zone}";
           };

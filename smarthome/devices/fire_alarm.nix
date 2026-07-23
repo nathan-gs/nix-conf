@@ -1,7 +1,7 @@
 map
   (v: v // {
     type = "fire_alarm";
-    homeassistant = {};
+    homeassistant = { expire_after = null; };
   })
   [
     {
