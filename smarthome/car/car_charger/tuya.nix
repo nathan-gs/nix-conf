@@ -48,7 +48,7 @@
       car_charge_override = {
         name = "car/charge_override";
         icon = "mdi:car-electric";
-        options = [ "auto" "auto + battery" "on" "solar+grid boost" "solar+grid 16a" "off" ];
+        options = [ "auto" "auto + battery" "on" "battery drain" "solar+grid boost" "solar+grid 16a" "off" ];
       };
       system_car_charger_current_override_a = {
         name = "system/car_charger/current_override_a";
@@ -78,6 +78,11 @@
               {% set charge_override = states('input_select.car_charge_override') %}
               {% set boost = charge_override in ['solar+grid boost', 'solar+grid 16a'] %}
               {% set battery_mode = charge_override == 'auto + battery' %}
+              {# battery drain: phase 1 (battery > 20%) charges at full grid speed like 'on';
+                 phase 2 (battery <= 20%) falls back to solar-only via the solar boost path. #}
+              {% set battery_drain = charge_override == 'battery drain' %}
+              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+              {% set boost = boost or (battery_drain and battery > 20) %}
               {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
               {% set override = states('input_select.system_car_charger_current_override_a') | int(0) %}
               {% if override > 0 %}
@@ -214,7 +219,11 @@
                  automatically when battery reaches 60% (the template gate below turns false). #}
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
               {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 50 %}
-              {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost) }}
+              {# battery drain phase 1: force charging while house battery is above the 20% floor.
+                 Phase 2 (battery <= 20%) is handled by solar_eligible naturally allowing charging
+                 when there is enough solar production. #}
+              {% set battery_drain_force = override == 'battery drain' and battery > 20 %}
+              {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost or battery_drain_force) }}
             '';
           }
         ];
@@ -231,6 +240,7 @@
               (ha.trigger.on "binary_sensor.system_car_charger_should_charge")
               (ha.trigger.on "binary_sensor.system_car_charger_solar_charge_eligible")
               (ha.trigger.state_to "input_select.car_charge_override" "on")
+              (ha.trigger.state_to "input_select.car_charge_override" "battery drain")
               (ha.trigger.state_to "input_select.car_charge_override" "solar+grid boost")
               (ha.trigger.state_to "input_select.car_charge_override" "solar+grid 16a")
               (ha.trigger.state "sensor.solis_remaining_battery_capacity")
@@ -246,7 +256,7 @@
                 condition = "template";
                 value_template = ''
                   {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') %}
-                  {% set override = states('input_select.car_charge_override') in ['on', 'solar+grid boost', 'solar+grid 16a'] %}
+                  {% set override = states('input_select.car_charge_override') in ['on', 'battery drain', 'solar+grid boost', 'solar+grid 16a'] %}
                   {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
                   {% if solar_eligible and not override %}
                     {{ battery >= 20 }}
@@ -519,6 +529,46 @@
             ];
             actions = [
               (ha.action.on "input_boolean.car_charge_morning_boost")
+            ];
+          }
+      )
+
+      # "battery drain" mode: notify when the house battery hits 20% (phase 1 → phase 2).
+      # No override change needed — the should_charge and target_current templates automatically
+      # switch to solar-only once battery_drain_force becomes false at the 20% floor.
+      (
+        ha.automation "system/car_charger.battery_drain_phase_transition"
+          {
+            triggers = [
+              (ha.trigger.state "sensor.solis_remaining_battery_capacity")
+            ];
+            conditions = [
+              {
+                condition = "state";
+                entity_id = "input_select.car_charge_override";
+                state = "battery drain";
+              }
+              {
+                condition = "template";
+                value_template = ''
+                  {{ states('sensor.solis_remaining_battery_capacity') | int(100) <= 20 }}
+                '';
+              }
+            ];
+            actions = [
+              {
+                service = "notify.mobile_app_nphone_p10pro";
+                data = {
+                  title = "Car charger";
+                  message = "House battery at {{ states('sensor.solis_remaining_battery_capacity') }}% — switching to solar-only charging.";
+                  data.actions = [
+                    {
+                      action = "car_charger_override_auto";
+                      title = "Set to auto";
+                    }
+                  ];
+                };
+              }
             ];
           }
       )
