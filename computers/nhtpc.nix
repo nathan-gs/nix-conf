@@ -95,6 +95,7 @@
   fileSystems."/boot" = {
     device = "/dev/disk/by-label/boot";
     fsType = "vfat";
+    options = [ "umask=0077" ];
   };
 
   
@@ -111,7 +112,6 @@
   networking.useDHCP = false;
   networking.interfaces.eno1.useDHCP = true;
   networking.interfaces.enp1s0.useDHCP = true;
-  networking.interfaces.wlp2s0.useDHCP = true;
 
   # Reject DHCP option 24 (path_mtu_aging_timeout) — router sends malformed values
   # causing constant "dhcp_envoption 24.0/3: malformed embedded option" errors
