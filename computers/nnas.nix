@@ -76,20 +76,21 @@
 
   };
   
-  networking.wg-quick.interfaces.wg0 = {
-    address = [ "172.16.8.2/24" ];
-        
+  networking.wireguard.interfaces.wg0 = {
+    ips = [ "192.168.1.201/24" ];
     privateKey = config.secrets.wireguard.nnas.private;
-    
+
     peers = [
       {
+        name = "home";
         # NHTPC
-        publicKey = config.secrets.wireguard.nhtpc.public;
-        allowedIPs = [ "172.16.8.0/24" ];
-        endpoint = "h.nathan.gs:51820";
+        publicKey = config.secrets.wireguard.home.public;
+        presharedKey = config.secrets.wireguard.home.preshared;
+        allowedIPs = [ "192.168.1.0/24" ];
+        endpoint = "h.nathan.gs:58578";
         persistentKeepalive = 25;
+        dynamicEndpointRefreshSeconds = 60;
       }
-      
     ];
   };
 

@@ -119,23 +119,7 @@
     nooption path_mtu_aging_timeout
   '';
   
-  networking.wg-quick.interfaces.wg0 = {
-    address = [ "172.16.8.1/24" ];
-    
-    listenPort = 51820;
-    privateKey = config.secrets.wireguard.nhtpc.private;
-    
-    peers = [
-      {
-        # NNAS
-        publicKey = config.secrets.wireguard.nnas.public;
-        allowedIPs = [ "172.16.8.0/24" ];
-        persistentKeepalive = 25;
-      }
-      
-    ];
-    
-  };
+
 
   services.cloudflare-dyndns-nathan = {
     enable = false;
