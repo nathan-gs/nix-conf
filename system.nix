@@ -3,12 +3,10 @@
 {
 
   imports = [
-    ./software.nix    
     ./hosts.nix
     ./services/ssh.nix
     ./services/fail2ban.nix
     ./services/mail.nix
-    ./services/wireguard.nix
   ];
 
   # Install the flakes edition

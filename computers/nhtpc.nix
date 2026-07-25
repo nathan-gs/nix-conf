@@ -11,6 +11,8 @@
       ../disks.nix
       ../headless.nix
       ../system.nix
+      ../software-servers.nix
+      ../software.nix
       ../users.nix
       ../users-servers.nix
       ../powersave.nix

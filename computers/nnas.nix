@@ -12,6 +12,7 @@
       ../system.nix
       ../users.nix
       ../users-servers.nix
+      ../software-servers.nix
       ../disks.nix
      ../apps/cloudflare-dyndns.nix
      #../services/smb.nix
