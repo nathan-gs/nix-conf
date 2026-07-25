@@ -113,6 +113,9 @@
                   |rejectattr('entity_id', 'contains', '_led_color')
                   |rejectattr('entity_id', 'contains', 'sensor.afvalbeheer_recycleapp_grofvuil')
                   |rejectattr('entity_id', 'contains', 'switch.floor0_living_light_tv_do_not_disturb')
+                  |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_complete_time')
+                  |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_rate')
+                  |rejectattr('entity_id', 'contains', 'light.floor0_living_light_tv')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
