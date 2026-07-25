@@ -147,12 +147,14 @@
         ];
         binary_sensor = [
           {
+            # Peak-hour emergency floor: charge only when SoC is critically low.
+            # Offpeak uses should_charge_offpeak + car_charge_grid_target (50/70/100).
             name = "system/car_charger/low_soc";
             unique_id = "system_car_charger_low_soc";
             icon = "mdi:battery-low";
             state = ''
               {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
-              {{ soc < 45 }}
+              {{ soc < 35 }}
             '';
           }
           {
