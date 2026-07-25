@@ -19,6 +19,7 @@
     onedrive
     pkgs.nixpkgs-unstable.esphome
     claude-code
+    grok-build
   ];
 
   programs.bash.completion.enable = true;
