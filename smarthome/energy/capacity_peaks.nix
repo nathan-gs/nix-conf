@@ -120,7 +120,7 @@
             state = ''
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5) %}
+              {% set monthly_peak = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max %}
               {% set threshold = monthly_peak - 0.2 %}
               {{ (power15m > 1.25) and (power15m_estimated > threshold) }}
             '';
@@ -130,7 +130,7 @@
             unique_id = "electricity_delivery_power_near_max_threshold";
             state = ''
               {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5) %}
+              {% set monthly_peak = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max %}
               {% set threshold = monthly_peak - 0.78 %}
               {{ electricity_delivery_power_15m_estimated > threshold }}
             '';
