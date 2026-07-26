@@ -95,6 +95,11 @@
     ];
   };
 
+  # Allow nhtpc media-rsync (services/media-rsync.nix) to push as nathan
+  users.users.nathan.openssh.authorizedKeys.keys = [
+    config.secrets.ssh.nhtpc-backup.pub
+  ];
+
   # The NixOS release to be compatible with for stateful data such as databases.
   system.stateVersion = "20.09";
 

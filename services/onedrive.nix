@@ -1,8 +1,6 @@
-
-{ config, pkgs, ... }:
+{ config, lib, pkgs, ... }:
 
 {
-
   systemd.services.onedrive_nathan_personal = {
     description = "Onedrive Nathan";
     after = [ "network-online.target" "media-documents.mount" ];
@@ -10,36 +8,33 @@
     unitConfig = {
       RequiresMountsFor = "/media/documents";
     };
-    path = [pkgs.openssl];
+    path = [ pkgs.openssl ];
     serviceConfig = {
-     # ExecStart = "${(pkgs.callPackage ../pkgs/onedrive-2.5.nix {})}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal --verbose";
       ExecStart = "${pkgs.onedrive}/bin/onedrive --monitor --confdir=/var/lib/onedrive/onedrive_nathan_personal";
       User = "nathan";
+      Restart = "on-failure";
+      RestartSec = "60s";
     };
     environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-    wantedBy = ["multi-user.target"];
+    wantedBy = [ "multi-user.target" ];
   };
 
-  services.nginx.virtualHosts."onedrive.nathan.gs" = {
-    forceSSL = true;
-    enableACME = true;
-    locations."/webhooks/onedrive" = {
-      proxyPass = "http://127.0.0.1:8888";
-      proxyWebsockets = true; # needed if you need to use WebSocket
-      extraConfig =
-        ''
-          # required when the target is also TLS server with multiple hosts
+  # Webhook endpoint only needed on the interactive sync host (nhtpc).
+  # nnas runs download_only and does not expose nginx for this.
+  services.nginx.virtualHosts = lib.mkIf (config.networking.hostName == "nhtpc") {
+    "onedrive.nathan.gs" = {
+      forceSSL = true;
+      enableACME = true;
+      locations."/webhooks/onedrive" = {
+        proxyPass = "http://127.0.0.1:8888";
+        proxyWebsockets = true;
+        extraConfig = ''
           proxy_ssl_server_name on;
-          # required when the server wants to use HTTP Authentication
         '';
+      };
+      locations."/" = {
+        extraConfig = "return 403;";
+      };
     };
-
-    locations."/" = {
-      extraConfig = "return 403;";
-    };
-
   };
-
 }
-
-
