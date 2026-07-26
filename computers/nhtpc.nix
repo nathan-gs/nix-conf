@@ -76,9 +76,9 @@
     root = "nvme-CT1000P5PSSD8_221036718144";
     data = [
      "ata-ST5000LM000-2AN170_WCJ0NK0L"
-     # "ata-ST5000LM000-2AN170_WCJ19YAA" -- dead drive, removed 2026-07-23
+     # "ata-ST5000LM000-2AN170_WCJ19YAA" -- priority: SMART long + surface scan, then btrfs replace of WD (see /tmp/drive-tests/WCJ19-PRIORITY.txt)
      "ata-ST5000LM000-2AN170_WCJ1WXQ7"
-     "ata-WDC_WD50NPJZ-00CBYT0_WD-WX22A93FCD83"
+     "ata-WDC_WD50NPJZ-00CBYT0_WD-WX22A93FCD83" # failing media; replace with WCJ19YAA when tests green
     ];
     smartd.rootDiskOptions = "-a -f -p -t -o on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,45,50";
 

@@ -5,5 +5,6 @@
     pkgs.nixpkgs-unstable.esphome
     claude-code
     grok-build
+    gemini-cli
   ];
 }
