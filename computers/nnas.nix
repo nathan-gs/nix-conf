@@ -18,8 +18,13 @@
      #../services/smb.nix
      ../services/onedrive.nix
       ../gc.nix
+      ../services/auto-upgrade.nix
     ];
 
+  # Follower: never runs `nix flake update` (nhtpc is the leader). Safety-net
+  # timer applies an already-present flake.lock if remote apply from nhtpc
+  # didn't run; otherwise the leader pushes the commit via git bundle + switch.
+  autoUpgrade.updateFlake = false;
 
   disks = {
     root = "ata-SDV-32_987032400115";

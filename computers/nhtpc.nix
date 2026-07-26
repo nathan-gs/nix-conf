@@ -42,6 +42,14 @@
       ../services/media-rsync.nix
     ];
 
+  # Leader: sole `nix flake update` + commit; then apply the same lock on nnas.
+  autoUpgrade = {
+    updateFlake = true;
+    applyRemotes = [
+      { host = "nnas.wg"; flakeAttr = "nnas"; }
+    ];
+  };
+
 
   # Use the systemd-boot EFI boot loader.
   boot.loader.systemd-boot.enable = true;

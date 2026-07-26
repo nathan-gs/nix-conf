@@ -57,10 +57,20 @@ When adding/removing data disks or btrfs volumes, edit the host file's `disks = 
 
 ## Auto-upgrade (`services/auto-upgrade.nix`)
 
-Each host runs a 04:00 systemd timer that: `nix flake update` → `nixos-rebuild build` → `switch` → commits `flake.lock` with message `auto-upgrade: update flake.lock (YYYY-MM-DD)` and the tail of the switch output. On build/switch failure it `git checkout -- flake.lock` and exits non-zero. Implications:
-- The git working tree on hosts must stay clean enough that committing `flake.lock` is safe (the script only stages `flake.lock`).
-- Untested local edits to `.nix` files will be picked up at 04:00 by the same auto-upgrade run — push them or revert before then if you don't want that.
+Nightly timer (04:00 + 05:00, ±delay 10m) with a **leader / follower** split so only one host advances flake inputs:
+
+| Host    | Role     | `autoUpgrade.updateFlake` | Behavior |
+|---------|----------|---------------------------|----------|
+| `nhtpc` | leader   | `true`                    | `nix flake update` → build self **and** remotes → switch self → commit `flake.lock` → git-bundle the commit to each `applyRemotes` host and `nixos-rebuild switch` there |
+| `nnas`  | follower | `false`                   | No flake update / no commit. Applies current `flake.lock` if not yet applied (safety net if remote apply missed) |
+
+Leader settings live on `nhtpc` (`applyRemotes = [ { host = "nnas.wg"; flakeAttr = "nnas"; } ]`). Remote apply reuses the `nhtpc-backup` SSH key (same as media-rsync); the remote user needs passwordless sudo.
+
+On build/switch failure the leader discards `flake.lock` changes and records a fail marker (same lock hash is not retried until inputs move). Implications:
+- The git working tree on the leader must stay clean enough that committing `flake.lock` is safe (the script only stages `flake.lock`).
+- Untested local edits to `.nix` files on the leader will be picked up at 04:00 by the same auto-upgrade run — push them or revert before then if you don't want that.
 - The recent `git log` is dominated by these auto-commits; look past them for human changes.
+- Followers stay in sync via the leader's git bundle push, not a second `nix flake update`.
 
 ## Available tooling
 
