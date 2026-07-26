@@ -180,6 +180,7 @@ with lib;
         ${pkgs.btrfs-progs}/bin/btrfs scrub start -c3 -B -d /media/${lib.head dataVolumes}
       '';
       startAt = "*-*-08 23:00:00";
+      serviceConfig.CPUQuota = "50%";
     };
 
 
