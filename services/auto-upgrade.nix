@@ -174,7 +174,8 @@ let
     flake_dir="/etc/nixos/nix-conf"
     applied_marker="/var/lib/nixos-auto-upgrade/applied-lock.sha256"
 
-    export PATH="/run/current-system/sw/bin:$PATH"
+    # Wrappers first: /run/current-system/sw/bin/sudo is not setuid.
+    export PATH="/run/wrappers/bin:/run/current-system/sw/bin:$PATH"
 
     echo "Building #''${flake_attr}..."
     sudo nixos-rebuild build --flake "''${flake_dir}#''${flake_attr}"
