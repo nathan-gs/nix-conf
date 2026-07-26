@@ -61,10 +61,10 @@ Nightly timer (04:00 + 05:00, ±delay 10m) with a **leader / follower** split so
 
 | Host    | Role     | `autoUpgrade.updateFlake` | Behavior |
 |---------|----------|---------------------------|----------|
-| `nhtpc` | leader   | `true`                    | `nix flake update` → build self **and** remotes → switch self → commit `flake.lock` → git-bundle the commit to each `applyRemotes` host and `nixos-rebuild switch` there |
+| `nhtpc` | leader   | `true`                    | `nix flake update` → build self **and** remotes → switch self → commit `flake.lock` → `git push` **secrets + nix-conf** to each `applyRemotes` host → `nixos-rebuild switch` there |
 | `nnas`  | follower | `false`                   | No flake update / no commit. Applies current `flake.lock` if not yet applied (safety net if remote apply missed) |
 
-Leader settings live on `nhtpc` (`applyRemotes = [ { host = "nnas.wg"; flakeAttr = "nnas"; } ]`). Remote apply reuses the `nhtpc-backup` SSH key (same as media-rsync); the remote user needs passwordless sudo.
+Leader settings live on `nhtpc` (`applyRemotes = [ { host = "nnas.wg"; flakeAttr = "nnas"; } ]`). Remote apply reuses the `nhtpc-backup` SSH key (same as media-rsync); the remote user needs passwordless sudo. Push (not pull) because the working machine key is nhtpc→nnas; nnas→nhtpc.wg only works with an interactive agent today. Secrets are pushed **before** nix-conf so the rev pinned in `flake.lock` exists on the follower.
 
 On build/switch failure the leader discards `flake.lock` changes and records a fail marker (same lock hash is not retried until inputs move). Implications:
 - The git working tree on the leader must stay clean enough that committing `flake.lock` is safe (the script only stages `flake.lock`).

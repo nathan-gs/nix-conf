@@ -5,6 +5,7 @@ let
 
   cfg = config.autoUpgrade;
   flakeDir = "/etc/nixos/nix-conf";
+  secretsDir = "/etc/nixos/secrets";
   hostname = config.networking.hostName;
 
   # Remote apply (leader → followers over WireGuard) reuses the nhtpc-backup
@@ -132,48 +133,54 @@ let
     rm -f "$commit_msg_file"
 
     ${if hasRemotes then ''
-    # Propagate the new commit to followers via git bundle (no second flake update,
-    # no GitHub push required). Then switch each remote.
-    bundle="$STATE_DIRECTORY/auto-upgrade.bundle"
-    echo "Creating git bundle for remotes..."
-    # Enough history that a slightly lagging follower can still fast-forward.
-    if git rev-parse --verify HEAD~30 >/dev/null 2>&1; then
-      git bundle create "$bundle" HEAD~30..HEAD
-    else
-      git bundle create "$bundle" HEAD
-    fi
+    # Propagate nix-conf + secrets via plain git push over the existing
+    # nhtpc→nnas SSH key, then switch on the remote.
+    #
+    # Why push instead of "git pull from nhtpc.wg" on the follower?
+    # nnas already has origin → nhtpc.wg for secrets, but non-interactive pull
+    # needs a key nnas→nhtpc (only works with a logged-in agent today).
+    # We already have the reverse direction for media-rsync, so push is the
+    # dual that works unattended. Same end state as pull.
+    export GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh ${sshOpts}"
 
     apply_remote() {
       local user="$1" host="$2" flake_attr="$3"
       local target="''${user}@''${host}"
-      local remote_bundle="/tmp/nixos-auto-upgrade.bundle"
+      local secrets_url="ssh://''${user}@''${host}${secretsDir}"
+      local conf_url="ssh://''${user}@''${host}${flakeDir}"
       local lock_hash
       lock_hash=$(sha256sum flake.lock | cut -d' ' -f1)
 
       echo "=== Applying upgrade on ''${target} (#''${flake_attr}) ==="
 
-      ${pkgs.openssh}/bin/scp ${sshOpts} "$bundle" "''${target}:''${remote_bundle}"
+      # Non-bare checkouts refuse pushes to the current branch unless told
+      # otherwise; updateInstead advances the working tree on ff.
+      ${pkgs.openssh}/bin/ssh ${sshOpts} "$target" \
+        "git -C ${secretsDir} config receive.denyCurrentBranch updateInstead && \
+         git -C ${flakeDir} config receive.denyCurrentBranch updateInstead"
 
-      ${pkgs.openssh}/bin/ssh ${sshOpts} "$target" bash -s -- "$remote_bundle" "$flake_attr" "$lock_hash" <<'REMOTE'
+      # Default push refuses non-ff updates (no --force).
+      echo "Pushing secrets to ''${secrets_url}..."
+      git -C ${secretsDir} push "$secrets_url" HEAD:refs/heads/main
+
+      echo "Pushing nix-conf to ''${conf_url}..."
+      git -C ${flakeDir} push "$conf_url" HEAD:refs/heads/main
+
+      ${pkgs.openssh}/bin/ssh ${sshOpts} "$target" bash -s -- \
+        "$flake_attr" "$lock_hash" <<'REMOTE'
     set -euo pipefail
-    remote_bundle="$1"
-    flake_attr="$2"
-    lock_hash="$3"
+    flake_attr="$1"
+    lock_hash="$2"
     flake_dir="/etc/nixos/nix-conf"
     applied_marker="/var/lib/nixos-auto-upgrade/applied-lock.sha256"
 
     export PATH="/run/current-system/sw/bin:$PATH"
-    cd "$flake_dir"
-
-    echo "Pulling auto-upgrade commit from bundle..."
-    git pull --ff-only "$remote_bundle"
-    rm -f "$remote_bundle"
 
     echo "Building #''${flake_attr}..."
-    sudo nixos-rebuild build --flake ".#''${flake_attr}"
+    sudo nixos-rebuild build --flake "''${flake_dir}#''${flake_attr}"
 
     echo "Switching #''${flake_attr}..."
-    sudo nixos-rebuild switch --flake ".#''${flake_attr}"
+    sudo nixos-rebuild switch --flake "''${flake_dir}#''${flake_attr}"
 
     sudo mkdir -p /var/lib/nixos-auto-upgrade
     echo "$lock_hash" | sudo tee "$applied_marker" >/dev/null
@@ -189,8 +196,6 @@ let
       remote_failed=1
     fi
     '') cfg.applyRemotes}
-
-    rm -f "$bundle"
 
     if [[ "$remote_failed" -ne 0 ]]; then
       echo "Local upgrade committed, but one or more remote applies failed."
@@ -269,9 +274,12 @@ in
       });
       default = [ ];
       description = ''
-        After a successful local upgrade and flake.lock commit, push that commit
-        to each remote via git bundle over SSH and run nixos-rebuild switch there.
-        Only used when updateFlake is true. Avoids a second `nix flake update`.
+        After a successful local upgrade and flake.lock commit, git-push
+        /etc/nixos/secrets and /etc/nixos/nix-conf to each remote over SSH
+        (ff-only), then nixos-rebuild switch there. Secrets first so the rev
+        pinned in flake.lock exists on the remote. Uses the nhtpc→remote key
+        (push is the dual of "pull from nhtpc.wg", which needs a reverse key
+        that is not set up non-interactively). Only when updateFlake is true.
       '';
     };
   };
