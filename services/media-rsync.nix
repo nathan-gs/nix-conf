@@ -47,8 +47,9 @@ let
     # Mirror /media/media → nnas. Videos are already compressed; skip -z.
     # --partial/--partial-dir: resume multi-day first sync over a slow link.
     # --delete-after: only remove dest files after the transfer succeeds.
-    # --bwlimit: cap at ~3 MiB/s so nnas (Atom D2701, 4 GiB RAM, SMR HDDs)
-    # does not soft-lockup under write storms / kcompactd pressure.
+    # --bwlimit intentionally below the ~22 Mbit router-WG path (~12 Mbit) so
+    # nnas (Atom, 4 GiB, SMR btrfs) can absorb writeback without kcompactd
+    # soft lockups. Complements vm.dirty_* sysctls on nnas.
     ${pkgs.rsync}/bin/rsync \
       --archive \
       --human-readable \
@@ -57,7 +58,7 @@ let
       --partial-dir=.rsync-partial \
       --delete-after \
       --timeout=600 \
-      --bwlimit=3000 \
+      --bwlimit=1500 \
       --exclude='.rsync-partial/' \
       --exclude='lost+found/' \
       --exclude='tmp/' \
