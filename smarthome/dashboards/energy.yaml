@@ -46,13 +46,11 @@ views:
                         icon_height: 30px
                       - show_name: true
                         show_icon: true
-                        type: button
-                        tap_action:
-                          action: toggle
-                        name: Charge to Max
+                        type: tile
+                        name: Charge Target
                         show_state: true
                         icon_height: 30px
-                        entity: input_boolean.car_charge_to_max
+                        entity: input_number.car_charge_grid_target
                       - show_name: true
                         show_icon: true
                         type: tile
