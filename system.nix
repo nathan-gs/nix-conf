@@ -5,7 +5,6 @@
   imports = [
     ./hosts.nix
     ./services/ssh.nix
-    ./services/fail2ban.nix
     ./services/mail.nix
   ];
 

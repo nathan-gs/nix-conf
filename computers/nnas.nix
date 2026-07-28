@@ -10,13 +10,14 @@
       (modulesPath + "/installer/scan/not-detected.nix")
       ../headless.nix
       ../system.nix
+      ../low-ram.nix
       ../users.nix
       ../users-servers.nix
       ../software-servers.nix
       ../disks.nix
      ../apps/cloudflare-dyndns.nix
      #../services/smb.nix
-     ../services/onedrive.nix
+     ../services/onedrive-schedule.nix
       ../gc.nix
       ../services/auto-upgrade.nix
     ];
@@ -58,13 +59,14 @@
 
   swapDevices = [
     { device = "/dev/disk/by-id/ata-SDV-32_987032400115-part2"; }
-  ];   
+  ];
 
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
   
   networking.interfaces.enp1s0.useDHCP = true;
-  networking.interfaces.enp2s0.useDHCP = true;
+  # Second NIC unused — skip DHCP chatter.
+  networking.interfaces.enp2s0.useDHCP = false;
   
 
  networking = {
@@ -73,11 +75,12 @@
     enableIPv6 = false;
     resolvconf.dnsSingleRequest = true;
 
+    # No local SMB/Syncthing/etc. SSH (22) comes from services/ssh.nix.
     firewall = {
       enable = true;
       allowPing = true;
-      allowedTCPPorts = [ 53 445 139 4444 8445 6789 8384 8385 ];
-      allowedUDPPorts = [ 53 137 138 4444 8445 21027 ];
+      allowedTCPPorts = [ ];
+      allowedUDPPorts = [ ];
     };
 
   };
@@ -89,13 +92,14 @@
     peers = [
       {
         name = "home";
-        # NHTPC
+        # Router WG endpoint (not nhtpc).
         publicKey = config.secrets.wireguard.home.public;
         presharedKey = config.secrets.wireguard.home.preshared;
         allowedIPs = [ "192.168.1.0/24" ];
         endpoint = "h.nathan.gs:58578";
         persistentKeepalive = 25;
-        dynamicEndpointRefreshSeconds = 60;
+        # Was 60s; less DNS under load. Keepalive holds the tunnel.
+        dynamicEndpointRefreshSeconds = 300;
       }
     ];
   };
@@ -129,22 +133,5 @@
   boot.blacklistedKernelModules = [ 
     "gma500_gfx"
   ];
-
-  powerManagement = {
-    enable = true;
-    powertop.enable = true;
-    scsiLinkPolicy = "med_power_with_dipm";
-    cpuFreqGovernor = "powersave";
-  };
-
-  # Low-RAM NAS (3.8 GiB) + SMR btrfs under bulk writes (media-rsync): keep
-  # dirty page-cache small so writeback is steady and kcompactd does not
-  # soft-lockup migrating buffer-backed folios under I/O stalls.
-  boot.kernel.sysctl = {
-    "vm.dirty_background_bytes" = 64 * 1024 * 1024;   # 64 MiB
-    "vm.dirty_bytes" = 256 * 1024 * 1024;              # 256 MiB
-    "vm.swappiness" = 10;
-    "vm.vfs_cache_pressure" = 200;
-  };
 
 }

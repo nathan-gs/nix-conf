@@ -13,8 +13,11 @@ let
   smartdDataDevices = lib.imap (n: v: { device = v; }) dataDisks;
   smartdDevices = smartdDataDevices ++ [{ device = rootDisk; options = rootDiskSmartdOptions; }];
 
-  hdparmOptions = disks.hdparm.options;
   hdparmEnabled = disks.hdparm.enable;
+  # -S: idle spin-down; units of 5s for 1–240. 120 = 10 minutes (was 12 = 1 min).
+  # -B: APM level; 127 mid (was 16 = very aggressive, thrashy on SMR under load).
+  hdparmStandby = disks.hdparm.standby;
+  hdparmApm = disks.hdparm.apm;
 
   dataDisksLength = lib.length dataDisks;
   btrfsEnabled = if dataDisksLength == 0 then false else true;
@@ -79,6 +82,17 @@ with lib;
       hdparm = {
         enable = mkOption {
           default = true;
+          type = types.bool;
+        };
+        # hdparm -S value (1–240 → ×5 seconds idle before standby).
+        standby = mkOption {
+          default = 120; # 10 minutes
+          type = types.int;
+        };
+        # hdparm -B APM level (1–254; lower = more aggressive power saving).
+        apm = mkOption {
+          default = 127;
+          type = types.int;
         };
       };
 
@@ -262,8 +276,8 @@ with lib;
       after = [ "local-fs.target"];
       wantedBy = ["multi-user.target"];
       script = concatStringsSep "\n" (lib.imap (n: v: ''
-          ${pkgs.hdparm}/bin/hdparm -S12 ${v}
-          ${pkgs.hdparm}/bin/hdparm -B16 ${v}
+          ${pkgs.hdparm}/bin/hdparm -S${toString hdparmStandby} ${v}
+          ${pkgs.hdparm}/bin/hdparm -B${toString hdparmApm} ${v}
         '') dataDisks);
       serviceConfig.Type = "oneshot";
     };
@@ -276,27 +290,28 @@ with lib;
           device = lib.head dataPartitions;
           fsType = "btrfs";
           noCheck = true;
-          options = [ 
-            "compress=lzo" 
-            "subvol=${v}" 
-            "noatime" 
-            "autodefrag" 
+          # archive only: zstd for compressible backups/text.
+          # media (video) + documents (mostly JPEG): skip — already compressed.
+          options = [
+            "subvol=${v}"
+            "noatime"
+            "autodefrag"
             "space_cache=v2"
             "x-systemd.mount-timeout=5min"
             "x-systemd.device-timeout=5min"
             "nofail"
 #            "noauto"
             "degraded"
-          ];
+          ] ++ lib.optional (v == "archive") "compress=zstd:1";
         };
       }) dataVolumes) 
       // {
+        # Top-level FS for snapshot mgmt; no default compress (archive subvol has zstd:1).
         "/media/disks" = {
            device = lib.head dataPartitions;
           fsType = "btrfs";
           noCheck = true;
           options = [ 
-            "compress=lzo" 
             "subvolid=0" 
             "noauto" 
             "noatime" 

@@ -11,6 +11,7 @@
       ../disks.nix
       ../headless.nix
       ../system.nix
+      ../services/fail2ban.nix
       ../software-servers.nix
       ../software.nix
       ../users.nix
