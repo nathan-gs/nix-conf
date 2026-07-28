@@ -180,12 +180,9 @@
             icon = "mdi:solar-power";
             state = ''
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(10) %}
-              {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
               {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
               {% set delivery = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {% set target = states('input_number.car_charge_grid_target') | float(70) %}
-              {% set soc_threshold = [80, target] | max %}
-              {{ solar > 1400 and delivery < 0.4 and soc <= soc_threshold and battery > 15 }}
+              {{ solar > 1400 and delivery < 0.4 and battery > 15 }}
             '';
           }
           {
