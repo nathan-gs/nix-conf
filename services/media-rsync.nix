@@ -50,7 +50,7 @@ let
     ${pkgs.rsync}/bin/rsync \
       --archive \
       --human-readable \
-      --info=stats2,progress2 \
+      --info=stats2 \
       --partial \
       --partial-dir=.rsync-partial \
       --delete-after \
