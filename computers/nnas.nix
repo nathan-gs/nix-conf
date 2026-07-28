@@ -136,5 +136,15 @@
     scsiLinkPolicy = "med_power_with_dipm";
     cpuFreqGovernor = "powersave";
   };
-  
+
+  # Low-RAM NAS (3.8 GiB) + SMR btrfs under bulk writes (media-rsync): keep
+  # dirty page-cache small so writeback is steady and kcompactd does not
+  # soft-lockup migrating buffer-backed folios under I/O stalls.
+  boot.kernel.sysctl = {
+    "vm.dirty_background_bytes" = 64 * 1024 * 1024;   # 64 MiB
+    "vm.dirty_bytes" = 256 * 1024 * 1024;              # 256 MiB
+    "vm.swappiness" = 10;
+    "vm.vfs_cache_pressure" = 200;
+  };
+
 }
