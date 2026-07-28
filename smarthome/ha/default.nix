@@ -115,6 +115,7 @@
                   |rejectattr('entity_id', 'contains', 'switch.floor0_living_light_tv_do_not_disturb')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_complete_time')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_rate')
+                  |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_service_inspection_time')
                   |rejectattr('entity_id', 'contains', 'light.floor0_living_light_tv')
                   |rejectattr('entity_id', 'contains', 'switch.fritz_box_7530_ax_port_forward_wireguard')
               %}
