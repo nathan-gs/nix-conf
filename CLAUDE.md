@@ -57,20 +57,20 @@ When adding/removing data disks or btrfs volumes, edit the host file's `disks = 
 
 ## Auto-upgrade (`services/auto-upgrade.nix`)
 
-Nightly timer (04:00 + 05:00, ±delay 10m) with a **leader / follower** split so only one host advances flake inputs:
+Nightly **leader / follower** timers (±delay 10m) so only one host advances flake inputs, without racing on switch:
 
-| Host    | Role     | `autoUpgrade.updateFlake` | Behavior |
-|---------|----------|---------------------------|----------|
-| `nhtpc` | leader   | `true`                    | `nix flake update` → build self **and** remotes → switch self → commit `flake.lock` → `git push` **secrets + nix-conf** to each `applyRemotes` host → `nixos-rebuild switch` there |
-| `nnas`  | follower | `false`                   | No flake update / no commit. Applies current `flake.lock` if not yet applied (safety net if remote apply missed) |
+| Host    | Role     | `updateFlake` | Timer           | Behavior |
+|---------|----------|---------------|-----------------|----------|
+| `nhtpc` | leader   | `true`        | 04:00 / 05:00   | `nix flake update` → build self **and** remotes → switch self → commit `flake.lock` → `git push` secrets + nix-conf → remote `nixos-rebuild switch` |
+| `nnas`  | follower | `false`       | 06:00 / 06:30   | No flake update. Safety net after leader remote apply: switch if lock not yet applied |
 
-Leader settings live on `nhtpc` (`applyRemotes = [ { host = "nnas.wg"; flakeAttr = "nnas"; } ]`). Remote apply reuses the `nhtpc-backup` SSH key (same as media-rsync); the remote user needs passwordless sudo. Push (not pull) because the working machine key is nhtpc→nnas; nnas→nhtpc.wg only works with an interactive agent today. Secrets are pushed **before** nix-conf so the rev pinned in `flake.lock` exists on the follower.
+Leader settings live on `nhtpc` (`applyRemotes = [ { host = "nnas.wg"; flakeAttr = "nnas"; } ]`). Remote apply reuses the `nhtpc-backup` SSH key (same as media-rsync); the remote user needs passwordless sudo. Push (not pull) because the working machine key is nhtpc→nnas. Secrets are pushed **before** nix-conf so the rev pinned in `flake.lock` exists on the follower. Follower is staggered later so it does not race the leader on `nixos-rebuild-switch-to-configuration`.
 
 On build/switch failure the leader discards `flake.lock` changes and records a fail marker (same lock hash is not retried until inputs move). Implications:
 - The git working tree on the leader must stay clean enough that committing `flake.lock` is safe (the script only stages `flake.lock`).
 - Untested local edits to `.nix` files on the leader will be picked up at 04:00 by the same auto-upgrade run — push them or revert before then if you don't want that.
 - The recent `git log` is dominated by these auto-commits; look past them for human changes.
-- Followers stay in sync via the leader's git bundle push, not a second `nix flake update`.
+- Followers stay in sync via the leader's git push, not a second `nix flake update`.
 
 ## Available tooling
 

@@ -283,6 +283,27 @@ in
         that is not set up non-interactively). Only when updateFlake is true.
       '';
     };
+
+    onCalendar = mkOption {
+      type = types.listOf types.str;
+      # Role-based default: leader early; follower late so remote apply finishes
+      # first and they do not race on nixos-rebuild-switch-to-configuration.
+      default =
+        if cfg.updateFlake then
+          [ "*-*-* 04:00:00" "*-*-* 05:00:00" ]
+        else
+          [ "*-*-* 06:00:00" "*-*-* 06:30:00" ];
+      defaultText = lib.literalExpression ''
+        if updateFlake
+        then [ "*-*-* 04:00:00" "*-*-* 05:00:00" ]
+        else [ "*-*-* 06:00:00" "*-*-* 06:30:00" ]
+      '';
+      description = ''
+        systemd OnCalendar expressions for the auto-upgrade timer.
+        Leaders default to 04:00/05:00. Followers default to 06:00/06:30 so
+        the leader can finish remote apply before the safety-net run.
+      '';
+    };
   };
 
   config = {
@@ -325,10 +346,9 @@ in
       description = "NixOS Auto Upgrade Timer";
       wantedBy = [ "timers.target" ];
       timerConfig = {
-        # Leader at 04:00/05:00. Followers use the same window as a safety net
-        # if remote apply already ran they exit quickly via applied-lock marker.
-        OnCalendar = [ "*-*-* 04:00:00" "*-*-* 05:00:00" ];
+        OnCalendar = cfg.onCalendar;
         RandomizedDelaySec = "10m";
+        Persistent = true;
       };
     };
   };

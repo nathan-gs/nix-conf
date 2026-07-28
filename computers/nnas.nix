@@ -22,8 +22,8 @@
     ];
 
   # Follower: never runs `nix flake update` (nhtpc is the leader). Safety-net
-  # timer applies an already-present flake.lock if remote apply from nhtpc
-  # didn't run; otherwise the leader pushes the commit via git bundle + switch.
+  # timer at 06:00/06:30 (after leader remote apply at 04:00) applies an
+  # already-present flake.lock if the leader push/switch missed.
   autoUpgrade.updateFlake = false;
 
   disks = {
