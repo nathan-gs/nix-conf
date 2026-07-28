@@ -5,10 +5,6 @@
   services.home-assistant.config = {
 
     input_boolean = {
-      car_charge_to_max = {
-        name = "car/charge_to_max";
-        icon = "mdi:battery-high";
-      };
       # Set by the 21:00 "plan tomorrow" automation from the solar forecast, so the
       # actionable notification's "Home" reply knows whether to grid-charge to 60% (sunny,
       # solar tops up) or 70% (dull day). See car_charger.plan_tomorrow below.
@@ -187,8 +183,8 @@
               {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
               {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
               {% set delivery = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {% set charge_to_max = is_state('input_boolean.car_charge_to_max', 'on') %}
-              {% set soc_threshold = 100 if charge_to_max else 80 %}
+              {% set target = states('input_number.car_charge_grid_target') | float(70) %}
+              {% set soc_threshold = [80, target] | max %}
               {{ solar > 1400 and delivery < 0.4 and soc <= soc_threshold and battery > 15 }}
             '';
           }
