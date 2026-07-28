@@ -137,18 +137,73 @@ with lib;
       wants = [ "network-online.target" ];
     };
 
-    
-#    services.udev = {
-#      extraRules = ''
-#ACTION=="add|change", KERNEL=="sd*[!0-9]", ATTR{timeout}="600"
-#ACTION=="add|change", KERNEL=="sd*[!0-9]", ATTR{eh_timeout}="600"
-#
-#
-#ACTION=="add", SUBSYSTEM=="usb", TEST=="power/control", ATTR{power/control}="auto"
-#ACTION=="add", SUBSYSTEM=="scsi_host", KERNEL=="host*", ATTR{link_power_management_policy}="min_power"
-#DRIVER=="sd", SUBSYSTEM=="scsi", ENV{DEVTYPE}=="scsi_device", ATTR{timeout}="150"
-#    '';
-#  }; 
+    # When multi-device btrfs has a MISSING member, udev keeps SYSTEMD_READY=0
+    # and fstab mounts (nofail) never come up. Do not force READY (avoids
+    # racing SMR spin-up). Instead mail if expected volumes are still unmounted
+    # after the device-timeout window. Only disks.btrfs.volumes (documents/media/
+    # archive/…); /media/disks is noauto snapshot helper — never required.
+    systemd.services.btrfs-mount-alert = mkIf btrfsEnabled {
+      description = "Email if expected btrfs volumes are not mounted";
+      after = [ "network-online.target" "local-fs.target" ];
+      wants = [ "network-online.target" ];
+      path = [ pkgs.btrfs-progs pkgs.gnugrep pkgs.coreutils pkgs.util-linux ];
+      script = ''
+        set -euo pipefail
+        missing=""
+        # dataVolumes only — not /media/disks
+        ${concatStringsSep "\n" (map (v: ''
+        if ! ${pkgs.util-linux}/bin/mountpoint -q /media/${v}; then
+          missing="$missing /media/${v}"
+        fi
+        '') dataVolumes)}
+
+        if [[ -z "$missing" ]]; then
+          rm -f /var/lib/btrfs-mount-alert/last-mail-day
+          exit 0
+        fi
+
+        mkdir -p /var/lib/btrfs-mount-alert
+        stamp=/var/lib/btrfs-mount-alert/last-mail-day
+        today="$(date -u +%F)"
+        # At most one mail per day while mounts stay down (e.g. multi-day replace).
+        if [[ -f "$stamp" && "$(cat "$stamp")" == "$today" ]]; then
+          exit 0
+        fi
+
+        report="$(${pkgs.btrfs-progs}/bin/btrfs filesystem show 2>&1 || true)"
+        {
+          echo "Subject: [${config.networking.hostName}] btrfs volume(s) not mounted:$missing"
+          echo "From: ${config.networking.hostName}@nathan.gs"
+          echo "To: ${config.secrets.email}"
+          echo
+          echo "Expected btrfs volumes not mounted after boot:$missing"
+          echo
+          echo "Boot leaves them unmounted when systemd never sees the array as"
+          echo "ready (often a MISSING member). Mount manually if needed; finish"
+          echo "device replace/remove so auto-mount works again."
+          echo
+          echo "=== btrfs filesystem show ==="
+          echo "$report"
+          echo
+          echo "=== findmnt -t btrfs ==="
+          ${pkgs.util-linux}/bin/findmnt -t btrfs || true
+        } | /run/wrappers/bin/sendmail -t
+
+        echo "$today" > "$stamp"
+      '';
+      serviceConfig.Type = "oneshot";
+    };
+
+    systemd.timers.btrfs-mount-alert = mkIf btrfsEnabled {
+      description = "Check expected btrfs volumes are mounted";
+      wantedBy = [ "timers.target" ];
+      timerConfig = {
+        # After x-systemd.device-timeout (2m) so we do not false-alarm mid-wait.
+        OnBootSec = "3min";
+        OnUnitActiveSec = "1d";
+        Persistent = true;
+      };
+    };
 
   systemd.services.prometheus-btrfs = {
     description = "Prometheus BTRFS device stats";
@@ -297,8 +352,8 @@ with lib;
             "noatime"
             "autodefrag"
             "space_cache=v2"
-            "x-systemd.mount-timeout=5min"
-            "x-systemd.device-timeout=5min"
+            "x-systemd.mount-timeout=2min"
+            "x-systemd.device-timeout=2min"
             "nofail"
 #            "noauto"
             "degraded"
@@ -317,7 +372,7 @@ with lib;
             "noatime" 
             "autodefrag" 
             "space_cache=v2" 
-            "x-systemd.mount-timeout=15min" 
+            "x-systemd.mount-timeout=2min" 
             "degraded" 
           ];
         };
