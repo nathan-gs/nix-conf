@@ -36,14 +36,6 @@ let
     echo "Source: ${source}"
     echo "Dest:   ${dest}"
 
-    if ! ${pkgs.util-linux}/bin/mountpoint -q /media/media; then
-      echo "ERROR: /media/media is not mounted" >&2
-      exit 1
-    fi
-
-    ${pkgs.openssh}/bin/ssh ${sshOpts} ${remoteUser}@${remoteHost} \
-      '${pkgs.util-linux}/bin/mountpoint -q /media/media && test -w /media/media'
-
     # Mirror /media/media → nnas. Videos are already compressed; skip -z.
     # --partial/--partial-dir: resume multi-day first sync over a slow link.
     # --delete-after: only remove dest files after the transfer succeeds.

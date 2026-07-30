@@ -23,6 +23,7 @@
       ../services/photoprism.nix
       #../services/plex.nix
       #../services/vscode.nix
+      ../services/vscode-server.nix
       #../services/autogenstudio.nix
       ../services/nzb.nix
       ../services/komga.nix
