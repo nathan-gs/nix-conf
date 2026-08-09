@@ -118,6 +118,8 @@
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_service_inspection_time')
                   |rejectattr('entity_id', 'contains', 'light.floor0_living_light_tv')
                   |rejectattr('entity_id', 'contains', 'switch.fritz_box_7530_ax_port_forward_wireguard')
+                  |rejectattr('entity_id', 'contains', 'sensor.fritz_box_7530_ax_cpu_temperature')
+                  |rejectattr('entity_id', 'contains', 'k10_vacuum_16e7')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
