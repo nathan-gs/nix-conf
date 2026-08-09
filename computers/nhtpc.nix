@@ -45,11 +45,29 @@
     ];
 
   # Leader: sole `nix flake update` + commit; then apply the same lock on nnas.
+  # After switch, wait for smarthome stack; rollback generation if still unhealthy.
   autoUpgrade = {
     updateFlake = true;
     applyRemotes = [
       { host = "nnas.wg"; flakeAttr = "nnas"; }
     ];
+    healthCheck = {
+      enable = true;
+      units = [
+        "home-assistant.service"
+        "ebusd.service"
+        "mosquitto.service"
+        "zigbee2mqtt.service"
+      ];
+      httpProbes = [
+        { url = "http://127.0.0.1:8123/"; } # Home Assistant UI
+        { url = "http://127.0.0.1:8080/"; } # Zigbee2MQTT frontend
+      ];
+      # HA package upgrades often need several minutes to become ready.
+      timeoutSec = 600;
+      intervalSec = 15;
+      rollback = true;
+    };
   };
 
 

@@ -1,9 +1,10 @@
 { config, pkgs, lib, ... }:
 
 let
-  inherit (lib) mkOption mkIf types;
+  inherit (lib) mkOption mkIf mkEnableOption types;
 
   cfg = config.autoUpgrade;
+  hc = cfg.healthCheck;
   flakeDir = "/etc/nixos/nix-conf";
   secretsDir = "/etc/nixos/secrets";
   hostname = config.networking.hostName;
@@ -32,6 +33,122 @@ let
 
   remoteFlakeAttrs = map (r: r.flakeAttr) cfg.applyRemotes;
 
+  # ---------------------------------------------------------------------------
+  # Deployment health check (runtime, on the real host after switch).
+  #
+  # Why not nixosTest / the NixOS test framework?
+  # nixosTest builds a QEMU VM from a config and asserts services start there.
+  # That cannot validate this host's post-upgrade reality: Zigbee needs
+  # /dev/ttyUSB0, ebusd needs the eBUS bridge, HA needs the live state DB and
+  # secrets. Closure size of full HA also makes a VM smoke-test impractical.
+  # The right tool is a post-switch probe on the machine that just switched,
+  # with generation rollback if anything is still down after a grace period.
+  # ---------------------------------------------------------------------------
+  healthCheckScript = pkgs.writeShellScript "nixos-deployment-health-check" ''
+    set -euo pipefail
+
+    export PATH="${lib.makeBinPath [
+      pkgs.curl
+      pkgs.systemd
+      pkgs.coreutils
+      pkgs.gnugrep
+    ]}:$PATH"
+
+    timeout_sec=${toString hc.timeoutSec}
+    interval_sec=${toString hc.intervalSec}
+    units=(
+    ${lib.concatMapStrings (u: "  ${lib.escapeShellArg u}\n") hc.units}
+    )
+
+    echo "=== Deployment health check ($(date)) ==="
+    echo "Host: ${hostname}"
+    echo "Timeout: ''${timeout_sec}s  interval: ''${interval_sec}s"
+    if (( ''${#units[@]} > 0 )); then
+      echo "Units: ''${units[*]}"
+    else
+      echo "Units: (none)"
+    fi
+
+    deadline=$((SECONDS + timeout_sec))
+    attempt=0
+
+    while true; do
+      attempt=$((attempt + 1))
+      all_ok=1
+      report=""
+
+      for unit in "''${units[@]}"; do
+        state=$(systemctl is-active "$unit" 2>/dev/null || true)
+        if [[ "$state" != "active" ]]; then
+          all_ok=0
+          report+="  unit $unit: ''${state:-unknown}"$'\n'
+        fi
+      done
+
+      ${lib.concatMapStrings (p: ''
+      code=$(curl -sS -o /dev/null -w '%{http_code}' \
+        --connect-timeout 3 --max-time 10 \
+        ${lib.escapeShellArg p.url} 2>/dev/null || echo 000)
+      case "$code" in
+        ${lib.concatMapStringsSep "|" toString p.acceptStatus})
+          ;;
+        *)
+          all_ok=0
+          report+="  http ${p.url}: $code (want ${lib.concatMapStringsSep "," toString p.acceptStatus})"$'\n'
+          ;;
+      esac
+      '') hc.httpProbes}
+
+      if [[ "$all_ok" -eq 1 ]]; then
+        echo "All deployment health checks passed (attempt $attempt)."
+        exit 0
+      fi
+
+      if (( SECONDS >= deadline )); then
+        echo "Deployment health check FAILED after ''${timeout_sec}s (attempt $attempt):"
+        printf '%s' "$report"
+        echo ""
+        echo "--- unit status (last 25 lines each) ---"
+        for unit in "''${units[@]}"; do
+          echo ">>>> $unit"
+          systemctl --no-pager --full status "$unit" 2>&1 | head -n 25 || true
+          echo ""
+        done
+        exit 1
+      fi
+
+      # Compact one-line progress without spamming the journal too hard.
+      echo "not ready yet (attempt $attempt, ''$((deadline - SECONDS))s left): ''${report//$'\n'/; }"
+      sleep "$interval_sec"
+    done
+  '';
+
+  # Shell fragment inserted after a successful switch on this host.
+  # On failure: optional rollback, fail marker, discard lock (leader), exit 1.
+  # applied_marker must only be written after this succeeds.
+  postSwitchHealthCheck = leader: if !hc.enable then "" else ''
+    echo "Running post-switch deployment health check..."
+    if ! ${healthCheckScript}; then
+      echo "=== DEPLOYMENT HEALTH CHECK FAILED on ${hostname} ==="
+      ${if hc.rollback then ''
+      echo "Rolling back to previous system generation..."
+      if nixos-rebuild --rollback switch 2>&1; then
+        echo "Rollback to previous generation succeeded."
+      else
+        echo "CRITICAL: nixos-rebuild --rollback switch FAILED — manual intervention needed."
+      fi
+      '' else ''
+      echo "Rollback disabled (autoUpgrade.healthCheck.rollback = false); leaving new generation active."
+      ''}
+      echo "$current_hash" > "$fail_marker"
+      ${if leader then ''
+      echo "Discarding flake.lock changes after failed health check."
+      git checkout -- flake.lock
+      '' else ""}
+      exit 1
+    fi
+  '';
+
   autoUpgradeScript = pkgs.writeShellScript "nixos-auto-upgrade" ''
     set -euo pipefail
 
@@ -41,6 +158,8 @@ let
       pkgs.nixos-rebuild
       pkgs.coreutils
       pkgs.openssh
+      pkgs.curl
+      pkgs.systemd
     ]}:$PATH"
     export HOME="/root"
 
@@ -57,14 +176,14 @@ let
 
     cd ${flakeDir}
 
-    # Marker recording the sha256 of a flake.lock whose build or switch failed.
-    # Used to skip retries on identical inputs (e.g. broken upstream pin)
-    # while still allowing retries once upstream advances.
+    # Marker recording the sha256 of a flake.lock whose build, switch, or
+    # post-switch health check failed. Used to skip retries on identical
+    # inputs while still allowing retries once upstream advances.
     fail_marker="$STATE_DIRECTORY/failed-lock.sha256"
     applied_marker="$STATE_DIRECTORY/applied-lock.sha256"
 
     echo "=== NixOS Auto-Upgrade: $(date) ==="
-    echo "Host: ${hostname}  updateFlake: ${if cfg.updateFlake then "yes" else "no"}"
+    echo "Host: ${hostname}  updateFlake: ${if cfg.updateFlake then "yes" else "no"}  healthCheck: ${if hc.enable then "yes" else "no"}"
 
     ${if cfg.updateFlake then ''
     # --- Leader: advance flake inputs, switch self, commit, apply remotes ---
@@ -114,10 +233,12 @@ let
       exit 1
     fi
 
+    ${postSwitchHealthCheck true}
+
     rm -f "$fail_marker"
     echo "$current_hash" > "$applied_marker"
 
-    echo "Switch succeeded. Committing flake.lock..."
+    echo "Switch + health check succeeded. Committing flake.lock..."
     git add flake.lock
 
     commit_msg_file=$(mktemp)
@@ -236,6 +357,8 @@ let
       exit 1
     fi
 
+    ${postSwitchHealthCheck false}
+
     rm -f "$fail_marker"
     echo "$current_hash" > "$applied_marker"
     echo "$switch_output" | tail -n 50
@@ -304,6 +427,74 @@ in
         the leader can finish remote apply before the safety-net run.
       '';
     };
+
+    healthCheck = {
+      enable = mkEnableOption ''
+        After `nixos-rebuild switch`, poll critical systemd units (and optional
+        HTTP endpoints) until healthy or timeout. On failure, optionally
+        `nixos-rebuild --rollback switch`, record a fail marker for this
+        flake.lock hash, and (on the leader) discard lock changes so they are
+        not committed or pushed.
+      '';
+
+      units = mkOption {
+        type = types.listOf types.str;
+        default = [ ];
+        example = [
+          "home-assistant.service"
+          "ebusd.service"
+          "mosquitto.service"
+          "zigbee2mqtt.service"
+        ];
+        description = "systemd units that must be active after switch.";
+      };
+
+      httpProbes = mkOption {
+        type = types.listOf (types.submodule {
+          options = {
+            url = mkOption {
+              type = types.str;
+              description = "URL to GET (typically localhost).";
+            };
+            acceptStatus = mkOption {
+              type = types.listOf types.int;
+              # 401/403 still prove the process is answering HTTP.
+              default = [ 200 201 204 301 302 401 403 ];
+              description = "HTTP status codes treated as healthy.";
+            };
+          };
+        });
+        default = [ ];
+        example = [
+          { url = "http://127.0.0.1:8123/"; }
+          { url = "http://127.0.0.1:8080/"; }
+        ];
+        description = "Optional HTTP readiness probes (in addition to units).";
+      };
+
+      timeoutSec = mkOption {
+        type = types.ints.positive;
+        # Home Assistant often needs several minutes after a package upgrade.
+        default = 600;
+        description = "Max seconds to wait for all checks to pass.";
+      };
+
+      intervalSec = mkOption {
+        type = types.ints.positive;
+        default = 15;
+        description = "Seconds between poll attempts.";
+      };
+
+      rollback = mkOption {
+        type = types.bool;
+        default = true;
+        description = ''
+          If true, run `nixos-rebuild --rollback switch` when health checks
+          fail after a successful switch. The fail marker still prevents
+          retrying the same flake.lock hash.
+        '';
+      };
+    };
   };
 
   config = {
@@ -319,9 +510,9 @@ in
     systemd.services.nixos-auto-upgrade = {
       description =
         if cfg.updateFlake then
-          "NixOS Auto Upgrade (flake update + build + switch)"
+          "NixOS Auto Upgrade (flake update + build + switch + health check)"
         else
-          "NixOS Auto Upgrade (apply flake.lock + build + switch)";
+          "NixOS Auto Upgrade (apply flake.lock + build + switch + health check)";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
 
@@ -337,8 +528,19 @@ in
         User = "root";
         WorkingDirectory = flakeDir;
         StateDirectory = "nixos-auto-upgrade";
-        # Remote apply + large builds can run a while
+        # Remote apply + large builds + HA health wait can run a while
         TimeoutStartSec = "2h";
+      };
+    };
+
+    # Manual / ad-hoc run of the same probes used after auto-upgrade:
+    #   systemctl start nixos-deployment-health-check.service
+    systemd.services.nixos-deployment-health-check = mkIf hc.enable {
+      description = "Deployment health check (critical smarthome services)";
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = healthCheckScript;
+        User = "root";
       };
     };
 
