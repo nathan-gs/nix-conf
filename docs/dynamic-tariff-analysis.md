@@ -1,25 +1,28 @@
 # Dynamic tariff analysis (Belgium)
 
-**Date:** 2026-06-26
+**Date:** 2026-06-26 (revised 2026-08-10)  
 **Question:** Does switching to a dynamic (Belpex-indexed hourly) electricity tariff make sense? Evaluated against the current Solis hybrid setup and the [[battery-expansion-analysis|expanded battery scenario]].
+
+Solis control details: [[solis-steering]].
 
 ## Inputs
 
-Actual current rates (from `sensor.electricity_cost_*` template sensors, all kWh-inclusive of network costs but excluding the monthly fixed):
+Actual current rates (from `sensor.electricity_cost_*` / `tariffs.nix`). Energy-component inputs are **VAT-inclusive**; network/tax line items sum with them to all-in €/kWh (ex monthly fixed):
 
 - **Peak rate (07:00–22:00 weekdays):** €0.29717/kWh
   - Energy component: €0.1818
-  - Network + tax + VAT: €0.1154
+  - Network + tax: €0.1154
 - **Offpeak rate (22:00–07:00 + weekends):** €0.26057/kWh
   - Energy component: €0.1452
-  - Network + tax + VAT: €0.1154
+  - Network + tax: €0.1154
 - **Injection (Engie Drive):** €0.0404/kWh (CREG reference €0.3191/kWh — used for the prosumer regulated tariff calc, not actual payout)
 - **Monthly fixed:** €20.62/mo = **€247/yr** (abonnement, capacity tariff, prosumer fee, etc.)
 - **Car:** 100 kWh battery; ~10 kWh needed on a typical away day, occasional 40 kWh jumps. Rarely fully charged.
 - **Home presence:** ~50%; when away, car charges later from home (overnight) or grid/public at €0.30/kWh
 - **Current battery:** Solis hybrid + battery (~10 kWh, [[battery-expansion-analysis]] for context). [[battery-expansion-analysis|Expansion]]: +4.5 kWh for €1000.
+- **House:** electric auxiliary heating exists (non-shiftable winter load when battery is empty).
 
-The €0.1154/kWh network component is **identical for peak and offpeak**, confirming network costs are hour-independent — they pass through unchanged to a dynamic tariff.
+The €0.1154/kWh network component is **identical for peak and offpeak**, confirming network costs are hour-independent today — they pass through unchanged to a dynamic tariff.
 
 ## Measured consumption profile (last 365 days)
 
@@ -63,7 +66,7 @@ Estimate by season:
 | Winter (Dec–Feb)         | ~900          | 3      | 2 700  |
 | **Total forward annual** |               |        | **~5 600** |
 
-This is **~20% higher than the historical 4 665 kWh** that the cost calculations below use — so all "savings from energy" numbers should be adjusted upward by ~20% as the EV-only year materializes.
+Forward winter ~900 kWh/mo is a **guess** (historical peak Dec/Jan ~650 with PHEV; full EV + cold + less PV + electric heat could land ~650–900). Cost tables below use **5 600 kWh** as the central case; treat ±15% as the uncertainty band until a full EV winter is measured.
 
 ### Monthly grid flows (2025-06 → 2026-06)
 
@@ -144,7 +147,7 @@ Split assumption: with 71% of import during 00:00–09:00 (mostly offpeak) and m
 
 ### Dynamic tariff cost (forward EV year, 5 600 kWh)
 
-Applied measured hourly import shape to Belpex price profile:
+Applied measured hourly import shape to an **annual** Belpex price profile:
 
 | Window      | % of import (post-EV) | Avg Belpex |
 |-------------|-----------------------|------------|
@@ -153,9 +156,9 @@ Applied measured hourly import shape to Belpex price profile:
 | 17–21       | 6%                    | €0.13      |
 | 21–24       | 9%                    | €0.08      |
 
-**Belpex-weighted average: ~€0.065/kWh**
+**Belpex-weighted average: ~€0.065/kWh** (optimistic if winter is not re-weighted — see below).
 
-Delivered price under dynamic:
+Delivered price under dynamic (commodity excl→incl VAT; network slice matched to all-in sensors):
 
 | Component         | €/kWh   |
 |-------------------|---------|
@@ -165,135 +168,146 @@ Delivered price under dynamic:
 | + Network (fixed) | 0.1154  |
 | **Delivered**     | **€0.211/kWh** |
 
-- **Dynamic energy cost:** 5 600 × €0.211 = **€1 182/yr**
-- **Plus dynamic supplier fixed:** ~€220/yr (Engie Dynamic abonnement comparable to current)
-- **Total dynamic contract:** **€1 402/yr**
-- **Energy savings vs current: ~€335/yr**
+| | Current dual | Dynamic (optimistic annual Belpex) |
+|--|--------------|-------------------------------------|
+| Energy variable | €1 490 | 5 600 × €0.211 = **€1 182** |
+| Fixed / abonnement | €247 | ~€220 (placeholder — verify supplier) |
+| **Total** | **€1 737** | **€1 402** |
+| **Delta** | | **~€335/yr** (of which ~€308 energy, ~€27 fixed) |
 
-The savings are higher than the previous estimate because:
-1. Actual current rates are **€0.27 blended** (not the €0.25 originally assumed)
-2. Forward EV consumption is **5 600 kWh** (not 4 665)
-3. Most consumption hits the **night Belpex band** (~€0.05) where dynamic shines hardest
-- Subtract extra subscription delta (assume +€30/yr vs current contract): **net ~€200/yr**
+**What that €308 energy gap actually is:** mostly a **cheaper commodity at the hours you already use** (you are already ~85% offpeak / night-heavy), not a large “schedule shift” win. True smart-shift value is the **extra** from avoiding 06–09 ramp and 17–21 peak, and catching weekend midday (especially non-winter). Do not over-attribute savings to automation effort.
 
-Export side: 542 kWh/yr × €0.03 fixed = €16/yr current; dynamic export ≈ Belpex when sun shines ≈ €0.02 → ~€11/yr. Slight loss (~€5/yr), trivial.
+Export side: 542 kWh/yr × ~€0.03 = ~€16/yr current; dynamic export ≈ Belpex when sun shines ≈ €0.02 → ~€11/yr. Slight loss (~€5/yr), trivial.
+
+### Winter caveat: high kWh × high Belpex
+
+~48% of historical annual import lands Nov–Feb. 2025 Belgium day-ahead monthly averages were roughly **€0.11–0.13/kWh in Jan–Feb** vs **~€0.06 in May** (year average ~€0.083) — well above the €0.065 night-heavy blend used above.
+
+If consumption-weighted Belpex is closer to **€0.08–0.09**:
+
+- Delivered ≈ **€0.23–0.24/kWh**
+- Energy variable on 5 600 kWh ≈ **€1 290–1 340**
+- Energy savings vs dual shrink toward **~€150–200/yr** before capacity-tariff drag
+
+Cold-snap weeks can temporarily **exceed** dual-tariff energy rates exactly when EV + heat import peaks. Fixed tariffs hedge that correlation risk; dynamic does not. Shoulder/summer (and negative-price hours, mostly Mar–Sep) carry much of the annual dynamic win.
+
+**Honest central band for contract-only savings:** ~**€150–300/yr** depending on winter severity and fixed-charge delta — still usually positive with this load shape, but not a guaranteed €335.
+
+At high winter daily kWh, capacity-aware charging (~3 kW class, [[ev-battery-peak-coordination]] / [[car-charging-analysis]]) needs **many night hours**, so you cannot sit only in the absolute cheapest 02:00–04:00 band; morning-ramp Belpex exposure rises in winter.
+
+---
 
 ## With battery arbitrage
 
-Battery enables explicit **time-of-use arbitrage**: charge from grid at cheap hours (00–06 night low), discharge during evening peak (17–21 high).
+Battery **TOU arbitrage** (grid charge cheap hours → cover evening load / avoid peak Belpex) is separate from solar storage. It mainly makes sense in **winter** (Nov–Feb, ~120 days/yr) when PV does not fill the pack.
 
-This is **separate from solar storage**, and only works on days when there's spare battery capacity not needed for solar — i.e. **winter** (Nov–Feb, ~120 days/yr), when PV barely fills the battery.
+Full control reference: [[solis-steering]].
 
-### Per-cycle arbitrage value
+### Per-cycle value (when grid cycling works)
 
-Round-trip efficiency: ~90% (LiFePO4 + inverter losses)
+Round-trip efficiency: ~90% (LiFePO4 + inverter)
 
-Price spread (night-charge to evening-discharge):
-- Charge: Belpex €0.05 + markup €0.025 + network €0.10 + VAT = €0.186/kWh
-- Discharge (avoided): Belpex €0.13 + markup €0.025 + network €0.10 + VAT = €0.271/kWh
-- **Net per kWh cycled: €0.271 − €0.186/0.9 = €0.064/kWh**
+Illustrative night→evening spread (annual averages — winter spreads and levels differ):
 
-### Constraint: Solis API caps force-charge target at 40% SoC
+- Charge: Belpex €0.05 + markup €0.025 + network €0.1154 + VAT on commodity ≈ €0.20/kWh delivered order of magnitude  
+- Discharge (avoided buy): evening Belpex higher → roughly **€0.05–0.07/kWh net** after losses in a good year  
 
-The Solis hybrid only accepts a `force_charge_soc` setpoint up to **40%**. This is the *target SoC*, not a percentage-points delta — so the arbitrageable window per night is roughly `40% − morning_soc_floor` of total capacity. Assuming a 10% morning floor (after evening discharge), usable arbitrage capacity is **~30% of total battery** per cycle.
+### How Solis actually steers (corrected)
 
-### Current battery (~10 kWh usable) — limited to 30% window
+| Mechanism | Role | Live plant (2026-08) | Arbitrage use |
+|-----------|------|----------------------|---------------|
+| **Forcecharge SOC** (CID 160, max **~39%**) | Grid *heal* when SoC hits a floor | **9%** | Only fills up toward overdischarge floor — **not** “charge to 40% every night” |
+| **Overdischarge SOC** (CID 158, max **40%**) | Discharge floor | **15%** | Keep ≥ force-charge; HA holds ~15–20% ([[ev-battery-peak-coordination]]) |
+| **Max grid power when force charging** (CID 9020) | Cap W from grid during heal | **300 W** | Very slow; not an arbitrage fill |
+| **Allow Grid Charging** (CID 109, bit 5 of 43110) | Permit grid → battery | **OFF** | **Must enable** for TOU grid fill |
+| **TOU + schedule** (CID 543 on; **4643** slots) | Charge/discharge time windows | Self-use + TOU on; schedule TBD | **Real arbitrage path** |
 
-- 30% × 10 kWh = 3 kWh per cycle
-- 120 winter days × 3 kWh × €0.064 = **€23/yr** (down from €77 without the cap)
+`solis-control` already writes 158 / 160 / max-grid-power. It does **not** yet implement 109 or 4643 (109 needs read-then-set `yuanzhi`). The script also **self-caps force-charge at 20%** even though the UI allows ~39%.
 
-### Extended battery (+4.5 kWh, 14.5 kWh usable) — limited to 30% window
+**Force-charge is not full-pack arbitrage.** With live 9% → 15% band ≈ **~0.6 kWh** on a 10 kWh pack at 300 W — negligible €/yr.
 
-- 30% × 14.5 kWh = 4.35 kWh per cycle
-- 120 days × 4.35 kWh × €0.064 = **€33/yr**
-- **Marginal value of the extra 4.5 kWh in arbitrage: ~€10/yr** (down from €34)
+### Two arbitrage cases
 
-### Workarounds for the 40% cap
+#### A. Status quo (force-charge floors only, no TOU grid fill)
 
-The 40% cap is a Solis cloud-API restriction, not a hardware limit. Worth investigating:
+- ~€0–15/yr (heal band only)  
+- Dynamic case rests on **EV commodity + timing**, not house battery  
 
-1. **Direct Modbus control.** The Solis inverter exposes Modbus registers (RS485 or via the data logger's local API on `solis_local`). The `force_charge_soc` register typically accepts 0–100. The 40% limit is enforced in the SolisCloud app/API, not the inverter firmware. Writing the register directly via `pymodbus` or the existing `solis` integration's local mode would bypass it.
-2. **Alternative integration.** The community [`hass-solis-modbus`](https://github.com/hultenvp/solis-sensor) or the local TCP/Modbus path may already expose unrestricted force-charge SoC.
-3. **If unbypassable:** the 40% cap functionally kills grid→battery arbitrage as a meaningful revenue stream. The dynamic-tariff case then rests almost entirely on shifting the car-charging schedule.
+#### B. TOU grid charge enabled (Allow Grid Charging + 4643 windows)
+
+Assumes winter nights charge a useful fraction of the pack (subject to Max Charge SOC, capacity tariff, and EV sharing night headroom):
+
+| | Current ~10 kWh | Extended 14.5 kWh |
+|--|-----------------|-------------------|
+| Winter cycles (order of magnitude) | ~5–8 kWh × 100–120 nights if allowed | more headroom |
+| Rough €/yr at ~€0.06/kWh net | **~€40–60** | **~€55–90** |
+
+These are **upper-bound sketches** until 109+4643 are implemented and measured. They replace the old “30% of pack via force-charge” model, which mixed up setpoints.
+
+Full-pack cycling every winter night is still constrained by: capacity tariff, EV overnight charge, and residual evening house load (incl. electric heat).
 
 ### Negative pricing days
 
-EPEX Belgium had ~80 hours of negative pricing in 2024, growing each year. Battery soaking up these hours adds ~€20–40/yr extra value, applicable to either battery size.
+Belgium had **500+** negative day-ahead hours in 2025 (mostly Mar–Sep, often weekend midday). Battery + EV can soak some of that; winter capture is small. Value ~€10–40/yr depending on automation and export rules — do not count on winter negatives.
 
 ## Total annual benefit summary
 
-Adjusted for forward-looking EV consumption (~5 600 kWh/yr import, +20% vs historical mix).
+Forward EV import **~5 600 kWh/yr** central case.
 
-With the 40% force-charge cap enforced (current Solis cloud API state):
+| | Status quo Solis control | After TOU grid-charge (109 + 4643) |
+|--|--------------------------|-------------------------------------|
+| Dynamic vs dual (contract) | **€150–300** (winter-weighted) / up to ~€335 if annual Belpex holds | same |
+| Battery arbitrage | ~€0–15 | **~€40–90** (sketch) |
+| Negative price capture | ~€10–25 | ~€15–40 |
+| **Combined (order of magnitude)** | **~€160–340** | **~€200–430** |
 
-|                            | Current battery | Extended battery (+4.5 kWh) |
-|----------------------------|-----------------|------------------------------|
-| Dynamic vs current contract | €335           | €335                         |
-| Battery arbitrage (30% window) | €23         | €33                          |
-| Negative price capture (capped same way) | €8 | €12                         |
-| **Total annual benefit**   | **~€365**       | **~€380**                    |
+**Implications for [[battery-expansion-analysis]]:**
 
-If the 40% cap can be bypassed via direct Modbus:
-
-|                            | Current battery | Extended battery (+4.5 kWh) |
-|----------------------------|-----------------|------------------------------|
-| Dynamic vs current contract | €335           | €335                         |
-| Battery arbitrage (full window) | €77        | €111                         |
-| Negative price capture     | €25             | €30                          |
-| **Total annual benefit**   | **~€435**       | **~€475**                    |
-
-**Implications for the [[battery-expansion-analysis]]:**
-- With cap: marginal expansion value under dynamic is only ~€15/yr extra — adds little to the solar-capture case (~€140/yr). Payback stays ~7 years.
-- Without cap: marginal expansion value is ~€40/yr extra → combined €180/yr → payback ~5.5 years.
-
-The expansion decision is **not changed by dynamic tariff** unless you can unlock the cap.
+- Expansion still stands primarily on **solar capture** (~€140/yr, ~7 yr payback).  
+- Dynamic TOU grid-charge adds **some** marginal winter value to extra kWh; not enough alone to flip the expansion decision.  
+- Unlocking 109+4643 helps the dynamic case more than raising force-charge from 20% → 39%.
 
 ## Risks and caveats
 
-1. **Belpex volatility.** 2022 averaged >€0.30/kWh during the gas crisis. Dynamic exposes you to repeat events. Fixed tariffs absorb that risk (and price it in via higher baseline).
-   - **Mitigation:** Most Belgian dynamic contracts allow switching back to fixed with 1 month notice.
+1. **Belpex volatility / winter correlation.** 2022 crisis and harsh winters (e.g. early 2025) raise dynamic bills when import is highest.
+   - **Mitigation:** Most Belgian dynamic contracts allow switching back to fixed with ~1 month notice. Simulate through a winter before locking in.
 
-2. **Capacity tariff penalty.** Concentrating car charging into 2–3 hours at the cheapest Belpex point spikes your 15-min peak → increases monthly capacity charge by €5–15/month potentially.
-   - **Mitigation:** Limit car charge rate to ~3 kW (vs 7 kW max) and spread over more hours, or use HA automation to keep 15-min average below current monthly peak. Already easy with the existing setup.
+2. **Capacity tariff penalty.** Concentrating car (and battery) charging into cheapest hours spikes the 15-min peak → €5–15/month possible.
+   - **Mitigation:** ~3 kW class car charge, spread hours, peak coordination already in tree ([[ev-battery-peak-coordination]]). Battery TOU charge must share the same peak budget.
 
-3. **Automation cost.** Requires HA automations to:
-   - Charge car at hourly cheapest window (not just generic off-peak)
-   - Force-charge battery from grid in winter on cheap nights
-   - Avoid discharging battery to grid at low Belpex hours
-   - Existing Engie Drive-style sensors (`sensor.electricity_injection_engie_drive_*`) suggest you've thought about this already. Belpex integration via [Nordpool](https://github.com/custom-components/nordpool) or [ENTSO-E](https://github.com/JaccoR/hass-entso-e) HA integrations is straightforward.
+3. **Automation.** Needs:
+   - Belpex (or ENTSO-E / Nordpool) sensors  
+   - Car charge on N cheapest hours within capacity cap  
+   - Solis: enable **Allow Grid Charging** + **4643** TOU slots in winter ([[solis-steering]]); keep force-charge as floor only  
+   - Do not enable feed-in priority mode for this use case  
 
-4. **Future tariff regime changes.** Belgian regulators are actively reshaping injection/capacity rules. The €228/yr energy savings could shrink if:
-   - Network costs become more time-varying (making dynamic less advantageous because the "fixed" €0.10 component might rise during peak hours)
-   - Capacity tariff tightens (penalizes night-charging peaks harder)
+4. **Future tariff regime.** Time-varying network charges or tighter capacity rules would shrink the dynamic edge.
 
-5. **Subscription/abonnement.** Run actual numbers against your current supplier's standing charges before switching; the €30/yr delta assumed above is a rough placeholder.
+5. **Subscription/abonnement.** Verify actual dynamic supplier standing charges; €220 vs €247 is a placeholder.
+
+6. **Rates / VAT.** HA electricity rates are all-in (VAT in energy component). Dynamic model applies 6% VAT to Belpex+markup only, then adds the same network slice — consistent enough for comparison; re-check against a real dynamic quote.
 
 ## Verdict
 
-**Switch to dynamic.** The economics are still clear despite the 40% Solis force-charge cap, because the bulk of the win is car-charging shift, not battery arbitrage:
+**Still lean switch to dynamic**, with tempered expectations:
 
-- ~€335/yr savings purely from shifting EV charging to cheapest Belpex hours (forward-looking with full EV year and actual measured rates) — minimal effort, just a smart charge schedule, **unaffected by the 40% cap**
-- +€20–30/yr from winter battery arbitrage with cap (or +€75–110/yr if cap can be bypassed)
-- +€8–25/yr from negative-pricing capture
-- **Combined: ~€365/yr with cap, ~€435/yr without** — ongoing, no capex
-- These figures scale further if winter EV consumption exceeds the 900 kWh/mo estimate (cold-snap years could push annual import to 6 500+ kWh → another ~€60/yr)
-- **Payback: instantaneous**
+- **Bulk of the win is EV-shaped night import** meeting a lower average commodity than dual-tariff energy components — you are already offpeak-heavy; automation polishes, it does not create most of the € gap.  
+- **Winter is the stress test**, not free upside: more kWh at higher Belpex; capacity-aware multi-hour charging; electric heat. Expect **€150–300/yr** contract savings in a realistic year, not a locked €335.  
+- **House battery arbitrage is small until Solis TOU grid-charge is wired** (109 + 4643). Force-charge max ~40% is a **heal ceiling**, not the main arbitrage lever; live heal band is tiny. Details: [[solis-steering]].  
+- **Battery expansion** remains a solar-capture decision ([[battery-expansion-analysis]]); dynamic does not make or break it.  
+- **Highest-leverage Solis follow-ups:** implement Allow Grid Charging + TOU schedule in `solis-control`; optional raise force-charge script max to UI 39% only if useful for floors.  
+- **Payback:** instantaneous on supplier switch (no capex); reversible.
 
-The battery expansion case (separate from this) is **not significantly strengthened by dynamic tariff while the 40% cap is in place** — marginal value only ~€15/yr extra. The expansion still stands on its solar-capture economics ([[battery-expansion-analysis]], ~7yr payback).
-
-**Investigating the Modbus bypass is the highest-leverage follow-up here.** Lifting the cap from 40% → 90% turns ~€60/yr of additional arbitrage value into reality, and disproportionately helps the expansion case.
-
-The main downside is exposure to price-spike years. Given switching is reversible within a month, the asymmetric risk favours trying it.
+Main downside remains exposure to price-spike winters. Asymmetric risk still favours **simulating first**, then switching.
 
 ## Recommended action sequence
 
-1. **Set up Belpex price sensor in HA** (Nordpool or ENTSO-E custom integration) — get 3 months of data flowing without switching.
-2. **Build automations** against simulated dynamic pricing:
-   - Car charge schedule: charge during N cheapest hours of next 24h, sized to required SoC
-   - Battery force-charge: when night Belpex < €0.06 and current SoC < threshold
-   - Power capping on car charger to manage capacity tariff
-3. **Compare actual measured savings** against fixed tariff for those 3 months.
-4. **Switch supplier** if simulation confirms the model. Belgian switches are free and take ~3 weeks.
+1. **Belpex / ENTSO-E sensor in HA** — run in parallel with dual tariff (shadow bill).  
+2. **Prefer a window that includes winter months** for the shadow comparison (3 sunny months overstate savings).  
+3. **Automations (sim first):**
+   - Car: N cheapest hours, capacity-capped ([[ev-battery-peak-coordination]])  
+   - Solis: wire **CID 109** + **4643** ([[solis-steering]]); leave force-charge as floor  
+4. **Switch supplier** if shadow bill confirms. Belgian switches are free and take ~3 weeks.
 
 ## SQL queries used
 

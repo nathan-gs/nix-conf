@@ -68,8 +68,8 @@ Once the battery is at its floor it no longer covers the car, so grid import jum
 car + house. The car then throttles so the 15-minute average stays under the cap:
 
 ```
-capacity_kw   = max(2.45, monthly_peak)
-capacity_near = max(1.95, monthly_peak - 0.6)
+capacity_kw   = max(2.5, monthly_peak)          # billing floor — no point throttling below 2.5
+capacity_near = max(2.2, monthly_peak - 0.3)
 banked        = electricity_delivery_power_15m
 if banked >= capacity_near:                                  # late in the quarter -> tail
     target_a = 6
@@ -81,7 +81,7 @@ else:
 
 While the battery is covering load (grid ≈ 0) the car sees full headroom and charges at up to 13 A —
 fine, that is the battery doing normal self-use down to its floor. When the battery reaches its
-floor, grid import rises and the headroom term throttles the car (≈ 8 A at a 2.45 cap, more on
+floor, grid import rises and the headroom term throttles the car (≈ 8 A at a 2.5 cap, more on
 higher-peak months), with a 6 A tail once `banked` passes `capacity_near`.
 
 ### Verified by simulation
@@ -91,7 +91,7 @@ A coupled time-step sim (car ramp + self-use battery + both control loops) confi
   that the old peak branch never fired anyway; the battery covers the car to its floor and holds.
 - **Heavy non-car load (oven ~1.2 kW):** *before*, the peak branch fired and the battery discharged
   **below** its floor (→ 10 % over a night); *after*, the battery holds at its floor and a small
-  grid peak (≈ 2.58 vs 2.45 kW) is accepted instead — the battery's reserve is preserved.
+  grid peak (≈ 2.58 vs 2.5 kW floor) is accepted instead — the battery's reserve is preserved.
 
 ### Eligibility (`tuya.nix`, `system/car_charger/should_charge`) — the anti-hard-stop guard
 
@@ -104,8 +104,9 @@ it. Even if the battery does reach 10 % as a backstop, the car keeps charging.
 - **Battery floor** = `number.solar_battery_overdischargesoc`, driven by `overdischargesoc_target`
   in `battery.nix` (20 % normally, 15 % on a solar day). This is the hard limit the battery will
   not discharge below; raise it to keep more reserve overnight.
-- **Car cap** = `capacity_kw = max(2.45, monthly_peak)` and the `banked >= capacity_near` tail
-  trigger in `tuya.nix` `target_current`.
+- **Car cap** = `capacity_kw = max(2.5, monthly_peak)` and the `banked >= capacity_near` tail
+  trigger in `tuya.nix` `target_current`. The 2.5 kW floor matches the capaciteitstarief billing
+  minimum — shaving below that has no bill impact.
 - If a heavy non-car peak occurs while the battery is at its floor, it is now *accepted* (the
   battery no longer spends its reserve to shave it). If you'd rather still shave such peaks with the
   battery down to some lower reserve, re-add a bounded deep-discharge branch with a floor above

@@ -84,9 +84,10 @@
               {% if override > 0 %}
                 {% set target_a = override | int %}
               {% else %}
+                {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
                 {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
-                {% set capacity_kw = max(monthly_peak, 2.45) %}
-                {% set capacity_near = [1.95, monthly_peak - 0.4] | max %}
+                {% set capacity_kw = max(monthly_peak, 2.5) %}
+                {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
                 {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
                    grid import, so we charge hard while little of the quarter is committed, then drop
                    to 6A for the tail so the average lands under the cap.

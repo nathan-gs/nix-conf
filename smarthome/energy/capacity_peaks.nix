@@ -115,24 +115,47 @@
             device_class = "running";
           }       
           {
+            # Capaciteitstarief floor is 2.5 kW. Do NOT use electricity_delivery_power_15m_estimated
+            # here: that assumes current power continues, and while the car is charging hard early
+            # in the quarter the projection sits on the cap — even though tuya.nix will throttle
+            # (headroom + 6A tail) and land under the peak. Alerts are for loads we cannot
+            # auto-shave: project the quarter *excluding* the car charger, so we only fire when
+            # the peak is still inevitable after the car scales down (or is already banked).
             name = "electricity_delivery_power_max_threshold";
             unique_id = "electricity_delivery_power_max_threshold";
             state = ''
-              {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {% set seconds_left = (15 - now().minute % 15) * 60 - now().second % 60 %}
+              {% if seconds_left < (15 * 60 - 30) %}
+                {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {% else %}
+                {% set banked = 0 %}
+              {% endif %}
+              {% set current_kw = (states('sensor.electricity_grid_consumed_power_mean_1m') | float(states('sensor.electricity_grid_consumed_power') | float(0))) / 1000 %}
+              {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
+              {% set residual_kw = [0, current_kw - charger_kw] | max %}
+              {% set projected = banked + (residual_kw * seconds_left) / 900 %}
               {% set monthly_peak = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max %}
-              {% set threshold = monthly_peak - 0.2 %}
-              {{ (power15m > 1.25) and (power15m_estimated > threshold) }}
+              {{ (banked > 1.5) and (projected >= monthly_peak) }}
             '';
           }
           {
+            # Same car-excluded projection as max_threshold; early-warn only in the billable band.
             name = "electricity_delivery_power_near_max_threshold";
             unique_id = "electricity_delivery_power_near_max_threshold";
             state = ''
-              {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+              {% set seconds_left = (15 - now().minute % 15) * 60 - now().second % 60 %}
+              {% if seconds_left < (15 * 60 - 30) %}
+                {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {% else %}
+                {% set banked = 0 %}
+              {% endif %}
+              {% set current_kw = (states('sensor.electricity_grid_consumed_power_mean_1m') | float(states('sensor.electricity_grid_consumed_power') | float(0))) / 1000 %}
+              {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
+              {% set residual_kw = [0, current_kw - charger_kw] | max %}
+              {% set projected = banked + (residual_kw * seconds_left) / 900 %}
               {% set monthly_peak = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max %}
-              {% set threshold = monthly_peak - 0.78 %}
-              {{ electricity_delivery_power_15m_estimated > threshold }}
+              {% set threshold = [2.5, monthly_peak - 0.3] | max %}
+              {{ (banked > 1.2) and (projected > threshold) }}
             '';
           }
         ];

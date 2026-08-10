@@ -125,9 +125,10 @@
             state = ''
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.45) %}
-              {% set capacity_threshold = [2.45, monthly_peak - 0.1] | max %}
-              {% set capacity_near = [1.95, monthly_peak - 0.4] | max %}
+              {# Capaciteitstarief floor is 2.5 kW — never deep-discharge to shave below that. #}
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5) %}
+              {% set capacity_threshold = [2.5, monthly_peak - 0.1] | max %}
+              {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
               {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
               {% set battery = states('sensor.solis_remaining_battery_capacity') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
@@ -153,10 +154,10 @@
                  guards: it arms only if power15m > capacity_near AND power15m_estimated >
                  capacity_threshold. The car's charge control (system/car_charger/target_current)
                  keeps its projected 15-min average (power15m_estimated) below capacity_threshold —
-                 the current steps snap down so it settles ~0.3 kW under the cap — so this second
-                 guard is never met while the car is charging, and the battery never discharges to
-                 mask the car (which is what drained it to 10% on 2026-07-03 ~04:00). This branch
-                 then fires only as a backstop for real peaks the car alone cannot hold.
+                 the current steps snap down under the cap — so this second guard is never met while
+                 the car is charging, and the battery never discharges to mask the car (which is what
+                 drained it to 10% on 2026-07-03 ~04:00). This branch then fires only as a backstop
+                 for real peaks the car alone cannot hold (and only in the billable band ≥ 2.5 kW).
                  See docs/ev-battery-peak-coordination.md. #}
               {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
                 {{ overdischargesoc_min }}
@@ -184,9 +185,9 @@
             state = ''
               {% set power15m = states('sensor.electricity_delivery_power_15m') | float(2) %}
               {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(2) %}
-              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.0) %}
-              {% set capacity_threshold = [2.0, monthly_peak - 0.4] | max %}
-              {% set capacity_safe = [1.5, monthly_peak - 1.0] | max %}
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5) %}
+              {% set capacity_threshold = [2.5, monthly_peak - 0.4] | max %}
+              {% set capacity_safe = [2.0, monthly_peak - 1.0] | max %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 3) and now().hour >= 5) %}
               {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
