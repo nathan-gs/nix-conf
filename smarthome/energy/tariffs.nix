@@ -57,18 +57,24 @@
             name = "gas_cost_kwh";
             unique_id = "gas_cost_kwh";
             unit_of_measurement = "€/kWh";
+            # Fluvius Imewo 2026 net + federal (post 2026-08-01). All c€/€ incl. 6% BTW.
+            # VNR: FI ELEK/GAS 2026; federal accijns reform abolishes energiebijdrage from Aug 2026.
             state = ''
               {% set energycomponent = states('input_number.gas_cost_engie_drive_kwh_energycomponent') | float %}
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
-              {% set imewo = (0.887 / 100) %}
+              {# Imewo prop. term T2 (>=5001 kWh) / T1 (0-5000), incl. ODV+toeslagen, incl. BTW #}
+              {% set imewo = (1.02399 / 100) %}
               {% if gas_yearly < 5000 %}
-                {% set imewo = (2.454 / 100) %}
+                {% set imewo = (2.62774 / 100) %}
               {% endif %}
-              {% set transport = (0.162 / 100) %}
-              {% set energiebijdrage = (0.10577 / 100) %}
-              {% set accijns = (0.97549 / 100) %}
+              {# Fluxys transport ~1.56 €/MWh excl. → ~0.165 c€/kWh incl. BTW #}
+              {% set transport = (0.165 / 100) %}
+              {# Energiebijdrage abolished 2026-08-01 #}
+              {% set energiebijdrage = 0 %}
+              {# Bijzondere accijns incl. BTW: >12 MWh / 0-12 MWh (from 2026-08-01) #}
+              {% set accijns = (1.183 / 100) %}
               {% if gas_yearly < 12000 %}
-                {% set accijns = (0.87238 / 100) %}
+                {% set accijns = (1.093 / 100) %}
               {% endif %}
               {{ (energycomponent + imewo + transport + energiebijdrage + accijns) | round(5) }}
             '';
@@ -88,16 +94,13 @@
             state = ''
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
               {% set engie = 37.1 %}
-              {% set discount = 0 %}
-              {% if now().year < 2025 and now().month < 10 %}
-                {% set discount = 37.1 %}
-              {% endif %}
-              {% set imewo = 95.37 %}
+              {# Imewo vaste term T2 / T1, incl. BTW #}
+              {% set imewo = 98.81 %}
               {% if gas_yearly < 5000 %}
-                {% set imewo = 17.0 %}
+                {% set imewo = 18.61 %}
               {% endif %}
-              {% set databeheer = 13.95 %}
-              {{ ((engie / 12) - (discount / 12) + (imewo / 12) + (databeheer / 12)) | round(5) }}
+              {% set databeheer = 18.92 %}
+              {{ ((engie / 12) + (imewo / 12) + (databeheer / 12)) | round(5) }}
             '';
             state_class = "measurement";
           }           
@@ -108,9 +111,12 @@
             state = ''
               {% set energycomponent = states('input_number.electricity_cost_engie_drive_peak_kwh_energycomponent') | float %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
-              {% set imewo = (4.71756 / 100) %}
-              {% set energiebijdrage = (0.20417 / 100) %}
-              {% set accijns = (5.03288 / 100) %}
+              {# Imewo LS piekmeting: netgebruik + ODV + toeslagen, incl. BTW (same peak/offpeak) #}
+              {% set imewo = (5.54236 / 100) %}
+              {# Energiebijdrage abolished 2026-08-01 #}
+              {% set energiebijdrage = 0 %}
+              {# Bijzondere accijns 48.76 €/MWh incl. BTW (from 2026-08-01) #}
+              {% set accijns = (4.876 / 100) %}
               {{ (energycomponent + wkk_and_greenenergy + imewo + energiebijdrage + accijns) | round(5) }}
             '';
             state_class = "measurement";
@@ -122,9 +128,9 @@
             state = ''
               {% set energycomponent = states('input_number.electricity_cost_engie_drive_offpeak_kwh_energycomponent') | float %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
-              {% set imewo = (4.71756 / 100) %}
-              {% set energiebijdrage = (0.20417 / 100) %}
-              {% set accijns = (5.03288 / 100) %}
+              {% set imewo = (5.54236 / 100) %}
+              {% set energiebijdrage = 0 %}
+              {% set accijns = (4.876 / 100) %}
               {{ (energycomponent + wkk_and_greenenergy + imewo + energiebijdrage + accijns) | round(5) }}
             '';
             state_class = "measurement";
@@ -135,17 +141,61 @@
             unit_of_measurement = "€";
             state = ''
               {% set engie = 100.7 %}
-              {% set imewo_capacitytariffs_per_kw = 41.7713 %}
-              {# Not 100% correct, 1 peak influences full month #}
-              {% set capacity_peak_current_month = max(states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5), 2.5) %}
-              {% set discount = 0 %}
-              {% if now().year < 2025 and now().month < 10 %}
-                {% set discount = 80.0 %}
-              {% endif %}
-              {% set databeheer = 13.95 %}
-              {{ ((engie / 12) + ((imewo_capacitytariffs_per_kw / 12 ) * capacity_peak_current_month) - (discount / 12) + (databeheer / 12)) | round(5) }}
+              {# Imewo capaciteitstarief 2026 €/kW/year incl. BTW; billed monthly as 1/12.
+                 Billable kW = avg of last 12 monthly peaks (each floored at 2.5 kW). #}
+              {% set imewo_capacitytariffs_per_kw_year = 57.453 %}
+              {% set capacity_kw = states('sensor.electricity_capacity_peak_12months') | float(2.5) %}
+              {% set databeheer = 18.92 %}
+              {{ ((engie / 12) + ((imewo_capacitytariffs_per_kw_year / 12) * capacity_kw) + (databeheer / 12)) | round(5) }}
             '';
             state_class = "measurement";
+          }
+          {
+            # Monthly fixed ÷ days-in-month — used to accrue into the Energy dashboard.
+            name = "electricity_cost_daily_fixed";
+            unique_id = "electricity_cost_daily_fixed";
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "measurement";
+            icon = "mdi:calendar-today";
+            state = ''
+              {% set monthly = states('sensor.electricity_cost_monthly_fixed') | float(0) %}
+              {% set last_day = (now().replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1) %}
+              {{ (monthly / last_day.day) | round(5) }}
+            '';
+          }
+          {
+            name = "gas_cost_daily_fixed";
+            unique_id = "gas_cost_daily_fixed";
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "measurement";
+            icon = "mdi:calendar-today";
+            state = ''
+              {% set monthly = states('sensor.gas_cost_monthly_fixed') | float(0) %}
+              {% set last_day = (now().replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1) %}
+              {{ (monthly / last_day.day) | round(5) }}
+            '';
+          }
+          {
+            # Dummy 0 kWh / 0 m³ sources so the Energy dashboard can attach fixed-cost totals
+            # (HA only accepts cost on an energy/gas statistic).
+            name = "electricity_fixed_cost_energy";
+            unique_id = "electricity_fixed_cost_energy";
+            unit_of_measurement = "kWh";
+            device_class = "energy";
+            state_class = "total";
+            icon = "mdi:cash-clock";
+            state = "0";
+          }
+          {
+            name = "gas_fixed_cost_volume";
+            unique_id = "gas_fixed_cost_volume";
+            unit_of_measurement = "m³";
+            device_class = "gas";
+            state_class = "total";
+            icon = "mdi:cash-clock";
+            state = "0";
           }
           {
             name = "electricity_injection_kwh";
@@ -229,6 +279,68 @@
               {% endif %}
             '';
             state_class = "measurement";
+          }
+        ];
+      }
+      # Accrue daily fixed costs into total_increasing monetary sensors for the Energy dashboard.
+      # - 23:59: add today's daily fixed once
+      # - start / daily_fixed available: seed month-to-date if still 0 (avoids startup race
+      #   where start fired before daily_fixed existed and left totals stuck at 0)
+      {
+        trigger = [
+          { platform = "time"; at = "23:59:00"; id = "accrue"; }
+          {
+            platform = "homeassistant";
+            event = "start";
+            id = "seed";
+          }
+          {
+            platform = "state";
+            entity_id = [
+              "sensor.electricity_cost_daily_fixed"
+              "sensor.gas_cost_daily_fixed"
+            ];
+            id = "seed";
+          }
+        ];
+        sensor = [
+          {
+            name = "electricity_fixed_cost_total";
+            unique_id = "electricity_fixed_cost_total";
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total_increasing";
+            icon = "mdi:cash-clock";
+            state = ''
+              {% set daily = states('sensor.electricity_cost_daily_fixed') | float(0) %}
+              {% set prev = this.state | float(0) if this.state not in ['unknown', 'unavailable', 'none'] else 0 %}
+              {% if trigger.id == 'accrue' %}
+                {{ (prev + daily) | round(5) }}
+              {% elif prev == 0 and daily > 0 and now().day > 1 %}
+                {{ (daily * (now().day - 1)) | round(5) }}
+              {% else %}
+                {{ prev }}
+              {% endif %}
+            '';
+          }
+          {
+            name = "gas_fixed_cost_total";
+            unique_id = "gas_fixed_cost_total";
+            unit_of_measurement = "€";
+            device_class = "monetary";
+            state_class = "total_increasing";
+            icon = "mdi:cash-clock";
+            state = ''
+              {% set daily = states('sensor.gas_cost_daily_fixed') | float(0) %}
+              {% set prev = this.state | float(0) if this.state not in ['unknown', 'unavailable', 'none'] else 0 %}
+              {% if trigger.id == 'accrue' %}
+                {{ (prev + daily) | round(5) }}
+              {% elif prev == 0 and daily > 0 and now().day > 1 %}
+                {{ (daily * (now().day - 1)) | round(5) }}
+              {% else %}
+                {{ prev }}
+              {% endif %}
+            '';
           }
         ];
       }

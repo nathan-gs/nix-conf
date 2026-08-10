@@ -120,10 +120,60 @@
                   |rejectattr('entity_id', 'contains', 'switch.fritz_box_7530_ax_port_forward_wireguard')
                   |rejectattr('entity_id', 'contains', 'sensor.fritz_box_7530_ax_cpu_temperature')
                   |rejectattr('entity_id', 'contains', 'k10_vacuum_16e7')
+                  |rejectattr('entity_id', 'contains', 'sensor.system_car_charger_current_a')
+                  |rejectattr('entity_id', 'contains', 'sensor.system_car_charger_power_a')
+                  |rejectattr('entity_id', 'contains', 'sensor.system_car_charger_voltage_a')
+                  |rejectattr('entity_id', 'contains', '_on_grid_')
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
             icon = "{{ iif(states(this.entity_id)|int(-1) > 0,'mdi:alert-circle','mdi:check-circle') }}";
+            state_class = "measurement";
+          }
+        ];
+      }
+      # Stuck sensors still report a value (so unavailable_entities misses them).
+      # Re-evaluate on a timer: last_updated only freezes when the source is silent.
+      {
+        trigger = [
+          { platform = "time_pattern"; minutes = "/5"; }
+          { platform = "homeassistant"; event = "start"; }
+        ];
+        sensor = [
+          {
+            name = "system/ha/stale_entities";
+            unique_id = "system_ha_stale_entities";
+            state = ''
+              {% set entities = state_attr(this.entity_id,'entity_id') %}
+              {{ entities|count if entities != none else 0 }}
+            '';
+            # Critical sensors that should update frequently. Age is seconds since last_updated.
+            # Extend this list when another always-on feed starts freezing silently.
+            attributes.entity_id = ''
+              {# Only include feeds that publish regularly even when the measured value is flat.
+                 total_increasing meters that only tick on usage (gas overnight) will false-positive. #}
+              {% set watch = [
+                {'entity_id': 'sensor.watermeter_total', 'max_age': 900},
+                {'entity_id': 'sensor.watermeter_usage_last_minute', 'max_age': 900},
+                {'entity_id': 'sensor.dsmr_reading_electricity_currently_delivered', 'max_age': 300},
+                {'entity_id': 'sensor.electricity_solar_power', 'max_age': 900},
+                {'entity_id': 'sensor.solis_remaining_battery_capacity', 'max_age': 900},
+              ] %}
+              {% set ns = namespace(stale=[]) %}
+              {% for item in watch %}
+                {% set s = states[item.entity_id] %}
+                {% if s is none %}
+                  {% set ns.stale = ns.stale + [item.entity_id] %}
+                {% elif s.state not in ['unknown', 'unavailable'] %}
+                  {% set age = (now() - s.last_updated).total_seconds() %}
+                  {% if age > item.max_age %}
+                    {% set ns.stale = ns.stale + [item.entity_id] %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {{ ns.stale | sort }}
+            '';
+            icon = "{{ iif(states(this.entity_id)|int(-1) > 0,'mdi:timer-alert-outline','mdi:timer-check-outline') }}";
             state_class = "measurement";
           }
         ];
@@ -141,6 +191,21 @@
                 [(ha.condition.below "sensor.system_ha_unavailable_entities" 1)]
                 [ (ha.action.persistent_notification.dismiss "system_ha_unavailable_entities") ]
                 [ (ha.action.persistent_notification.create "system_ha_unavailable_entities" "Unavailable Entities" ''{{ state_attr('sensor.system_ha_unavailable_entities','entity_id')|join('\n') }}'') ]
+              )
+            ];
+            mode = "queued";
+          }
+      )
+      (
+        ha.automation "system/ha/stale_entities.notify"
+          {
+            triggers = [ (ha.trigger.state "sensor.system_ha_stale_entities") ];
+            actions = [
+              (
+                ha.action.conditional
+                [(ha.condition.below "sensor.system_ha_stale_entities" 1)]
+                [ (ha.action.persistent_notification.dismiss "system_ha_stale_entities") ]
+                [ (ha.action.persistent_notification.create "system_ha_stale_entities" "Stale Sensors" ''{{ state_attr('sensor.system_ha_stale_entities','entity_id')|join('\n') }}'') ]
               )
             ];
             mode = "queued";

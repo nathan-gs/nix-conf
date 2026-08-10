@@ -71,3 +71,21 @@ views:
               method: state
             card:
               type: entities
+      - type: entities
+        title: Stale Sensors
+        state_color: true
+        show_header_toggle: false
+        entities:
+          - entity: sensor.system_ha_stale_entities
+          - type: custom:auto-entities
+            show_empty: false
+            unique: true
+            filter:
+              template: >-
+                {{
+                state_attr('sensor.system_ha_stale_entities','entity_id')
+                }}
+            sort:
+              method: state
+            card:
+              type: entities

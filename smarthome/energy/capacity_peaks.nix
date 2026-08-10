@@ -10,7 +10,7 @@
       };
     };
 
-    mqtt.sensor = [    
+    mqtt.sensor = [
       {
         name = "electricity_delivery_power_monthly_15m_max";
         unique_id = "electricity_delivery_power_monthly_15m_max";
@@ -20,6 +20,55 @@
         force_update = true;
         icon = "mdi:meter-electric";
         state_class = "measurement";
+      }
+      # Fluvius billable capacity (kW) from dsmr last13months telegram.
+      # Raw payload is ~560 chars (over HA's 255 state limit) — parse in-template.
+      # State: rolling 12-month avg (each peak floored at 2.5 kW); mid-month estimate
+      # uses 11 completed months + current running_month peak.
+      # Telegram: (N)(OBIS)(OBIS)(period)(peak_ts)(NN.NNN*kW)...
+      {
+        name = "electricity_capacity_peak_12months";
+        unique_id = "electricity_capacity_peak_12months";
+        state_topic = "dsmr/consumption/peak/last13months";
+        unit_of_measurement = "kW";
+        device_class = "power";
+        state_class = "measurement";
+        force_update = true;
+        icon = "mdi:meter-electric";
+        value_template = ''
+          {% set floor_kw = 2.5 %}
+          {% set current = [floor_kw, states('sensor.electricity_delivery_power_monthly_15m_max') | float(floor_kw)] | max %}
+          {% set peaks = namespace(v=[]) %}
+          {% for m in value | regex_findall('([0-9]+\\.[0-9]+)\\*kW') %}
+            {% set peaks.v = peaks.v + [[m | float, floor_kw] | max] %}
+          {% endfor %}
+          {% set completed = peaks.v %}
+          {% if completed | length == 0 %}
+            {{ current | round(3) }}
+          {% elif completed | length >= 12 %}
+            {% set window = completed[-11:] + [current] %}
+            {{ (window | sum / 12) | round(3) }}
+          {% else %}
+            {% set window = completed + [current] %}
+            {{ (window | sum / (window | length)) | round(3) }}
+          {% endif %}
+        '';
+        json_attributes_template = ''
+          {% set floor_kw = 2.5 %}
+          {% set peaks = namespace(raw=[], floored=[]) %}
+          {% for m in value | regex_findall('([0-9]+\\.[0-9]+)\\*kW') %}
+            {% set peaks.raw = peaks.raw + [m] %}
+            {% set peaks.floored = peaks.floored + [[m | float, floor_kw] | max] %}
+          {% endfor %}
+          {% set n = peaks.floored | length %}
+          {% set completed_avg = (peaks.floored[-12:] | sum / ([n, 12] | min)) if n > 0 else none %}
+          {{ {
+            "peaks_kw": peaks.raw | join(','),
+            "completed_count": n,
+            "completed_12months_avg": (completed_avg | round(3)) if completed_avg is not none else none,
+            "current_month_peak": [floor_kw, states('sensor.electricity_delivery_power_monthly_15m_max') | float(floor_kw)] | max
+          } | to_json }}
+        '';
       }
     ];
 
