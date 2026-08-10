@@ -145,7 +145,6 @@
       "radio_browser"
       "scrape"
       "sensor"
-      "smartthings"
       "sonos"
       "spotify"
       "sun"
@@ -185,16 +184,15 @@
     ];
 
     customComponents = with pkgs.nixpkgs-unstable.home-assistant-custom-components; [
-      # pkgs.nixosUnstable.home-assistant-custom-components.indego
-      # (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/indego.nix {pyindego = pkgs.nixpkgs-unstable.python313Packages.pyindego;})
       solis-sensor
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/hon.nix { pkgs = pkgs.nixpkgs-unstable; })
-      #(pkgs.callPackage ../pkgs/home-assistant/custom_components/ohme.nix {})
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix { pkgs = pkgs.nixpkgs-unstable; })
-      #(pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
-      pkgs.nixpkgs-unstable.home-assistant-custom-components.tuya_local
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/tuya-local.nix {
+        tinytuya = pkgs.nixpkgs-unstable.python314Packages.tinytuya;
+        tuya-device-sharing-sdk = pkgs.nixpkgs-unstable.python314Packages.tuya-device-sharing-sdk;
+      })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/audiconnect.nix { beautifulsoup4 = pkgs.nixpkgs-unstable.python314Packages.beautifulsoup4; })
     ];
 

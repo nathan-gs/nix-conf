@@ -3,13 +3,13 @@
 buildHomeAssistantComponent rec {
   owner = "gvigroux";
   domain = "hon";
-  version = "0.8.2";
+  version = "0.8.4";
 
   src = fetchFromGitHub {
     owner = "gvigroux";
     repo = "hon";
     rev = version;
-    sha256 = "sha256-z2qalYfhPFHeik45Udu9G7j0GK4B2fgh1lSApTHvV7w=";
+    sha256 = "sha256-QujeqAT9tfMyfT++kIqh+/x1TKSQ+BqzHbw1ToQUWms=";
   };
 
 

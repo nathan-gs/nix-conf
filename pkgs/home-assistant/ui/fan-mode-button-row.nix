@@ -4,8 +4,8 @@ stdenv.mkDerivation rec {
   name = "ha-fan-mode-button-row";
   src = fetchgit {
     url = "https://github.com/finity69x2/fan-mode-button-row";
-    rev = "14d4ce6bd94dafbe2de1625e7f2599c5ceb1bdd9";
-    sha256 = "sha256-QZbjEFX+r5+BGSIljdezJZFA6z9wbBHFFMk1AyGHtyE=";
+    rev = "95473adfef9621c692ead8c06b3e67272a7ab2a3";
+    sha256 = "sha256-DUSH76ReCYitXOBLwzCrLo2wXNX+TBBvYsbdONdehG8=";
   };
 
   

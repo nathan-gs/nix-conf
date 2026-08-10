@@ -6,8 +6,8 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "thomasloven";
     repo = "lovelace-auto-entities";
-    rev = "1.12.1";
-    sha256 = "sha256-yeIgE1YREmCKdjHAWlUf7RfDZfC+ww3+jR/8AdKtZ7U=";
+    rev = "v1.16.1";
+    sha256 = "sha256-yMqf4LA/fBTIrrYwacUTb2fL758ZB1k471vdsHAiOj8=";
   };
 
   
