@@ -134,9 +134,12 @@
       }
       # Stuck sensors still report a value (so unavailable_entities misses them).
       # Re-evaluate on a timer: last_updated only freezes when the source is silent.
+      # State and entity_id are computed with the same logic (never derive count from
+      # state_attr(this…): that lags one cycle and can notify with an empty list).
       {
         trigger = [
           { platform = "time_pattern"; minutes = "/5"; }
+          # Skip the immediate start race where entities are not in states yet.
           { platform = "homeassistant"; event = "start"; }
         ];
         sensor = [
@@ -144,27 +147,39 @@
             name = "system/ha/stale_entities";
             unique_id = "system_ha_stale_entities";
             state = ''
-              {% set entities = state_attr(this.entity_id,'entity_id') %}
-              {{ entities|count if entities != none else 0 }}
-            '';
-            # Critical sensors that should update frequently. Age is seconds since last_updated.
-            # Extend this list when another always-on feed starts freezing silently.
-            attributes.entity_id = ''
               {# Only include feeds that publish regularly even when the measured value is flat.
-                 total_increasing meters that only tick on usage (gas overnight) will false-positive. #}
+                 SOC / total_increasing meters that only tick on change will false-positive.
+                 Missing/unknown/unavailable are handled by unavailable_entities; only flag
+                 entities that still have a value but last_updated is too old. #}
               {% set watch = [
-                {'entity_id': 'sensor.watermeter_total', 'max_age': 900},
-                {'entity_id': 'sensor.watermeter_usage_last_minute', 'max_age': 900},
+                {'entity_id': 'sensor.watermeter_total', 'max_age': 36000},
+                {'entity_id': 'sensor.watermeter_usage_last_minute', 'max_age': 36000},
                 {'entity_id': 'sensor.dsmr_reading_electricity_currently_delivered', 'max_age': 300},
-                {'entity_id': 'sensor.electricity_solar_power', 'max_age': 900},
-                {'entity_id': 'sensor.solis_remaining_battery_capacity', 'max_age': 900},
+                {'entity_id': 'sensor.solis_ac_frequency', 'max_age': 900},
               ] %}
               {% set ns = namespace(stale=[]) %}
               {% for item in watch %}
                 {% set s = states[item.entity_id] %}
-                {% if s is none %}
-                  {% set ns.stale = ns.stale + [item.entity_id] %}
-                {% elif s.state not in ['unknown', 'unavailable'] %}
+                {% if s is not none and s.state not in ['unknown', 'unavailable'] %}
+                  {% set age = (now() - s.last_updated).total_seconds() %}
+                  {% if age > item.max_age %}
+                    {% set ns.stale = ns.stale + [item.entity_id] %}
+                  {% endif %}
+                {% endif %}
+              {% endfor %}
+              {{ ns.stale | length }}
+            '';
+            attributes.entity_id = ''
+              {% set watch = [
+                {'entity_id': 'sensor.watermeter_total', 'max_age': 36000},
+                {'entity_id': 'sensor.watermeter_usage_last_minute', 'max_age': 36000},
+                {'entity_id': 'sensor.dsmr_reading_electricity_currently_delivered', 'max_age': 300},
+                {'entity_id': 'sensor.solis_ac_frequency', 'max_age': 900},
+              ] %}
+              {% set ns = namespace(stale=[]) %}
+              {% for item in watch %}
+                {% set s = states[item.entity_id] %}
+                {% if s is not none and s.state not in ['unknown', 'unavailable'] %}
                   {% set age = (now() - s.last_updated).total_seconds() %}
                   {% if age > item.max_age %}
                     {% set ns.stale = ns.stale + [item.entity_id] %}
@@ -203,7 +218,13 @@
             actions = [
               (
                 ha.action.conditional
-                [(ha.condition.below "sensor.system_ha_stale_entities" 1)]
+                [
+                  (ha.condition.template ''
+                    {% set n = states('sensor.system_ha_stale_entities') | int(0) %}
+                    {% set ids = state_attr('sensor.system_ha_stale_entities', 'entity_id') %}
+                    {{ n < 1 or ids is none or (ids | count) < 1 }}
+                  '')
+                ]
                 [ (ha.action.persistent_notification.dismiss "system_ha_stale_entities") ]
                 [ (ha.action.persistent_notification.create "system_ha_stale_entities" "Stale Sensors" ''{{ state_attr('sensor.system_ha_stale_entities','entity_id')|join('\n') }}'') ]
               )

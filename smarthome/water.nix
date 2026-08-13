@@ -22,8 +22,8 @@
           unit_of_measurement = "L";
           device_class = "water";
           force_update = true;
-          # Device normally publishes ~every minute; mark unavailable if silent.
-          expire_after = 900;
+          # Device can go quiet for long stretches; align with stale_entities max_age (10h).
+          expire_after = 36000;
           icon = "mdi:water";
         }
         {
@@ -33,7 +33,7 @@
           icon = "mdi:water";
           unique_id = "watermeter_usage_last_minute";
           state_class = "measurement";
-          expire_after = 900;
+          expire_after = 36000;
         }
       ];
 
