@@ -12,7 +12,7 @@
 
   environment.systemPackages = [ pkgs.nixpkgs-unstable.home-assistant-cli ];
 
-  networking.firewall.allowedTCPPorts = [ 1400 ];
+  networking.firewall.allowedTCPPorts = [ 1400 8123 ];
 
   services.nginx.virtualHosts."ha.nathan.gs" = {
     forceSSL = true;
@@ -43,7 +43,6 @@
 
     package = pkgs.nixpkgs-unstable.home-assistant;
 
-    openFirewall = true;
     configWritable = false;
     config = {
       default_config = {};
@@ -58,12 +57,6 @@
         #packages = "!include_dir_named packages";
         external_url = "https://ha.nathan.gs";
         internal_url = "https://ha.nathan.gs";
-      };
-      http = {
-        use_x_forwarded_for = true;
-        trusted_proxies = [ "127.0.0.1" ];
-        ip_ban_enabled = true;
-        login_attempts_threshold = 5;
       };
       prometheus = {
         namespace = "ha";
@@ -145,6 +138,7 @@
       "radio_browser"
       "scrape"
       "sensor"
+      "smartthings"
       "sonos"
       "spotify"
       "sun"
@@ -189,10 +183,8 @@
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/afvalbeheer.nix { pkgs = pkgs.nixpkgs-unstable; })
-      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/tuya-local.nix {
-        tinytuya = pkgs.nixpkgs-unstable.python314Packages.tinytuya;
-        tuya-device-sharing-sdk = pkgs.nixpkgs-unstable.python314Packages.tuya-device-sharing-sdk;
-      })
+      #(pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
+      pkgs.nixpkgs-unstable.home-assistant-custom-components.tuya_local
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/audiconnect.nix { beautifulsoup4 = pkgs.nixpkgs-unstable.python314Packages.beautifulsoup4; })
     ];
 
