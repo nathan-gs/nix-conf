@@ -131,9 +131,11 @@
         ];
       }
       # Accrue daily fixed water cost for the Energy dashboard (mirrors elec/gas in tariffs.nix).
+      # - 00:00: add today's daily fixed once (day already includes fixed cost)
+      # - start / daily_fixed available: seed month-to-date incl. today if still 0
       {
         trigger = [
-          { platform = "time"; at = "23:59:00"; id = "accrue"; }
+          { platform = "time"; at = "00:00:00"; id = "accrue"; }
           {
             platform = "homeassistant";
             event = "start";
@@ -158,8 +160,8 @@
               {% set prev = this.state | float(0) if this.state not in ['unknown', 'unavailable', 'none'] else 0 %}
               {% if trigger.id == 'accrue' %}
                 {{ (prev + daily) | round(5) }}
-              {% elif prev == 0 and daily > 0 and now().day > 1 %}
-                {{ (daily * (now().day - 1)) | round(5) }}
+              {% elif prev == 0 and daily > 0 %}
+                {{ (daily * now().day) | round(5) }}
               {% else %}
                 {{ prev }}
               {% endif %}

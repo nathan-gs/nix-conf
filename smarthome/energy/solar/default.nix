@@ -4,6 +4,7 @@
 
   imports = [
     ./battery.nix
+    ./inverter.nix
     ./solis_local.nix
   ];
 

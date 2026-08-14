@@ -3,6 +3,7 @@
 {
 
   imports = [
+    ./always_on.nix
     ./deken.nix
     ./dishwasher.nix
     ./kiosk.nix

@@ -2,15 +2,24 @@
 {
 
   services.home-assistant.config = {
-    # Samsung 50" 2013 + Sonos soundbar + 2x Sonos One + AppleTV
-    # active: ~70W TV + 15W soundbar + 10W 2×Sonos One + 4W AppleTV = 100W
-    # standby: Sonos network standby + TV standby = 5W
+    # Samsung UE50HU6900S (2014 50" 4K LED) + Apple TV 4K + Sonos soundbar
+    # + 2× Sonos One.
+    # TV: typical 86 W (IEC 62087), eco 52 W, max 178 W, standby 0.5 W.
+    #     Not run at max brightness → use typical, not the 178 W nameplate.
+    # Soundbar: ~20 W playing / 6 W idle. Apple TV 4K: ~3 W playing / 0.5 W sleep.
+    # Each One: ~8 W playing / 3–4 W idle.
     powercalc.sensors = [
       {
         name = "floor0/living/av";
         entity_id = "binary_sensor.floor0_living_appletv_woonkamer";
-        standby_power = 5;
-        fixed.power = 100;
+        standby_power = 7;
+        fixed.power = ''
+          {% set tv = 86 %}
+          {% set soundbar = 20 %}
+          {% set appletv = 3 %}
+          {% set sonos_ones = 16 %}
+          {{ tv + soundbar + appletv + sonos_ones }}
+        '';
       }
     ];
 
