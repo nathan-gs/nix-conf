@@ -149,6 +149,41 @@ let
     fi
   '';
 
+  # Fired via OnFailure= so timeouts, OOM, and unexpected crashes are mailed
+  # too — not only the script's explicit `exit 1` paths. Skip cases (unchanged
+  # lock, already-applied, previously-failed hash) exit 0 and do not mail.
+  failureMailScript = pkgs.writeShellScript "nixos-auto-upgrade-mail" ''
+    set -euo pipefail
+
+    export PATH="${lib.makeBinPath [ pkgs.systemd pkgs.coreutils ]}:$PATH"
+
+    result="''${MONITOR_SERVICE_RESULT:-unknown}"
+    exit_code="''${MONITOR_EXIT_CODE:-}"
+    exit_status="''${MONITOR_EXIT_STATUS:-}"
+    invocation="''${MONITOR_INVOCATION_ID:-}"
+
+    logs() {
+      if [[ -n "$invocation" ]]; then
+        journalctl _SYSTEMD_INVOCATION_ID="$invocation" --no-pager -o short-iso
+      else
+        journalctl -u nixos-auto-upgrade.service -n 200 --no-pager -o short-iso
+      fi
+    }
+
+    {
+      echo "Subject: [${hostname}] nixos-auto-upgrade FAILED"
+      echo "From: ${hostname}@nathan.gs"
+      echo "To: ${config.secrets.email}"
+      echo "Content-Type: text/plain; charset=UTF-8"
+      echo
+      echo "nixos-auto-upgrade.service failed on ${hostname} at $(date)."
+      echo "result: $result  exit: ''${exit_code:-?} / ''${exit_status:-?}"
+      echo
+      echo "=== journal (this invocation) ==="
+      logs || true
+    } | /run/wrappers/bin/sendmail -t
+  '';
+
   autoUpgradeScript = pkgs.writeShellScript "nixos-auto-upgrade" ''
     set -euo pipefail
 
@@ -515,6 +550,7 @@ in
           "NixOS Auto Upgrade (apply flake.lock + build + switch + health check)";
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
+      onFailure = [ "nixos-auto-upgrade-mail.service" ];
 
       # This unit calls `nixos-rebuild switch` on itself. Without this,
       # switch-to-configuration would restart the running nixos-auto-upgrade.service
@@ -530,6 +566,17 @@ in
         StateDirectory = "nixos-auto-upgrade";
         # Remote apply + large builds + HA health wait can run a while
         TimeoutStartSec = "2h";
+      };
+    };
+
+    systemd.services.nixos-auto-upgrade-mail = {
+      description = "Email when nixos-auto-upgrade fails";
+      after = [ "network-online.target" ];
+      wants = [ "network-online.target" ];
+      serviceConfig = {
+        Type = "oneshot";
+        ExecStart = failureMailScript;
+        User = "root";
       };
     };
 
