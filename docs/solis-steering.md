@@ -3,7 +3,7 @@
 **Date:** 2026-08-10  
 **Scope:** What can be read and written on this plant’s Solis hybrid (cloud API + local stack), live setpoints, and how that maps to HA / `solis-control`.
 
-Related: [[dynamic-tariff-analysis]], [[battery-expansion-analysis]], [[ev-battery-peak-coordination]].
+Related: [[dynamic-tariff-analysis]], [[battery-expansion-analysis]], [[ev-battery-peak-coordination]], [[solis-modbus]].
 
 ---
 
@@ -277,8 +277,10 @@ Prefer **self-use CIDs only** (466, 543, 109, 4643). Do not also write feed-in t
 
 ## Local / Modbus path
 
-- **Local logger:** `solis_local.nix` scrapes `inverter.cgi` — **read-only** in this tree.  
-- **Modbus (RS485 / community integrations):** may expose the same registers (43011, 43018, 43110, 43141, …) without cloud CID limits. Not currently used for writes.  
+See **[[solis-modbus]]** for wiring the USB-RS485 adapter on the RHI-5K 4-pin COM, support vs `solis_modbus`, and how to drop SolisCloud.
+
+- **Local logger:** `solis_local.nix` scrapes `inverter.cgi` — **read-only**, PV + temp only.  
+- **Modbus (USB-RS485 on COM, stick unplugged):** same registers as the CIDs above (43011, 43018, 43027, 43110, …). This is a full local replacement for `solis-sensor` + `solis-control`.  
 - Cloud UI max on force-charge (39%) is a **product limit**, not proven as a firmware absolute; Modbus may or may not allow higher — verify before relying on it.
 
 ---
