@@ -32,7 +32,7 @@
       car_charge_grid_target = {
         name = "car/charge_grid_target";
         icon = "mdi:battery-charging-70";
-        min = 50;
+        min = 40;
         max = 100;
         step = 5;
         unit_of_measurement = "%";
