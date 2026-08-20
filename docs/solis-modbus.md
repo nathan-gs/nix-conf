@@ -265,9 +265,13 @@ Actual mapping used (cloud id → `system_house_pv` id):
 | `sensor.solis_temperature` | `sensor.system_house_pv_temperature` |
 | `sensor.solis_ac_frequency` | `sensor.system_house_pv_grid_frequency` |
 
-All `smarthome/**/*.nix` references to the `sensor.solis_*` ids above (car charger, HVAC, capacity peaks, demand management, `battery.nix`, `ha/default.nix` stale-entity watchdog) were retargeted to the `system_house_pv_*` equivalents in the same change. Not yet retargeted: the write-side `number.solar_battery_*` (still cloud, via `solis-control`/MQTT — see "Better steering than Cloud?" above for the eventual Modbus register targets) and Energy dashboard source config (Settings → Energy, UI-only, not in nix — point it at the `system_house_pv_*` kWh sensors manually).
+All `smarthome/**/*.nix` references to the `sensor.solis_*` ids above (car charger, HVAC, capacity peaks, demand management, `battery.nix`, `ha/default.nix` stale-entity watchdog) were retargeted to the `system_house_pv_*` equivalents in the same change. Energy dashboard source config (Settings → Energy, UI-only, not in nix) was also repointed at the `system_house_pv_*` kWh sensors manually.
 
-`solis-sensor` (cloud) and `solis-control` are still running; retire them once the Modbus telemetry has proven itself for a few days.
+### Retired 2026-08-20
+
+Steering moved to Modbus registers directly (`battery.nix`, `capacity_peaks.nix` now write/read `number.system_house_pv_*`); `solis-control` and its `number.solar_battery_*` MQTT-discovery entities are gone (systemd service, package, mosquitto user all removed).
+
+`solis-sensor` (cloud) and the local S3-WiFi `.cgi` REST scrape (`solis_local.nix`) are also retired — the S3-WiFi stick came off the network (`device_tracker.solis_s3wifi` → `not_home`) once the USB-RS485 adapter became the sole Modbus master on the 4-pin COM, so both the cloud uplink and the local `.cgi` page died at the same moment (per the "Two RS-485 buses" section above, sharing COM between the stick and a second master isn't supported anyway). `sensor.solar_delivery_total` (previously the Energy dashboard's solar source, computed from the dead `.cgi` scrape) is gone along with it — `electricity_solar_power` in `smarthome/energy/solar/default.nix` now sums `system_house_pv_pv_power_1` + `pv_power_2` directly, no cloud/CGI fallback. The now-permanently-unavailable `solis` cloud integration's leftover entities were removed from the HA entity/config registry directly (its config entry can never report data again — no stick, no cloud uplink).
 
 ### Original rename plan (superseded, kept for context)
 
