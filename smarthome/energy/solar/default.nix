@@ -5,7 +5,6 @@
   imports = [
     ./battery.nix
     ./inverter.nix
-    ./solis_local.nix
   ];
 
   services.home-assistant.config = {
@@ -16,27 +15,11 @@
             name = "electricity_solar_power";
             unique_id = "electricity_solar_power";
             state = ''
-              {% set cgi = states('sensor.solar_currently_produced') | float(none) %}
-              {% set cgi_w = (cgi * 1000) if cgi is number else none %}
-              {% set cgi_obj = states.sensor.solar_currently_produced %}
-              {% set pv1 = states('sensor.system_house_pv_pv_power_1') | float(none) %}
-              {% set pv2 = states('sensor.system_house_pv_pv_power_2') | float(none) %}
-              {% set pv1_obj = states.sensor.system_house_pv_pv_power_1 %}
-              {% set pv2_obj = states.sensor.system_house_pv_pv_power_2 %}
-              {% if pv1 is number and pv2 is number and pv1_obj and pv2_obj %}
-                {% set dc_w = pv1 + pv2 %}
-                {% set dc_ts = [pv1_obj.last_updated, pv2_obj.last_updated] | min %}
-                {% if cgi_w is not none and cgi_obj and cgi_obj.last_updated > dc_ts %}
-                  {{ cgi_w }}
-                {% else %}
-                  {{ dc_w }}
-                {% endif %}
-              {% else %}
-                {{ cgi_w | default(0) }}
-              {% endif %}
+              {% set pv1 = states('sensor.system_house_pv_pv_power_1') | float(0) %}
+              {% set pv2 = states('sensor.system_house_pv_pv_power_2') | float(0) %}
+              {{ pv1 + pv2 }}
             '';
             unit_of_measurement = "W";
-            attributes.workaround = ''{{ now().minute }}'';
             state_class = "measurement";
           }
         ];

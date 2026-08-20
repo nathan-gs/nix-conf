@@ -181,7 +181,6 @@
     ];
 
     customComponents = with pkgs.nixpkgs-unstable.home-assistant-custom-components; [
-      solis-sensor
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/solis-modbus.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/hon.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix { pkgs = pkgs.nixpkgs-unstable; })
