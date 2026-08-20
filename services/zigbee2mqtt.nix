@@ -17,7 +17,10 @@
         legacy_triggers = false;
       };
       permit_join = false;
-      serial.port = "/dev/ttyUSB0";
+      serial = {
+        port = "/dev/serial/by-id/usb-ITead_Sonoff_Zigbee_3.0_USB_Dongle_Plus_72b6fe6b0c86ec1183d1591719c2d21c-if00-port0";
+        adapter = "zstack";
+      };
       frontend = true;
       device_options = {
         retain = true;

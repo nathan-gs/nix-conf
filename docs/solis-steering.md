@@ -5,6 +5,8 @@
 
 Related: [[dynamic-tariff-analysis]], [[battery-expansion-analysis]], [[ev-battery-peak-coordination]], [[solis-modbus]].
 
+**Superseded 2026-08-20.** `solis-control` and the SolisCloud Device Control API steering it used are removed — `battery.nix` writes local Modbus registers directly (see [[solis-modbus]] § "Better steering than Cloud?"). Kept below for the CID→register mapping reference and history.
+
 ---
 
 ## Two different SolisCloud APIs

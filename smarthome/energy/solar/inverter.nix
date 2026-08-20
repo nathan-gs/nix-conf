@@ -25,9 +25,9 @@
       {
         name = "electricity/inverter";
         unique_id = "electricity_inverter";
-        entity_id = "sensor.solis_temperature";
+        entity_id = "sensor.system_house_pv_temperature";
         fixed.power = ''
-          {% set t_inv = states('sensor.solis_temperature') | float(none) %}
+          {% set t_inv = states('sensor.system_house_pv_temperature') | float(none) %}
           {% set t_amb = states('sensor.basement_basement_temperature') | float(none) %}
           {% set w_nat = states('input_number.electricity_inverter_w_per_k') | float(5.6) %}
           {% if t_inv is number and t_amb is number %}
