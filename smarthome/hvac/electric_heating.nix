@@ -78,7 +78,7 @@ in
               {% set power_available = (house_return + sensor) %}
               {% set solar_remaining = states('sensor.energy_production_today_remaining') | float(0) %}
               {% set solar_power = states('sensor.electricity_solar_power') | int(0) %}
-              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set battery_charged = battery > 85 %}
               {% set solar_power_available = (solar_power - 760 - 250) > 0 %}
               {% set start_on_solar = battery_charged and solar_power_available %}
