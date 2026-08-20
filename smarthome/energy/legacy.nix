@@ -256,7 +256,7 @@ let
           {
             name = "electricity_total_power";
             unique_id = "electricity_total_power";
-            state = "{{ states('sensor.solis_total_consumption_power') | float(0) }}";
+            state = "{{ states('sensor.system_house_pv_household_load_power') | float(0) }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
             state_class = "measurement";
@@ -264,7 +264,7 @@ let
           {
             name = "electricity_battery_power";
             unique_id = "electricity_battery_power";
-            state = "{{ states('sensor.solis_battery_power') | float(0) }}";
+            state = "{{ states('sensor.system_house_pv_battery_power') | float(0) }}";
             unit_of_measurement = "W";
             attributes.workaround = ''{{ now().minute }}'';
             state_class = "measurement";

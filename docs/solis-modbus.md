@@ -49,6 +49,8 @@ Cloud CIDs in `solis-control` map 1:1 onto holding registers `solis_modbus` alre
 
 So the existing automations in `smarthome/energy/solar/battery.nix` can be retargeted from `number.solar_battery_*` (MQTT → cloud) to these Modbus numbers. No new control philosophy.
 
+**Done 2026-08-20.** `battery.nix` and `capacity_peaks.nix` now write/read `number.system_house_pv_overdischarge_soc` (43011), `number.system_house_pv_force_charge_soc` (43018), and `number.system_house_pv_force_charge_power_limitation` (43027) directly — confirmed matching the live cloud setpoints (20/9/300) before cutover. `solis-control.nix` and its package are removed (`services/`, `pkgs/`), its `nhtpc.nix` import dropped, and the `soliscontrol` mosquitto user/ACL removed from `services/mosquitto.nix`. `number.solar_battery_*` no longer exists — it was purely MQTT-discovery-created by `solis-control`.
+
 ### Better steering than Cloud? (e.g. charge to 100 %)
 
 **Same ceiling, better loop.** Max Charge SOC is already **100 %** (43010). Modbus cannot raise that. Pylontech will still taper charge current (often 40 A → 5 A) as SoC approaches 100 % — do not fight register 33143.
@@ -74,7 +76,7 @@ Do **not** hammer flash-backed floors every few seconds. Keep today’s rate lim
 | DSMR as the legal meter | Cloud-computed “monthly grid” (we already ignore that) |
 | | **New** “Remote Dispatch” (reg 34502 = `0xAA55`) — RHI-5G firmware is almost certainly too old for this anyway |
 
-`solis-control.nix` becomes unused once writes go local.
+`solis-control.nix` is removed now that writes go local (see above).
 
 ---
 
@@ -192,11 +194,11 @@ Expect a model / DSP / HMI / protocol word. Protocol ≈ `20xx` → ESINV, you a
 
 ## Software on this host
 
-Preferred: **[Pho3niX90/solis_modbus](https://github.com/Pho3niX90/solis_modbus)** (HACS), connection type **Serial**, poll profile **Full** first, then **Extreme + battery/load** if you want 2 s updates.
+Preferred: **[Pho3niX90/solis_modbus](https://github.com/Pho3niX90/solis_modbus)** (domain `solis_modbus`), connection type **Serial**, poll profile **Full** first, then **Extreme + battery/load** if you want 2 s updates.
 
-This flake does not vendor that component yet. Until it is packaged like `powercalc`:
+Vendored in `pkgs/home-assistant/custom_components/solis-modbus.nix` (same pattern as `powercalc`) and wired into `services/home-assistant.nix` `customComponents`. `users.users.hass.extraGroups` includes `dialout` so the HA service user can open the adapter's tty. After `switch.sh`:
 
-1. Add the custom component (or run a one-off test from a `nix-shell` as above).
+1. Settings → Devices & Services → Add Integration → **Solis Modbus** → connection type **Serial**, device path `/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_BG03O7M9-if00-port0` (stable — do **not** use `/dev/ttyUSB1`, that index can shift on reboot/replug), baud **9600**, slave id **1**.
 2. Point HA automations at `number.solis_overdischarge_soc` etc.
 3. Retire `services/solis-control.nix` and the SolisCloud platform sensors once the new entities have a day of history.
 4. Keep DSMR as the Energy-dashboard grid source (fiscal). Use Modbus battery power / SoC / PV as the fast plant view.
@@ -226,79 +228,64 @@ For this plant, local Modbus is a complete replacement for both `solis-sensor` (
 
 ---
 
-## Keep history when switching (rename plan)
+## Keep history when switching (done 2026-08-20)
 
-Home Assistant long-term statistics follow **`entity_id`**. Only rename sensors whose **charts are worth 2023-03 → now**. Skip temp, frequency, voltages, phase VA/var, settings, and versions.
+Went a different way than the original rename plan below (kept for reference): the `solis_modbus` device on this plant is named **`system_house_pv`** (serial `1031042229220103`, entity ids `sensor.system_house_pv_*`) — deliberately descriptive, not `solis_*`, and not tied to the USB adapter. Rather than doing the double-rename dance (cloud → `_cloud`, Modbus → historic id) to reuse the old `sensor.solis_*` ids, the cloud entities' history was **spliced directly into the `system_house_pv_*` statistics via MariaDB**, so the new descriptive names keep the id and inherit the history:
 
-Energy dashboard kWh (`solar_delivery_total`, `battery_*_energy`, DSMR) is **not** from `solis-sensor`. It is untouched.
+- **Energy (13 cumulative kWh counters)**: for each pair, computed `offset = source's last statistics.sum − destination's first statistics_short_term.sum`, applied that offset to the destination's already-accumulating `statistics_short_term` rows (so future hourly compiles continue seamlessly), then copied all of the source's `statistics` (long-term, hourly) rows into the destination unchanged. Verified before writing that each `sum` series only had genuine reset events (not corruption) by checking `COUNT(DISTINCT sum - state)` stayed low for the never-reset lifetime totals.
+- **Power + SoC (7 series: battery SoC/power, PV1/PV2 power, household load, grid power, AC output power)**: no offset needed (not cumulative) — just copied `statistics` rows across.
+- Only the long-term `statistics` table was touched (kept indefinitely); `statistics_short_term` (5-min, auto-purged after ~10 days) was left alone except for the sum-offset lift needed for continuity. Raw `states` history was not migrated (low value — purges after ~10 days anyway).
+- A `mysqldump` of the affected `statistics` / `statistics_short_term` / `statistics_meta` rows (source + destination metadata ids) was taken before writing anything.
+- Continuity was verified after the fact: the last imported historical row and the entity's own next naturally-compiled row landed on the same `sum` value.
 
-Do **not** delete `solis-sensor` until the renames below are done. Grok can run them with `hass-cli entity rename` once Modbus is live.
+Actual mapping used (cloud id → `system_house_pv` id):
 
-### Do rename — energy (must)
-
-All have LTS `sum` from **2023-03-29** unless noted. Pair by unit + meaning after install; names on the right are what `solis_modbus` *usually* creates.
-
-| Keep (cloud id, history) | Expected new id |
+| Cloud (history source) | `system_house_pv` (kept id, now has the history) |
 |---|---|
-| `sensor.solis_energy_total` | `sensor.solis_pv_total_energy_generation` |
-| `sensor.solis_energy_today` | `sensor.solis_pv_today_energy_generation` |
-| `sensor.solis_energy_this_month` | `sensor.solis_pv_current_month_energy_generation` |
-| `sensor.solis_energy_this_year` | `sensor.solis_pv_this_year_energy_generation` |
-| `sensor.solis_total_energy_charged` | `sensor.solis_total_battery_charge_energy` |
-| `sensor.solis_daily_energy_charged` | `sensor.solis_today_battery_charge_energy` |
-| `sensor.solis_total_energy_discharged` | `sensor.solis_total_battery_discharge_energy` |
-| `sensor.solis_daily_energy_discharged` | `sensor.solis_today_battery_discharge_energy` |
-| `sensor.solis_total_energy_used` | `sensor.solis_total_energy_consumption` |
-| `sensor.solis_total_energy_purchased` | `sensor.solis_total_energy_imported_from_grid` |
-| `sensor.solis_daily_grid_energy_purchased` | `sensor.solis_today_energy_imported_from_grid` |
-| `sensor.solis_total_on_grid_energy` | `sensor.solis_total_energy_fed_into_grid` |
-| `sensor.solis_daily_on_grid_energy` | `sensor.solis_today_energy_fed_into_grid` |
+| `sensor.solis_energy_total` | `sensor.system_house_pv_pv_total_energy_generation` |
+| `sensor.solis_energy_today` | `sensor.system_house_pv_pv_today_energy_generation` |
+| `sensor.solis_energy_this_month` | `sensor.system_house_pv_pv_current_month_energy_generation` |
+| `sensor.solis_energy_this_year` | `sensor.system_house_pv_pv_this_year_energy_generation` |
+| `sensor.solis_total_energy_charged` | `sensor.system_house_pv_total_battery_charge_energy` |
+| `sensor.solis_daily_energy_charged` | `sensor.system_house_pv_today_battery_charge_energy` |
+| `sensor.solis_total_energy_discharged` | `sensor.system_house_pv_total_battery_discharge_energy` |
+| `sensor.solis_daily_energy_discharged` | `sensor.system_house_pv_today_battery_discharge_energy` |
+| `sensor.solis_total_energy_used` | `sensor.system_house_pv_total_energy_consumption` |
+| `sensor.solis_total_energy_purchased` | `sensor.system_house_pv_total_energy_imported_from_grid` |
+| `sensor.solis_daily_grid_energy_purchased` | `sensor.system_house_pv_today_energy_imported_from_grid` |
+| `sensor.solis_total_on_grid_energy` | `sensor.system_house_pv_total_energy_fed_into_grid` |
+| `sensor.solis_daily_on_grid_energy` | `sensor.system_house_pv_today_energy_fed_into_grid` |
+| `sensor.solis_remaining_battery_capacity` | `sensor.system_house_pv_battery_soc` |
+| `sensor.solis_battery_power` | `sensor.system_house_pv_battery_power` |
+| `sensor.solis_dc_power_pv1` | `sensor.system_house_pv_pv_power_1` |
+| `sensor.solis_dc_power_pv2` | `sensor.system_house_pv_pv_power_2` |
+| `sensor.solis_total_consumption_power` | `sensor.system_house_pv_household_load_power` |
+| `sensor.solis_power_grid_total_power` | `sensor.system_house_pv_meter_total_active_power` |
+| `sensor.solis_ac_output_total_power` | `sensor.system_house_pv_active_power` |
+| `sensor.solis_temperature` | `sensor.system_house_pv_temperature` |
+| `sensor.solis_ac_frequency` | `sensor.system_house_pv_grid_frequency` |
 
-Optional (shorter or noisier series — only if the new sensor is clearly the same counter): monthly/yearly charge, discharge, grid purchased, on-grid.
+All `smarthome/**/*.nix` references to the `sensor.solis_*` ids above (car charger, HVAC, capacity peaks, demand management, `battery.nix`, `ha/default.nix` stale-entity watchdog) were retargeted to the `system_house_pv_*` equivalents in the same change. Not yet retargeted: the write-side `number.solar_battery_*` (still cloud, via `solis-control`/MQTT — see "Better steering than Cloud?" above for the eventual Modbus register targets) and Energy dashboard source config (Settings → Energy, UI-only, not in nix — point it at the `system_house_pv_*` kWh sensors manually).
 
-### Do rename — power + SoC (maybe)
+`solis-sensor` (cloud) and `solis-control` are still running; retire them once the Modbus telemetry has proven itself for a few days.
 
-Same start date, ~30k hourly rows. Worth it for “what was the pack doing in 2024”.
+### Original rename plan (superseded, kept for context)
 
-| Keep | Expected new id |
-|---|---|
-| `sensor.solis_remaining_battery_capacity` | `sensor.solis_battery_soc` |
-| `sensor.solis_battery_power` | `sensor.solis_battery_power` (may already match → then only park the cloud one) |
-| `sensor.solis_dc_power_pv1` | `sensor.solis_dc_power_1` |
-| `sensor.solis_dc_power_pv2` | `sensor.solis_dc_power_2` |
-| `sensor.solis_total_consumption_power` | `sensor.solis_household_load_power` |
-| `sensor.solis_power_grid_total_power` | `sensor.solis_meter_total_active_power` / `solis_ac_grid_port_power` |
-| `sensor.solis_ac_output_total_power` | `sensor.solis_active_power` |
-
-Skip: `solis_battery_power_inverted` (6 hours of data), plant/backup load, per-phase W/VA/var.
-
-### Do not rename
-
-`sensor.solis_temperature`, `sensor.solis_ac_frequency`, all V/A, SoH, force-charge SoC, HMI, timestamps, `number.solar_battery_*`. New Modbus copies can keep their default ids. Automations that need SoC/power keep working via the renamed sensors above.
-
-### Procedure (Grok, when USB is live)
+The original idea was HA's own `entity_id` rename (cloud id → `_cloud` suffix, then Modbus id → the freed historic id), which is what keeps history in the simple case. Superseded here because the `solis_modbus` device got a deliberately descriptive name (`system_house_pv`) instead of reusing short `solis_*`-style ids, and a direct MariaDB splice was used instead so the new names could be kept as-is. If doing this on a future install where the Modbus entity ids do land on the same `sensor.solis_*` names, the rename approach is simpler:
 
 ```
-# 1. List both sides
-hass-cli entity list 'sensor.solis_*'
-
-# 2. For each pair in the tables:
 hass-cli entity rename sensor.solis_energy_total sensor.solis_energy_total_cloud
 hass-cli entity rename sensor.solis_pv_total_energy_generation sensor.solis_energy_total
 ```
 
-Cloud id first → `*_cloud`, then Modbus id → historic id. That is what keeps MariaDB `statistics`. Confirm SoC ±2 % before any rename.
-
-Then remove `solis-sensor`. Leave `number.solar_battery_*` until `battery.nix` is retargeted.
-
-If a chart still points at a `_2`: [migration guide](https://solis-modbus.readthedocs.io/en/latest/migration.html) or [HA-Merge-Sensor-History](https://github.com/mayerwin/HA-Merge-Sensor-History).
+Cloud id first → `*_cloud`, then Modbus id → historic id. [HA-Merge-Sensor-History](https://github.com/mayerwin/HA-Merge-Sensor-History) is a maintained custom-component alternative to a hand-rolled SQL splice if that's preferred another time — it does the same offset-lift automatically, at the cost of one more vendored component.
 
 ### What not to do
 
 - Do not delete cloud entities first.
 - Do not change nix `unique_id`s to “match” Modbus.
 - Do not point Energy at brand-new kWh entity_ids the first week.
-- Do not wipe MariaDB.
+- Do not wipe MariaDB. Take a targeted `mysqldump` of the affected `statistics`/`statistics_short_term`/`statistics_meta` rows before writing.
 
 ---
 
@@ -332,6 +319,23 @@ This plant **already has Max Charge SOC = 100 %** (CID 7691 / reg **43010**). If
 - Pylontech CCL taper (40 A → 5 A as SoC approaches 100 %) and Solis giving up / not floating long enough to balance
 - **Allow grid charging OFF** (43110 bit 5) — no solar left → it sits there
 - Cell imbalance (need hours at a slightly *lower* float, not a higher target)
+
+---
+
+## Voltage setpoints vs Pylontech spec (assessed 2026-08-20)
+
+Pylontech US5000/US3000C (15S LFP) datasheet charge voltage is **52.5–53.5 V**, absolute max 53.5 V. Pylontech support has told installers in writing to run bulk/float at **52.5 V**, not 53.5 V — the margin exists because inverter-side voltage sensors (Solis included) read slightly high at the terminals.
+
+This plant's registers, as configured:
+
+| Register | Value | Note |
+|---|---|---|
+| `number.system_house_pv_floating_charge_voltage` | 53.5 V | At datasheet max, not Pylontech's recommended 52.5 V |
+| `number.system_house_pv_equalizing_charge_voltage` | 55.0 V | Above spec; likely inert since BMS/CAN governs actual charge, but not a value to leave above pack limits |
+
+**Tried lowering Floating Charge Voltage to 52.5 V — Solis firmware silently reverts it back to 53.5 V.** Confirmed via the `number.` entity's own declared range (`min: 40, max: 60`, no HA-side restriction) — the revert happens inverter-side, not in `solis_modbus`. This matches a known DIY Solar Forum report that Solis won't accept an Equalizing Charge write below 54 V either (resets to 55 V on save). Read: when Battery Type is a recognized Lithium/Pylontech preset, Solis enforces its own floor on these registers regardless of what's written — **52.5 V is not reachable through this path.** Don't re-attempt; there's no known workaround short of switching Battery Type to Custom, which would forfeit the CAN-negotiated preset and isn't worth the risk given the BMS already governs real charge behavior (see "Can Pylontech Modbus steer better?" above).
+
+Battery SOH history (`sensor.system_house_pv_battery_soh`, MariaDB `statistics`): 100 % → 94 % from 2023-03 to 2026-08, ~1.7–1.8 %/yr overall. Note a jump from 96.6 % → 98 % around 2024-09/10 — that's the pack physically expanding from 1× US5000 to 1× US5000 + 1× US3000C (blended SOH from the fresh module), not a recalibration or real capacity recovery. Post-expansion the combined stack has declined 98 % → 94 % over ~22 months (~2.2 %/yr) — the biggest available lever for slowing this is less time at 100 % SoC (Max Charge SOC is currently 100 % daily; Pylontech only needs a full charge ~monthly to recalibrate), not the 1 V float difference that turned out to be unenforceable anyway.
 
 Steering that *does* help is **Solis Modbus**, not Pylontech:
 
