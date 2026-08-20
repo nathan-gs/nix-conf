@@ -235,8 +235,8 @@
                 {% set electricity_delivery_power_15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
                 {% set currently_delivered = states('sensor.dsmr_reading_electricity_currently_delivered') | float(0) * 1000 %}
                 {% set minutes_remaining = (now().minute // 15 + 1) * 15 - now().minute %}
-                {% set battery = states('sensor.solis_remaining_battery_capacity') %}
-                {% set overdischargesoc = states('number.solar_battery_overdischargesoc') %}
+                {% set battery = states('sensor.system_house_pv_battery_soc') %}
+                {% set overdischargesoc = states('number.system_house_pv_overdischarge_soc') %}
                 Currently at capacity peak {{ electricity_delivery_power_15m }}kW, estimated to be {{ electricity_delivery_power_15m_estimated }}kW with {{ minutes_remaining }}m remaining, current power {{ currently_delivered }}W, battery at {{battery}} ({{overdischargesoc}})%.
               '';
             };
