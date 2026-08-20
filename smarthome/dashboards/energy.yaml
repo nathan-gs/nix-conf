@@ -93,6 +93,10 @@ views:
                       - entity: sensor.audi_a6_sportback_e_tron_remaining_charge_time
                       - entity: >-
                           sensor.audi_a6_sportback_e_tron_remaining_climatisation_time
+                  - type: entities
+                    entities:
+                      - entity: sensor.openweathermap_condition
+                      - entity: weather.sxw
               - type: vertical-stack
                 cards:
                   - type: entities
@@ -126,10 +130,6 @@ views:
                       - entity: sensor.water_cost_monthly_fixed
                       - entity: sensor.water_fixed_cost_total
                       - entity: binary_sensor.electricity_high_usage
-                  - type: entities
-                    entities:
-                      - entity: sensor.openweathermap_condition
-                      - entity: weather.sxw
               - type: vertical-stack
                 cards:
                   - type: energy-distribution
@@ -164,10 +164,10 @@ views:
                         icon: mdi:battery
                   - type: entities
                     entities:
-                      - entity: sensor.solis_dc_power_pv1
-                      - entity: sensor.solis_dc_power_pv2
-                      - entity: sensor.solis_remaining_battery_capacity
-                      - entity: number.solar_battery_overdischargesoc
+                      - entity: sensor.system_house_pv_pv_power_1
+                      - entity: sensor.system_house_pv_pv_power_2
+                      - entity: sensor.system_house_pv_battery_soc
+                      - entity: number.system_house_pv_overdischarge_soc
                       - entity: sensor.electricity_solar_power_mean_15m
                   - type: entities
                     entities:
