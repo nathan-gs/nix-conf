@@ -95,12 +95,12 @@ Solis notices:
 
 ### Mode bitfield — register **43110**
 
-Live raw word: **`yuanzhi = 3`** → bits 0 and 1 set.
+Live raw word (as of 2026-08-14 capture): `yuanzhi = 3` → bits 0 and 1 set. **Changed 2026-08-20**: switched `select.system_house_pv_storage_mode` from Self-Use + TOU to plain **Self-Use** (TOU schedule was never configured — nothing in `battery.nix`/`capacity_peaks.nix` writes 43141–43169). Live raw word now `yuanzhi = 1`, bit 0 only.
 
 | Bit | Meaning | Live | Self-use page CID | Feed-in page CID |
 |-----|---------|------|-------------------|------------------|
 | 0 | Self-use mode | **ON** | **466** | — |
-| 1 | Time of Use | **ON** | **543** | **100** (if feed-in on) |
+| 1 | Time of Use | **OFF** (was ON) | **543** | **100** (if feed-in on) |
 | 4 | Battery reserve | OFF | **4648** | **4635** |
 | 5 | **Allow grid charging** | **OFF** | **109** | **141** |
 | 6 | Feed-in priority | OFF | — | **142** |
