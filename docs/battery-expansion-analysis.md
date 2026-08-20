@@ -71,6 +71,21 @@ Borderline-positive NPV, asymmetric upside given Belgian policy direction (capac
 2. **Check inverter charge-rate headroom.** Solis hybrid charge current limits matter — if it pushes ~2 kW max into battery, filling the extra 4.5 kWh needs ~2 more hours of solar+charge headroom. Already implicit in the 115 cycles/yr estimate, but worth confirming the inverter isn't the bottleneck.
 3. **DIY alternative:** LiFePO4 at €150/kWh (~€675 for 4.5 kWh) drops payback to ~5 years — clear win if you have appetite for self-install.
 
+## Note (2026-08-20): charge/discharge current cap affects the headroom caveat above
+
+`number.system_house_pv_max_charge_current` / `max_discharge_current` /
+`battery_max_charge_current` / `battery_max_discharge_current` (registers 43012/43013/43117/43118)
+were lowered from the default **100 A to 87 A** — Pylontech's own recommended combined continuous
+rate (0.5C) for this pack (US5000 50 A + US3000C 37 A), done for battery-health reasons, not
+capacity planning. See `docs/solis-modbus.md`.
+
+This directly affects caveat #2 above (inverter charge-rate headroom). If re-running this
+analysis — e.g. sizing a future expansion — **set these back to 100 A first**, since the current
+115 cycles/yr estimate implicitly assumed the higher charge rate. Recalculate headroom against
+whatever combined recommended rate applies to the pack size under consideration at that time
+(0.5C scales with total capacity), not against 87 A, which is specific to today's US5000+US3000C
+combo.
+
 ## SQL queries used
 
 ```sql
