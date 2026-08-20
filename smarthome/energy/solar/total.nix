@@ -31,6 +31,11 @@ let
             device_class = "energy";
             icon = icon;
             state_class = "total";
+            # Trigger-based template sensors don't restore across HA
+            # restarts by default - without this the running total drops
+            # back to just "today" on every restart until the next midnight
+            # trigger fires.
+            restore = true;
           }
         ];
       };
