@@ -49,6 +49,8 @@ Cloud CIDs in `solis-control` map 1:1 onto holding registers `solis_modbus` alre
 
 So the existing automations in `smarthome/energy/solar/battery.nix` can be retargeted from `number.solar_battery_*` (MQTT → cloud) to these Modbus numbers. No new control philosophy.
 
+**Done 2026-08-20.** `battery.nix` and `capacity_peaks.nix` now write/read `number.system_house_pv_overdischarge_soc` (43011), `number.system_house_pv_force_charge_soc` (43018), and `number.system_house_pv_force_charge_power_limitation` (43027) directly — confirmed matching the live cloud setpoints (20/9/300) before cutover. `solis-control.nix` and its package are removed (`services/`, `pkgs/`), its `nhtpc.nix` import dropped, and the `soliscontrol` mosquitto user/ACL removed from `services/mosquitto.nix`. `number.solar_battery_*` no longer exists — it was purely MQTT-discovery-created by `solis-control`.
+
 ### Better steering than Cloud? (e.g. charge to 100 %)
 
 **Same ceiling, better loop.** Max Charge SOC is already **100 %** (43010). Modbus cannot raise that. Pylontech will still taper charge current (often 40 A → 5 A) as SoC approaches 100 % — do not fight register 33143.
@@ -74,7 +76,7 @@ Do **not** hammer flash-backed floors every few seconds. Keep today’s rate lim
 | DSMR as the legal meter | Cloud-computed “monthly grid” (we already ignore that) |
 | | **New** “Remote Dispatch” (reg 34502 = `0xAA55`) — RHI-5G firmware is almost certainly too old for this anyway |
 
-`solis-control.nix` becomes unused once writes go local.
+`solis-control.nix` is removed now that writes go local (see above).
 
 ---
 

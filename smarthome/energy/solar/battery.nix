@@ -102,8 +102,8 @@
             name = "solar/battery/charging/remaining_minutes_till_overdischargesoc";
             unique_id = "solar_battery_charging_remaining_minutes_till_overdischargesoc";
             state = '' 
-              {% set max_grid_power = states('number.solar_battery_maxgridpower') | int(0) %}
-              {% set battery_target = states('number.solar_battery_overdischargesoc') | int(0) %}
+              {% set max_grid_power = states('number.system_house_pv_force_charge_power_limitation') | int(0) %}
+              {% set battery_target = states('number.system_house_pv_overdischarge_soc') | int(0) %}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set to_charge = battery_target - battery %}
               {% if to_charge > 0 %}
@@ -129,7 +129,7 @@
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5) %}
               {% set capacity_threshold = [2.5, monthly_peak - 0.1] | max %}
               {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
-              {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
+              {% set overdischargesoc = states('number.system_house_pv_overdischarge_soc') | int(20) %}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
@@ -189,7 +189,7 @@
               {% set capacity_threshold = [2.5, monthly_peak - 0.4] | max %}
               {% set capacity_safe = [2.0, monthly_peak - 1.0] | max %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 3) and now().hour >= 5) %}
-              {% set forcechargesoc = states('number.solar_battery_forcechargesoc') | int(10) %}
+              {% set forcechargesoc = states('number.system_house_pv_force_charge_soc') | int(10) %}
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 19 %}
               {% set forcechargesoc_low = 10 %}
@@ -261,9 +261,9 @@
           (ha.condition.off "binary_sensor.electricity_high_usage")
         ];
         actions = [
-          (ha.action.set_value "number.solar_battery_maxgridpower" 1200)
+          (ha.action.set_value "number.system_house_pv_force_charge_power_limitation" 1200)
           (ha.action.delay "00:00:30")
-          (ha.action.set_value "number.solar_battery_forcechargesoc" ''{{ states('number.solar_battery_overdischargesoc') | float(10) - 1 }}'')
+          (ha.action.set_value "number.system_house_pv_force_charge_soc" ''{{ states('number.system_house_pv_overdischarge_soc') | float(10) - 1 }}'')
           (ha.action.delay "00:00:30")
           (
             ha.action.conditional 
@@ -271,10 +271,10 @@
               (ha.condition.template ''{{ states('sensor.energy_production_today_remaining') | int(0) > 8 }}'')
             ]
             [
-              (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
+              (ha.action.set_value "number.system_house_pv_overdischarge_soc" ''20'')
             ]
             [
-              (ha.action.set_value "number.solar_battery_overdischargesoc" ''20'')
+              (ha.action.set_value "number.system_house_pv_overdischarge_soc" ''20'')
             ]
           )
         ];
@@ -285,23 +285,23 @@
           (ha.trigger.at "07:00:00")
         ];
         actions = [
-          (ha.action.set_value "number.solar_battery_maxgridpower" 300)     
+          (ha.action.set_value "number.system_house_pv_force_charge_power_limitation" 300)     
           (ha.action.delay "00:00:30")
-          (ha.action.set_value "number.solar_battery_overdischargesoc" ''{{ states('sensor.solar_battery_overdischargesoc_target') | int(20) }}'')
+          (ha.action.set_value "number.system_house_pv_overdischarge_soc" ''{{ states('sensor.solar_battery_overdischargesoc_target') | int(20) }}'')
         ];
         mode = "queued";
       })
       (ha.automation "solar/battery/overdischarge.control" {
         triggers = [(ha.trigger.state "sensor.solar_battery_overdischargesoc_target")];
         actions = [
-          (ha.action.set_value "number.solar_battery_overdischargesoc" ''{{ states('sensor.solar_battery_overdischargesoc_target') | int }}'')
+          (ha.action.set_value "number.system_house_pv_overdischarge_soc" ''{{ states('sensor.solar_battery_overdischargesoc_target') | int }}'')
         ];
         mode = "queued";
       })
       (ha.automation "solar/battery/forcechargesoc.control" {
         triggers = [(ha.trigger.state_for "sensor.solar_battery_forcechargesoc_target" "00:00:15")];
         actions = [
-          (ha.action.set_value "number.solar_battery_forcechargesoc" ''{{ states('sensor.solar_battery_forcechargesoc_target') | int }}'')
+          (ha.action.set_value "number.system_house_pv_force_charge_soc" ''{{ states('sensor.solar_battery_forcechargesoc_target') | int }}'')
         ];
         mode = "queued";
       })
