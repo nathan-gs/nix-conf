@@ -192,11 +192,11 @@ Expect a model / DSP / HMI / protocol word. Protocol ≈ `20xx` → ESINV, you a
 
 ## Software on this host
 
-Preferred: **[Pho3niX90/solis_modbus](https://github.com/Pho3niX90/solis_modbus)** (HACS), connection type **Serial**, poll profile **Full** first, then **Extreme + battery/load** if you want 2 s updates.
+Preferred: **[Pho3niX90/solis_modbus](https://github.com/Pho3niX90/solis_modbus)** (domain `solis_modbus`), connection type **Serial**, poll profile **Full** first, then **Extreme + battery/load** if you want 2 s updates.
 
-This flake does not vendor that component yet. Until it is packaged like `powercalc`:
+Vendored in `pkgs/home-assistant/custom_components/solis-modbus.nix` (same pattern as `powercalc`) and wired into `services/home-assistant.nix` `customComponents`. `users.users.hass.extraGroups` includes `dialout` so the HA service user can open the adapter's tty. After `switch.sh`:
 
-1. Add the custom component (or run a one-off test from a `nix-shell` as above).
+1. Settings → Devices & Services → Add Integration → **Solis Modbus** → connection type **Serial**, device path `/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_BG03O7M9-if00-port0` (stable — do **not** use `/dev/ttyUSB1`, that index can shift on reboot/replug), baud **9600**, slave id **1**.
 2. Point HA automations at `number.solis_overdischarge_soc` etc.
 3. Retire `services/solis-control.nix` and the SolisCloud platform sensors once the new entities have a day of history.
 4. Keep DSMR as the Energy-dashboard grid source (fiscal). Use Modbus battery power / SoC / PV as the fast plant view.
