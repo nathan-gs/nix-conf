@@ -122,7 +122,7 @@ in
 {
   services.home-assistant.config = {
     input_number = builtins.listToAttrs (map (x: {
-      name = x.tillYesterdayHelper.unique_id;
+      name = x.tillYesterdayObjectId;
       value = x.tillYesterdayHelper;
     }) perInverter);
 
