@@ -14,11 +14,7 @@
           {
             name = "electricity_solar_power";
             unique_id = "electricity_solar_power";
-            state = ''
-              {% set pv1 = states('sensor.system_house_pv_pv_power_1') | float(0) %}
-              {% set pv2 = states('sensor.system_house_pv_pv_power_2') | float(0) %}
-              {{ pv1 + pv2 }}
-            '';
+            state = "{{ states('sensor.system_house_pv_total_pv_power') | float(0) }}";
             unit_of_measurement = "W";
             state_class = "measurement";
           }
