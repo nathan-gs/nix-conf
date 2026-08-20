@@ -6,5 +6,6 @@
     claude-code
     grok-build
     gemini-cli
+    github-cli
   ];
 }
