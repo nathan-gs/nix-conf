@@ -90,7 +90,7 @@
             unique_id = "solar_battery_sufficient";
             icon = "mdi:battery-high";
             state = ''
-              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(10) %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(10) %}
               {{ battery > 10 }}
             '';
           }          
@@ -104,7 +104,7 @@
             state = '' 
               {% set max_grid_power = states('number.solar_battery_maxgridpower') | int(0) %}
               {% set battery_target = states('number.solar_battery_overdischargesoc') | int(0) %}
-              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set to_charge = battery_target - battery %}
               {% if to_charge > 0 %}
                 {% set percent_in_wh = (48 + 35) %}
@@ -130,7 +130,7 @@
               {% set capacity_threshold = [2.5, monthly_peak - 0.1] | max %}
               {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
               {% set overdischargesoc = states('number.solar_battery_overdischargesoc') | int(20) %}
-              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(20) %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
               {% set overdischargesoc_default = 20 %}
@@ -233,11 +233,11 @@
         trigger = [
           {
             platform = "state";
-            entity_id = "sensor.solis_remaining_battery_capacity";
+            entity_id = "sensor.system_house_pv_battery_soc";
           }
         ];
         condition = ''
-          {{ not (is_state('sensor.solis_remaining_battery_capacity', 'unknown') or is_state('sensor.solis_remaining_battery_capacity', 'unavailable') or trigger.from_state.state | int(0) == 0) }}
+          {{ not (is_state('sensor.system_house_pv_battery_soc', 'unknown') or is_state('sensor.system_house_pv_battery_soc', 'unavailable') or trigger.from_state.state | int(0) == 0) }}
         '';
         action = [
           (

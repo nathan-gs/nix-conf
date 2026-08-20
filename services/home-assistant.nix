@@ -14,6 +14,9 @@
 
   networking.firewall.allowedTCPPorts = [ 1400 8123 ];
 
+  # solis_modbus talks to the inverter over a USB-RS485 adapter (dialout-owned tty).
+  users.users.hass.extraGroups = [ "dialout" ];
+
   services.nginx.virtualHosts."ha.nathan.gs" = {
     forceSSL = true;
     enableACME = true;
@@ -179,6 +182,7 @@
 
     customComponents = with pkgs.nixpkgs-unstable.home-assistant-custom-components; [
       solis-sensor
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/solis-modbus.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/hon.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/electrolux-status.nix { pkgs = pkgs.nixpkgs-unstable; })
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/powercalc.nix { pkgs = pkgs.nixpkgs-unstable; })
