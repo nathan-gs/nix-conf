@@ -333,6 +333,23 @@ This plant **already has Max Charge SOC = 100 %** (CID 7691 / reg **43010**). If
 - **Allow grid charging OFF** (43110 bit 5) — no solar left → it sits there
 - Cell imbalance (need hours at a slightly *lower* float, not a higher target)
 
+---
+
+## Voltage setpoints vs Pylontech spec (assessed 2026-08-20)
+
+Pylontech US5000/US3000C (15S LFP) datasheet charge voltage is **52.5–53.5 V**, absolute max 53.5 V. Pylontech support has told installers in writing to run bulk/float at **52.5 V**, not 53.5 V — the margin exists because inverter-side voltage sensors (Solis included) read slightly high at the terminals.
+
+This plant's registers, as configured:
+
+| Register | Value | Note |
+|---|---|---|
+| `number.system_house_pv_floating_charge_voltage` | 53.5 V | At datasheet max, not Pylontech's recommended 52.5 V |
+| `number.system_house_pv_equalizing_charge_voltage` | 55.0 V | Above spec; likely inert since BMS/CAN governs actual charge, but not a value to leave above pack limits |
+
+**Tried lowering Floating Charge Voltage to 52.5 V — Solis firmware silently reverts it back to 53.5 V.** Confirmed via the `number.` entity's own declared range (`min: 40, max: 60`, no HA-side restriction) — the revert happens inverter-side, not in `solis_modbus`. This matches a known DIY Solar Forum report that Solis won't accept an Equalizing Charge write below 54 V either (resets to 55 V on save). Read: when Battery Type is a recognized Lithium/Pylontech preset, Solis enforces its own floor on these registers regardless of what's written — **52.5 V is not reachable through this path.** Don't re-attempt; there's no known workaround short of switching Battery Type to Custom, which would forfeit the CAN-negotiated preset and isn't worth the risk given the BMS already governs real charge behavior (see "Can Pylontech Modbus steer better?" above).
+
+Battery SOH history (`sensor.system_house_pv_battery_soh`, MariaDB `statistics`): 100 % → 94 % from 2023-03 to 2026-08, ~1.7–1.8 %/yr overall. Note a jump from 96.6 % → 98 % around 2024-09/10 — that's the pack physically expanding from 1× US5000 to 1× US5000 + 1× US3000C (blended SOH from the fresh module), not a recalibration or real capacity recovery. Post-expansion the combined stack has declined 98 % → 94 % over ~22 months (~2.2 %/yr) — the biggest available lever for slowing this is less time at 100 % SoC (Max Charge SOC is currently 100 % daily; Pylontech only needs a full charge ~monthly to recalibrate), not the 1 V float difference that turned out to be unenforceable anyway.
+
 Steering that *does* help is **Solis Modbus**, not Pylontech:
 
 | Register | What |
