@@ -155,7 +155,7 @@
                 {'entity_id': 'sensor.watermeter_total', 'max_age': 36000},
                 {'entity_id': 'sensor.watermeter_usage_last_minute', 'max_age': 36000},
                 {'entity_id': 'sensor.dsmr_reading_electricity_currently_delivered', 'max_age': 300},
-                {'entity_id': 'sensor.solis_ac_frequency', 'max_age': 900},
+                {'entity_id': 'sensor.system_house_pv_grid_frequency', 'max_age': 900},
               ] %}
               {% set ns = namespace(stale=[]) %}
               {% for item in watch %}
@@ -174,7 +174,7 @@
                 {'entity_id': 'sensor.watermeter_total', 'max_age': 36000},
                 {'entity_id': 'sensor.watermeter_usage_last_minute', 'max_age': 36000},
                 {'entity_id': 'sensor.dsmr_reading_electricity_currently_delivered', 'max_age': 300},
-                {'entity_id': 'sensor.solis_ac_frequency', 'max_age': 900},
+                {'entity_id': 'sensor.system_house_pv_grid_frequency', 'max_age': 900},
               ] %}
               {% set ns = namespace(stale=[]) %}
               {% for item in watch %}

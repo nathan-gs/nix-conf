@@ -117,7 +117,7 @@ in
               {% set is_anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
               {% set is_bureau = states('sensor.floor0_bureau_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
               {% set is_nikolai = states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
-              {% set is_battery_charged = states('sensor.solis_remaining_battery_capacity') | float(10) > 32 %}
+              {% set is_battery_charged = states('sensor.system_house_pv_battery_soc') | float(10) > 32 %}
               {% set is_not_using_grid = states('sensor.electricity_grid_consumed_power_mean_1m') | float(1000) < 100 %}
               {% set is_solar = states('sensor.electricity_solar_power') | float(0) > 300 %}
               {% set is_solar_remaining = states('sensor.energy_production_today_remaining') | float(0) > 6 %}

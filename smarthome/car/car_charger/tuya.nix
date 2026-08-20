@@ -77,7 +77,7 @@
               {# battery drain: phase 1 (battery > 20%) charges at full grid speed like 'on';
                  phase 2 (battery <= 20%) falls back to solar-only via the solar boost path. #}
               {% set battery_drain = charge_override == 'battery drain' %}
-              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set boost = boost or (battery_drain and battery > 20) %}
               {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
               {% set override = states('input_select.system_car_charger_current_override_a') | int(0) %}
@@ -123,7 +123,7 @@
                   {% else %}
                     {% set solar_a = (solar / 230) | round(0) | int %}
                     {% set target_a = min(16, solar_a) %}
-                    {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                    {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
                     {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
                     {% if battery > 50 and battery <= 80 and remaining_energy > 5 %}
                       {% set target_a = 13 %}
@@ -180,7 +180,7 @@
             unique_id = "system_car_charger_solar_charge_eligible";
             icon = "mdi:solar-power";
             state = ''
-              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(10) %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(10) %}
               {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
               {% set delivery = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
               {{ solar > 1400 and delivery < 0.4 and battery > 15 }}
@@ -213,7 +213,7 @@
               {% set force_on = override in ['on', 'solar+grid boost', 'solar+grid 16a'] %}
               {# Morning battery boost: drain home battery into car before solar arrives. Stops
                  automatically when battery reaches 60% (the template gate below turns false). #}
-              {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 50 %}
               {# battery drain phase 1: force charging while house battery is above the 20% floor.
                  Phase 2 (battery <= 20%) is handled by solar_eligible naturally allowing charging
@@ -239,12 +239,12 @@
               (ha.trigger.state_to "input_select.car_charge_override" "battery drain")
               (ha.trigger.state_to "input_select.car_charge_override" "solar+grid boost")
               (ha.trigger.state_to "input_select.car_charge_override" "solar+grid 16a")
-              (ha.trigger.state "sensor.solis_remaining_battery_capacity")
+              (ha.trigger.state "sensor.system_house_pv_battery_soc")
               # Grid peak protection can turn switch.system_car_charger off mid-charge (via
-              # car_charger.stop). Re-check every 15m and resume: the `should_charge` on +
+              # car_charger.stop). Re-check every 10m and resume: the `should_charge` on +
               # switch off conditions below mean this only restarts an interrupted charge and is
               # a no-op while already charging or when charging genuinely shouldn't run.
-              (ha.trigger.time_pattern_minutes "/15")
+              (ha.trigger.time_pattern_minutes "/10")
             ];
             conditions = [
               (ha.condition.on "binary_sensor.system_car_charger_should_charge")
@@ -253,7 +253,7 @@
                 value_template = ''
                   {% set solar_eligible = is_state('binary_sensor.system_car_charger_solar_charge_eligible', 'on') %}
                   {% set override = states('input_select.car_charge_override') in ['on', 'battery drain', 'solar+grid boost', 'solar+grid 16a'] %}
-                  {% set battery = states('sensor.solis_remaining_battery_capacity') | int(0) %}
+                  {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
                   {% if solar_eligible and not override %}
                     {{ battery >= 20 }}
                   {% else %}
@@ -356,9 +356,12 @@
               (ha.trigger.on "switch.system_car_charger")
               (ha.trigger.on "binary_sensor.car_charger_charging")
               (ha.trigger.off "binary_sensor.system_car_charger_should_charge")
+              (ha.trigger.time_pattern_minutes "/10")
             ];
             conditions = [
               (ha.condition.off "binary_sensor.system_car_charger_should_charge")
+              # Odd bug, if you call this while off, it puts it on.
+              (ha.condition.on "switch.system_car_charger")
             ];
             actions = [
               (ha.action.off "switch.system_car_charger")
@@ -470,7 +473,7 @@
         ha.automation "system/car_charger.battery_mode_auto_revert"
           {
             triggers = [
-              (ha.trigger.state "sensor.solis_remaining_battery_capacity")
+              (ha.trigger.state "sensor.system_house_pv_battery_soc")
             ];
             conditions = [
               {
@@ -481,7 +484,7 @@
               {
                 condition = "template";
                 value_template = ''
-                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 80 }}
+                  {{ states('sensor.system_house_pv_battery_soc') | int(0) >= 80 }}
                 '';
               }
             ];
@@ -519,7 +522,7 @@
               {
                 condition = "template";
                 value_template = ''
-                  {{ states('sensor.solis_remaining_battery_capacity') | int(0) >= 50 }}
+                  {{ states('sensor.system_house_pv_battery_soc') | int(0) >= 50 }}
                 '';
               }
             ];
@@ -536,7 +539,7 @@
         ha.automation "system/car_charger.battery_drain_phase_transition"
           {
             triggers = [
-              (ha.trigger.state "sensor.solis_remaining_battery_capacity")
+              (ha.trigger.state "sensor.system_house_pv_battery_soc")
             ];
             conditions = [
               {
@@ -547,7 +550,7 @@
               {
                 condition = "template";
                 value_template = ''
-                  {{ states('sensor.solis_remaining_battery_capacity') | int(100) <= 20 }}
+                  {{ states('sensor.system_house_pv_battery_soc') | int(100) <= 20 }}
                 '';
               }
             ];
@@ -556,7 +559,7 @@
                 service = "notify.mobile_app_nphone_p10pro";
                 data = {
                   title = "Car charger";
-                  message = "House battery at {{ states('sensor.solis_remaining_battery_capacity') }}% — switching to solar-only charging.";
+                  message = "House battery at {{ states('sensor.system_house_pv_battery_soc') }}% — switching to solar-only charging.";
                   data.actions = [
                     {
                       action = "car_charger_override_auto";
