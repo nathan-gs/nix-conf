@@ -5,6 +5,7 @@
   imports = [
     ./battery.nix
     ./inverter.nix
+    ./total.nix
   ];
 
   services.home-assistant.config = {
