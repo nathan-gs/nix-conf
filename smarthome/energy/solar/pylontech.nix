@@ -16,12 +16,10 @@ let
       name = "Pylontech ${pack.label} (pack ${toString pack.addr})";
       manufacturer = "Pylontech";
       model = pack.label;
-      via_device = "pylontech_console";
     };
     entity = id: label: field: extra: {
       name = label;
-      has_entity_name = true;
-      unique_id = ha.genId "solar_battery_pylontech_pack_${toString pack.addr}_${id}";
+      unique_id = ha.genId "pylontech_pack_${toString pack.addr}_${id}";
       state_topic = topic;
       value_template = "{{ value_json.${field} }}";
       entity_category = "diagnostic";
