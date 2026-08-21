@@ -9,10 +9,13 @@ let
   # Pattern carried over from the retired solis_local.nix .cgi scrape
   # (solar_delivery_total / _till_yesterday): a helper holds the running
   # total as of yesterday, and the running total itself is
-  # till_yesterday + today. Frozen 23:00-03:00 because the original .cgi
-  # sensor briefly re-reported the previous day's total for hours after
-  # midnight; kept as a precaution even though the Modbus registers haven't
-  # shown the same quirk yet.
+  # till_yesterday + today. The .cgi sensor briefly re-reported the previous
+  # day's total for hours after midnight, so this used to freeze 23:00-03:00
+  # as a precaution - but the Modbus daily counter resets cleanly to 0 at
+  # local midnight (verified across multiple nights, no stale re-reporting),
+  # and the freeze itself was the bug: it held the total flat all night and
+  # then jumped by the whole overnight discharge/charge in one step at 03:00,
+  # which read as "sensor stopped updating, then caught up".
   #
   # till_yesterday is an input_number, not a trigger-based template sensor -
   # trigger-based template sensors don't restore their state across HA
@@ -49,15 +52,9 @@ let
         inherit name icon;
         unique_id = ha.genId name;
         state = ''
-          {% set hour = now().hour %}
           {% set till_yesterday = states('${tillYesterdayEntityId}') | float(0) %}
           {% set today = states('${dailySource}') | float(0) %}
-          {% set previous = states('${entityId}') | float(0) %}
-          {% if hour < 3 or hour >= 23 %}
-            {{ previous }}
-          {% else %}
-            {{ till_yesterday + today }}
-          {% endif %}
+          {{ till_yesterday + today }}
         '';
         unit_of_measurement = "kWh";
         device_class = "energy";
