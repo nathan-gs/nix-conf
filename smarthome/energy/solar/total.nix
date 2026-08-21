@@ -90,6 +90,29 @@ let
           {% set today = states('${dailySource}') | float(0) %}
           {{ till_yesterday + today }}
         '';
+        # A bad till_yesterday restore isn't just "unavailable" - it comes
+        # back as a plausible-looking number (its `initial` of 0), so a
+        # not-unknown/unavailable check on the inputs alone doesn't catch it
+        # (2026-08-21: this happened twice, each time producing a huge false
+        # total_increasing "reset" followed by an equally huge false
+        # "recovery" once corrected - which the Energy dashboard statistics
+        # read as genuine energy and had to be corrected by hand). Cross-check
+        # instead against `lifetimeSource`, which has no restore step to fail
+        # (always a live Modbus read) and tracks the true total to within
+        # ~1 kWh at all times - if the reconstructed total disagrees with it
+        # by more than a real day's worth of activity ever could, something
+        # upstream is wrong and this entity should go unavailable rather than
+        # publish a number and let a `total_increasing` sensor "fix" it later.
+        availability = ''
+          {% set lifetime = states('${lifetimeSource}') %}
+          {% if lifetime in ['unknown', 'unavailable', 'none'] %}
+            false
+          {% else %}
+            {% set till_yesterday = states('${tillYesterdayEntityId}') | float(0) %}
+            {% set today = states('${dailySource}') | float(0) %}
+            {{ ((till_yesterday + today) - (lifetime | float(0))) | abs < 5 }}
+          {% endif %}
+        '';
         unit_of_measurement = "kWh";
         device_class = "energy";
         state_class = "total_increasing";
@@ -123,34 +146,36 @@ let
 
   perInverter = [ solarGeneration batteryCharge batteryDischarge ];
 
+  # Mirrors must propagate the source's availability too, not just its state -
+  # `states(x) | float(0)` silently turns "unavailable" into 0, which would
+  # reintroduce the exact false-reset problem the availability guard above
+  # exists to prevent, just one hop downstream.
+  mkAggregate = { name, icon, source }: {
+    inherit name icon;
+    unique_id = ha.genId name;
+    state = "{{ states('${source}') | float(0) }}";
+    availability = "{{ states('${source}') not in ['unknown', 'unavailable', 'none'] }}";
+    unit_of_measurement = "kWh";
+    device_class = "energy";
+    state_class = "total_increasing";
+  };
+
   aggregates = [
-    {
+    (mkAggregate {
       name = "solar/total_energy_generation";
       icon = "mdi:solar-panel";
-      unique_id = ha.genId "solar/total_energy_generation";
-      state = "{{ states('${solarGeneration.entityId}') | float(0) }}";
-      unit_of_measurement = "kWh";
-      device_class = "energy";
-      state_class = "total_increasing";
-    }
-    {
+      source = solarGeneration.entityId;
+    })
+    (mkAggregate {
       name = "battery/charge_total_energy";
       icon = "mdi:battery-plus";
-      unique_id = ha.genId "battery/charge_total_energy";
-      state = "{{ states('${batteryCharge.entityId}') | float(0) }}";
-      unit_of_measurement = "kWh";
-      device_class = "energy";
-      state_class = "total_increasing";
-    }
-    {
+      source = batteryCharge.entityId;
+    })
+    (mkAggregate {
       name = "battery/discharge_total_energy";
       icon = "mdi:battery-minus";
-      unique_id = ha.genId "battery/discharge_total_energy";
-      state = "{{ states('${batteryDischarge.entityId}') | float(0) }}";
-      unit_of_measurement = "kWh";
-      device_class = "energy";
-      state_class = "total_increasing";
-    }
+      source = batteryDischarge.entityId;
+    })
   ];
 in
 {
