@@ -101,6 +101,7 @@ pkgs.writers.writePython3Bin "pylontech2mqtt" {
           "cell_min_v": round(min(cell_v), 3),
           "cell_max_v": round(max(cell_v), 3),
           "cell_imbalance_mv": round((max(cell_v) - min(cell_v)) * 1000, 1),
+          "cell_voltages": cell_v,
           "avg_temp": round(sum(cell_temps) / len(cell_temps), 1) if cell_temps else None,
           "min_temp": round(min(cell_temps), 1) if cell_temps else None,
           "max_temp": round(max(cell_temps), 1) if cell_temps else None,
