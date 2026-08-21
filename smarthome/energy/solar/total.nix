@@ -1,10 +1,13 @@
 { config, pkgs, lib, ha, ... }:
 let
-  # Reconstructs a high-precision, never-resetting lifetime total from a
-  # Modbus daily counter (1 decimal, resets at local midnight) instead of the
-  # inverter's own lifetime register (whole units only, and it got a
-  # same-day continuity gap when the solis_modbus entity was recreated during
-  # the cloud retirement).
+  # Reconstructs a high-precision, never-resetting lifetime total by adding
+  # a Modbus daily counter (1 decimal, resets at local midnight) onto a
+  # `till_yesterday` baseline - rather than reading the inverter's own
+  # lifetime register directly, which is whole-units-only and once had a
+  # same-day continuity gap when the solis_modbus entity was recreated
+  # during the cloud retirement. The lifetime register is still used, just
+  # only as a periodic anchor for `till_yesterday` (see below) rather than
+  # as the live-updating total itself.
   #
   # Pattern carried over from the retired solis_local.nix .cgi scrape
   # (solar_delivery_total / _till_yesterday): a helper holds the running
@@ -21,14 +24,30 @@ let
   # trigger-based template sensors don't restore their state across HA
   # restarts (there's no "restore" option in this HA version's template
   # schema; setting one makes the whole template block fail validation).
-  # input_number restores natively, same as every other input_number in
-  # this repo, so an automation just snapshots into it at midnight.
-  mkReconstructedTotal = { name, dailySource, icon }:
+  #
+  # input_number's own restore is not reliable enough to trust on its own -
+  # after a crash-loop restart (2026-08-21, electrolux_status integration)
+  # it came back pinned at its `initial` of 0 instead of its last value, and
+  # sat there for 45+ minutes (previously it self-healed within ~30 min of a
+  # restart; this time it didn't), dragging the whole reconstructed total
+  # down to just that day's fraction. So till_yesterday is never trusted
+  # in-place: `lifetimeSource` is the inverter's own lifetime register
+  # (whole kWh, always live off Modbus - no restore involved at all) and
+  # till_yesterday is *recomputed* from it (lifetime minus today's already-
+  # counted fraction) both at midnight and on every HA start, so a bad
+  # restore self-heals within seconds of startup instead of waiting up to a
+  # day for the next midnight snapshot. lifetimeSource is only ever read at
+  # those two moments - `today`'s finer 1-decimal resolution is still what
+  # drives the total through the rest of the day.
+  mkReconstructedTotal = { name, dailySource, lifetimeSource, icon }:
     let
       tillYesterdayName = "${name}_till_yesterday";
       entityId = "sensor.${ha.genId name}";
       tillYesterdayObjectId = ha.genId tillYesterdayName;
       tillYesterdayEntityId = "input_number.${tillYesterdayObjectId}";
+      tillYesterdayFromLifetime = ''
+        {{ (states('${lifetimeSource}') | float(0)) - (states('${dailySource}') | float(0)) }}
+      '';
     in {
       inherit entityId tillYesterdayObjectId;
       tillYesterdayHelper = {
@@ -42,10 +61,25 @@ let
         initial = 0;
       };
       snapshotAutomation = ha.automation "${name}.snapshot_till_yesterday" {
-        triggers = [ (ha.trigger.at "00:00:00") ];
+        triggers = [
+          (ha.trigger.at "00:00:00")
+          { platform = "homeassistant"; event = "start"; }
+        ];
         actions = [
-          (ha.action.set_value tillYesterdayEntityId
-            "{{ states('${entityId}') | float(0) }}")
+          # Modbus/solis_modbus setup can take well over a minute after HA
+          # starts (seen taking 60s+ in practice) - give it time to connect
+          # before trusting its readings. Harmless at the midnight trigger
+          # too, Modbus is already up by then.
+          (ha.action.delay "00:02:00")
+          (ha.action.conditional
+            [ (ha.condition.template ''
+                {{ states('${lifetimeSource}') not in ['unknown', 'unavailable', 'none']
+                   and states('${dailySource}') not in ['unknown', 'unavailable', 'none'] }}
+              '')
+            ]
+            [ (ha.action.set_value tillYesterdayEntityId tillYesterdayFromLifetime) ]
+            [ ]
+          )
         ];
       };
       sensorEntry = {
@@ -71,16 +105,19 @@ let
   solarGeneration = mkReconstructedTotal {
     name = "solar/house/total_energy_generation";
     dailySource = "sensor.system_house_pv_pv_today_energy_generation";
+    lifetimeSource = "sensor.system_house_pv_pv_total_energy_generation";
     icon = "mdi:solar-panel";
   };
   batteryCharge = mkReconstructedTotal {
     name = "battery/house/charge_total_energy";
     dailySource = "sensor.system_house_pv_today_battery_charge_energy";
+    lifetimeSource = "sensor.system_house_pv_total_battery_charge_energy";
     icon = "mdi:battery-plus";
   };
   batteryDischarge = mkReconstructedTotal {
     name = "battery/house/discharge_total_energy";
     dailySource = "sensor.system_house_pv_today_battery_discharge_energy";
+    lifetimeSource = "sensor.system_house_pv_total_battery_discharge_energy";
     icon = "mdi:battery-minus";
   };
 
