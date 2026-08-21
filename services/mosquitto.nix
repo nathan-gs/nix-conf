@@ -42,6 +42,10 @@
               acl = ["readwrite kiosk/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.freekiosk.password;
             };
+            pylontech2mqtt = {
+              acl = ["readwrite pylontech/#"];
+              password = config.secrets.mqtt.users.pylontech2mqtt.password;
+            };
         };
         
         port = 1883;

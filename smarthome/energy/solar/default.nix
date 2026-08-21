@@ -5,6 +5,7 @@
   imports = [
     ./battery.nix
     ./inverter.nix
+    ./pylontech.nix
     ./total.nix
   ];
 

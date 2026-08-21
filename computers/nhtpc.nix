@@ -32,6 +32,7 @@
       #../services/smb.nix
       #../services/ollama.nix
       ../services/sos2mqtt.nix
+      ../services/pylontech2mqtt.nix
       # ngo deleted -> no remote build clients; nixdist trusted-user removed.
       #../services/remote-build-host.nix
       ../services/matomo.nix
