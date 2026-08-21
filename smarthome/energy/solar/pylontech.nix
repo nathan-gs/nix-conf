@@ -53,10 +53,33 @@ let
     (entity "max_temperature" "Max Temperature" "max_temp" { unit_of_measurement = "°C"; device_class = "temperature"; })
   ];
 
+  systemAlarmTopic = "pylontech/system/alarm";
+  systemAlarmEntityId = "binary_sensor.pylontech_system_alarm";
+
 in
 {
   services.home-assistant.config = {
     mqtt.sensor = lib.concatMap packSensors packs;
+
+    mqtt.binary_sensor = [
+      {
+        name = "Alarm";
+        unique_id = ha.genId "pylontech_system_alarm";
+        state_topic = systemAlarmTopic;
+        value_template = "{{ 'ON' if value_json.problem else 'OFF' }}";
+        payload_on = "ON";
+        payload_off = "OFF";
+        device_class = "problem";
+        entity_category = "diagnostic";
+        json_attributes_topic = systemAlarmTopic;
+        json_attributes_template = "{{ value_json | tojson }}";
+        device = {
+          identifiers = [ "pylontech_system" ];
+          name = "Pylontech System";
+          manufacturer = "Pylontech";
+        };
+      }
+    ];
 
     "automation manual" = [
       (ha.automation "solar/battery/pylontech/alert.cell_imbalance" {
@@ -75,6 +98,16 @@ in
           (ha.action.notify
             "Battery pack overheating"
             ''{{ trigger.to_state.attributes.friendly_name }} is {{ trigger.to_state.state }} °C (threshold ${toString maxTempAlertC} °C).''
+          )
+        ];
+        mode = "queued";
+      })
+      (ha.automation "solar/battery/pylontech/alert.system_alarm" {
+        triggers = [ (ha.trigger.on systemAlarmEntityId) ];
+        actions = [
+          (ha.action.notify
+            "Battery BMS alarm"
+            ''Pylontech BMS reports: {{ trigger.to_state.attributes.active_alarms | join(', ') }}''
           )
         ];
         mode = "queued";
