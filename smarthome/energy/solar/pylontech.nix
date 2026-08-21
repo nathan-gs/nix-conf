@@ -15,6 +15,11 @@ let
   cellImbalanceAlertMv = 40;
   maxTempAlertC = 45;
 
+  # Poll cycle is 5 min; go unavailable well past that (not on one missed
+  # cycle) if pylontech2mqtt stops running, rather than silently freezing
+  # on the last retained value forever.
+  expireAfterSec = 1200;
+
   entityId = pack: id: "sensor.pylontech_${lib.toLower pack.label}_pack_${toString pack.addr}_${id}";
 
   packSensors = pack: let
@@ -32,6 +37,7 @@ let
       value_template = "{{ value_json.${field} }}";
       entity_category = "diagnostic";
       state_class = "measurement";
+      expire_after = expireAfterSec;
       device = device;
     } // extra;
   in [
@@ -71,6 +77,7 @@ in
         payload_off = "OFF";
         device_class = "problem";
         entity_category = "diagnostic";
+        expire_after = expireAfterSec;
         json_attributes_topic = systemAlarmTopic;
         json_attributes_template = "{{ value_json | tojson }}";
         device = {
