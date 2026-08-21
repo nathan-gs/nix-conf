@@ -9,6 +9,14 @@ let
     { addr = 3; label = "US3000C"; }
   ];
 
+  # Pylontech's own "needs balancing" threshold; basement never drops below 16 C
+  # so only the high side of temperature is a real risk here (overheating, not
+  # LFP charge-below-freezing damage).
+  cellImbalanceAlertMv = 40;
+  maxTempAlertC = 45;
+
+  entityId = pack: id: "sensor.pylontech_${lib.toLower pack.label}_pack_${toString pack.addr}_${id}";
+
   packSensors = pack: let
     topic = "pylontech/pack_${toString pack.addr}/state";
     device = {
@@ -35,7 +43,11 @@ let
     (entity "cycles" "Cycles" "cycle" { state_class = "total_increasing"; })
     (entity "cell_min_voltage" "Cell Min Voltage" "cell_min_v" { unit_of_measurement = "V"; device_class = "voltage"; })
     (entity "cell_max_voltage" "Cell Max Voltage" "cell_max_v" { unit_of_measurement = "V"; device_class = "voltage"; })
-    (entity "cell_imbalance" "Cell Imbalance" "cell_imbalance_mv" { unit_of_measurement = "mV"; })
+    (entity "cell_imbalance" "Cell Imbalance" "cell_imbalance_mv" {
+      unit_of_measurement = "mV";
+      json_attributes_topic = topic;
+      json_attributes_template = "{{ {'cell_voltages': value_json.cell_voltages} | tojson }}";
+    })
     (entity "avg_temperature" "Avg Temperature" "avg_temp" { unit_of_measurement = "°C"; device_class = "temperature"; })
     (entity "min_temperature" "Min Temperature" "min_temp" { unit_of_measurement = "°C"; device_class = "temperature"; })
     (entity "max_temperature" "Max Temperature" "max_temp" { unit_of_measurement = "°C"; device_class = "temperature"; })
@@ -45,5 +57,28 @@ in
 {
   services.home-assistant.config = {
     mqtt.sensor = lib.concatMap packSensors packs;
+
+    "automation manual" = [
+      (ha.automation "solar/battery/pylontech/alert.cell_imbalance" {
+        triggers = map (pack: ha.trigger.above (entityId pack "cell_imbalance") cellImbalanceAlertMv) packs;
+        actions = [
+          (ha.action.notify
+            "Battery cell imbalance"
+            ''{{ trigger.to_state.attributes.friendly_name }} is {{ trigger.to_state.state }} mV (threshold ${toString cellImbalanceAlertMv} mV) — check cell_voltages attribute for the outlier cell.''
+          )
+        ];
+        mode = "queued";
+      })
+      (ha.automation "solar/battery/pylontech/alert.high_temperature" {
+        triggers = map (pack: ha.trigger.above (entityId pack "max_temperature") maxTempAlertC) packs;
+        actions = [
+          (ha.action.notify
+            "Battery pack overheating"
+            ''{{ trigger.to_state.attributes.friendly_name }} is {{ trigger.to_state.state }} °C (threshold ${toString maxTempAlertC} °C).''
+          )
+        ];
+        mode = "queued";
+      })
+    ];
   };
 }
