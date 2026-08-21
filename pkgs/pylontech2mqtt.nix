@@ -14,6 +14,43 @@ pkgs.writers.writePython3Bin "pylontech2mqtt" {
 
   CID1 = 0x46
   CID2_GET_VALUES = 0x42
+  CID2_GET_SYSTEM_ALARM = 0x62
+  # Single-group installs answer system-level commands (0x60-0x64) on the
+  # master's own module address, not a distinct "system" address - see
+  # PYLON low voltage Protocol RS485 s2 ("...请确保主机为 X000...").
+  SYSTEM_ALARM_ADDR = 0x02
+
+  # PYLON low voltage Protocol RS485 s2.3 "获取电池组系统状态告警量信息"
+  ALARM_STATUS_1_BITS = [
+      (7, "module_voltage_high"),
+      (6, "module_voltage_low"),
+      (5, "cell_voltage_high"),
+      (4, "cell_voltage_low"),
+      (3, "cell_temp_high"),
+      (2, "cell_temp_low"),
+      (1, "mosfet_high_temp"),
+      (0, "cell_voltage_inconsistent"),
+  ]
+  ALARM_STATUS_2_BITS = [
+      (7, "cell_temp_inconsistent"),
+      (6, "charge_overcurrent"),
+      (5, "discharge_overcurrent"),
+      (4, "internal_communication_error"),
+  ]
+  PROTECT_STATUS_1_BITS = [
+      (7, "module_voltage_overvoltage"),
+      (6, "module_voltage_undervoltage"),
+      (5, "cell_voltage_overvoltage"),
+      (4, "cell_voltage_undervoltage"),
+      (3, "cell_temp_overtemp"),
+      (2, "cell_temp_undertemp"),
+      (1, "mosfet_overtemp"),
+  ]
+  PROTECT_STATUS_2_BITS = [
+      (6, "charge_overcurrent_protect"),
+      (5, "discharge_overcurrent_protect"),
+      (3, "system_fault_protect"),
+  ]
 
 
   def get_info_length(info: bytes) -> int:
@@ -118,6 +155,37 @@ pkgs.writers.writePython3Bin "pylontech2mqtt" {
       return parse_values(decode_frame(resp))
 
 
+  def decode_bits(byte: int, bits: list) -> dict:
+      return {name: bool(byte & (1 << bit)) for bit, name in bits}
+
+
+  def query_system_alarm(ser: serial.Serial) -> dict:
+      ser.reset_input_buffer()
+      ser.write(encode_cmd(SYSTEM_ALARM_ADDR, CID2_GET_SYSTEM_ALARM, b""))
+      resp = ser.read(4096)
+      if not resp:
+          raise TimeoutError("no response to system alarm query")
+      info = decode_frame(resp)
+      alarm1, alarm2, protect1, protect2 = info[0], info[1], info[2], info[3]
+
+      flags = {}
+      flags.update(decode_bits(alarm1, ALARM_STATUS_1_BITS))
+      flags.update(decode_bits(alarm2, ALARM_STATUS_2_BITS))
+      flags.update(decode_bits(protect1, PROTECT_STATUS_1_BITS))
+      flags.update(decode_bits(protect2, PROTECT_STATUS_2_BITS))
+      active = sorted(name for name, on in flags.items() if on)
+
+      return {
+          "problem": bool(active),
+          "active_alarms": active,
+          "alarm_status_1": alarm1,
+          "alarm_status_2": alarm2,
+          "protection_status_1": protect1,
+          "protection_status_2": protect2,
+          **flags,
+      }
+
+
   def main():
       p = argparse.ArgumentParser()
       p.add_argument("--port", required=True)
@@ -151,10 +219,20 @@ pkgs.writers.writePython3Bin "pylontech2mqtt" {
           client.publish(topic, json.dumps(values), retain=True)
           print(f"pack {address}: {values}")
 
+      try:
+          alarm = query_system_alarm(ser)
+      except Exception as e:
+          print(f"system alarm: {e}", file=sys.stderr)
+          failures += 1
+      else:
+          topic = f"{args.mqtt_topic_prefix}system/alarm"
+          client.publish(topic, json.dumps(alarm), retain=True)
+          print(f"system alarm: {alarm}")
+
       ser.close()
       client.disconnect()
 
-      if failures == len(addresses):
+      if failures == len(addresses) + 1:
           sys.exit(1)
 
 
