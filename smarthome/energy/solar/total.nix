@@ -34,11 +34,31 @@ let
   # in-place: `lifetimeSource` is the inverter's own lifetime register
   # (whole kWh, always live off Modbus - no restore involved at all) and
   # till_yesterday is *recomputed* from it (lifetime minus today's already-
-  # counted fraction) both at midnight and on every HA start, so a bad
-  # restore self-heals within seconds of startup instead of waiting up to a
-  # day for the next midnight snapshot. lifetimeSource is only ever read at
-  # those two moments - `today`'s finer 1-decimal resolution is still what
-  # drives the total through the rest of the day.
+  # counted fraction) both when the daily counter itself resets and on every
+  # HA start, so a bad restore self-heals within seconds of startup instead
+  # of waiting up to a day for the next reset. lifetimeSource is only ever
+  # read at those two moments - `today`'s finer 1-decimal resolution is
+  # still what drives the total through the rest of the day.
+  #
+  # The recompute used to be a "00:00:00" clock trigger with a flat 2-minute
+  # delay before applying (to give Modbus time to reconnect on the HA-start
+  # path). That delay applied to the midnight path too, and the daily
+  # counter doesn't reset at exactly local midnight (observed ~23:59:28, not
+  # 00:00:00) - so for up to ~2 minutes each night `today` had already reset
+  # to 0 while `till_yesterday` was still yesterday's value, and the
+  # reconstructed total (till_yesterday + today) dipped below what it had
+  # shown a moment earlier. The `availability` guard below only catches a
+  # dip larger than 5 units, so small dips (a night with well under 5 kWh of
+  # battery charge, say) sailed through as a real-looking negative reading -
+  # confirmed 2026-08-22 in the recorder's compiled hourly statistics (a
+  # 1.8 kWh drop in `sum` for battery/house/charge_total_energy in the hour
+  # spanning midnight), which the Energy dashboard rendered as a negative
+  # bar. Triggering off the daily counter's own transition to "0" instead of
+  # a clock removes the race outright: `today` is already 0 at trigger time,
+  # so `till_yesterday` is set to `lifetimeSource` with no gap to fall
+  # through, no delay needed, and no dependency on the reset happening at
+  # exactly midnight. The delay is now only applied on the HA-start path,
+  # where it's still needed for Modbus to come back up.
   mkReconstructedTotal = { name, dailySource, lifetimeSource, icon }:
     let
       tillYesterdayName = "${name}_till_yesterday";
@@ -62,15 +82,21 @@ let
       };
       snapshotAutomation = ha.automation "${name}.snapshot_till_yesterday" {
         triggers = [
-          (ha.trigger.at "00:00:00")
-          { platform = "homeassistant"; event = "start"; }
+          ((ha.trigger.state_to dailySource "0") // { id = "reset"; })
+          { platform = "homeassistant"; event = "start"; id = "ha_start"; }
         ];
         actions = [
           # Modbus/solis_modbus setup can take well over a minute after HA
           # starts (seen taking 60s+ in practice) - give it time to connect
-          # before trusting its readings. Harmless at the midnight trigger
-          # too, Modbus is already up by then.
-          (ha.action.delay "00:02:00")
+          # before trusting its readings. Not needed on the reset trigger:
+          # Modbus is already live there, and today has already read 0 by
+          # the time this fires, so delaying would only reopen the gap this
+          # trigger exists to close.
+          (ha.action.conditional
+            [ (ha.condition.template "{{ trigger.id == 'ha_start' }}") ]
+            [ (ha.action.delay "00:02:00") ]
+            [ ]
+          )
           (ha.action.conditional
             [ (ha.condition.template ''
                 {{ states('${lifetimeSource}') not in ['unknown', 'unavailable', 'none']
