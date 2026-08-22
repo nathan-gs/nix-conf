@@ -145,32 +145,87 @@ let
       };
     };
 
-  # `solar/total_energy_generation`, `battery/charge_total_energy` and
-  # `battery/discharge_total_energy` are the sums across inverters/battery
-  # banks (today just the one house plant) - these are the entities the
-  # Energy dashboard should point at. Add a second `solar/<name>/...` /
-  # `battery/<name>/...` pair here and extend the matching sum when a
-  # second inverter shows up.
+  # `solar/total_energy_generation` is the sum across inverters (today just
+  # the one house plant) - this is the entity the Energy dashboard should
+  # point at. Add a second `solar/<name>/...` pair here and extend the
+  # matching sum when a second inverter shows up.
+  #
+  # Battery charge/discharge totals do NOT use this reconstruction: the
+  # Solis registers they'd anchor to (system_house_pv_total_battery_charge/
+  # discharge_energy) are the inverter's own BMS accounting, and on
+  # 2026-08-22 that accounting showed lifetime discharge (6844 kWh) exceeding
+  # lifetime charge (4700 kWh) - impossible for a battery, so the registers
+  # themselves drift/misreport over time. This is the same failure mode
+  # that motivated the old %-SoC-delta trick (removed 2026-08-20, commit
+  # 39d0772) before that. Battery totals are integrated directly from
+  # `electricity_battery_power` instead - see batteryCharge/batteryDischarge
+  # below.
   solarGeneration = mkReconstructedTotal {
     name = "solar/house/total_energy_generation";
     dailySource = "sensor.system_house_pv_pv_today_energy_generation";
     lifetimeSource = "sensor.system_house_pv_pv_total_energy_generation";
     icon = "mdi:solar-panel";
   };
-  batteryCharge = mkReconstructedTotal {
-    name = "battery/house/charge_total_energy";
-    dailySource = "sensor.system_house_pv_today_battery_charge_energy";
-    lifetimeSource = "sensor.system_house_pv_total_battery_charge_energy";
+
+  perInverter = [ solarGeneration ];
+
+  # `electricity_battery_power` (smarthome/energy/legacy.nix) is signed:
+  # negative while charging, positive while discharging. Split it into two
+  # always-nonnegative power sensors and Riemann-integrate each separately
+  # (HA core `integration` platform) rather than trusting either the Solis
+  # BMS lifetime registers (see above) or a fixed Wh/% SoC-delta estimate.
+  # The Modbus poll is now 10s (was 5min), so the integral tracks real power
+  # swings closely - "trapezoidal" is accurate at that resolution. The
+  # `integration` sensor restores its accumulated state across HA restarts
+  # natively (RestoreEntity), unlike a bare trigger-based template sensor.
+  mkBatteryPowerSplit = { name, icon, isCharge }:
+    let
+      sign = if isCharge then "-1" else "1";
+    in {
+      name = "${name}_power";
+      unique_id = ha.genId "${name}_power";
+      icon = icon;
+      state = ''
+        {% set battery_power = states('sensor.electricity_battery_power') | float(0) %}
+        {% set power = ${sign} * battery_power %}
+        {{ [power, 0] | max }}
+      '';
+      device_class = "power";
+      unit_of_measurement = "W";
+      state_class = "measurement";
+    };
+
+  batteryChargingPower = mkBatteryPowerSplit {
+    name = "battery/house/charging";
     icon = "mdi:battery-plus";
+    isCharge = true;
   };
-  batteryDischarge = mkReconstructedTotal {
-    name = "battery/house/discharge_total_energy";
-    dailySource = "sensor.system_house_pv_today_battery_discharge_energy";
-    lifetimeSource = "sensor.system_house_pv_total_battery_discharge_energy";
+  batteryDischargingPower = mkBatteryPowerSplit {
+    name = "battery/house/discharging";
     icon = "mdi:battery-minus";
+    isCharge = false;
   };
 
-  perInverter = [ solarGeneration batteryCharge batteryDischarge ];
+  mkBatteryEnergyIntegral = { name, icon, source }: {
+    platform = "integration";
+    name = name;
+    unique_id = ha.genId name;
+    source = "sensor.${ha.genId source}";
+    method = "trapezoidal";
+    unit_time = "h";
+    unit_prefix = "k";
+  };
+
+  batteryHouseChargeTotal = mkBatteryEnergyIntegral {
+    name = "battery/house/charge_total_energy";
+    icon = "mdi:battery-plus";
+    source = batteryChargingPower.name;
+  };
+  batteryHouseDischargeTotal = mkBatteryEnergyIntegral {
+    name = "battery/house/discharge_total_energy";
+    icon = "mdi:battery-minus";
+    source = batteryDischargingPower.name;
+  };
 
   # Mirrors must propagate the source's availability too, not just its state -
   # `states(x) | float(0)` silently turns "unavailable" into 0, which would
@@ -195,14 +250,32 @@ let
     (mkAggregate {
       name = "battery/charge_total_energy";
       icon = "mdi:battery-plus";
-      source = batteryCharge.entityId;
+      source = "sensor.${ha.genId batteryHouseChargeTotal.name}";
     })
     (mkAggregate {
       name = "battery/discharge_total_energy";
       icon = "mdi:battery-minus";
-      source = batteryDischarge.entityId;
+      source = "sensor.${ha.genId batteryHouseDischargeTotal.name}";
     })
   ];
+
+  # hourly/daily/monthly utility_meter helpers per source, following the
+  # <base>_<cycle> naming used for gas/electricity in energy/legacy.nix.
+  mkUtilityMeters = { base, source }:
+    builtins.listToAttrs (map (cycle: {
+      name = "${base}_${cycle}";
+      value = { inherit source cycle; };
+    }) [ "hourly" "daily" "monthly" ]);
+
+  batteryUtilityMeters =
+    (mkUtilityMeters {
+      base = ha.genId batteryHouseChargeTotal.name;
+      source = "sensor.${ha.genId batteryHouseChargeTotal.name}";
+    })
+    // (mkUtilityMeters {
+      base = ha.genId batteryHouseDischargeTotal.name;
+      source = "sensor.${ha.genId batteryHouseDischargeTotal.name}";
+    });
 in
 {
   services.home-assistant.config = {
@@ -215,8 +288,14 @@ in
 
     template = [
       {
-        sensor = (map (x: x.sensorEntry) perInverter) ++ aggregates;
+        sensor = (map (x: x.sensorEntry) perInverter)
+          ++ [ batteryChargingPower batteryDischargingPower ]
+          ++ aggregates;
       }
     ];
+
+    sensor = [ batteryHouseChargeTotal batteryHouseDischargeTotal ];
+
+    utility_meter = batteryUtilityMeters;
   };
 }
