@@ -19,7 +19,9 @@
               {% set house_needs_cooling = indoor_temperature > 22 %}
               {% set house_needs_cooling_and_temp_outside_lower = false %}
               {% set bypass = states('binary_sensor.itho_wtw_bypass') | bool(false) %}
-              {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature %}
+              {% set tomorrow_max_temp = states('sensor.weather_tomorrow_temperature_max') | float(30) %}
+              {% set mild_day_ahead_and_house_still_cool = tomorrow_max_temp <= 25 and indoor_temperature < 23 %}
+              {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature and not mild_day_ahead_and_house_still_cool %}
                 {% set house_needs_cooling_and_temp_outside_lower = true %}
               {% endif %}
               {% set dewpoint_outdoor_smaller_then_indoor = ((states('sensor.outdoor_dewpoint') | float) +1) < (states('sensor.indoor_dewpoint') | float) %}
@@ -73,7 +75,9 @@
                 {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
                 {% set house_needs_cooling = indoor_temperature > 22 %}
                 {% set house_needs_cooling_and_temp_outside_lower = false %}
-                {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature %}
+                {% set tomorrow_max_temp = states('sensor.weather_tomorrow_temperature_max') | float(30) %}
+                {% set mild_day_ahead_and_house_still_cool = tomorrow_max_temp <= 25 and indoor_temperature < 23 %}
+                {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature and not mild_day_ahead_and_house_still_cool %}
                   {% set house_needs_cooling_and_temp_outside_lower = true %}
                 {% endif %}
                 {{ house_needs_cooling_and_temp_outside_lower }}
