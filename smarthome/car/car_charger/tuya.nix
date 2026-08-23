@@ -255,7 +255,7 @@
                   {% set override = states('input_select.car_charge_override') in ['on', 'battery drain', 'solar+grid boost', 'solar+grid 16a'] %}
                   {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
                   {% if solar_eligible and not override %}
-                    {{ battery >= 20 }}
+                    {{ battery >= 15 }}
                   {% else %}
                     true
                   {% endif %}
