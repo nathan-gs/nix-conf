@@ -137,3 +137,97 @@ GROUP BY production;
 ```
 
 Note: `start_ts + 7200` shifts UTC into CEST for local-day grouping (good enough; CET months will be off by 1 hour but doesn't affect daily aggregates meaningfully).
+
+## Re-run (2026-08-23): real quote for a 2nd US5000-1C + US3000C set
+
+A concrete quote came in for **another** US5000-1C + US3000C pair — i.e. doubling the existing pack
+([[battery_pack_expansion]] added the first US5000+US3000C in 2024-09/10), not the generic
+"4.5 kWh at €1000" placeholder the original analysis above was scoped around.
+
+### Quote
+
+| Line item        | Amount     |
+|-------------------|-----------|
+| Subtotaal          | €1,312.00 |
+| Bebat-bijdrage      | €196.52   |
+| Verzendkosten       | €75.00    |
+| 21% BTW             | €332.54   |
+| **Geschat totaal**  | **€1,916.06** |
+
+### Capacity added (Pylontech datasheets)
+
+| Module | Nominal | Usable (~95%) |
+|--------|---------|---------------|
+| US5000-1C | 4.80 kWh | 4.56 kWh |
+| US3000C   | 3.55 kWh | 3.37 kWh |
+| **Total**     | **8.35 kWh** | **7.93 kWh** |
+
+Cost per kWh: **€229.5/kWh nominal**, **€241.6/kWh usable** — pricier than the original €222/kWh
+scenario, and for ~1.85x the capacity.
+
+### Why the original cycle model doesn't scale linearly to this size
+
+The original methodology (hours/day at ≥98% SoC × avg production) is a proxy for "battery was full,
+so there was surplus" — it doesn't say *how much* surplus, which matters a lot once the addition is
+this much bigger than the original 4.5 kWh scenario. Queried actual grid export instead
+(`sensor.system_house_pv_total_energy_fed_into_grid`, metadata_id=1561, `sum` column), restricted to
+**since the current pack was installed** (2024-10-01 onward) so it reflects export that still
+happens *after* today's existing 7.93 kWh usable pack is already full — i.e. the real ceiling on what
+more capacity could capture:
+
+| Production tier | Days | Avg export (kWh) | Total export (kWh) |
+|------------------|------|-------------------|----------------------|
+| 25+ kWh          | 22   | 4.36              | 96.0                 |
+| 20–25 kWh        | 174  | 3.37              | 587.0                |
+| 15–20 kWh        | 131  | 2.20              | 288.0                |
+| 10–15 kWh        | 118  | 0.66              | 78.0                 |
+| <10 kWh          | 244  | 0.05              | 11.0                 |
+| **Total**        | 689  |                   | **1,060 kWh** over 692 days |
+
+→ **~559 kWh/yr** is currently exported *even with the existing pack already installed*. That's the
+hard upper bound on what a second US5000+US3000C set could realistically capture (charge-current
+headroom isn't the binding constraint here, since this export only happens once the existing battery
+is already full — the charge circuit was already busy filling it up to that point).
+
+### Economics
+
+- Net value per captured kWh: same €0.27/kWh as original (€0.30 avoided car charging − €0.03 lost injection)
+- Year-1: 559.5 × €0.27 = **€151/yr**
+- 10-yr average (grid +3%/yr, injection → €0, ≈€0.30/kWh): 559.5 × €0.30 = **€168/yr**
+- **Simple payback: ~11–13 years**
+- NPV at 3% discount over 10 years (annuity factor 8.53 × €168 = €1,433 vs €1,916.06 cost): **≈ −€480**
+
+### Verdict: **don't buy this specific set at this price**
+
+Doubling the pack runs straight into diminishing returns: the first expansion ([[battery_pack_expansion]])
+captured the easy clipping days, so a second identical set is chasing a shrinking tail of already-reduced
+export. Combined with a slightly higher €/kWh price than the original offer, this doesn't clear a
+reasonable bar — negative 10-yr NPV, payback nearly double the household's other financial planning horizon.
+A smaller/cheaper addition (or waiting for injection tariffs to go more negative, which raises the
+€0.27/kWh spread) would change the math; this exact quote, at this size, does not.
+
+### Additional SQL query used
+
+```sql
+-- Grid export by production tier, since current pack install (2024-10-01)
+WITH solar_daily AS (
+  SELECT DATE(FROM_UNIXTIME(start_ts + 7200)) AS d, MAX(state) AS kwh
+  FROM statistics WHERE metadata_id=191 AND start_ts >= UNIX_TIMESTAMP('2024-10-01') GROUP BY d
+),
+inj_daily AS (
+  SELECT DATE(FROM_UNIXTIME(start_ts + 7200)) AS d, (MAX(sum)-MIN(sum)) AS inj_kwh
+  FROM statistics WHERE metadata_id=1561 AND start_ts >= UNIX_TIMESTAMP('2024-10-01') GROUP BY d
+)
+SELECT
+  CASE WHEN sd.kwh >= 25 THEN '25+ kWh'
+       WHEN sd.kwh >= 20 THEN '20-25 kWh'
+       WHEN sd.kwh >= 15 THEN '15-20 kWh'
+       WHEN sd.kwh >= 10 THEN '10-15 kWh'
+       ELSE '<10 kWh' END AS production,
+  COUNT(*) AS days,
+  ROUND(AVG(inj.inj_kwh),2) AS avg_export_kwh,
+  ROUND(SUM(inj.inj_kwh),1) AS total_export_kwh
+FROM solar_daily sd JOIN inj_daily inj USING(d)
+GROUP BY production
+ORDER BY production DESC;
+```
