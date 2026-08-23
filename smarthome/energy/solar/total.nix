@@ -70,51 +70,77 @@ let
           }
         ];
       };
-      sensorEntry = {
-        inherit name icon;
-        unique_id = ha.genId name;
-        state = ''
-          {% set till_yesterday = states('${tillYesterdayEntityId}') | float(0) %}
-          {% set today = states('${dailySource}') | float(0) %}
-          {{ till_yesterday + today }}
-        '';
-        # Two self-referential guards, no external anchor needed:
-        #
-        # 1. `till_yesterday` itself must be seeded. It starts unknown on a
-        #    fresh entity (e.g. right after this config is deployed) and
-        #    only gets set at the next local midnight reset - an unseeded
-        #    baseline would otherwise silently read as 0 via `| float(0)`
-        #    below, publishing "just today" as if it were the whole total.
-        #
-        # 2. A total_increasing sensor must never decrease. Once
-        #    till_yesterday is seeded, compare the freshly computed value
-        #    against this sensor's *own* last reported state rather than an
-        #    external anchor like the inverter's lifetime register: that
-        #    register is whole-units-only, so any tolerance wide enough to
-        #    absorb its imprecision is also wide enough to let a small dip
-        #    through unnoticed - which is exactly how the -0.6 kWh dip
-        #    (2026-08-23) got past a >5 kWh tolerance. Comparing against the
-        #    sensor's own prior value has no such blind spot: any decrease
-        #    at all, at full precision, marks it unavailable instead of
-        #    publishing a bad number.
-        availability = ''
-          {% set till_yesterday_state = states('${tillYesterdayEntityId}') %}
-          {% if till_yesterday_state in ['unknown', 'unavailable', 'none'] %}
-            false
-          {% else %}
-            {% set previous = states('${entityId}') %}
-            {% set till_yesterday = till_yesterday_state | float(0) %}
-            {% set today = states('${dailySource}') | float(0) %}
-            {% if previous in ['unknown', 'unavailable', 'none'] %}
-              true
-            {% else %}
-              {{ (till_yesterday + today) >= (previous | float(0)) - 0.05 }}
-            {% endif %}
-          {% endif %}
-        '';
-        unit_of_measurement = "kWh";
-        device_class = "energy";
-        state_class = "total_increasing";
+      # A plain (non-trigger) template sensor tracks its `state` and
+      # `availability` templates as two independently-scheduled renders, each
+      # with its own auto-detected entity listeners. During a burst of
+      # state-changed events - e.g. the entity-registration storm on HA
+      # startup, while `till_yesterday` hasn't finished its RestoreSensor
+      # restore yet - the two renders can interleave: `availability` sees a
+      # stale (pre-restore) snapshot while `state` sees a newer one, or vice
+      # versa. That's exactly how the guard below got bypassed on
+      # 2026-08-23: `till_yesterday` sat at "unknown" for ~4 minutes across a
+      # restart, yet this sensor briefly published `today` alone (2.9/3.0
+      # kWh) as if it were the full total, because one render pass computed
+      # `state` against a `till_yesterday` value the `availability` render
+      # hadn't caught yet.
+      #
+      # A trigger-based sensor sidesteps this: all of an entity's templates
+      # (state, availability, ...) render together in one synchronous pass
+      # per trigger event, off the same live state snapshot, so `state` and
+      # `availability` can never observe `till_yesterday` at two different
+      # instants. Triggering on state changes of *either* input mirrors what
+      # the old auto-detected dependencies covered.
+      totalTemplate = {
+        trigger = ha.trigger.state [ dailySource tillYesterdayEntityId ];
+        sensor = [
+          {
+            inherit name icon;
+            unique_id = ha.genId name;
+            state = ''
+              {% set till_yesterday = states('${tillYesterdayEntityId}') | float(0) %}
+              {% set today = states('${dailySource}') | float(0) %}
+              {{ till_yesterday + today }}
+            '';
+            # Two self-referential guards, no external anchor needed:
+            #
+            # 1. `till_yesterday` itself must be seeded. It starts unknown on
+            #    a fresh entity (e.g. right after this config is deployed)
+            #    and only gets set at the next local midnight reset - an
+            #    unseeded baseline would otherwise silently read as 0 via
+            #    `| float(0)` below, publishing "just today" as if it were
+            #    the whole total.
+            #
+            # 2. A total_increasing sensor must never decrease. Once
+            #    till_yesterday is seeded, compare the freshly computed value
+            #    against this sensor's *own* last reported state rather than
+            #    an external anchor like the inverter's lifetime register:
+            #    that register is whole-units-only, so any tolerance wide
+            #    enough to absorb its imprecision is also wide enough to let
+            #    a small dip through unnoticed - which is exactly how the
+            #    -0.6 kWh dip (2026-08-23) got past a >5 kWh tolerance.
+            #    Comparing against the sensor's own prior value has no such
+            #    blind spot: any decrease at all, at full precision, marks it
+            #    unavailable instead of publishing a bad number.
+            availability = ''
+              {% set till_yesterday_state = states('${tillYesterdayEntityId}') %}
+              {% if till_yesterday_state in ['unknown', 'unavailable', 'none'] %}
+                false
+              {% else %}
+                {% set previous = states('${entityId}') %}
+                {% set till_yesterday = till_yesterday_state | float(0) %}
+                {% set today = states('${dailySource}') | float(0) %}
+                {% if previous in ['unknown', 'unavailable', 'none'] %}
+                  true
+                {% else %}
+                  {{ (till_yesterday + today) >= (previous | float(0)) - 0.05 }}
+                {% endif %}
+              {% endif %}
+            '';
+            unit_of_measurement = "kWh";
+            device_class = "energy";
+            state_class = "total_increasing";
+          }
+        ];
       };
     };
 
@@ -253,11 +279,10 @@ in
   services.home-assistant.config = {
     template = [
       {
-        sensor = (map (x: x.sensorEntry) perInverter)
-          ++ [ batteryChargingPower batteryDischargingPower ]
-          ++ aggregates;
+        sensor = [ batteryChargingPower batteryDischargingPower ] ++ aggregates;
       }
-    ] ++ (map (x: x.tillYesterdayTemplate) perInverter);
+    ] ++ (map (x: x.tillYesterdayTemplate) perInverter)
+      ++ (map (x: x.totalTemplate) perInverter);
 
     sensor = [ batteryHouseChargeTotal batteryHouseDischargeTotal ];
 
