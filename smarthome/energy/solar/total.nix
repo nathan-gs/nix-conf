@@ -44,7 +44,7 @@ let
   # avoids the truncation entirely, and dropping the automation/input_number
   # pair in favor of one self-contained trigger sensor removes the
   # mode:single failure mode along with it.
-  mkReconstructedTotal = { name, dailySource, lifetimeSource, icon }:
+  mkReconstructedTotal = { name, dailySource, icon }:
     let
       tillYesterdayName = "${name}_till_yesterday";
       entityId = "sensor.${ha.genId name}";
@@ -78,21 +78,38 @@ let
           {% set today = states('${dailySource}') | float(0) %}
           {{ till_yesterday + today }}
         '';
-        # `till_yesterday` starts unknown on a fresh entity (e.g. right after
-        # this config is deployed) and only gets seeded at the next local
-        # midnight reset - cross-check against `lifetimeSource` (always a
-        # live Modbus read, no restore step to fail) so a not-yet-seeded or
-        # otherwise wrong total goes unavailable instead of publishing a
-        # too-low number for a `total_increasing` sensor to "fix" later by
-        # inventing a huge fake jump.
+        # Two self-referential guards, no external anchor needed:
+        #
+        # 1. `till_yesterday` itself must be seeded. It starts unknown on a
+        #    fresh entity (e.g. right after this config is deployed) and
+        #    only gets set at the next local midnight reset - an unseeded
+        #    baseline would otherwise silently read as 0 via `| float(0)`
+        #    below, publishing "just today" as if it were the whole total.
+        #
+        # 2. A total_increasing sensor must never decrease. Once
+        #    till_yesterday is seeded, compare the freshly computed value
+        #    against this sensor's *own* last reported state rather than an
+        #    external anchor like the inverter's lifetime register: that
+        #    register is whole-units-only, so any tolerance wide enough to
+        #    absorb its imprecision is also wide enough to let a small dip
+        #    through unnoticed - which is exactly how the -0.6 kWh dip
+        #    (2026-08-23) got past a >5 kWh tolerance. Comparing against the
+        #    sensor's own prior value has no such blind spot: any decrease
+        #    at all, at full precision, marks it unavailable instead of
+        #    publishing a bad number.
         availability = ''
-          {% set lifetime = states('${lifetimeSource}') %}
-          {% if lifetime in ['unknown', 'unavailable', 'none'] %}
+          {% set till_yesterday_state = states('${tillYesterdayEntityId}') %}
+          {% if till_yesterday_state in ['unknown', 'unavailable', 'none'] %}
             false
           {% else %}
-            {% set till_yesterday = states('${tillYesterdayEntityId}') | float(0) %}
+            {% set previous = states('${entityId}') %}
+            {% set till_yesterday = till_yesterday_state | float(0) %}
             {% set today = states('${dailySource}') | float(0) %}
-            {{ ((till_yesterday + today) - (lifetime | float(0))) | abs < 5 }}
+            {% if previous in ['unknown', 'unavailable', 'none'] %}
+              true
+            {% else %}
+              {{ (till_yesterday + today) >= (previous | float(0)) - 0.05 }}
+            {% endif %}
           {% endif %}
         '';
         unit_of_measurement = "kWh";
@@ -119,7 +136,6 @@ let
   solarGeneration = mkReconstructedTotal {
     name = "solar/house/total_energy_generation";
     dailySource = "sensor.system_house_pv_pv_today_energy_generation";
-    lifetimeSource = "sensor.system_house_pv_pv_total_energy_generation";
     icon = "mdi:solar-panel";
   };
 
