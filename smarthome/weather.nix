@@ -33,10 +33,14 @@
         ];
       }
       {
-        # Tomorrow's forecasted daily high, refreshed nightly. Consumed by the
-        # WTW ventilation logic to hold off the bypass-driven "high" stand on
-        # mild days where pre-cooling the house isn't needed.
-        triggers = [ { trigger = "time"; at = "21:15:00"; } ];
+        # Tomorrow's forecasted daily high, refreshed hourly (and on HA
+        # startup). Consumed by the WTW ventilation logic to hold off the
+        # bypass-driven "high" stand on mild days where pre-cooling the house
+        # isn't needed.
+        triggers = [
+          { trigger = "time_pattern"; hours = "/1"; }
+          { trigger = "homeassistant"; event = "start"; }
+        ];
         actions = [
           {
             action = "weather.get_forecasts";
