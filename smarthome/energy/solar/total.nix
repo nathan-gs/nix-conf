@@ -5,107 +5,69 @@ let
   # `till_yesterday` baseline - rather than reading the inverter's own
   # lifetime register directly, which is whole-units-only and once had a
   # same-day continuity gap when the solis_modbus entity was recreated
-  # during the cloud retirement. The lifetime register is still used, just
-  # only as a periodic anchor for `till_yesterday` (see below) rather than
-  # as the live-updating total itself.
+  # during the cloud retirement.
   #
   # Pattern carried over from the retired solis_local.nix .cgi scrape
   # (solar_delivery_total / _till_yesterday): a helper holds the running
   # total as of yesterday, and the running total itself is
-  # till_yesterday + today. The .cgi sensor briefly re-reported the previous
-  # day's total for hours after midnight, so this used to freeze 23:00-03:00
-  # as a precaution - but the Modbus daily counter resets cleanly to 0 at
-  # local midnight (verified across multiple nights, no stale re-reporting),
-  # and the freeze itself was the bug: it held the total flat all night and
-  # then jumped by the whole overnight discharge/charge in one step at 03:00,
-  # which read as "sensor stopped updating, then caught up".
+  # till_yesterday + today.
   #
-  # till_yesterday is an input_number, not a trigger-based template sensor -
-  # trigger-based template sensors don't restore their state across HA
-  # restarts (there's no "restore" option in this HA version's template
-  # schema; setting one makes the whole template block fail validation).
+  # till_yesterday is a trigger-based template sensor that accumulates on its
+  # own previous state each time the daily counter resets - triggering off
+  # the counter's own transition to "0" (not a "00:00:00" clock trigger)
+  # means `today` is already 0 at trigger time, so there's no gap for the
+  # reconstructed total to dip through and no dependency on the reset
+  # happening at exactly midnight (observed ~23:59:28 in practice, not
+  # 00:00:00 - a fixed clock trigger raced this by up to ~2 minutes and
+  # produced a real, if small, negative-looking dip; confirmed 2026-08-22 in
+  # the recorder's compiled hourly statistics).
   #
-  # input_number's own restore is not reliable enough to trust on its own -
-  # after a crash-loop restart (2026-08-21, electrolux_status integration)
-  # it came back pinned at its `initial` of 0 instead of its last value, and
-  # sat there for 45+ minutes (previously it self-healed within ~30 min of a
-  # restart; this time it didn't), dragging the whole reconstructed total
-  # down to just that day's fraction. So till_yesterday is never trusted
-  # in-place: `lifetimeSource` is the inverter's own lifetime register
-  # (whole kWh, always live off Modbus - no restore involved at all) and
-  # till_yesterday is *recomputed* from it (lifetime minus today's already-
-  # counted fraction) both when the daily counter itself resets and on every
-  # HA start, so a bad restore self-heals within seconds of startup instead
-  # of waiting up to a day for the next reset. lifetimeSource is only ever
-  # read at those two moments - `today`'s finer 1-decimal resolution is
-  # still what drives the total through the rest of the day.
-  #
-  # The recompute used to be a "00:00:00" clock trigger with a flat 2-minute
-  # delay before applying (to give Modbus time to reconnect on the HA-start
-  # path). That delay applied to the midnight path too, and the daily
-  # counter doesn't reset at exactly local midnight (observed ~23:59:28, not
-  # 00:00:00) - so for up to ~2 minutes each night `today` had already reset
-  # to 0 while `till_yesterday` was still yesterday's value, and the
-  # reconstructed total (till_yesterday + today) dipped below what it had
-  # shown a moment earlier. The `availability` guard below only catches a
-  # dip larger than 5 units, so small dips (a night with well under 5 kWh of
-  # battery charge, say) sailed through as a real-looking negative reading -
-  # confirmed 2026-08-22 in the recorder's compiled hourly statistics (a
-  # 1.8 kWh drop in `sum` for battery/house/charge_total_energy in the hour
-  # spanning midnight), which the Energy dashboard rendered as a negative
-  # bar. Triggering off the daily counter's own transition to "0" instead of
-  # a clock removes the race outright: `today` is already 0 at trigger time,
-  # so `till_yesterday` is set to `lifetimeSource` with no gap to fall
-  # through, no delay needed, and no dependency on the reset happening at
-  # exactly midnight. The delay is now only applied on the HA-start path,
-  # where it's still needed for Modbus to come back up.
+  # This used to be an input_number, recomputed from `lifetimeSource` (the
+  # inverter's own lifetime register) rather than self-accumulating, because
+  # input_number's restore across HA restarts once proved unreliable
+  # (2026-08-21: came back pinned at its `initial` of 0 after a crash-loop
+  # restart) and trigger-based template sensors were believed not to restore
+  # their state at all. Neither belief holds up: HA's template integration
+  # (`TriggerSensorEntity` / `AbstractTemplateSensor`, checked against the
+  # 2026.8.2 source) extends `RestoreSensor` and restores its last value on
+  # startup same as any other sensor - so the input_number/automation
+  # indirection wasn't needed. Worse, recomputing from `lifetimeSource` on
+  # every reset silently truncated up to ~1 kWh of precision each night
+  # (the register is whole-units-only, and only rolls over once a full kWh
+  # has accumulated - it routinely lags the true fractional total at exactly
+  # the moment `today` resets to 0), and on the one night the reset
+  # automation didn't fire at all (mode: single, silently no-opped), only
+  # a 2-minute-delayed HA-restart fallback caught it hours later, publishing
+  # a real -0.6 kWh dip in the Energy dashboard's compiled statistics
+  # (2026-08-23). Self-accumulating from the daily counter's own precise
+  # value at reset time (`trigger.from_state.state`, 1-decimal resolution)
+  # avoids the truncation entirely, and dropping the automation/input_number
+  # pair in favor of one self-contained trigger sensor removes the
+  # mode:single failure mode along with it.
   mkReconstructedTotal = { name, dailySource, lifetimeSource, icon }:
     let
       tillYesterdayName = "${name}_till_yesterday";
       entityId = "sensor.${ha.genId name}";
-      tillYesterdayObjectId = ha.genId tillYesterdayName;
-      tillYesterdayEntityId = "input_number.${tillYesterdayObjectId}";
-      tillYesterdayFromLifetime = ''
-        {{ (states('${lifetimeSource}') | float(0)) - (states('${dailySource}') | float(0)) }}
-      '';
+      tillYesterdayEntityId = "sensor.${ha.genId tillYesterdayName}";
     in {
-      inherit entityId tillYesterdayObjectId;
-      tillYesterdayHelper = {
-        name = tillYesterdayName;
-        min = 0;
-        max = 1000000;
-        step = 0.1;
-        mode = "box";
-        unit_of_measurement = "kWh";
-        icon = icon;
-        initial = 0;
-      };
-      snapshotAutomation = ha.automation "${name}.snapshot_till_yesterday" {
-        triggers = [
-          ((ha.trigger.state_to dailySource "0") // { id = "reset"; })
-          { platform = "homeassistant"; event = "start"; id = "ha_start"; }
-        ];
-        actions = [
-          # Modbus/solis_modbus setup can take well over a minute after HA
-          # starts (seen taking 60s+ in practice) - give it time to connect
-          # before trusting its readings. Not needed on the reset trigger:
-          # Modbus is already live there, and today has already read 0 by
-          # the time this fires, so delaying would only reopen the gap this
-          # trigger exists to close.
-          (ha.action.conditional
-            [ (ha.condition.template "{{ trigger.id == 'ha_start' }}") ]
-            [ (ha.action.delay "00:02:00") ]
-            [ ]
-          )
-          (ha.action.conditional
-            [ (ha.condition.template ''
-                {{ states('${lifetimeSource}') not in ['unknown', 'unavailable', 'none']
-                   and states('${dailySource}') not in ['unknown', 'unavailable', 'none'] }}
-              '')
-            ]
-            [ (ha.action.set_value tillYesterdayEntityId tillYesterdayFromLifetime) ]
-            [ ]
-          )
+      inherit entityId;
+      tillYesterdayTemplate = {
+        trigger = ha.trigger.state_to dailySource "0";
+        sensor = [
+          {
+            name = tillYesterdayName;
+            unique_id = ha.genId tillYesterdayName;
+            icon = icon;
+            state = ''
+              {% set previous = states('${tillYesterdayEntityId}') | float(0) %}
+              {% set from_state = trigger.from_state.state if trigger.from_state else 'unknown' %}
+              {% set yesterday = from_state | float(0) if from_state not in ['unknown', 'unavailable', 'none'] else 0 %}
+              {{ previous + yesterday }}
+            '';
+            unit_of_measurement = "kWh";
+            device_class = "energy";
+            state_class = "total_increasing";
+          }
         ];
       };
       sensorEntry = {
@@ -116,19 +78,13 @@ let
           {% set today = states('${dailySource}') | float(0) %}
           {{ till_yesterday + today }}
         '';
-        # A bad till_yesterday restore isn't just "unavailable" - it comes
-        # back as a plausible-looking number (its `initial` of 0), so a
-        # not-unknown/unavailable check on the inputs alone doesn't catch it
-        # (2026-08-21: this happened twice, each time producing a huge false
-        # total_increasing "reset" followed by an equally huge false
-        # "recovery" once corrected - which the Energy dashboard statistics
-        # read as genuine energy and had to be corrected by hand). Cross-check
-        # instead against `lifetimeSource`, which has no restore step to fail
-        # (always a live Modbus read) and tracks the true total to within
-        # ~1 kWh at all times - if the reconstructed total disagrees with it
-        # by more than a real day's worth of activity ever could, something
-        # upstream is wrong and this entity should go unavailable rather than
-        # publish a number and let a `total_increasing` sensor "fix" it later.
+        # `till_yesterday` starts unknown on a fresh entity (e.g. right after
+        # this config is deployed) and only gets seeded at the next local
+        # midnight reset - cross-check against `lifetimeSource` (always a
+        # live Modbus read, no restore step to fail) so a not-yet-seeded or
+        # otherwise wrong total goes unavailable instead of publishing a
+        # too-low number for a `total_increasing` sensor to "fix" later by
+        # inventing a huge fake jump.
         availability = ''
           {% set lifetime = states('${lifetimeSource}') %}
           {% if lifetime in ['unknown', 'unavailable', 'none'] %}
@@ -279,20 +235,13 @@ let
 in
 {
   services.home-assistant.config = {
-    input_number = builtins.listToAttrs (map (x: {
-      name = x.tillYesterdayObjectId;
-      value = x.tillYesterdayHelper;
-    }) perInverter);
-
-    automation = map (x: x.snapshotAutomation) perInverter;
-
     template = [
       {
         sensor = (map (x: x.sensorEntry) perInverter)
           ++ [ batteryChargingPower batteryDischargingPower ]
           ++ aggregates;
       }
-    ];
+    ] ++ (map (x: x.tillYesterdayTemplate) perInverter);
 
     sensor = [ batteryHouseChargeTotal batteryHouseDischargeTotal ];
 
