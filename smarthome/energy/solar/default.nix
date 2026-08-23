@@ -4,9 +4,9 @@
 
   imports = [
     ./battery.nix
+    ./battery_energy.nix
     ./inverter.nix
     ./pylontech.nix
-    ./total.nix
   ];
 
   services.home-assistant.config = {
