@@ -162,6 +162,31 @@ views:
                         name: Charge Now
                         show_state: false
                         icon: mdi:battery
+                      - show_name: true
+                        show_icon: true
+                        type: button
+                        tap_action:
+                          action: call-service
+                          service: automation.trigger
+                          target:
+                            entity_id: automation.solar_battery_pylontech_rebalance_run
+                        icon_height: 15px
+                        name: Rebalance pack
+                        show_state: true
+                        entity: input_boolean.solar_battery_rebalance_active
+                        icon: mdi:battery-sync
+                      - show_name: true
+                        show_icon: true
+                        type: button
+                        tap_action:
+                          action: call-service
+                          service: automation.trigger
+                          target:
+                            entity_id: automation.solar_battery_pylontech_rebalance_cancel
+                        icon_height: 15px
+                        name: Cancel rebalance
+                        show_state: false
+                        icon: mdi:battery-remove
                   - type: entities
                     entities:
                       - entity: sensor.system_house_pv_pv_power_1

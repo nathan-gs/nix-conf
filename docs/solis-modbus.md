@@ -4,7 +4,7 @@
 **Plant:** RHI-5K-48ES-5G + PYLON_LV (US5000 + US3000C) + S3-WIFI-ST on COM  
 **Goal:** live battery/PV/house at 2–15 s, and steering, without SolisCloud.
 
-Related: [[solis-steering]], [[ev-battery-peak-coordination]].
+Related: [[solis-steering]], [[ev-battery-peak-coordination]], [[battery-grid-charge-to-100]].
 
 ---
 
@@ -349,6 +349,8 @@ Steering that *does* help is **Solis Modbus**, not Pylontech:
 | 43110 bit 5 | Allow grid charge (needed for a cheap-rate top-up) |
 | 43141–43169 | TOU charge window to *force* a periodic 100 % (Pylontech likes a full charge ~monthly to recalibrate SoC) |
 | 33143 | BMS charge current limit — watch this taper; do not fight it |
+
+Step-by-step HA recipe (entities, current, restore): [[battery-grid-charge-to-100]].
 
 Use a Pylontech console later to *see* cell max / imbalance if 100 % never sticks. Do not use it as a second charger.
 

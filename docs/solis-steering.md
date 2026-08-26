@@ -222,7 +222,7 @@ Stubs present but **not implemented** (or broken on B0218):
 | Forcecharge SOC max **20%** | `solis-control` MQTT validation + HA discovery | **Self-imposed**; can be raised to match UI if desired |
 | Overdischarge max **40%** | Solis UI | Official limit on CID 158 |
 
-Raising force-charge toward 39% only widens the **heal / floor** band; it does **not** fill the battery to 90% from the grid. Full night fill needs **TOU + Allow Grid Charging**.
+Raising force-charge toward 39% only widens the **heal / floor** band; it does **not** fill the battery to 90% from the grid. Full night fill needs **TOU + Allow Grid Charging**. Plant recipe (HA entities, capaciteitstarief, restore): [[battery-grid-charge-to-100]].
 
 ---
 

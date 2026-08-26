@@ -297,10 +297,24 @@ let
       above = threshold;
     };
 
+    above_for = entity: threshold: for: {
+      platform = "numeric_state";
+      entity_id = entity;
+      above = threshold;
+      for = for;
+    };
+
     below = entity: threshold: {
       platform = "numeric_state";
       entity_id = entity;
       below = threshold;
+    };
+
+    below_for = entity: threshold: for: {
+      platform = "numeric_state";
+      entity_id = entity;
+      below = threshold;
+      for = for;
     };
 
     tag = id: {

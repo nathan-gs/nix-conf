@@ -219,7 +219,11 @@
                  Phase 2 (battery <= 20%) is handled by solar_eligible naturally allowing charging
                  when there is enough solar production. #}
               {% set battery_drain_force = override == 'battery drain' and battery > 20 %}
-              {{ override != 'off' and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost or battery_drain_force) }}
+              {# House-pack rebalance (grid TOU fill to 100 %) owns the 15-min peak
+                 budget — do not let the car import at the same time. Cancel
+                 automation.solar_battery_pylontech_rebalance_cancel to unblock. #}
+              {% set rebalance = is_state('input_boolean.solar_battery_rebalance_active', 'on') %}
+              {{ override != 'off' and not rebalance and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost or battery_drain_force) }}
             '';
           }
         ];
