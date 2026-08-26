@@ -1,4 +1,131 @@
 { config, pkgs, lib, ha, ... }:
+let
+  # Signed battery power: negative while charging, positive while
+  # discharging. Do not use inverter DC power 33149
+  # (`system_house_pv_battery_power_net`) — that shunt sits ~70 W toward
+  # discharge at idle (overnight ~130 W vs ~55 W actual), which is why
+  # Solis lifetime charge/discharge kWh and the Riemann totals ran at
+  # ~130% discharge/charge. BMS current (33142, CAN from the Pylontech
+  # stack) matches the pack console; pair with BMS voltage and the
+  # direction bit (33135).
+  electricityBatteryPower = {
+    name = "electricity_battery_power";
+    unique_id = "electricity_battery_power";
+    state = ''
+      {% set current = states('sensor.system_house_pv_battery_current_bms') | float(0) | abs %}
+      {% set voltage = states('sensor.system_house_pv_battery_voltage_bms') | float(0) %}
+      {% set discharging = states('sensor.system_house_pv_battery_current_direction') | int(1) == 1 %}
+      {% set power = (current * voltage) | round(0) %}
+      {{ power if discharging else -power }}
+    '';
+    availability = ''
+      {{ states('sensor.system_house_pv_battery_current_bms') not in ['unknown', 'unavailable', 'none']
+         and states('sensor.system_house_pv_battery_voltage_bms') not in ['unknown', 'unavailable', 'none']
+         and states('sensor.system_house_pv_battery_current_direction') not in ['unknown', 'unavailable', 'none'] }}
+    '';
+    unit_of_measurement = "W";
+    attributes.workaround = ''{{ now().minute }}'';
+    state_class = "measurement";
+  };
+
+  # Split the signed power into two always-nonnegative sensors and
+  # Riemann-integrate each separately (HA core `integration` platform)
+  # rather than trusting the Solis lifetime charge/discharge registers
+  # (33161–33168), which accumulate from the biased 33149 shunt. The
+  # Modbus poll is 10s, so trapezoidal tracks real power swings. The
+  # `integration` sensor restores its accumulated state across HA
+  # restarts natively (RestoreEntity).
+  mkBatteryPowerSplit = { name, icon, isCharge }:
+    let
+      sign = if isCharge then "-1" else "1";
+    in {
+      name = "${name}_power";
+      unique_id = ha.genId "${name}_power";
+      icon = icon;
+      state = ''
+        {% set battery_power = states('sensor.electricity_battery_power') | float(0) %}
+        {% set power = ${sign} * battery_power %}
+        {{ [power, 0] | max }}
+      '';
+      device_class = "power";
+      unit_of_measurement = "W";
+      state_class = "measurement";
+    };
+
+  batteryChargingPower = mkBatteryPowerSplit {
+    name = "battery/house/charging";
+    icon = "mdi:battery-plus";
+    isCharge = true;
+  };
+  batteryDischargingPower = mkBatteryPowerSplit {
+    name = "battery/house/discharging";
+    icon = "mdi:battery-minus";
+    isCharge = false;
+  };
+
+  mkBatteryEnergyIntegral = { name, icon, source }: {
+    platform = "integration";
+    name = name;
+    unique_id = ha.genId name;
+    source = "sensor.${ha.genId source}";
+    method = "trapezoidal";
+    unit_time = "h";
+    unit_prefix = "k";
+  };
+
+  batteryHouseChargeTotal = mkBatteryEnergyIntegral {
+    name = "battery/house/charge_total_energy";
+    icon = "mdi:battery-plus";
+    source = batteryChargingPower.name;
+  };
+  batteryHouseDischargeTotal = mkBatteryEnergyIntegral {
+    name = "battery/house/discharge_total_energy";
+    icon = "mdi:battery-minus";
+    source = batteryDischargingPower.name;
+  };
+
+  # Mirrors must propagate the source's availability too, not just its
+  # state — `states(x) | float(0)` silently turns "unavailable" into 0,
+  # which would publish a false reset one hop downstream.
+  mkAggregate = { name, icon, source }: {
+    inherit name icon;
+    unique_id = ha.genId name;
+    state = "{{ states('${source}') | float(0) }}";
+    availability = "{{ states('${source}') not in ['unknown', 'unavailable', 'none'] }}";
+    unit_of_measurement = "kWh";
+    device_class = "energy";
+    state_class = "total_increasing";
+  };
+
+  aggregates = [
+    (mkAggregate {
+      name = "battery/charge_total_energy";
+      icon = "mdi:battery-plus";
+      source = "sensor.${ha.genId batteryHouseChargeTotal.name}";
+    })
+    (mkAggregate {
+      name = "battery/discharge_total_energy";
+      icon = "mdi:battery-minus";
+      source = "sensor.${ha.genId batteryHouseDischargeTotal.name}";
+    })
+  ];
+
+  mkUtilityMeters = { base, source }:
+    builtins.listToAttrs (map (cycle: {
+      name = "${base}_${cycle}";
+      value = { inherit source cycle; };
+    }) [ "hourly" "daily" "monthly" ]);
+
+  batteryUtilityMeters =
+    (mkUtilityMeters {
+      base = ha.genId batteryHouseChargeTotal.name;
+      source = "sensor.${ha.genId batteryHouseChargeTotal.name}";
+    })
+    // (mkUtilityMeters {
+      base = ha.genId batteryHouseDischargeTotal.name;
+      source = "sensor.${ha.genId batteryHouseDischargeTotal.name}";
+    });
+in
 {
 
   services.home-assistant.config = {
@@ -165,7 +292,14 @@
           }
         ];
       }
+      {
+        sensor = [ electricityBatteryPower batteryChargingPower batteryDischargingPower ] ++ aggregates;
+      }
     ];
+
+    sensor = [ batteryHouseChargeTotal batteryHouseDischargeTotal ];
+
+    utility_meter = batteryUtilityMeters;
 
     input_boolean = {
       solar_battery_charge_offpeak = {

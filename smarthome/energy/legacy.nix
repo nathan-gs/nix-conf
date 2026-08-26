@@ -261,19 +261,6 @@ let
             attributes.workaround = ''{{ now().minute }}'';
             state_class = "measurement";
           }
-          {
-            # `system_house_pv_battery_power` (Solis register 33149/33150) is an
-            # unsigned magnitude - positive whether charging or discharging.
-            # `_battery_power_net` folds in the charge/discharge direction
-            # register (33135) to give a signed value: negative while
-            # charging, positive while discharging.
-            name = "electricity_battery_power";
-            unique_id = "electricity_battery_power";
-            state = "{{ states('sensor.system_house_pv_battery_power_net') | float(0) }}";
-            unit_of_measurement = "W";
-            attributes.workaround = ''{{ now().minute }}'';
-            state_class = "measurement";
-          }
         ];
       }
       

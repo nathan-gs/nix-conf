@@ -4,7 +4,6 @@
 
   imports = [
     ./battery.nix
-    ./battery_energy.nix
     ./inverter.nix
     ./pylontech.nix
   ];
