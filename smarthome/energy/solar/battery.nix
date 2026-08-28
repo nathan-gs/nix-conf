@@ -308,49 +308,9 @@ in
       };
     };
 
-    
-
-    mqtt.sensor = [
-      {
-        name = "battery_percentage_change";
-        unique_id = "battery_percentage_change";
-        state_topic = "solar/battery/change";
-        value_template = "{{ value_json.value }}";
-        unit_of_measurement = "%";
-        json_attributes_topic = "solar/battery/change";
-        json_attributes_template = "{{ value_json | tojson }}";
-        state_class = "measurement";
-      }
-    ];
 
     "automation manual" = [
-      {
-        id = "battery_change";
-        alias = "battery_change";
-        trigger = [
-          {
-            platform = "state";
-            entity_id = "sensor.system_house_pv_battery_soc";
-          }
-        ];
-        condition = ''
-          {{ not (is_state('sensor.system_house_pv_battery_soc', 'unknown') or is_state('sensor.system_house_pv_battery_soc', 'unavailable') or trigger.from_state.state | int(0) == 0) }}
-        '';
-        action = [
-          (
-            ha.action.mqtt_publish "solar/battery/change" 
-              ''
-                {
-                  "from":{{ trigger.from_state.state | int(0) }},
-                  "to": {{ trigger.to_state.state | int(0) }},
-                  "value": {{ (trigger.to_state.state | int(0)) - (trigger.from_state.state | int(0)) }}
-                }
-              ''
-              true
-          )          
-        ];
-        mode = "single";
-      }
+      
       (ha.automation "solar/battery/charge" {
         triggers = [(ha.trigger.at "05:00:00")];
         conditions = [
