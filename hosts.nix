@@ -5,7 +5,7 @@
   # Hosts
   networking.hosts = {
     "192.168.1.126" = [ "solis-s3wifi" ];
-    "192.168.1.2" = [ "nhtpc.wg" ];
+    "10.73.221.1" = [ "nhtpc.wg" ];
     # nnas is now reached over nhtpc's own WG server instead of the
     # fritzbox. Only apply this on nhtpc *after* nnas has switched and its
     # peer shows a handshake (`sudo wg show wg0` on nhtpc) — deploying this
