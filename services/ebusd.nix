@@ -30,6 +30,16 @@ let
   # them over HTTPS. Local files remove the runtime dependency on
   # ebus.github.io being reachable and stay pinned to what this exact
   # boiler/controller actually expose.
+  #
+  # One deliberate deviation from upstream: PumpPower (bai, b509/0d7300,
+  # "current" counterpart of PumpPowerDesired) ships with no unit/value map
+  # upstream, which makes mqtt-hassio.cfg assign device_class=power from the
+  # name alone and HA warn "native unit None is not valid for device class
+  # power". Given PumpPowerDesired (same message family) uses
+  # 0=auto;1=53;2=60;3=70;4=85;5=100 %, PumpPower was annotated to match —
+  # plausible, not vendor-confirmed (only ever observed reading 0, i.e. idle,
+  # same as PumpPowerDesired's auto). Revisit if a heating cycle shows a
+  # PumpPower value outside 0-5.
   ebusdConfigPath = ./ebusd-csv;
   haFilterName = lib.concatStringsSep "|" [
     # boiler (bai) — live operating data
