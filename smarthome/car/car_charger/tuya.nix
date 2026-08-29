@@ -80,58 +80,61 @@
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set boost = boost or (battery_drain and battery > 20) %}
               {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
+              {# The manual current override is a MAX, not a fixed value — headroom/peak-shaving
+                 below can still scale the actual current down under it. A hard fixed value ignored
+                 the capacity tariff and grid headroom entirely, which let the charger sit at a
+                 current the house couldn't sustain. #}
               {% set override = states('input_select.system_car_charger_current_override_a') | int(0) %}
               {% if override > 0 %}
-                {% set target_a = override | int %}
+                {% set cap = min(cap, override) %}
+              {% endif %}
+              {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
+              {% set capacity_kw = max(monthly_peak, 2.5) %}
+              {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
+              {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
+                 grid import, so we charge hard while little of the quarter is committed, then drop
+                 to 6A for the tail so the average lands under the cap.
+
+                 `electricity_delivery_power_15m` (banked) is the average ALREADY committed this
+                 quarter; it only climbs (and resets each quarter), so it is the stable trigger.
+                 (`electricity_delivery_power_15m_estimated` is the assume-current-power projection —
+                 it drops the instant we throttle, so using it as the trigger would chatter; it is
+                 what the battery watches instead.)
+
+                 We drop to 6A once banked nears `capacity_near` — the same level at which the
+                 battery's own peak branch arms (solar/battery/overdischargesoc_target) — so the car
+                 shaves the tail and the battery stays quiet, and it never drained to 10% as on
+                 2026-07-03. See docs/ev-battery-peak-coordination.md. #}
+              {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {% if banked >= (capacity_near) %}
+                {% set target_a = 6 %}
               {% else %}
-                {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
-                {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
-                {% set capacity_kw = max(monthly_peak, 2.5) %}
-                {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
-                {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
-                   grid import, so we charge hard while little of the quarter is committed, then drop
-                   to 6A for the tail so the average lands under the cap.
-
-                   `electricity_delivery_power_15m` (banked) is the average ALREADY committed this
-                   quarter; it only climbs (and resets each quarter), so it is the stable trigger.
-                   (`electricity_delivery_power_15m_estimated` is the assume-current-power projection —
-                   it drops the instant we throttle, so using it as the trigger would chatter; it is
-                   what the battery watches instead.)
-
-                   We drop to 6A once banked nears `capacity_near` — the same level at which the
-                   battery's own peak branch arms (solar/battery/overdischargesoc_target) — so the car
-                   shaves the tail and the battery stays quiet, and it never drained to 10% as on
-                   2026-07-03. See docs/ev-battery-peak-coordination.md. #}
-                {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
-                {% if banked >= (capacity_near) %}
-                  {% set target_a = 6 %}
+                {# front of the quarter: charge at whatever the cap allows, computed from headroom
+                   (scales with monthly_peak) rather than a fixed current. #}
+                {% set estimated_15m = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+                {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
+                {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) %}
+                {% set target_a = (headroom_kw * 1000 / 230) | round(0) | int %}
+              {% endif %}
+              {% if is_state('binary_sensor.system_car_charger_solar_boost', 'on') and not boost %}
+                {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
+                {% if battery_mode %}
+                  {# Reserve 500W for the home battery; cap car charging at 8A. #}
+                  {% set available = solar - 500 %}
+                  {% set solar_a = [0, (available / 230) | round(0) | int] | max %}
+                  {% set target_a = min(8, solar_a) %}
                 {% else %}
-                  {# front of the quarter: charge at whatever the cap allows, computed from headroom
-                     (scales with monthly_peak) rather than a fixed current. #}
-                  {% set estimated_15m = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-                  {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
-                  {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) %}
-                  {% set target_a = (headroom_kw * 1000 / 230) | round(0) | int %}
-                {% endif %}
-                {% if is_state('binary_sensor.system_car_charger_solar_boost', 'on') and not boost %}
-                  {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
-                  {% if battery_mode %}
-                    {# Reserve 500W for the home battery; cap car charging at 8A. #}
-                    {% set available = solar - 500 %}
-                    {% set solar_a = [0, (available / 230) | round(0) | int] | max %}
-                    {% set target_a = min(8, solar_a) %}
-                  {% else %}
-                    {% set solar_a = (solar / 230) | round(0) | int %}
-                    {% set target_a = min(16, solar_a) %}
-                    {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
-                    {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
-                    {% if battery > 50 and battery <= 80 and remaining_energy > 5 %}
-                      {% set target_a = 13 %}
-                    {% endif %}
+                  {% set solar_a = (solar / 230) | round(0) | int %}
+                  {% set target_a = min(16, solar_a) %}
+                  {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
+                  {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
+                  {% if battery > 50 and battery <= 80 and remaining_energy > 5 %}
+                    {% set target_a = 13 %}
                   {% endif %}
                 {% endif %}
-                {% set target_a = min(target_a, cap) %}
               {% endif %}
+              {% set target_a = min(target_a, cap) %}
               {% set ns = namespace(val=steps[0]) %}
               {% for s in steps %}
                 {% if s <= target_a %}
@@ -270,6 +273,11 @@
             actions = [
               # Ensure charger switch is on
               (ha.action.on "switch.system_car_charger")
+              # Reset the ramp baseline to 8A on every start, no matter what current was last set
+              # (a stalled ramp, a leftover manual override, a prior self-trip). A cold start at
+              # 13-16A is unreliable on this Andalung portable charger; done after turning the
+              # switch on, since writing to it while off is known to flip the switch back on.
+              (ha.action.set_value "number.system_car_charger_charging_current" 8)
               (ha.action.delay "00:00:15")
               # Gradually ramp current to target
               {
@@ -294,7 +302,12 @@
         ha.automation "system/car_charger.set_current"
           {
             triggers = [
-              (ha.trigger.state "sensor.system_car_charger_target_current")
+              # `for` debounces a noisy target: with `mode = restart`, every retrigger cancels the
+              # in-flight step delay below and fires an immediate number.set_value. On 2026-08-29 a
+              # fast-moving headroom estimate flapped the target 13->10->8->6A in ~2s, which sent
+              # three step-down commands to the charger within that same window and it tripped
+              # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 10s.
+              (ha.trigger.state_for "sensor.system_car_charger_target_current" "00:00:10")
             ];
             conditions = [
               (ha.condition.on "switch.system_car_charger")
@@ -342,7 +355,7 @@
                         {% endif %}
                       '';
                     }
-                    (ha.action.delay "00:01:00")
+                    (ha.action.delay "00:02:00")
                   ];
                 };
               }
