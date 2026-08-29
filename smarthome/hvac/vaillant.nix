@@ -213,6 +213,25 @@ in
           ];
         mode = "queued";
       }
+      {
+        # Vaillant ecoTEC boilers warn on the display below ~1.0 bar and lock
+        # out (F.22/F.75-style fault) around 0.7-0.8 bar. Warn early so it can
+        # be topped up before the boiler actually faults.
+        id = "cv_water_pressure_low";
+        alias = "cv.water_pressure_low";
+        trigger = [
+          (ha.trigger.below_for "sensor.heating_ebusd_bai_waterpressure_press" 1.0 "0:30:00")
+        ];
+        condition = [ ];
+        action = [
+          (ha.action.notify "CV waterdruk laag"
+            ''
+              CV waterdruk is {{ states('sensor.heating_ebusd_bai_waterpressure_press') }} bar (al 30 min onder 1.0 bar).
+              Bijvullen voordat de ketel op storing gaat (meestal rond 0.7-0.8 bar).
+            '')
+        ];
+        mode = "single";
+      }
     ];
 
     # https://fromeijn.nl/connected-vaillant-to-home-assistant/
