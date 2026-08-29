@@ -1,0 +1,8 @@
+type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,unit,comment
+*u,
+*w,
+u,Broadcast,,Vdatetime,date/time,,fe,b516,00,time,,BTI,,,,date,,BDA,,,
+w,Broadcast,,Vdatetime,date/time,,fe,b516,00,time,,BTI,,,,date,,BDA,,,
+u,Broadcast,,Outsidetemp,outside temperature,,fe,b516,01,value,,D2B,,°C,temperature
+u,Broadcast,,HwcStatus,state hot water,,fe,b505,27,onoff,,UCH,0=off;1=on,,,vf1,,UCH,,°C,temperature,onoff_1,,UCH,0=off;1=on,,
+u,Broadcast,,Load,quick - hot water tank filling,,fe,b505,06,value,,UCH,0=off;1=on,,

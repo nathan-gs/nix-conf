@@ -1,0 +1,3 @@
+type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,unit,comment
+*r,
+r,Scan,,Id,Scan ID,,,b509,24;25;26;27,ign,,IGN,,,,prefix,,STR:2,,,,year,,STR:2,,,,week,,STR:2,,,,product,,STR:10,,,,supplier,,STR:4,,,,counter,,STR:6,,,,suffix,,STR:2,,,
