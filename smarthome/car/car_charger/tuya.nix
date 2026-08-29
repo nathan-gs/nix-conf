@@ -91,23 +91,16 @@
               {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
               {% set capacity_kw = max(monthly_peak, 2.5) %}
-              {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
               {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
                  grid import, so we charge hard while little of the quarter is committed, then drop
                  to 6A for the tail so the average lands under the cap.
 
-                 `electricity_delivery_power_15m` (banked) is the average ALREADY committed this
-                 quarter; it only climbs (and resets each quarter), so it is the stable trigger.
-                 (`electricity_delivery_power_15m_estimated` is the assume-current-power projection —
-                 it drops the instant we throttle, so using it as the trigger would chatter; it is
-                 what the battery watches instead.)
-
-                 We drop to 6A once banked nears `capacity_near` — the same level at which the
-                 battery's own peak branch arms (solar/battery/overdischargesoc_target) — so the car
-                 shaves the tail and the battery stays quiet, and it never drained to 10% as on
-                 2026-07-03. See docs/ev-battery-peak-coordination.md. #}
-              {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {% if banked >= (capacity_near) %}
+                 The banked >= capacity_near check lives in
+                 binary_sensor.system_car_charger_capacity_near — set_current reacts to it
+                 immediately (bypassing the debounce below), since it is monotonic within a
+                 quarter (see that sensor for why) and needs to land under the cap before the
+                 quarter's 15-minute window closes. See docs/ev-battery-peak-coordination.md. #}
+              {% if is_state('binary_sensor.system_car_charger_capacity_near', 'on') %}
                 {% set target_a = 6 %}
               {% else %}
                 {# front of the quarter: charge at whatever the cap allows, computed from headroom
@@ -146,6 +139,28 @@
           }
         ];
         binary_sensor = [
+          {
+            # Has this quarter's banked 15-min average import climbed close enough to the
+            # capaciteitstarief cap that the car needs to drop to its 6A tail?
+            # `electricity_delivery_power_15m` (banked) only climbs within a quarter (and resets
+            # each quarter) — it cannot un-cross this threshold once true, so unlike the
+            # front-of-quarter headroom calc it is safe for set_current to react to immediately,
+            # with no debounce.
+            #
+            # Margin widened 0.3 -> 0.5 kW: set_current now debounces (1 min) and steps every 2
+            # min instead of reacting near-instantly, so reaching the 6A floor from 13A takes up
+            # to ~4 minutes once this trips. The wider margin gives that time back by triggering
+            # earlier, so the average still lands under the cap.
+            name = "system/car_charger/capacity_near";
+            unique_id = "system_car_charger_capacity_near";
+            icon = "mdi:meter-electric";
+            state = ''
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
+              {% set capacity_near = [2.3, monthly_peak - 0.5] | max %}
+              {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {{ banked >= capacity_near }}
+            '';
+          }
           {
             # Peak-hour emergency floor: charge only when SoC is critically low.
             # Offpeak uses should_charge_offpeak + car_charge_grid_target (50/70/100).
@@ -328,13 +343,18 @@
               # three step-down commands to the charger within that same window and it tripped
               # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 1 minute.
               #
-              # This mainly slows reaction to the noisy front-of-quarter headroom branch above
-              # (already flagged there as chattery by design). The actual capacity-tariff safety
-              # drop (banked >= capacity_near -> 6A) is driven by `electricity_delivery_power_15m`,
-              # which only climbs across a 15-minute averaging window — delaying that reaction by
-              # up to 1 minute is <7% of the window, negligible next to the risk of retripping the
-              # charger with rapid-fire commands.
+              # This debounce is specifically for the noisy front-of-quarter headroom branch
+              # (already flagged there as chattery by design). The real capacity-tariff safety
+              # drop gets its own undebounced trigger below, since it can't flap and shouldn't
+              # wait.
               (ha.trigger.state_for "sensor.system_car_charger_target_current" "00:01:00")
+              # Capacity-tariff safety drop: react the instant this arms, no debounce.
+              # binary_sensor.system_car_charger_capacity_near is monotonic within a quarter (see
+              # its definition), so — unlike the headroom branch above — it can't flap and there's
+              # nothing to debounce against. It still needs the delay between steps below to avoid
+              # retripping the charger, but reaching the 6A floor a full debounce cycle sooner
+              # matters here: it's racing the quarter's 15-minute averaging window.
+              (ha.trigger.on "binary_sensor.system_car_charger_capacity_near")
             ];
             conditions = [
               (ha.condition.on "switch.system_car_charger")
