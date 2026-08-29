@@ -17,9 +17,22 @@
   # solis_modbus talks to the inverter over a USB-RS485 adapter (dialout-owned tty).
   users.users.hass.extraGroups = [ "dialout" ];
 
+  # DNS-01 so the cert also covers ha.l.nathan.gs / ha.wg.nathan.gs, which
+  # only resolve on the LAN/WireGuard and can't satisfy an HTTP-01 challenge.
+  security.acme.certs."ha.nathan.gs" = {
+    group = "nginx";
+    dnsProvider = "cloudflare";
+    environmentFile = pkgs.writeText "acme-ha-cloudflare-env" ''
+      CLOUDFLARE_EMAIL=${config.secrets.cloudflare.authEmail}
+      CLOUDFLARE_API_KEY=${config.secrets.cloudflare.authKey}
+    '';
+    extraDomainNames = [ "ha.l.nathan.gs" "ha.wg.nathan.gs" ];
+  };
+
   services.nginx.virtualHosts."ha.nathan.gs" = {
     forceSSL = true;
-    enableACME = true;
+    useACMEHost = "ha.nathan.gs";
+    serverAliases = [ "ha.l.nathan.gs" "ha.wg.nathan.gs" ];
     locations."/" = {
       proxyPass = "http://127.0.0.1:8123";
       proxyWebsockets = true; # needed if you need to use WebSocket
