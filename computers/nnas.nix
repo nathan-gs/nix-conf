@@ -91,7 +91,7 @@
   # 51820, forwarded on the new router). Only switch this in once the router
   # swap has happened — until then the old fritzbox WG is still what's live.
   networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.10.10.2/24" ];
+    ips = [ "10.73.221.2/24" ];
     privateKey = config.secrets.wireguard.nnas.private;
 
     peers = [
@@ -101,7 +101,7 @@
         presharedKey = config.secrets.wireguard.nnas.preshared;
         # nhtpc's wg0 address only; only nhtpc talks to nnas, no need to
         # route the rest of the LAN through the tunnel.
-        allowedIPs = [ "10.10.10.1/32" ];
+        allowedIPs = [ "10.73.221.1/32" ];
         endpoint = "h.nathan.gs:51820";
         persistentKeepalive = 25;
         # Was 60s; less DNS under load. Keepalive holds the tunnel.
