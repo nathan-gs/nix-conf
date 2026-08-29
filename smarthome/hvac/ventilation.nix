@@ -31,7 +31,7 @@
           dewpoint_high = ''{{ states('sensor.indoor_dewpoint') | float(15.0) > 15.0 }}'';
           indoor_temperature = ''{{ states('sensor.indoor_temperature') | float(19) }}'';
           outdoor_temperature = ''{{ states('sensor.outdoor_temperature') | float(19) }}'';
-          house_needs_cooling = ''{{ indoor_temperature | float > 22 }}'';
+          house_needs_cooling = ''{{ indoor_temperature | float > 23.5 }}'';
           bypass = ''{{ states('binary_sensor.itho_wtw_bypass') | bool(false) }}'';
           tomorrow_max_temp = ''{{ states('sensor.weather_tomorrow_temperature_max') | float(30) }}'';
           mild_day_ahead_and_house_still_cool = ''{{ tomorrow_max_temp | float <= 25 and indoor_temperature | float < 23 }}'';
