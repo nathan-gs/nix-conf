@@ -194,16 +194,19 @@
       {
         name = "nhpone";
         publicKey = config.secrets.wireguard.nhpone.public;
+        presharedKey = config.secrets.wireguard.nhpone.preshared;
         allowedIPs = [ "10.10.10.10/32" ];
       }
       {
         name = "nlaptop";
         publicKey = config.secrets.wireguard.nlaptop.public;
+        presharedKey = config.secrets.wireguard.nlaptop.preshared;
         allowedIPs = [ "10.10.10.11/32" ];
       }
       {
         name = "fphone";
         publicKey = config.secrets.wireguard.fphone.public;
+        presharedKey = config.secrets.wireguard.fphone.preshared;
         allowedIPs = [ "10.10.10.12/32" ];
       }
     ];
