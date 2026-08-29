@@ -50,17 +50,19 @@ views:
               - entity: sensor.itho_wtw_airfilter
               - entity: sensor.itho_wtw_inlet_temperature
               - entity: sensor.itho_wtw_outlet_temperature
+              - entity: binary_sensor.system_wtw_metering_plug_verwarming_target
+              - entity: switch.floor0_living_wtw_valve_main
           - chart_type: line
             period: 5minute
             type: statistics-graph
             entities:
               - sensor.system_wtw_metering_plug_wtw_power
+              - sensor.system_wtw_metering_plug_verwarming_power
             stat_types:
               - mean
-              - min
               - max
-            days_to_show: 1
-            hide_legend: false
+            days_to_show: 0.2
+            hide_legend: true
       - type: vertical-stack
         cards:
           - type: weather-forecast
@@ -350,6 +352,59 @@ views:
                   duration: 5m
                 stroke_width: 2
                 yaxis_id: tvoc
+      - type: vertical-stack
+        cards:
+          - type: custom:apexcharts-card
+            graph_span: 24h
+            show:
+              last_updated: true
+            color_list:
+              - '#3498db'
+              - '#ff9800'
+              - '#e74c3c'
+              - '#1a4c6e'
+            header:
+              show: true
+              title: CO2
+              show_states: true
+              colorize_states: true
+            series:
+              - entity: sensor.floor0_living_fire_alarm_main_eco2
+                name: Living CO2 (fire)
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+              - entity: sensor.floor0_bureau_switchbot_carbon_dioxide
+                name: Bureau CO2
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+              - entity: sensor.floor0_living_switchbot_carbon_dioxide
+                name: Living CO2
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
+              - entity: sensor.floor1_fen_switchbot_carbon_dioxide
+                name: FeN CO2
+                type: line
+                group_by:
+                  func: max
+                  duration: 5m
+                stroke_width: 2
+                show:
+                  header_color_threshold: true
   - theme: Backend-selected
     icon: mdi:radiator
     badges: []
@@ -1078,16 +1133,12 @@ views:
           last_updated: true
         yaxis:
           - id: temperature
-            min: -5
-            max: 32
             apex_config:
               forceNiceScale: true
               decimalsInFloat: 0
               tickAmount: 7
           - id: humidity
             opposite: true
-            min: 40
-            max: 100
             apex_config:
               forceNiceScale: false
               decimalsInFloat: 0
@@ -1099,12 +1150,32 @@ views:
           title: Tuin (Noordkant)
         series:
           - entity: sensor.outdoor_temperature
-            name: Actual Temperature (Sensor)
+            name: Outdoor
             type: line
             group_by:
               func: last
               duration: 5m
             stroke_width: 2
+            show:
+              header_color_threshold: true
+            yaxis_id: temperature
+          - entity: sensor.garden_garden_temperature_grasmaaier_temperature
+            name: Grasmaaier
+            type: line
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 1
+            show:
+              header_color_threshold: true
+            yaxis_id: temperature
+          - entity: sensor.garden_garden_temperature_noordkant_temperature
+            name: Noordkant
+            type: line
+            group_by:
+              func: last
+              duration: 5m
+            stroke_width: 1
             show:
               header_color_threshold: true
             yaxis_id: temperature
@@ -1221,7 +1292,17 @@ views:
               - type: thermostat
                 entity: climate.cv
               - type: grid
-                cards: []
+                cards:
+                  - type: gauge
+                    entity: sensor.heating_ebusd_bai_waterpressure_press
+                    name: Waterdruk
+                    min: 0
+                    max: 3
+                    needle: true
+                    severity:
+                      red: 0
+                      yellow: 0.8
+                      green: 1.0
           - type: custom:apexcharts-card
             graph_span: 24h
             show:
@@ -1535,3 +1616,129 @@ views:
                   duration: 1d
                 stroke_width: 2
                 yaxis_id: gas_per_dd
+  - title: Electric
+    path: electric
+    icon: mdi:lightning-bolt-outline
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: entities
+            entities:
+              - entity: sensor.electricity_grid_consumed_power_mean_1m
+              - entity: sensor.heating_number_of_rooms_in_need_of
+              - entity: binary_sensor.heating_use_electric
+              - entity: binary_sensor.energy_electricity_prefer_over_gas
+              - entity: binary_sensor.electricity_delivery_power_near_max_threshold
+      - type: vertical-stack
+        cards:
+          - chart_type: line
+            period: 5minute
+            type: statistics-graph
+            entities:
+              - entity: sensor.system_wtw_metering_plug_verwarming_power
+                name: WTW
+              - entity: sensor.floor0_bureau_metering_plug_verwarming_power
+                name: Bureau
+              - entity: sensor.floor0_living_metering_plug_verwarming_power
+                name: Living
+              - entity: sensor.floor1_nikolai_metering_plug_verwarming_power
+                name: Nikolaï
+              - entity: sensor.floor1_badkamer_metering_plug_verwarming_power
+                name: Badkamer
+            stat_types:
+              - max
+            days_to_show: 0.5
+            hide_legend: false
+            logarithmic_scale: false
+          - type: history-graph
+            entities:
+              - entity: binary_sensor.system_wtw_metering_plug_verwarming_target
+                name: WTW
+              - entity: binary_sensor.floor0_bureau_metering_plug_verwarming_target
+                name: Bureau
+              - entity: binary_sensor.floor0_living_metering_plug_verwarming_target
+                name: Living
+              - entity: binary_sensor.floor1_nikolai_metering_plug_verwarming_target
+                name: Nikolaï
+              - entity: binary_sensor.floor1_badkamer_metering_plug_verwarming_target
+                name: Badkamer
+            hours_to_show: 2
+      - type: vertical-stack
+        cards:
+          - type: glance
+            entities:
+              - entity: sensor.floor1_fen_temperature_diff_wanted
+                name: FeN
+              - entity: sensor.floor0_bureau_temperature_diff_wanted
+                name: Bureau
+              - entity: sensor.floor0_keuken_temperature_diff_wanted
+                name: Keuken
+              - entity: sensor.floor0_living_temperature_diff_wanted
+                name: Living
+              - entity: sensor.floor1_morgane_temperature_diff_wanted
+                name: Morgane
+              - entity: sensor.floor1_nikolai_temperature_diff_wanted
+                name: Nikolaï
+              - entity: sensor.floor1_badkamer_temperature_diff_wanted
+                name: Badkamer
+          - chart_type: line
+            period: 5minute
+            type: statistics-graph
+            entities:
+              - entity: sensor.floor1_fen_temperature_diff_wanted
+                name: FeN
+              - entity: sensor.floor0_bureau_temperature_diff_wanted
+                name: Bureau
+              - entity: sensor.floor0_keuken_temperature_diff_wanted
+                name: Keuken
+              - entity: sensor.floor0_living_temperature_diff_wanted
+                name: Living
+              - entity: sensor.floor1_morgane_temperature_diff_wanted
+                name: Morgane
+              - entity: sensor.floor1_nikolai_temperature_diff_wanted
+                name: Nikolaï
+              - entity: sensor.floor1_badkamer_temperature_diff_wanted
+                name: Badkamer
+            stat_types:
+              - max
+            days_to_show: 0.125
+            hide_legend: false
+            logarithmic_scale: false
+          - type: grid
+            cards:
+              - name: Badkamer
+                show_name: true
+                show_icon: true
+                type: button
+                tap_action:
+                  action: toggle
+                entity: switch.floor1_badkamer_metering_plug_verwarming
+              - name: Living
+                show_name: true
+                show_icon: true
+                type: button
+                tap_action:
+                  action: toggle
+                entity: switch.floor0_living_metering_plug_verwarming
+              - name: Bureau
+                show_name: true
+                show_icon: true
+                type: button
+                tap_action:
+                  action: toggle
+                entity: switch.floor0_bureau_metering_plug_verwarming
+              - show_name: true
+                show_icon: true
+                name: Nikolaï
+                type: button
+                tap_action:
+                  action: toggle
+                entity: switch.floor1_nikolai_metering_plug_verwarming
+              - name: WTW
+                show_name: true
+                show_icon: true
+                type: button
+                tap_action:
+                  action: toggle
+                entity: switch.system_wtw_metering_plug_verwarming
+            columns: 3
