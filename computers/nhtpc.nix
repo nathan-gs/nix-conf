@@ -167,7 +167,7 @@
   # router to nhtpc's LAN IP on UDP 51820 (chosen to differ from the
   # fritzbox's old port 58578).
   #
-  # nnas + nhpone/nlaptop/fphone all live on the same 10.10.10.0/24 WG
+  # nnas + nhpone/nlaptop/fphone all live on the same 10.73.221.0/24 WG
   # subnet, NATed out to the LAN/internet via nhtpc. Only nhtpc talks to
   # nnas (no other LAN host needs to reach it), so it doesn't need a
   # LAN-shaped address or proxy-ARP — hosts.nix/media-rsync/auto-upgrade
@@ -180,7 +180,7 @@
   };
 
   networking.wireguard.interfaces.wg0 = {
-    ips = [ "10.10.10.1/24" ];
+    ips = [ "10.73.221.1/24" ];
     listenPort = 51820;
     privateKey = config.secrets.wireguard.nhtpc.private;
 
@@ -189,25 +189,25 @@
         name = "nnas";
         publicKey = config.secrets.wireguard.nnas.public;
         presharedKey = config.secrets.wireguard.nnas.preshared;
-        allowedIPs = [ "10.10.10.2/32" ];
+        allowedIPs = [ "10.73.221.2/32" ];
       }
       {
         name = "nhpone";
         publicKey = config.secrets.wireguard.nhpone.public;
         presharedKey = config.secrets.wireguard.nhpone.preshared;
-        allowedIPs = [ "10.10.10.10/32" ];
+        allowedIPs = [ "10.73.221.10/32" ];
       }
       {
         name = "nlaptop";
         publicKey = config.secrets.wireguard.nlaptop.public;
         presharedKey = config.secrets.wireguard.nlaptop.preshared;
-        allowedIPs = [ "10.10.10.11/32" ];
+        allowedIPs = [ "10.73.221.11/32" ];
       }
       {
         name = "fphone";
         publicKey = config.secrets.wireguard.fphone.public;
         presharedKey = config.secrets.wireguard.fphone.preshared;
-        allowedIPs = [ "10.10.10.12/32" ];
+        allowedIPs = [ "10.73.221.12/32" ];
       }
     ];
   };
