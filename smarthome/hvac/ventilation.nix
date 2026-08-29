@@ -5,32 +5,51 @@
 
     template = [
       {
+        trigger = [
+          {
+            trigger = "state";
+            entity_id = [
+              "binary_sensor.anyone_home"
+              "input_boolean.floor0_wc_in_use"
+              "sensor.indoor_dewpoint"
+              "sensor.indoor_temperature"
+              "sensor.outdoor_temperature"
+              "binary_sensor.itho_wtw_bypass"
+              "sensor.weather_tomorrow_temperature_max"
+              "sensor.outdoor_dewpoint"
+              "sensor.indoor_humidity_max"
+              "binary_sensor.electricity_delivery_power_max_threshold"
+              "binary_sensor.house_co2_high"
+              "binary_sensor.wtw_high_cooldown"
+            ];
+          }
+        ];
+        variables = {
+          is_home = ''{{ states('binary_sensor.anyone_home') | bool(true) }}'';
+          is_cooking = ''{{ false }}'';
+          is_using_sanitary = ''{{ states('input_boolean.floor0_wc_in_use') | bool(false) }}'';
+          dewpoint_high = ''{{ states('sensor.indoor_dewpoint') | float(15.0) > 15.0 }}'';
+          indoor_temperature = ''{{ states('sensor.indoor_temperature') | float(19) }}'';
+          outdoor_temperature = ''{{ states('sensor.outdoor_temperature') | float(19) }}'';
+          house_needs_cooling = ''{{ indoor_temperature | float > 22 }}'';
+          bypass = ''{{ states('binary_sensor.itho_wtw_bypass') | bool(false) }}'';
+          tomorrow_max_temp = ''{{ states('sensor.weather_tomorrow_temperature_max') | float(30) }}'';
+          mild_day_ahead_and_house_still_cool = ''{{ tomorrow_max_temp | float <= 25 and indoor_temperature | float < 23 }}'';
+          house_needs_cooling_and_temp_outside_lower = ''{{ bypass and house_needs_cooling and (outdoor_temperature | float + 2.5) < indoor_temperature | float and not mild_day_ahead_and_house_still_cool }}'';
+          dewpoint_outdoor_smaller_then_indoor = ''{{ (states('sensor.outdoor_dewpoint') | float + 1) < (states('sensor.indoor_dewpoint') | float) }}'';
+          dewpoint_high_and_dewpoint_outdoor_lower = ''{{ (dewpoint_high and dewpoint_outdoor_smaller_then_indoor) | bool }}'';
+          humidity_max_over_80 = ''{{ states('sensor.indoor_humidity_max') | float(100) > 80 }}'';
+          electricity_delivery_power_near_max_threshold = ''{{ states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) }}'';
+          is_not_electricity_delivery_power_max_threshold = ''{{ not electricity_delivery_power_near_max_threshold }}'';
+          is_hot_outside = ''{{ outdoor_temperature | float > 27 }}'';
+          is_high_co2 = ''{{ is_state('binary_sensor.house_co2_high', 'on') }}'';
+          cooldown = ''{{ is_state('binary_sensor.wtw_high_cooldown', 'on') }}'';
+        };
         sensor = [
           {
             name = "wtw_target_fan";
             unique_id = "wtw_target_fan";
             state = ''
-              {% set is_home = states('binary_sensor.anyone_home') | bool(true) %}
-              {% set is_cooking = false %}
-              {% set is_using_sanitary = states('input_boolean.floor0_wc_in_use') | bool(false) %}
-              {% set dewpoint_high = (states('sensor.indoor_dewpoint') | float(15.0) > 15.0) %}
-              {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
-              {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
-              {% set house_needs_cooling = indoor_temperature > 22 %}
-              {% set house_needs_cooling_and_temp_outside_lower = false %}
-              {% set bypass = states('binary_sensor.itho_wtw_bypass') | bool(false) %}
-              {% set tomorrow_max_temp = states('sensor.weather_tomorrow_temperature_max') | float(30) %}
-              {% set mild_day_ahead_and_house_still_cool = tomorrow_max_temp <= 25 and indoor_temperature < 23 %}
-              {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature and not mild_day_ahead_and_house_still_cool %}
-                {% set house_needs_cooling_and_temp_outside_lower = true %}
-              {% endif %}
-              {% set dewpoint_outdoor_smaller_then_indoor = ((states('sensor.outdoor_dewpoint') | float) +1) < (states('sensor.indoor_dewpoint') | float) %}
-              {% set dewpoint_high_and_dewpoint_outdoor_lower = (dewpoint_high and dewpoint_outdoor_smaller_then_indoor) | bool %}
-              {% set humidity_max_over_80 = (states('sensor.indoor_humidity_max') | float(100) > 80) %}
-              {% set is_not_electricity_delivery_power_max_threshold = states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) == false %}
-              {% set is_hot_outside = outdoor_temperature > 27 %}
-              {% set is_high_co2 = is_state('binary_sensor.house_co2_high', 'on') %}
-              {% set cooldown = is_state('binary_sensor.wtw_high_cooldown', 'on') %}
               {% if is_not_electricity_delivery_power_max_threshold %}
                 {% if house_needs_cooling_and_temp_outside_lower %}
                   high
@@ -58,35 +77,14 @@
               {% endif %}
             '';
             attributes = {
-              is_cooking = ''false'';
-              is_home = ''{{ states('binary_sensor.anyone_home') | bool(true) }}'';
-              is_using_sanitary = ''
-                {{ states('input_boolean.floor0_wc_in_use') | bool(false) }}
-              '';
-              dewpoint_high_and_dewpoint_outdoor_lower = ''
-                {% set dewpoint_over_17 = (states('sensor.indoor_dewpoint') | float(15.0) > 15.0) %}
-                {% set dewpoint_outdoor_smaller_then_indoor = ((states('sensor.outdoor_dewpoint') | float) +1) < (states('sensor.indoor_dewpoint') | float) %}
-                {{ (dewpoint_over_17 and dewpoint_outdoor_smaller_then_indoor) | bool }}
-              '';
-              humidity_max_over_80 = ''{{ (states('sensor.indoor_humidity_max') | float(100) > 80) }}'';
-              house_needs_cooling_and_temp_outside_lower = ''
-                {% set bypass = states('binary_sensor.itho_wtw_bypass') | bool(false) %}
-                {% set indoor_temperature = states('sensor.indoor_temperature') | float(19) %}
-                {% set outdoor_temperature = states('sensor.outdoor_temperature') | float(19) %}
-                {% set house_needs_cooling = indoor_temperature > 22 %}
-                {% set house_needs_cooling_and_temp_outside_lower = false %}
-                {% set tomorrow_max_temp = states('sensor.weather_tomorrow_temperature_max') | float(30) %}
-                {% set mild_day_ahead_and_house_still_cool = tomorrow_max_temp <= 25 and indoor_temperature < 23 %}
-                {% if bypass and house_needs_cooling and (outdoor_temperature + 2.5) < indoor_temperature and not mild_day_ahead_and_house_still_cool %}
-                  {% set house_needs_cooling_and_temp_outside_lower = true %}
-                {% endif %}
-                {{ house_needs_cooling_and_temp_outside_lower }}
-              '';
-              is_hot_outside = ''
-                {% set is_hot_outside = states('sensor.outdoor_temperature') | float(19) > 27 %}
-                {{ is_hot_outside }}
-              '';
-              electricity_delivery_power_near_max_threshold = ''{{ states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) }}'';
+              is_cooking = ''{{ is_cooking }}'';
+              is_home = ''{{ is_home }}'';
+              is_using_sanitary = ''{{ is_using_sanitary }}'';
+              dewpoint_high_and_dewpoint_outdoor_lower = ''{{ dewpoint_high_and_dewpoint_outdoor_lower }}'';
+              humidity_max_over_80 = ''{{ humidity_max_over_80 }}'';
+              house_needs_cooling_and_temp_outside_lower = ''{{ house_needs_cooling_and_temp_outside_lower }}'';
+              is_hot_outside = ''{{ is_hot_outside }}'';
+              electricity_delivery_power_near_max_threshold = ''{{ electricity_delivery_power_near_max_threshold }}'';
               icon = ''
                 {% set am = states('sensor.wtw_target_fan') %}
                 {% if am == "low" %}
@@ -101,8 +99,12 @@
               '';
             };
           }
+        ];
+      }
+      {
+        sensor = [
           (
-            ha.sensor.max_from_list "house/co2/max" 
+            ha.sensor.max_from_list "house/co2/max"
               (
                 map(v: "states('${v}')") 
                 [
