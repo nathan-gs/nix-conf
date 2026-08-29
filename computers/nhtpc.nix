@@ -42,6 +42,7 @@
       ../services/auto-upgrade.nix
       ../services/hw-health-report.nix
       ../services/media-rsync.nix
+      ../services/wireguard.nix
     ];
 
   # Leader: sole `nix flake update` + commit; then apply the same lock on nnas.
@@ -159,7 +160,56 @@
     zoneId = config.secrets.cloudflare.zoneId;
     recordId = config.secrets.cloudflare.nhtpc.recordId;
     recordName = config.secrets.cloudflare.nhtpc.recordName;
-  };  
+  };
+
+  # WireGuard server. Replaces the fritzbox's built-in WG (router being
+  # replaced with one that can't do WG). Port must be forwarded from the
+  # router to nhtpc's LAN IP on UDP 51820 (chosen to differ from the
+  # fritzbox's old port 58578).
+  #
+  # nnas: point-to-point link, kept at its existing LAN-style address
+  # (192.168.1.201) so hosts.nix/media-rsync/auto-upgrade's hardcoded
+  # references to it don't need to change. Only nhtpc talks to nnas, so no
+  # LAN-wide routing/proxy-ARP is needed for that peer.
+  #
+  # nhpone/nlaptop/fphone: road-warrior clients on a separate WG subnet,
+  # NATed out to the LAN/internet via nhtpc.
+  boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
+  networking.nat = {
+    enable = true;
+    externalInterface = "eno1";
+    internalInterfaces = [ "wg0" ];
+  };
+
+  networking.wireguard.interfaces.wg0 = {
+    ips = [ "10.10.10.1/24" ];
+    listenPort = 51820;
+    privateKey = config.secrets.wireguard.nhtpc.private;
+
+    peers = [
+      {
+        name = "nnas";
+        publicKey = config.secrets.wireguard.nnas.public;
+        presharedKey = config.secrets.wireguard.nnas.preshared;
+        allowedIPs = [ "192.168.1.201/32" ];
+      }
+      {
+        name = "nhpone";
+        publicKey = config.secrets.wireguard.nhpone.public;
+        allowedIPs = [ "10.10.10.10/32" ];
+      }
+      {
+        name = "nlaptop";
+        publicKey = config.secrets.wireguard.nlaptop.public;
+        allowedIPs = [ "10.10.10.11/32" ];
+      }
+      {
+        name = "fphone";
+        publicKey = config.secrets.wireguard.fphone.public;
+        allowedIPs = [ "10.10.10.12/32" ];
+      }
+    ];
+  };
 
   hardware.bluetooth.enable = true;
 
