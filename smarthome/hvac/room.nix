@@ -217,7 +217,7 @@ in
         ++ [(roomTempFunction { floor = "floor1"; room = "fen"; sensors = [ "floor1_fen_switchbot" ]; adjustments = [ "0" ];})]
         ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = ["floor0_${v}_temperature_na_temperature"]; adjustments = ["-0.3"]; }) (builtins.filter (room: room != "living" && room != "bureau") rooms.floor0)
         ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "floor0_bureau_switchbot" ]; adjustments = [ "0" ];}) [ "bureau" ]
-        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "ebusd_370_displayedroomtemp_temp" "floor0_${v}_temperature_na_temperature" "floor0_living_fire_alarm_main_temperature" "floor0_living_switchbot" ]; adjustments = ["0" "-0.3" "0" "0"];}) [ "living" ]
+        ++ map (v: roomTempFunction { floor = "floor0"; room = v; sensors = [ "ebusd_370_displayedroomtemp" "floor0_${v}_temperature_na_temperature" "floor0_living_fire_alarm_main_temperature" "floor0_living_switchbot" ]; adjustments = ["0" "-0.3" "0" "0"];}) [ "living" ]
         ++ map (v: roomTempFunction { floor = "floor1"; room = v; sensors = [ "floor1_${v}_temperature_na_temperature" ]; adjustments = ["-0.3"]; }) (builtins.filter (v: v != "fen") rooms.floor1)
         ++ map (v: roomTempFunction { floor = "basement"; room = v; sensors = ["basement_${v}_temperature_na_temperature" ]; adjustments = ["-0.3"]; }) rooms.basement
         ++ map

@@ -1,36 +1,33 @@
 #!/bin/bash
+# Clear retained Home Assistant MQTT discovery topics for ebusd.
+# Needed after changing mqtt-hassio filters so stale timer/status entities
+# disappear. ebusd republishes the whitelist on the next start.
+set -euo pipefail
 
-# Configuration
-BROKER="localhost"  # Replace with your MQTT broker address
-PORT=1883           # Default MQTT port
-TOPIC="homeassistant/#"  # Matches homeassistant/*/ebusd_*
-USERNAME="homeassistant" # Replace with your MQTT username
-PASSWORD="" # Replace with your MQTT password
+BROKER="${MQTT_BROKER:-localhost}"
+PORT="${MQTT_PORT:-1883}"
+USERNAME="${MQTT_USER:-ebus}"
+PASSWORD="${MQTT_PASSWORD:-}"
 
-# Temporary file to store topics
+if [ -z "$PASSWORD" ]; then
+  echo "Set MQTT_PASSWORD (ebus MQTT user) before running." >&2
+  echo "Example: MQTT_PASSWORD=... $0" >&2
+  exit 1
+fi
+
 TEMP_FILE=$(mktemp)
+trap 'rm -f "$TEMP_FILE"' EXIT
 
-# Step 1: Collect all topics containing "ebusd_"
-echo "Collecting topics (this may take a moment)..."
-mosquitto_sub -h "$BROKER" -p "$PORT" -u "$USERNAME" -P "$PASSWORD" -t "$TOPIC" -v > "$TEMP_FILE" &
-SUB_PID=$!
+echo "Collecting retained ebusd discovery topics (15s)..."
+mosquitto_sub -h "$BROKER" -p "$PORT" -u "$USERNAME" -P "$PASSWORD" \
+  -t "homeassistant/#" -W 15 -v > "$TEMP_FILE" || true
 
-# Wait to ensure all topics are collected
-sleep 15  # Adjust if needed
-kill $SUB_PID
-
-# Step 2: Clear all topics with "ebusd_"
 echo "Clearing topics..."
-grep "ebusd_" "$TEMP_FILE" | cut -d' ' -f1 | while IFS= read -r topic; do
-    # Skip empty or invalid topics
-    if [ -n "$topic" ] && ! echo "$topic" | grep -q '[+#]'; then
-        echo "Clearing: $topic"
-        mosquitto_pub -h "$BROKER" -p "$PORT" -u "$USERNAME" -P "$PASSWORD" -t "$topic" -n -r
-    else
-        echo "Skipping invalid topic: '$topic'"
-    fi
+grep "ebusd" "$TEMP_FILE" | cut -d' ' -f1 | sort -u | while IFS= read -r topic; do
+  if [ -n "$topic" ] && ! echo "$topic" | grep -q '[+#]'; then
+    echo "Clearing: $topic"
+    mosquitto_pub -h "$BROKER" -p "$PORT" -u "$USERNAME" -P "$PASSWORD" -t "$topic" -n -r
+  fi
 done
 
-# Clean up
-rm "$TEMP_FILE"
-echo "Done!"
+echo "Done. Restart ebusd to republish the filtered discovery set."
