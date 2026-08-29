@@ -167,13 +167,11 @@
   # router to nhtpc's LAN IP on UDP 51820 (chosen to differ from the
   # fritzbox's old port 58578).
   #
-  # nnas: point-to-point link, kept at its existing LAN-style address
-  # (192.168.1.201) so hosts.nix/media-rsync/auto-upgrade's hardcoded
-  # references to it don't need to change. Only nhtpc talks to nnas, so no
-  # LAN-wide routing/proxy-ARP is needed for that peer.
-  #
-  # nhpone/nlaptop/fphone: road-warrior clients on a separate WG subnet,
-  # NATed out to the LAN/internet via nhtpc.
+  # nnas + nhpone/nlaptop/fphone all live on the same 10.10.10.0/24 WG
+  # subnet, NATed out to the LAN/internet via nhtpc. Only nhtpc talks to
+  # nnas (no other LAN host needs to reach it), so it doesn't need a
+  # LAN-shaped address or proxy-ARP — hosts.nix/media-rsync/auto-upgrade
+  # address it via the "nnas.wg" name, updated to its new WG IP.
   boot.kernel.sysctl."net.ipv4.ip_forward" = 1;
   networking.nat = {
     enable = true;
@@ -191,7 +189,7 @@
         name = "nnas";
         publicKey = config.secrets.wireguard.nnas.public;
         presharedKey = config.secrets.wireguard.nnas.preshared;
-        allowedIPs = [ "192.168.1.201/32" ];
+        allowedIPs = [ "10.10.10.2/32" ];
       }
       {
         name = "nhpone";
