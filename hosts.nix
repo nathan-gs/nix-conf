@@ -6,15 +6,12 @@
   networking.hosts = {
     "192.168.1.126" = [ "solis-s3wifi" ];
     "192.168.1.2" = [ "nhtpc.wg" ];
-    # NOTE: still 192.168.1.201 (fritzbox-routed WG) intentionally — nnas's
-    # peer config has moved to 10.73.221.2 on nhtpc's WG server but hasn't
-    # been applied yet (see computers/nnas.nix). Update this to 10.73.221.2
-    # — together with services/media-rsync.nix and services/auto-upgrade.nix
-    # known_hosts — in the same switch that flips nnas over, not before:
-    # nhtpc's own auto-upgrade applies nightly and this file is shared, so
-    # changing it early breaks media-rsync/auto-upgrade connectivity to nnas
-    # while nnas is still only reachable at the old address.
-    "192.168.1.201" = [ "nnas.wg" ];
+    # nnas is now reached over nhtpc's own WG server instead of the
+    # fritzbox. Only apply this on nhtpc *after* nnas has switched and its
+    # peer shows a handshake (`sudo wg show wg0` on nhtpc) — deploying this
+    # first would point media-rsync/auto-upgrade at an address nnas isn't
+    # listening on yet.
+    "10.73.221.2" = [ "nnas.wg" ];
 
     "10.73.221.10" = [ "nhpone.wg" ];
     "10.73.221.11" = [ "nlaptop.wg" ];
