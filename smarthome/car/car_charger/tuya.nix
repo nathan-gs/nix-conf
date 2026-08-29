@@ -306,8 +306,15 @@
               # in-flight step delay below and fires an immediate number.set_value. On 2026-08-29 a
               # fast-moving headroom estimate flapped the target 13->10->8->6A in ~2s, which sent
               # three step-down commands to the charger within that same window and it tripped
-              # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 10s.
-              (ha.trigger.state_for "sensor.system_car_charger_target_current" "00:00:10")
+              # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 1 minute.
+              #
+              # This mainly slows reaction to the noisy front-of-quarter headroom branch above
+              # (already flagged there as chattery by design). The actual capacity-tariff safety
+              # drop (banked >= capacity_near -> 6A) is driven by `electricity_delivery_power_15m`,
+              # which only climbs across a 15-minute averaging window — delaying that reaction by
+              # up to 1 minute is <7% of the window, negligible next to the risk of retripping the
+              # charger with rapid-fire commands.
+              (ha.trigger.state_for "sensor.system_car_charger_target_current" "00:01:00")
             ];
             conditions = [
               (ha.condition.on "switch.system_car_charger")
