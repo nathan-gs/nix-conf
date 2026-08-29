@@ -85,18 +85,23 @@
 
   };
   
+  # NOT YET APPLIED: router is being replaced and its built-in WG (endpoint
+  # h.nathan.gs:58578, peer "home") will stop working. This switches nnas to
+  # peer directly with nhtpc, which now runs the WG server itself (port
+  # 51820, forwarded on the new router). Only switch this in once the router
+  # swap has happened — until then the old fritzbox WG is still what's live.
   networking.wireguard.interfaces.wg0 = {
     ips = [ "192.168.1.201/24" ];
     privateKey = config.secrets.wireguard.nnas.private;
 
     peers = [
       {
-        name = "home";
-        # Router WG endpoint (not nhtpc).
-        publicKey = config.secrets.wireguard.home.public;
-        presharedKey = config.secrets.wireguard.home.preshared;
-        allowedIPs = [ "192.168.1.0/24" ];
-        endpoint = "h.nathan.gs:58578";
+        name = "nhtpc";
+        publicKey = config.secrets.wireguard.nhtpc.public;
+        presharedKey = config.secrets.wireguard.nnas.preshared;
+        # nhtpc itself only; nhtpc doesn't proxy the rest of the LAN for nnas.
+        allowedIPs = [ "192.168.1.2/32" ];
+        endpoint = "h.nathan.gs:51820";
         persistentKeepalive = 25;
         # Was 60s; less DNS under load. Keepalive holds the tunnel.
         dynamicEndpointRefreshSeconds = 300;
