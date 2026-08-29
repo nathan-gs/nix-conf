@@ -20,6 +20,7 @@
         force_update = true;
         icon = "mdi:meter-electric";
         state_class = "measurement";
+        value_template = "{{ value | round(2) }}";
       }
       # Fluvius billable capacity (kW) from dsmr last13months telegram.
       # Raw payload is ~560 chars (over HA's 255 state limit) — parse in-template.
@@ -44,13 +45,13 @@
           {% endfor %}
           {% set completed = peaks.v %}
           {% if completed | length == 0 %}
-            {{ current | round(3) }}
+            {{ current | round(2) }}
           {% elif completed | length >= 12 %}
             {% set window = completed[-11:] + [current] %}
-            {{ (window | sum / 12) | round(3) }}
+            {{ (window | sum / 12) | round(2) }}
           {% else %}
             {% set window = completed + [current] %}
-            {{ (window | sum / (window | length)) | round(3) }}
+            {{ (window | sum / (window | length)) | round(2) }}
           {% endif %}
         '';
         json_attributes_template = ''
