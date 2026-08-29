@@ -153,7 +153,7 @@
 
 
   services.cloudflare-dyndns-nathan = {
-    enable = false;
+    enable = true;
     authEmail = config.secrets.cloudflare.authEmail;
     authKey = config.secrets.cloudflare.authKey;
     zoneId = config.secrets.cloudflare.zoneId;
