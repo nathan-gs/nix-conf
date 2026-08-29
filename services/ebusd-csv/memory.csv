@@ -1,0 +1,7 @@
+type,circuit,level,name,comment,qq,zz,pbsb,id,*name,part,type,divisor/values,unit,comment
+*r,
+*w,
+r,Memory,,Ram,RAM data,,,0900,,address,m,UIN,,,start address,count,m,UCH,,,number of bytes,data,,HEX,,,data bytes
+w,Memory,install,Ram,RAM data,,,0901,,address,,UIN,,,start address,data,,HEX,,,data bytes
+r,Memory,,Eeprom,EEPROM data,,,0902,,address,m,UIN,,,start address,count,m,UCH,,,number of bytes,data,,HEX,,,data bytes
+w,Memory,install,Eeprom,EEPROM data,,,0903,,address,,UIN,,,start address,data,,HEX,,,data bytes
