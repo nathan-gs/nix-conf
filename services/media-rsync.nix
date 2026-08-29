@@ -15,7 +15,7 @@ let
   # nnas host keys (ed25519) — pinned for non-interactive StrictHostKeyChecking
   knownHostsSource = pkgs.writeText "media-rsync-known_hosts" ''
     nnas.wg ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuzacgoV7F8Ep4qwnovJZIDOoSea2mrghb7E2LNWFJz
-    192.168.1.201 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuzacgoV7F8Ep4qwnovJZIDOoSea2mrghb7E2LNWFJz
+    10.73.221.2 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuzacgoV7F8Ep4qwnovJZIDOoSea2mrghb7E2LNWFJz
   '';
 
   sshOpts = lib.concatStringsSep " " [

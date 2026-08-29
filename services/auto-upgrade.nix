@@ -19,7 +19,7 @@ let
   identitySource = pkgs.writeText "auto-upgrade-id_ed25519" config.secrets.ssh.nhtpc-backup.private;
   knownHostsSource = pkgs.writeText "auto-upgrade-known_hosts" ''
     nnas.wg ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuzacgoV7F8Ep4qwnovJZIDOoSea2mrghb7E2LNWFJz
-    192.168.1.201 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuzacgoV7F8Ep4qwnovJZIDOoSea2mrghb7E2LNWFJz
+    10.73.221.2 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAINuzacgoV7F8Ep4qwnovJZIDOoSea2mrghb7E2LNWFJz
   '';
 
   sshOpts = lib.concatStringsSep " " [
