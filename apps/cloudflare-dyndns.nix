@@ -32,7 +32,7 @@ in
 
       schedule = mkOption {
         type = types.str;
-        default = "*-*-* *:40:00";
+        default = "*-*-* *:0/5:00";
       };
 
     };
@@ -44,8 +44,21 @@ in
       after = [ "network-online.target" ];
       wants = [ "network-online.target" ];
       environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
-      serviceConfig.DynamicUser = "yes";
+      serviceConfig = {
+        DynamicUser = "yes";
+        StateDirectory = "cloudflare-dyndns";
+      };
       script = ''
+        set -euo pipefail
+
+        cacheFile="$STATE_DIRECTORY/last-ip"
+        currentIp="$(${pkgs.curl}/bin/curl -L --silent -H'Content-Type:text/plain' https://api.ipify.org)"
+
+        if [ -f "$cacheFile" ] && [ "$(cat "$cacheFile")" = "$currentIp" ]; then
+          echo "IP unchanged ($currentIp), skipping Cloudflare update"
+          exit 0
+        fi
+
         ${pkgs.curl}/bin/curl \
         --silent \
         -o /dev/null \
@@ -55,14 +68,16 @@ in
         -H "X-Auth-Key: ${cfg.authKey}" \
         -H "Content-Type: application/json" \
         --data "{
-                  \"content\":\"`${pkgs.curl}/bin/curl -L --silent -H'Content-Type:text/plain' https://api.ipify.org`\",
+                  \"content\":\"$currentIp\",
                   \"ttl\": 120,
                   \"id\":\"${cfg.recordId}\",
                   \"type\":\"A\",
                   \"name\":\"${cfg.recordName}\"
                 }"
+
+        echo "$currentIp" > "$cacheFile"
       '';
-      startAt = "*-*-* *:40:00";
+      startAt = cfg.schedule;
     };
   };
 }
