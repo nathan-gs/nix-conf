@@ -195,10 +195,18 @@ in
           map (x: (ha.action.mqtt_publish "${x}/get" "?3" false)) [
             "ebusd/370/DisplayedHc1RoomTempDesired"
             "ebusd/370/DisplayedRoomTemp"
+            "ebusd/370/Hc1OPMode"
+            "ebusd/370/Hc1DayTemp"
             "ebusd/bai/FlowTemp"
             "ebusd/bai/FlowTempDesired"
             "ebusd/bai/ReturnTemp"
-            "ebusd/bai/ModulationTempDesired"
+            # bai.308523.inc (HW7401) names this ModulationDesired, not
+            # ModulationTempDesired (HA ebusd const.py / older CSVs).
+            "ebusd/bai/ModulationDesired"
+            "ebusd/bai/WaterPressure"
+            "ebusd/bai/Flame"
+            "ebusd/bai/WP"
+            "ebusd/bai/Status01"
           ]
           ++ [
             (ha.action.delay "0:00:05")

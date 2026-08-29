@@ -1339,7 +1339,7 @@ views:
             show:
               header_color_threshold: true
             yaxis_id: cv_temperature
-          - entity: sensor.ebusd_bai_flowtempdesired_temp
+          - entity: sensor.ebusd_bai_flowtempdesired
             name: Flow Temperature Desired (CV)
             type: line
             group_by:
