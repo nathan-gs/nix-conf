@@ -15,6 +15,10 @@
     # changing it early breaks media-rsync/auto-upgrade connectivity to nnas
     # while nnas is still only reachable at the old address.
     "192.168.1.201" = [ "nnas.wg" ];
+
+    "10.10.10.10" = [ "nhpone.wg" ];
+    "10.10.10.11" = [ "nlaptop.wg" ];
+    "10.10.10.12" = [ "fphone.wg" ];
   };
 
 }
