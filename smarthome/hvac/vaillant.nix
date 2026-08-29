@@ -195,15 +195,42 @@ in
           map (x: (ha.action.mqtt_publish "${x}/get" "?3" false)) [
             "ebusd/370/DisplayedHc1RoomTempDesired"
             "ebusd/370/DisplayedRoomTemp"
+            "ebusd/370/Hc1OPMode"
+            "ebusd/370/Hc1DayTemp"
             "ebusd/bai/FlowTemp"
             "ebusd/bai/FlowTempDesired"
             "ebusd/bai/ReturnTemp"
-            "ebusd/bai/ModulationTempDesired"
+            # bai.308523.inc (HW7401) names this ModulationDesired, not
+            # ModulationTempDesired (HA ebusd const.py / older CSVs).
+            "ebusd/bai/ModulationDesired"
+            "ebusd/bai/WaterPressure"
+            "ebusd/bai/Flame"
+            "ebusd/bai/WP"
+            "ebusd/bai/Status01"
           ]
           ++ [
             (ha.action.delay "0:00:05")
           ];
         mode = "queued";
+      }
+      {
+        # Vaillant ecoTEC boilers warn on the display below ~1.0 bar and lock
+        # out (F.22/F.75-style fault) around 0.7-0.8 bar. Warn early so it can
+        # be topped up before the boiler actually faults.
+        id = "cv_water_pressure_low";
+        alias = "cv.water_pressure_low";
+        trigger = [
+          (ha.trigger.below_for "sensor.heating_ebusd_bai_waterpressure_press" 1.0 "0:30:00")
+        ];
+        condition = [ ];
+        action = [
+          (ha.action.notify "CV waterdruk laag"
+            ''
+              CV waterdruk is {{ states('sensor.heating_ebusd_bai_waterpressure_press') }} bar (al 30 min onder 1.0 bar).
+              Bijvullen voordat de ketel op storing gaat (meestal rond 0.7-0.8 bar).
+            '')
+        ];
+        mode = "single";
       }
     ];
 
