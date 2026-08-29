@@ -13,9 +13,22 @@
   users.groups.media.members = [ "jellyfin" ];
 
 
+  # DNS-01 so the cert also covers m.l.nathan.gs / m.wg.nathan.gs, which only
+  # resolve on the LAN/WireGuard and can't satisfy an HTTP-01 challenge.
+  security.acme.certs."m.nathan.gs" = {
+    group = "nginx";
+    dnsProvider = "cloudflare";
+    environmentFile = pkgs.writeText "acme-m-cloudflare-env" ''
+      CLOUDFLARE_EMAIL=${config.secrets.cloudflare.authEmail}
+      CLOUDFLARE_API_KEY=${config.secrets.cloudflare.authKey}
+    '';
+    extraDomainNames = [ "m.l.nathan.gs" "m.wg.nathan.gs" ];
+  };
+
   services.nginx.virtualHosts."m.nathan.gs" = {
     forceSSL = true;
-    enableACME = true;
+    useACMEHost = "m.nathan.gs";
+    serverAliases = [ "m.l.nathan.gs" "m.wg.nathan.gs" ];
     locations."/" = {
       proxyPass = "http://127.0.0.1:8096";
       proxyWebsockets = true; # needed if you need to use WebSocket

@@ -35,9 +35,22 @@
     package = pkgs.photoprism;
   };
 
+  # DNS-01 so the cert also covers photoprism.l.nathan.gs / photoprism.wg.nathan.gs, which
+  # only resolve on the LAN/WireGuard and can't satisfy an HTTP-01 challenge.
+  security.acme.certs."photoprism.nathan.gs" = {
+    group = "nginx";
+    dnsProvider = "cloudflare";
+    environmentFile = pkgs.writeText "acme-photoprism-cloudflare-env" ''
+      CLOUDFLARE_EMAIL=${config.secrets.cloudflare.authEmail}
+      CLOUDFLARE_API_KEY=${config.secrets.cloudflare.authKey}
+    '';
+    extraDomainNames = [ "photoprism.l.nathan.gs" "photoprism.wg.nathan.gs" ];
+  };
+
   services.nginx.virtualHosts."photoprism.nathan.gs" = {
     forceSSL = true;
-    enableACME = true;
+    useACMEHost = "photoprism.nathan.gs";
+    serverAliases = [ "photoprism.l.nathan.gs" "photoprism.wg.nathan.gs" ];
     basicAuth = config.secrets.nginx.basicAuth;
     locations."/" = {
       proxyPass = "http://127.0.0.1:2342";

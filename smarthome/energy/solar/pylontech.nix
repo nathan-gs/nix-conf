@@ -402,7 +402,6 @@ in
                 {{ [0, (left / 60) | round(0)] | max | int }}
               {% endif %}
             '';
-            availability = "{{ is_state('${rebalanceActiveEntity}', 'on') }}";
           }
           {
             name = "solar/battery/rebalance_charge_current_target";

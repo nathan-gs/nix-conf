@@ -15,9 +15,22 @@
     pkgs.libheif
   ]);
 
+  # DNS-01 so the cert also covers read.l.nathan.gs / read.wg.nathan.gs, which
+  # only resolve on the LAN/WireGuard and can't satisfy an HTTP-01 challenge.
+  security.acme.certs."read.nathan.gs" = {
+    group = "nginx";
+    dnsProvider = "cloudflare";
+    environmentFile = pkgs.writeText "acme-read-cloudflare-env" ''
+      CLOUDFLARE_EMAIL=${config.secrets.cloudflare.authEmail}
+      CLOUDFLARE_API_KEY=${config.secrets.cloudflare.authKey}
+    '';
+    extraDomainNames = [ "read.l.nathan.gs" "read.wg.nathan.gs" ];
+  };
+
   services.nginx.virtualHosts."read.nathan.gs" = {
     forceSSL = true;
-    enableACME = true;
+    useACMEHost = "read.nathan.gs";
+    serverAliases = [ "read.l.nathan.gs" "read.wg.nathan.gs" ];
     extraConfig = ''
       proxy_buffering off;
     '';
