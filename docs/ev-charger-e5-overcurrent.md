@@ -80,10 +80,14 @@ automation, not just the charger, was misbehaving.
 
 - Trigger now debounces via `for: "00:01:00"` — only reacts once the target has held steady for a
   full minute, instead of chasing every recalculation. (10s was tried first and judged too short;
-  see commit history.) This mainly slows reaction to the noisy front-of-quarter branch; the real
-  capacity-tariff safety drop (`banked >= capacity_near` → 6 A) is driven by a slow, monotonic
-  15-minute average, so delaying it by up to a minute is negligible.
+  see commit history.) This targets the noisy front-of-quarter headroom branch specifically.
 - Step delay increased from 1 to 2 minutes.
+- The real capacity-tariff safety drop is exempted from both: `binary_sensor.system_car_charger_capacity_near`
+  (banked `electricity_delivery_power_15m` crossing near the monthly cap) is monotonic within a
+  quarter — it can't flap, so debouncing it serves no purpose — and gets its own **undebounced**
+  trigger straight to 6 A. Its margin was also widened from 0.3 to 0.5 kW below the cap, to give
+  back the time the slower 1 min debounce + 2 min/step cadence now costs elsewhere, so the average
+  still lands under the cap before the 15-minute window closes.
 
 ## Fault #3: cold starts and stale current
 
