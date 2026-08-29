@@ -200,6 +200,19 @@
             '';
           }
           {
+            # The charger's own status DP — local and immediate, unlike the Audi Connect API
+            # (cloud-polled, minutes behind: on 2026-08-29 this reported plugged_in/charging a
+            # full 12 minutes before binary_sensor.audi_a6_sportback_e_tron_plug_state caught
+            # up). Use this instead of anything Audi- or phone-derived for "is a car actually
+            # attached to the charger".
+            name = "system/car_charger/vehicle_connected";
+            unique_id = "system_car_charger_vehicle_connected";
+            icon = "mdi:ev-plug-type2";
+            state = ''
+              {{ states('sensor.system_car_charger_status') not in ['available', 'fault_unplugged', 'unavailable', 'unknown'] }}
+            '';
+          }
+          {
             name = "system/car_charger/should_charge";
             unique_id = "system_car_charger_should_charge";
             icon = "mdi:car-electric";
@@ -252,6 +265,7 @@
               # switch off conditions below mean this only restarts an interrupted charge and is
               # a no-op while already charging or when charging genuinely shouldn't run.
               (ha.trigger.time_pattern_minutes "/10")
+              (ha.trigger.on "binary_sensor.system_car_charger_vehicle_connected")
             ];
             conditions = [
               (ha.condition.on "binary_sensor.system_car_charger_should_charge")
@@ -269,6 +283,12 @@
                 '';
               }
               (ha.condition.off "switch.system_car_charger")
+              # The charger isn't actually connected to anything unless a car is plugged in —
+              # without this, should_charge (which knows nothing about the physical connection)
+              # kept firing start every ~10m / on every battery_soc tick while the car was away,
+              # and the unplugged EVSE self-tripped back off within seconds each time (36 switch
+              # flaps + 34 current writes observed in one 2h15m window on 2026-08-29).
+              (ha.condition.on "binary_sensor.system_car_charger_vehicle_connected")
             ];
             actions = [
               # Ensure charger switch is on
@@ -393,6 +413,29 @@
               (ha.action.set_value "number.system_car_charger_timer" 6)
               (ha.action.delay "00:00:05")
               (ha.action.set_value "select.system_car_charger_charging_mode" "delayed_charge")
+            ];
+          }
+      )
+
+      # Stop and reset the ramp baseline when the car is physically unplugged mid-charge.
+      # should_charge/stop above know nothing about the physical connection, so without this an
+      # unplug while switch is on left the charger sitting on with no vehicle attached until the
+      # next /10m recheck.
+      (
+        ha.automation "system/car_charger.disconnected"
+          {
+            triggers = [
+              (ha.trigger.off "binary_sensor.system_car_charger_vehicle_connected")
+            ];
+            conditions = [
+              # Odd bug, if you call this while off, it puts it on — only touch the device if we
+              # know it's actually on right now.
+              (ha.condition.on "switch.system_car_charger")
+            ];
+            actions = [
+              (ha.action.off "switch.system_car_charger")
+              (ha.action.delay "00:00:05")
+              (ha.action.set_value "number.system_car_charger_charging_current" 8)
             ];
           }
       )
