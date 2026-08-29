@@ -254,7 +254,15 @@
                  budget — do not let the car import at the same time. Cancel
                  automation.solar_battery_pylontech_rebalance_cancel to unblock. #}
               {% set rebalance = is_state('input_boolean.solar_battery_rebalance_active', 'on') %}
-              {{ override != 'off' and not rebalance and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost or battery_drain_force) }}
+              {# Hard last-resort safeguard (electricity_capacity_critical, capacity_peaks.nix):
+                 the quarter's cap is projected to be breached by non-car load alone AND the
+                 battery has nothing left to give — the car's 6A tail throttle can't fix this, so
+                 stop entirely rather than add to the overage. General, not car-specific, so it
+                 applies uniformly like `rebalance` — including over low_soc, since a few minutes
+                 without topping up a low car battery is a smaller cost than the tariff hit, and
+                 charging resumes automatically the moment this clears. #}
+              {% set capacity_critical = is_state('binary_sensor.electricity_capacity_critical', 'on') %}
+              {{ override != 'off' and not rebalance and not capacity_critical and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost or battery_drain_force) }}
             '';
           }
         ];

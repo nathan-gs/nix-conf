@@ -208,6 +208,21 @@
               {{ (banked > 1.2) and (projected > threshold) }}
             '';
           }
+          {
+            # Hard last-resort safeguard, general (not car-specific) so any load can react to it.
+            # `max_threshold` above already projects the quarter *excluding* whatever the car is
+            # drawing right now — so if it's on, the cap is going to be breached by other load
+            # alone, no matter how far the car throttles (its 6A tail is a floor, not zero).
+            # Only genuinely "critical" once the battery has nothing left to give either
+            # (solar/battery/sufficient off, its floor per docs/ev-battery-peak-coordination.md) —
+            # otherwise the battery is expected to cover the gap and this should stay quiet.
+            name = "electricity_capacity_critical";
+            unique_id = "electricity_capacity_critical";
+            icon = "mdi:transmission-tower-off";
+            state = ''
+              {{ is_state('binary_sensor.electricity_delivery_power_max_threshold', 'on') and not is_state('binary_sensor.solar_battery_sufficient', 'on') }}
+            '';
+          }
         ];
       }
     ];
