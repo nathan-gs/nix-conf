@@ -150,6 +150,35 @@ vehicle_connected = status not in ['available', 'fault_unplugged', 'unavailable'
   on, turns the switch off and resets current to 8 A immediately, instead of waiting for the next
   `/10m` recheck.
 
+## Safeguard: hard stop when the cap can't be avoided by throttling alone
+
+The car's minimum current step is 6 A (~1.38 kW) — a *floor*, not zero. `target_current`'s
+`banked >= capacity_near` tail throttles down to it, but if house load *other than the car* is
+already enough to blow the quarter's capacity-tariff cap, throttling the car to 6 A doesn't help;
+its residual 1.38 kW can still be the difference. The house battery is the first line of defence
+(down to its own floor, `binary_sensor.solar_battery_sufficient` — see
+`docs/ev-battery-peak-coordination.md`), but once *that* has nothing left to give either, nothing
+was stopping the car's 6 A tail from adding to an overage that was going to happen regardless.
+
+### Fix — `binary_sensor.electricity_capacity_critical` (`smarthome/energy/capacity_peaks.nix`)
+
+Deliberately general, not car-specific, so any load could react to it in future:
+
+```
+electricity_capacity_critical =
+  electricity_delivery_power_max_threshold (on)   # cap breached by non-car load alone, projected
+  and not solar_battery_sufficient (on)           # AND the battery has hit its own floor
+```
+
+`electricity_delivery_power_max_threshold` already projects the quarter's average *excluding*
+whatever the car is currently drawing (see its comment in `capacity_peaks.nix`), so "on" already
+means the cap is inevitable with or without the car.
+
+`system/car_charger/should_charge` (`tuya.nix`) now ANDs in `not capacity_critical`, applied
+uniformly like the existing `rebalance` gate — including over `low_soc` (a critically low car
+battery does not override this): a few minutes without topping up the car is a smaller cost than
+the tariff hit, and charging resumes automatically the moment the sensor clears.
+
 ## The "odd bug": don't write to the device while it's off
 
 `car_charger.stop`'s conditions carry the note *"Odd bug, if you call this while off, it puts it
@@ -172,6 +201,7 @@ it's been sitting off from an earlier, unrelated run.
 | `automation.system_car_charger_stop` | Turns charger off when `should_charge` goes off |
 | `automation.system_car_charger_disconnected` | Turns charger off + resets to 8 A on physical unplug |
 | `automation.system_car_charger_set_current` | Debounced step-wise ramp toward `target_current` |
+| `binary_sensor.electricity_capacity_critical` | (`capacity_peaks.nix`, general) cap unavoidable by non-car load alone + battery at its floor — hard-stops `should_charge` |
 
 ## Open items (not fixed by any of the above — hardware/car side)
 
