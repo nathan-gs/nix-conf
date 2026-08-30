@@ -45,10 +45,16 @@ in
         http = 4000;
       };
 
+      # DNS-over-HTTPS upstreams so blocky's outgoing queries aren't plain
+      # UDP/TCP. bootstrapDns resolves the DoH hostnames themselves before
+      # blocky has a working resolver of its own.
       upstreams.groups.default = [
-        "1.1.1.1"
-        "1.0.0.1"
-        "9.9.9.9"
+        "https://cloudflare-dns.com/dns-query"
+        "https://dns.quad9.net/dns-query"
+      ];
+      bootstrapDns = [
+        "tcp+udp:1.1.1.1"
+        "tcp+udp:9.9.9.9"
       ];
 
       caching = {
@@ -59,13 +65,17 @@ in
         prefetchThreshold = 5;
       };
 
-      # Ads only — no trackers/malware/social lists.
+      # Ads + trackers — no malware/social lists.
       blocking = {
         denylists = {
           ads = [
             "https://adaway.org/hosts.txt"
             "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
             "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
+          ];
+          trackers = [
+            "https://v.firebog.net/hosts/Easyprivacy.txt"
+            "https://raw.githubusercontent.com/anudeepND/blacklist/master/facebook.txt"
           ];
           # Catch-all: matches every domain. Combined with the allowlist
           # below, this gives select smarthome devices DNS resolution for
@@ -75,7 +85,7 @@ in
           everything = [ "/.*/" ];
         };
         allowlists.everything = [ "l.nathan.gs" ];
-        clientGroupsBlock = { default = [ "ads" ]; } // restrictedClientsBlock;
+        clientGroupsBlock = { default = [ "ads" "trackers" ]; } // restrictedClientsBlock;
         blockType = "zeroIp";
         loading.refreshPeriod = "24h";
       };
