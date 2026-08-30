@@ -24,8 +24,18 @@ let
          and states('sensor.system_house_pv_battery_current_direction') not in ['unknown', 'unavailable', 'none'] }}
     '';
     unit_of_measurement = "W";
-    attributes.workaround = ''{{ now().minute }}'';
     state_class = "measurement";
+    # `force_update` re-emits state_changed even when the computed power is
+    # unchanged. Paired with the time_pattern trigger below (this is a
+    # trigger-based template, not a legacy one), that guarantees a fresh
+    # timestamp at least once a minute for the Riemann integration further
+    # down. Without both: a legacy (non-trigger) template only re-renders
+    # when a *source* entity changes value, so if the BMS current/voltage
+    # sit still for a while and then jump, `integration` smears the jump's
+    # power across the whole silent gap — measured: a 72-minute gap plus one
+    # 3.7kW transient produced a false 2.25kWh step in the discharge total
+    # on 2026-08-30, which is what this fixes.
+    force_update = true;
   };
 
   # Split the signed power into two always-nonnegative sensors and
@@ -50,6 +60,11 @@ let
       device_class = "power";
       unit_of_measurement = "W";
       state_class = "measurement";
+      # Propagate the parent's heartbeat: without this, a same-value
+      # recompute (triggered by electricity_battery_power's force_update)
+      # would itself get suppressed here, breaking the chain before it
+      # reaches the Riemann integration.
+      force_update = true;
     };
 
   batteryChargingPower = mkBatteryPowerSplit {
@@ -293,7 +308,16 @@ in
         ];
       }
       {
-        sensor = [ electricityBatteryPower batteryChargingPower batteryDischargingPower ] ++ aggregates;
+        trigger = [
+          (ha.trigger.state "sensor.system_house_pv_battery_current_bms")
+          (ha.trigger.state "sensor.system_house_pv_battery_voltage_bms")
+          (ha.trigger.state "sensor.system_house_pv_battery_current_direction")
+          (ha.trigger.time_pattern_minutes "/1")
+        ];
+        sensor = [ electricityBatteryPower ];
+      }
+      {
+        sensor = [ batteryChargingPower batteryDischargingPower ] ++ aggregates;
       }
     ];
 
