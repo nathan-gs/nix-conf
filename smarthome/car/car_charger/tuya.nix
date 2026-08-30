@@ -169,7 +169,8 @@
               {# Start from the capacity-tariff headroom (or its 6A end-of-quarter tail — see
                  capacity_headroom_current and binary_sensor.system_car_charger_capacity_near),
                  throttle to available solar unless boosting, then clamp to this mode's cap and
-                 quantize to a step the charger accepts. #}
+                 quantize down to a step the charger accepts (steps[0] = 6A is always the floor —
+                 select() below returns nothing below it, so `or [steps[0]]` catches that). #}
               {% set steps = [6, 8, 10, 13, 16] %}
               {% set battery_mode = states('input_select.car_charge_override') == 'auto + battery' %}
               {% set boost = is_state('binary_sensor.system_car_charger_boost_active', 'on') %}
@@ -177,29 +178,22 @@
               {% set target_a = states('sensor.system_car_charger_capacity_headroom_current') | int(6) %}
               {% if is_state('binary_sensor.system_car_charger_solar_boost', 'on') and not boost %}
                 {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
-                {% if battery_mode %}
-                  {# Reserve 500W for the home battery; cap car charging at 8A. #}
-                  {% set available = solar - 500 %}
-                  {% set solar_a = [0, (available / 230) | round(0) | int] | max %}
-                  {% set target_a = min(8, solar_a) %}
-                {% else %}
-                  {% set solar_a = (solar / 230) | round(0) | int %}
-                  {% set target_a = min(16, solar_a) %}
-                  {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
-                  {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
-                  {% if battery > 50 and battery <= 80 and remaining_energy > 5 %}
-                    {% set target_a = 13 %}
-                  {% endif %}
+                {# auto + battery reserves 500W for the home battery and caps at 8A; every other
+                   mode caps at 16A and, when the battery's comfortably charged (50-80%) with
+                   plenty of solar still to come today, gets a floor bump to 13A regardless of the
+                   raw solar reading. #}
+                {% set reserve_w = 500 if battery_mode else 0 %}
+                {% set solar_cap = 8 if battery_mode else 16 %}
+                {% set solar_a = [0, ((solar - reserve_w) / 230) | round(0) | int] | max %}
+                {% set target_a = min(solar_cap, solar_a) %}
+                {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
+                {% set remaining_energy = states('sensor.energy_production_today_remaining') | float(0) %}
+                {% if not battery_mode and battery > 50 and battery <= 80 and remaining_energy > 5 %}
+                  {% set target_a = 13 %}
                 {% endif %}
               {% endif %}
               {% set target_a = min(target_a, cap) %}
-              {% set ns = namespace(val=steps[0]) %}
-              {% for s in steps %}
-                {% if s <= target_a %}
-                  {% set ns.val = s %}
-                {% endif %}
-              {% endfor %}
-              {{ ns.val }}
+              {{ (steps | select('le', target_a) | list or [steps[0]]) | max }}
             '';
           }
         ];
