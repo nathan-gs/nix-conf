@@ -6,8 +6,8 @@ in
 
   services.home-assistant.config = {
     sonos.media_player.hosts = map deviceIp [
-      "sonos-1"
-      "sonos-2"
+      "sonos-tv"
+      "sonos-keuken"
       "sonos-3"
       "sonos-4"
     ];
