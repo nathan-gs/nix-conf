@@ -1,12 +1,15 @@
 { config, pkgs, lib, ha, ... }:
+let
+  deviceIp = name: (lib.findFirst (d: d.name == name) (throw "sonos.nix: device '${name}' not in home-network.nix") config.homeNetwork.devices).ip;
+in
 {
 
   services.home-assistant.config = {
     sonos.media_player.hosts = [
-      "192.168.1.70" # was .140, now kea-reserved (services/dhcp.nix)
+      (deviceIp "sonos-1") # kea-reserved, see home-network.nix
       "192.168.1.141" # not seen on the LAN yet, not kea-reserved
       "192.168.1.142" # not seen on the LAN yet, not kea-reserved
-      "192.168.1.71" # was .143, now kea-reserved (services/dhcp.nix)
+      (deviceIp "sonos-2") # kea-reserved, see home-network.nix
     ];
 
     # Kitchen One: idle ~4 W (Sonos spec 3.1–4.1 W), playing ~8 W.

@@ -9,6 +9,7 @@
     [ # Include the results of the hardware scan.
       (modulesPath + "/installer/scan/not-detected.nix")
       ../disks.nix
+      ../home-network.nix
       ../headless.nix
       ../system.nix
       ../services/fail2ban.nix
