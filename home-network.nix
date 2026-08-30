@@ -50,7 +50,7 @@
     { name = "car-charger"; mac = "f8:17:2d:cc:3a:95"; ip = "192.168.1.35"; internet = false; }
     { name = "robotic-mower"; mac = "94:e6:86:59:c9:78"; ip = "192.168.1.36"; }
     { name = "wasmachine"; mac = "44:3e:07:05:51:4d"; ip = "192.168.1.37"; }
-    { name = "wifidishwashing"; mac = "34:ab:95:f0:65:58"; ip = "192.168.1.38"; }
+    { name = "dishwasher"; mac = "34:ab:95:f0:65:58"; ip = "192.168.1.38"; }
     # SwitchBot hub + relay for the same physical robot vacuum.
     { name = "switchbot-robot-k10"; mac = "ec:31:4a:05:55:e9"; ip = "192.168.1.39"; }
     { name = "vacuum"; mac = "88:57:1d:cb:18:fb"; ip = "192.168.1.40"; }
