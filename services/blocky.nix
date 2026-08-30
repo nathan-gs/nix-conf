@@ -84,7 +84,18 @@ in
           # a device that hardcodes its own resolver bypasses this).
           everything = [ "/.*/" ];
         };
-        allowlists.everything = [ "l.nathan.gs" ];
+        # NTP hostnames, so restricted devices can still sync their clock
+        # even though they otherwise only get l.nathan.gs. Domain entries
+        # cover subdomains too (e.g. 0.pool.ntp.org, europe.pool.ntp.org).
+        allowlists.everything = [
+          "l.nathan.gs"
+          "pool.ntp.org"
+          "ntp.org"
+          "time.google.com"
+          "time.windows.com"
+          "time.apple.com"
+          "time.cloudflare.com"
+        ];
         clientGroupsBlock = { default = [ "ads" "trackers" ]; } // restrictedClientsBlock;
         blockType = "zeroIp";
         loading.refreshPeriod = "24h";
