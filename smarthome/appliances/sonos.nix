@@ -5,11 +5,11 @@ in
 {
 
   services.home-assistant.config = {
-    sonos.media_player.hosts = [
-      (deviceIp "sonos-1") # kea-reserved, see home-network.nix
-      "192.168.1.141" # not seen on the LAN yet, not kea-reserved
-      "192.168.1.142" # not seen on the LAN yet, not kea-reserved
-      (deviceIp "sonos-2") # kea-reserved, see home-network.nix
+    sonos.media_player.hosts = map deviceIp [
+      "sonos-1"
+      "sonos-2"
+      "sonos-3"
+      "sonos-4"
     ];
 
     # Kitchen One: idle ~4 W (Sonos spec 3.1–4.1 W), playing ~8 W.
