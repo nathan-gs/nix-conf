@@ -1,4 +1,20 @@
 { config, pkgs, lib, ... }:
+let
+  devices = config.homeNetwork.devices;
+
+  # Explicit per-device records under l.nathan.gs (home-network.nix). An
+  # explicit name always wins over the "*" wildcard below, so this doesn't
+  # conflict with it.
+  deviceZoneRecords = lib.concatMapStrings (
+    d:
+    "${d.name} 3600 IN A ${d.ip}\n"
+    + lib.concatMapStrings (a: "${a} 3600 IN A ${d.ip}\n") d.aliases
+  ) devices;
+
+  restrictedClientsBlock = lib.listToAttrs (
+    map (d: lib.nameValuePair d.ip [ "everything" ]) (lib.filter (d: !d.internet) devices)
+  );
+in
 {
   # Local resolver + ad-blocker + split-horizon DNS.
   #
@@ -50,14 +66,7 @@
           everything = [ "/.*/" ];
         };
         allowlists.everything = [ "l.nathan.gs" ];
-        clientGroupsBlock = {
-          default = [ "ads" ];
-          "192.168.1.30" = [ "everything" ]; # smartgatewayp1
-          "192.168.1.31" = [ "everything" ]; # smartgatewaywater
-          "192.168.1.33" = [ "everything" ]; # bluetooth-proxy-boven
-          "192.168.1.34" = [ "everything" ]; # ebus
-          "192.168.1.35" = [ "everything" ]; # car-charger
-        };
+        clientGroupsBlock = { default = [ "ads" ]; } // restrictedClientsBlock;
         blockType = "zeroIp";
         loading.refreshPeriod = "24h";
       };
@@ -66,14 +75,17 @@
       # differently depending on which zone it's queried under, e.g.
       # ha.l.nathan.gs (LAN) vs ha.wg.nathan.gs (WireGuard) — matching the
       # ACME SANs already issued in home-assistant.nix and friends. nhtpc
-      # is currently the only host serving these, so both zones just point
-      # everything at it; nginx routes further by Host header.
+      # is currently the only host serving these web-facing names, so the
+      # wildcards point everything at it; nginx routes further by Host
+      # header. Devices from home-network.nix additionally get their own
+      # explicit name(s) under l.nathan.gs.
       customDNS = {
         filterUnmappedTypes = true;
         zone = ''
           $ORIGIN l.nathan.gs.
           @ 3600 IN A 192.168.1.2
           * 3600 IN A 192.168.1.2
+          ${deviceZoneRecords}
           $ORIGIN wg.nathan.gs.
           @ 3600 IN A 10.73.221.1
           * 3600 IN A 10.73.221.1
