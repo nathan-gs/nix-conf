@@ -29,6 +29,7 @@
       ../services/komga.nix
       ../services/jellyfin.nix
       ../services/nginx.nix
+      ../services/blocky.nix
       #../services/smb.nix
       #../services/ollama.nix
       ../services/sos2mqtt.nix
