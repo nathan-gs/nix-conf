@@ -89,6 +89,10 @@ in
           $ORIGIN wg.nathan.gs.
           @ 3600 IN A 10.73.221.1
           * 3600 IN A 10.73.221.1
+          nnas 3600 IN A 10.73.221.2
+          nhpone 3600 IN A 10.73.221.10
+          nlaptop 3600 IN A 10.73.221.11
+          fphone 3600 IN A 10.73.221.12
         '';
       };
 
@@ -115,6 +119,14 @@ in
     forceSSL = true;
     useACMEHost = "dns.nathan.gs";
     serverAliases = [ "dns.l.nathan.gs" "dns.wg.nathan.gs" ];
+    # LAN/WireGuard only — DoH has no business being reachable from the
+    # public internet, unlike the rest of the vhosts on this nginx.
+    extraConfig = ''
+      allow 192.168.1.0/24;
+      allow 10.73.221.0/24;
+      allow 127.0.0.1;
+      deny all;
+    '';
     locations."/dns-query" = {
       proxyPass = "http://127.0.0.1:4000/dns-query";
     };
