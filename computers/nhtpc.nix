@@ -30,6 +30,7 @@
       ../services/jellyfin.nix
       ../services/nginx.nix
       ../services/blocky.nix
+      ../services/mdns-local.nix
       #../services/smb.nix
       #../services/ollama.nix
       ../services/sos2mqtt.nix
