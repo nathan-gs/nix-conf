@@ -45,7 +45,7 @@
       name = "nhtpc";
       mac = "70:85:c2:7a:99:94";
       ip = "192.168.1.2";
-      aliases = [ "mqtt" "photoprism" "ha" "dns" "read" "m" "onedrive" "t" ];
+      aliases = [ "mqtt" "photoprism" "ha" "dns" "read" "m" ];
     }
     { name = "printer"; mac = "dc:a2:66:24:87:0c"; ip = "192.168.1.3"; }
     # Pinned to its original FritzBox-known IP (not the tidy range) —
