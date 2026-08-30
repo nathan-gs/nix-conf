@@ -79,6 +79,20 @@
               {% set battery_drain = charge_override == 'battery drain' %}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set boost = boost or (battery_drain and battery > 20) %}
+              {# Auto solar+grid boost: on a low-tariff period with the sun actually out right now
+                 and the car still below its grid-charge target, don't throttle to available solar
+                 (the solar_boost path below) — charge at full cap like manual 'solar+grid boost'.
+                 Mirrors the should_charge_offpeak solar_first/daytime carve-out, which otherwise
+                 defers to solar-only during the day. "Sunny" here is real-time solar output
+                 (binary_sensor.system_car_charger_solar_boost, solar > 1000 W), not the
+                 forecast-based car_charge_sunny_tomorrow (set the evening before for the next
+                 day's plan — the wrong signal for a live "is it sunny now" check). #}
+              {% set offpeak = is_state('binary_sensor.electricity_is_offpeak', 'on') %}
+              {% set sunny = is_state('binary_sensor.system_car_charger_solar_boost', 'on') %}
+              {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
+              {% set target = states('input_number.car_charge_grid_target') | float(70) %}
+              {% set auto_boost = charge_override == 'auto' and offpeak and sunny and soc < target %}
+              {% set boost = boost or auto_boost %}
               {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
               {# The manual current override is a MAX, not a fixed value — headroom/peak-shaving
                  below can still scale the actual current down under it. A hard fixed value ignored
@@ -190,7 +204,11 @@
                  offpeak grid charging stays enabled. #}
               {% set solar_first = target <= 60 %}
               {% set daytime = is_state('sun.sun', 'above_horizon') %}
-              {{ offpeak and soc < target and not (solar_first and daytime) }}
+              {# Sunny (real-time solar, not last night's forecast) + low tariff + below target:
+                 solar+grid boost (see target_current) takes over instead of ceding daytime to
+                 solar-only, so the solar_first carve-out shouldn't block grid charging here. #}
+              {% set sunny = is_state('binary_sensor.system_car_charger_solar_boost', 'on') %}
+              {{ offpeak and soc < target and not (solar_first and daytime and not sunny) }}
             '';
           }
           {
