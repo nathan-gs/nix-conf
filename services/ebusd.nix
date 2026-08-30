@@ -41,6 +41,48 @@ let
   # same as PumpPowerDesired's auto). Revisit if a heating cycle shows a
   # PumpPower value outside 0-5.
   ebusdConfigPath = ./ebusd-csv;
+
+  # Full-register probe (2026-08-30): read -f every "r," register in both
+  # circuit CSVs live off the bus. 257/265 returned real data; only
+  # DCFTimeDate/Errorhistory/FanPWMTest/Status/Status16/VortexFlowSensor/
+  # MonitorCurrentIPart error (unimplemented on this hardware — matches the
+  # scan-verification note above). Below adds everything from that probe
+  # worth polling as a sensor, on top of the original operating-data set.
+  # Deliberately left out (still readable, just not added):
+  #   - CcTimer_*/HcTimer_*/HwcTimer_* + Hc1*HolidayPeriod/HolidayRoomTemp —
+  #     schedules live in HA, not the controller.
+  #   - Factory/installer statics that never change post-install (SerialNumber,
+  #     PartnumberBox, ProductionByte, ParamToken, Testbyte, DSN/DSNOffset/
+  #     DSNStart, ChangesDSN, KeyCodeforConfigMenu, LcdContrastValue,
+  #     LanguageVariant, CountryVariant, HydraulicMap, BoilerType,
+  #     InstallAssistant, EepromUpdateActive, FactoryTestActive,
+  #     StartEepromUpdate, SetFactoryValues, TestVarActivateFunction,
+  #     InitialisationEEPROM, HcName1, FlowSetPotmeter, HwcSetPotmeter,
+  #     FanMinSpeedOperation, FanMaxSpeedOperation, FanSpeedOffsetMin/Max,
+  #     DeltaFlowReturnMax, BlockTimeHcMax, FlowsetHcMax/HwcMax,
+  #     StorageTempMax/HwcTempMax/FlowTempMax/StorageLoadTimeMax,
+  #     Maintenancedata_HwcTempMax, ReturnTempMax).
+  #   - Raw ASIC/ignition/hex diagnostics with no useful decode (FlameSensingASIC,
+  #     IonisationVoltageLevel, AverageIgnitiontime, MinIgnitiontime,
+  #     MaxIgnitiontime, GasvalveASICFeedback, GasvalveUCFeedback, PowerValue,
+  #     DisplayMode, Statenumber, ValveMode, PositionValveSet,
+  #     CounterStartattempts1-4, TargetFanSpeedOutput).
+  #   - Solar/external-heat-source/heat-pump accessory registers, all
+  #     permanently off/0 on this install (SHEMaxDeltaHwcFlow, SHEMaxFlowTemp,
+  #     TempMaxDiffExtTFT, ExtFlowTempDesiredMin, ExtStorageModulCon,
+  #     ExternalHwcSwitch, ExternGasvalve, ExternalFaultmessage, SolPostHeat,
+  #     PumpHwcFlowNumber, PumpHwcFlowSum).
+  #   - Bogus/unpopulated: PrEnergySum* (reads as the UINT32 overflow sentinel
+  #     4294967294 on Hc1, 0 on the unused Hc2/Hc3/Hwc2/Hwc3 circuits),
+  #     PrEnergyCountHc2/3+Hwc2/3 (0, unused circuits), PrVortexFlowSensorValue
+  #     (0, tied to the nonexistent VortexFlowSensor), WaterpressureVariantSum/
+  #     MeasureCounter/BranchControlOff, OverflowCounter, ContactName/
+  #     PhoneNumber (blank), DcfState/DcfIsValid/StatusDcf/
+  #     ClockSwitchSummerWinterDone/SummerWinterTimeAdjust/DateTime (DST/DCF
+  #     clock sync, not heating), HcUnderHundredStarts/HwcUnderHundredStarts/
+  #     HwcTypes (cryptic, undocumented codes).
+  # ~110 registers auto-polled now (was 39) — bumped pollinterval to 30s
+  # below so the extra volume doesn't starve the bus.
   haFilterName = lib.concatStringsSep "|" [
     # boiler (bai) — live operating data
     "^Status01$"
@@ -69,6 +111,63 @@ let
     "^HcStarts$"
     "^HwcStarts$"
     "^HoursTillService$"
+    # boiler (bai) — combustion/valve/pump live status
+    "^Currenterror$"
+    "^CirPump$"
+    "^Fluegasvalve$"
+    "^FluegasvalveOpen$"
+    "^Gasvalve$"
+    "^Gasvalve3UC$"
+    "^GasvalveUC$"
+    "^Ignitor$"
+    "^HcPumpMode$"
+    "^ReturnRegulation$"
+    "^RemainingBoilerblocktime$"
+    "^VolatileLockout$"
+    "^VolatileLockoutIFCGV$"
+    "^WarmstartDemand$"
+    "^WarmstartOffset$"
+    "^HwcWaterflow$"
+    "^HwcWaterflowMax$"
+    "^PrimaryCircuitFlowrate$"
+    "^Expertlevel_ReturnTemp$"
+    "^ExternalFlowTempDesired$"
+    "^FloorHeatingContact$"
+    "^SecondPumpMode$"
+    "^PumpEnergySaveCalculatedTimeMonitor$"
+    "^PumpEnergySaveStateMonitor$"
+    "^HwcImpellorSwitch$"
+    "^HwcLoadingIn430Active$"
+    "^HwcCircuitActive$"
+    "^HwcSwitch$"
+    "^HwcActualTempDesired$"
+    "^Storageloadpump$"
+    "^StoragereleaseClock$"
+    "^ActoSTOROPMode$"
+    "^ACTOstorDetected$"
+    "^APCComStatus$"
+    "^APCLegioProtection$"
+    "^TempDiffBlock$"
+    "^TempDiffFailure$"
+    "^TempGradientFailure$"
+    "^DeactivationsIFC$"
+    "^DeactivationsTemplimiter$"
+    "^EBusHeatcontrol$"
+    "^EbusSourceOn$"
+    "^EbusVoltage$"
+    "^CPLPLast24started$"
+    # boiler (bai) — service-life / maintenance counters
+    "^FanHours$"
+    "^FanStarts$"
+    "^PumpHours$"
+    "^HcPumpStarts$"
+    "^StorageLoadPumpHours$"
+    "^StorageloadPumpStarts$"
+    "^ValveStarts$"
+    "^PartloadHwcKW$"
+    "^MaintenanceDate$"
+    "^PrEnergyCountHc1$"
+    "^PrEnergyCountHwc1$"
     # calorMATIC 370
     "^DisplayedRoomTemp$"
     "^DisplayedHc1RoomTempDesired$"
@@ -80,16 +179,44 @@ let
     "^HwcOPMode$"
     "^DisplayedHwcStorageTemp$"
     "^Hc1QuickVetoTemp$"
+    # calorMATIC 370 — Legionella protection (see HwcLegioStartDay/Time for
+    # schedule, LegioProtectActive for live status)
+    "^LegioProtectActive$"
+    "^HwcLegioStartDay$"
+    "^HwcLegioStartTime$"
+    # calorMATIC 370 — other live status/config
+    "^ActualRoomTempDesiredHc1$"
+    "^ActualWeekday$"
+    "^Date$"
+    "^Time$"
+    "^GlobalSystemOff$"
+    "^Hc12stepanalogCtrl$"
+    "^Hc1LineMatchingAdaption$"
+    "^Hc1SFMode$"
+    "^ChimneySweepModeActive$"
+    "^TimerInputHc$"
+    "^RoomTempCorrection$"
+    "^RoomTempLower$"
+    "^RoomTempOffsetSelfWarming$"
+    "^ACRoomthermostat$"
+    "^DCRoomthermostat$"
+    "^AccessoriesOne$"
+    "^AccessoriesTwo$"
   ];
 
   haFilterNonName = lib.concatStringsSep "|" [
     "VortexFlowSensor"
     "^Status$"
     "^Status16$"
-    "Timer"
-    "HcPumpMode"
+    # "Timer" alone would also veto TimerInputHc, which is whitelisted above.
+    "Timer_"
     "^SetMode$"
-    "PrEnergy"
+    # PrEnergyCountHc1/Hwc1 are whitelisted above; only exclude the rest.
+    "PrEnergySum"
+    "PrEnergyCountHc2"
+    "PrEnergyCountHc3"
+    "PrEnergyCountHwc2"
+    "PrEnergyCountHwc3"
     "PrVortex"
     "PrAPS"
   ];
@@ -124,8 +251,9 @@ in
       "--receivetimeout=100"
       "--sendretries=3"
       # Default mqtt-hassio auto-poll (filter-seen=5) used to queue dozens of
-      # unmatched registers. With the whitelist below, 15s is enough.
-      "--pollinterval=15"
+      # unmatched registers. With ~110 whitelisted registers now, 30s keeps
+      # the poll queue from backing up on this serial bus (15s was fine at 39).
+      "--pollinterval=30"
       "--mqttvar=filter-name=${haFilterName}"
       "--mqttvar=filter-non-name=${haFilterNonName}"
     ];
