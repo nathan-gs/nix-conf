@@ -38,7 +38,11 @@
   config.homeNetwork.devices = [
     # Local important stuff: .2-.20
     { name = "printer"; mac = "dc:a2:66:24:87:0c"; ip = "192.168.1.3"; }
-    # .4 avoided: currently live ("ndesk" laptop, d8:bb:c1:17:75:ec)
+    # Pinned to its original FritzBox-known IP (not the tidy range) —
+    # testing the theory that FRITZ!OS keeps a persistent MAC<->IP binding
+    # independent of its own DHCP server and refuses ARP to a MAC claiming
+    # a different IP than what it remembers.
+    { name = "ndesk"; mac = "d8:bb:c1:17:75:ec"; ip = "192.168.1.4"; }
     { name = "fritz-repeater"; mac = "4e:5d:35:81:90:ef"; ip = "192.168.1.5"; }
 
     # Smarthome sensors/gateways/appliances: .30-.69

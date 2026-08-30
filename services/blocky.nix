@@ -81,6 +81,11 @@ in
       # explicit name(s) under l.nathan.gs.
       customDNS = {
         filterUnmappedTypes = true;
+        # AVM publicly owns "fritz.box" (it resolves to a real internet
+        # address via upstream DNS otherwise) — override it back to the
+        # actual router so browsing to it doesn't silently hit AVM's
+        # servers instead of the local admin UI.
+        mapping."fritz.box" = "192.168.1.1";
         zone = ''
           $ORIGIN l.nathan.gs.
           @ 3600 IN A 192.168.1.2
