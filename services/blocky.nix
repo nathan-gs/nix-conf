@@ -14,6 +14,15 @@ let
   restrictedClientsBlock = lib.listToAttrs (
     map (d: lib.nameValuePair d.ip [ "everything" ]) (lib.filter (d: !d.internet) devices)
   );
+
+  # Bare (no .l.nathan.gs suffix) mapping for every device name + alias, so
+  # e.g. "ping mqtt" works even for clients that don't apply the DHCP
+  # domain-search suffix (see the smartgatewayp1/nhtpc issue this
+  # generalizes). Checked for collisions against home-network.nix before
+  # relying on this — same mechanism as the existing fritz.box override.
+  bareDeviceMappings = lib.listToAttrs (
+    lib.concatMap (d: map (n: lib.nameValuePair n d.ip) ([ d.name ] ++ d.aliases)) devices
+  );
 in
 {
   # Local resolver + ad-blocker + split-horizon DNS.
@@ -81,14 +90,15 @@ in
       # explicit name(s) under l.nathan.gs.
       customDNS = {
         filterUnmappedTypes = true;
-        # AVM publicly owns "fritz.box" (it resolves to a real internet
-        # address via upstream DNS otherwise) — override it back to the
-        # actual router so browsing to it doesn't silently hit AVM's
-        # servers instead of the local admin UI.
-        mapping."fritz.box" = "192.168.1.1";
-        # Bare "nhtpc" (no .l.nathan.gs suffix) — some embedded/IoT clients
-        # (e.g. smartgatewayp1) don't apply the DHCP domain-search suffix.
-        mapping."nhtpc" = "192.168.1.2";
+        mapping =
+          {
+            # AVM publicly owns "fritz.box" (it resolves to a real internet
+            # address via upstream DNS otherwise) — override it back to the
+            # actual router so browsing to it doesn't silently hit AVM's
+            # servers instead of the local admin UI.
+            "fritz.box" = "192.168.1.1";
+          }
+          // bareDeviceMappings;
         zone = ''
           $ORIGIN l.nathan.gs.
           @ 3600 IN A 192.168.1.2
