@@ -58,6 +58,32 @@
       {
         sensor = [
           {
+            # The current cap (A) for this charge mode, before headroom/peak-shaving scale it
+            # down further. Split out of target_current so the "what mode am I in" decision is
+            # readable on its own, separate from the "how much headroom is there right now" math.
+            name = "system/car_charger/current_cap";
+            unique_id = "system_car_charger_current_cap";
+            unit_of_measurement = "A";
+            device_class = "current";
+            state_class = "measurement";
+            icon = "mdi:current-ac";
+            state = ''
+              {# "solar+grid 16a" lifts the normal 13A cap to 16A — headroom + peak-shaving below
+                 still hold the actual current under the capacity tariff. #}
+              {% set charge_override = states('input_select.car_charge_override') %}
+              {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
+              {# The manual current override is a MAX, not a fixed value — headroom/peak-shaving
+                 in target_current can still scale the actual current down under it. A hard fixed
+                 value ignored the capacity tariff and grid headroom entirely, which let the
+                 charger sit at a current the house couldn't sustain. #}
+              {% set override = states('input_select.system_car_charger_current_override_a') | int(0) %}
+              {% if override > 0 %}
+                {% set cap = min(cap, override) %}
+              {% endif %}
+              {{ cap }}
+            '';
+          }
+          {
             name = "system/car_charger/target_current";
             unique_id = "system_car_charger_target_current";
             unit_of_measurement = "A";
@@ -66,42 +92,14 @@
             icon = "mdi:current-ac";
             state = ''
               {% set steps = [6, 8, 10, 13, 16] %}
-              {# solar+grid boost / 16a: charge as hard as the capacity tariff allows — keep the
-                 headroom + peak-shaving logic below, but skip the solar_boost reduction that
-                 otherwise caps current to available solar. "solar+grid 16a" additionally lifts
-                 the automatic 13A cap to 16A (headroom + peak-shaving tail still hold it under
-                 the capacity tariff). #}
+              {# boost: charge as hard as current_cap allows — keep the headroom + peak-shaving
+                 logic below, but skip the solar_boost reduction that otherwise caps current to
+                 available solar. See binary_sensor.system_car_charger_boost_active for when this
+                 is on. #}
               {% set charge_override = states('input_select.car_charge_override') %}
-              {% set boost = charge_override in ['solar+grid boost', 'solar+grid 16a'] %}
               {% set battery_mode = charge_override == 'auto + battery' %}
-              {# battery drain: phase 1 (battery > 20%) charges at full grid speed like 'on';
-                 phase 2 (battery <= 20%) falls back to solar-only via the solar boost path. #}
-              {% set battery_drain = charge_override == 'battery drain' %}
-              {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
-              {% set boost = boost or (battery_drain and battery > 20) %}
-              {# Auto solar+grid boost: on a low-tariff period with the sun actually out right now
-                 and the car still below its grid-charge target, don't throttle to available solar
-                 (the solar_boost path below) — charge at full cap like manual 'solar+grid boost'.
-                 Mirrors the should_charge_offpeak solar_first/daytime carve-out, which otherwise
-                 defers to solar-only during the day. "Sunny" here is real-time solar output
-                 (binary_sensor.system_car_charger_solar_boost, solar > 1000 W), not the
-                 forecast-based car_charge_sunny_tomorrow (set the evening before for the next
-                 day's plan — the wrong signal for a live "is it sunny now" check). #}
-              {% set offpeak = is_state('binary_sensor.electricity_is_offpeak', 'on') %}
-              {% set sunny = is_state('binary_sensor.system_car_charger_solar_boost', 'on') %}
-              {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
-              {% set target = states('input_number.car_charge_grid_target') | float(70) %}
-              {% set auto_boost = charge_override == 'auto' and offpeak and sunny and soc < target %}
-              {% set boost = boost or auto_boost %}
-              {% set cap = 16 if charge_override == 'solar+grid 16a' else 13 %}
-              {# The manual current override is a MAX, not a fixed value — headroom/peak-shaving
-                 below can still scale the actual current down under it. A hard fixed value ignored
-                 the capacity tariff and grid headroom entirely, which let the charger sit at a
-                 current the house couldn't sustain. #}
-              {% set override = states('input_select.system_car_charger_current_override_a') | int(0) %}
-              {% if override > 0 %}
-                {% set cap = min(cap, override) %}
-              {% endif %}
+              {% set boost = is_state('binary_sensor.system_car_charger_boost_active', 'on') %}
+              {% set cap = states('sensor.system_car_charger_current_cap') | int(13) %}
               {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
               {% set capacity_kw = max(monthly_peak, 2.5) %}
@@ -230,6 +228,36 @@
               {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
               {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
               {{ soc <= 80 and solar > 1000 }}
+            '';
+          }
+          {
+            # Should target_current charge at full current_cap instead of throttling to available
+            # solar? True when any of:
+            #  - manual_boost: override is explicitly 'solar+grid boost' / 'solar+grid 16a'.
+            #  - battery_drain_boost: override is 'battery drain' and the house battery is still
+            #    above its 20% floor (phase 1 — full grid speed like 'on'; phase 2, at/below 20%,
+            #    falls back to solar-only by leaving this false).
+            #  - auto_boost: override is 'auto', on a low-tariff period with the sun actually out
+            #    right now (binary_sensor.system_car_charger_solar_boost — real-time solar output,
+            #    not the forecast-based car_charge_sunny_tomorrow, which is set the evening before
+            #    for next day's plan and is the wrong signal for "is it sunny right now"), and the
+            #    car is still below its grid-charge target. Mirrors the should_charge_offpeak
+            #    solar_first/daytime carve-out, which otherwise defers to solar-only during the day.
+            name = "system/car_charger/boost_active";
+            unique_id = "system_car_charger_boost_active";
+            icon = "mdi:lightning-bolt";
+            state = ''
+              {% set charge_override = states('input_select.car_charge_override') %}
+              {% set manual_boost = charge_override in ['solar+grid boost', 'solar+grid 16a'] %}
+              {% set battery_drain = charge_override == 'battery drain' %}
+              {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
+              {% set battery_drain_boost = battery_drain and battery > 20 %}
+              {% set offpeak = is_state('binary_sensor.electricity_is_offpeak', 'on') %}
+              {% set sunny = is_state('binary_sensor.system_car_charger_solar_boost', 'on') %}
+              {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
+              {% set target = states('input_number.car_charge_grid_target') | float(70) %}
+              {% set auto_boost = charge_override == 'auto' and offpeak and sunny and soc < target %}
+              {{ manual_boost or battery_drain_boost or auto_boost }}
             '';
           }
           {
