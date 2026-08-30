@@ -86,6 +86,9 @@ in
         # actual router so browsing to it doesn't silently hit AVM's
         # servers instead of the local admin UI.
         mapping."fritz.box" = "192.168.1.1";
+        # Bare "nhtpc" (no .l.nathan.gs suffix) — some embedded/IoT clients
+        # (e.g. smartgatewayp1) don't apply the DHCP domain-search suffix.
+        mapping."nhtpc" = "192.168.1.2";
         zone = ''
           $ORIGIN l.nathan.gs.
           @ 3600 IN A 192.168.1.2
