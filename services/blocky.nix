@@ -52,11 +52,11 @@
         allowlists.everything = [ "l.nathan.gs" ];
         clientGroupsBlock = {
           default = [ "ads" ];
-          "192.168.1.10" = [ "everything" ]; # smartgatewayp1
-          "192.168.1.11" = [ "everything" ]; # smartgatewaywater
-          "192.168.1.13" = [ "everything" ]; # bluetooth-proxy-boven
-          "192.168.1.14" = [ "everything" ]; # ebus
-          "192.168.1.15" = [ "everything" ]; # car-charger
+          "192.168.1.30" = [ "everything" ]; # smartgatewayp1
+          "192.168.1.31" = [ "everything" ]; # smartgatewaywater
+          "192.168.1.33" = [ "everything" ]; # bluetooth-proxy-boven
+          "192.168.1.34" = [ "everything" ]; # ebus
+          "192.168.1.35" = [ "everything" ]; # car-charger
         };
         blockType = "zeroIp";
         loading.refreshPeriod = "24h";
