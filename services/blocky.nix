@@ -36,12 +36,28 @@
 
       # Ads only — no trackers/malware/social lists.
       blocking = {
-        denylists.ads = [
-          "https://adaway.org/hosts.txt"
-          "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
-          "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
-        ];
-        clientGroupsBlock.default = [ "ads" ];
+        denylists = {
+          ads = [
+            "https://adaway.org/hosts.txt"
+            "https://s3.amazonaws.com/lists.disconnect.me/simple_ad.txt"
+            "https://raw.githubusercontent.com/anudeepND/blacklist/master/adservers.txt"
+          ];
+          # Catch-all: matches every domain. Combined with the allowlist
+          # below, this gives select smarthome devices DNS resolution for
+          # l.nathan.gs only — best-effort internet cutoff for devices that
+          # respect the DHCP-provided DNS server (not a hard network block;
+          # a device that hardcodes its own resolver bypasses this).
+          everything = [ "/.*/" ];
+        };
+        allowlists.everything = [ "l.nathan.gs" ];
+        clientGroupsBlock = {
+          default = [ "ads" ];
+          "192.168.1.10" = [ "everything" ]; # smartgatewayp1
+          "192.168.1.11" = [ "everything" ]; # smartgatewaywater
+          "192.168.1.13" = [ "everything" ]; # bluetooth-proxy-boven
+          "192.168.1.14" = [ "everything" ]; # ebus
+          "192.168.1.15" = [ "everything" ]; # car-charger
+        };
         blockType = "zeroIp";
         loading.refreshPeriod = "24h";
       };
