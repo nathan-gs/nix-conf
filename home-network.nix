@@ -37,6 +37,16 @@
 
   config.homeNetwork.devices = [
     # Local important stuff: .2-.20
+    # Reservation is inert (nhtpc's eno1 is statically configured, never a
+    # DHCP client) — listed for the DNS aliases. Bare "nhtpc" (no suffix,
+    # for clients that skip domain-search) is a separate customDNS mapping
+    # in services/blocky.nix.
+    {
+      name = "nhtpc";
+      mac = "70:85:c2:7a:99:94";
+      ip = "192.168.1.2";
+      aliases = [ "mqtt" "photoprism" "ha" "dns" "read" "m" "onedrive" "t" ];
+    }
     { name = "printer"; mac = "dc:a2:66:24:87:0c"; ip = "192.168.1.3"; }
     # Pinned to its original FritzBox-known IP (not the tidy range) —
     # testing the theory that FRITZ!OS keeps a persistent MAC<->IP binding
@@ -61,8 +71,8 @@
     { name = "fotokader"; mac = "58:67:1a:ca:38:78"; ip = "192.168.1.41"; }
 
     # Media: .70-.79
-    { name = "sonos-1"; mac = "48:a6:b8:32:27:b5"; ip = "192.168.1.70"; }
-    { name = "sonos-2"; mac = "34:7e:5c:f2:e5:b0"; ip = "192.168.1.71"; }
+    { name = "sonos-tv"; mac = "48:a6:b8:32:27:b5"; ip = "192.168.1.70"; }
+    { name = "sonos-keuken"; mac = "34:7e:5c:f2:e5:b0"; ip = "192.168.1.71"; }
     { name = "sonos-3"; mac = "54:2a:1b:c3:02:66"; ip = "192.168.1.72"; }
     { name = "sonos-4"; mac = "48:a6:b8:ad:2a:b2"; ip = "192.168.1.73"; }
     { name = "appletv-woonkamer"; mac = "6c:4a:85:0c:1e:22"; ip = "192.168.1.74"; }
