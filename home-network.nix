@@ -50,10 +50,17 @@
     { name = "car-charger"; mac = "f8:17:2d:cc:3a:95"; ip = "192.168.1.35"; internet = false; }
     { name = "robotic-mower"; mac = "94:e6:86:59:c9:78"; ip = "192.168.1.36"; }
     { name = "wasmachine"; mac = "44:3e:07:05:51:4d"; ip = "192.168.1.37"; }
+    { name = "wifidishwashing"; mac = "34:ab:95:f0:65:58"; ip = "192.168.1.38"; }
+    # SwitchBot hub + relay for the same physical robot vacuum.
+    { name = "switchbot-robot-k10"; mac = "ec:31:4a:05:55:e9"; ip = "192.168.1.39"; }
+    { name = "vacuum"; mac = "88:57:1d:cb:18:fb"; ip = "192.168.1.40"; }
+    { name = "fotokader"; mac = "58:67:1a:ca:38:78"; ip = "192.168.1.41"; }
 
-    # Sonos: .70-.79 — two of the four units aren't reserved yet, see
-    # smarthome/appliances/sonos.nix.
+    # Media: .70-.79
     { name = "sonos-1"; mac = "48:a6:b8:32:27:b5"; ip = "192.168.1.70"; }
     { name = "sonos-2"; mac = "34:7e:5c:f2:e5:b0"; ip = "192.168.1.71"; }
+    { name = "sonos-3"; mac = "54:2a:1b:c3:02:66"; ip = "192.168.1.72"; }
+    { name = "sonos-4"; mac = "48:a6:b8:ad:2a:b2"; ip = "192.168.1.73"; }
+    { name = "appletv-woonkamer"; mac = "6c:4a:85:0c:1e:22"; ip = "192.168.1.74"; }
   ];
 }
