@@ -4,9 +4,9 @@
   # clients can't be handed "l.nathan.gs" automatically, so publish short
   # <name>.local records instead via avahi. Let's Encrypt (and every public
   # CA) refuses to issue certs for .local, so these are HTTP-only and just
-  # redirect to the real, already-certed https://<name>.nathan.gs — no
-  # cert warnings, and ha.l.nathan.gs/photoprism.l.nathan.gs/etc still work
-  # as-is for anyone who types the full name.
+  # redirect to the real, already-certed https://<name>.l.nathan.gs — no
+  # cert warnings, and it stays on the LAN-specific record instead of the
+  # public nathan.gs one.
   services.avahi = {
     enable = true;
     publish.enable = true;
@@ -19,8 +19,8 @@
   '';
 
   services.nginx.virtualHosts = {
-    "ha.local".locations."/".return = "301 https://ha.nathan.gs$request_uri";
-    "dns.local".locations."/".return = "301 https://dns.nathan.gs$request_uri";
-    "photoprism.local".locations."/".return = "301 https://photoprism.nathan.gs$request_uri";
+    "ha.local".locations."/".return = "301 https://ha.l.nathan.gs$request_uri";
+    "dns.local".locations."/".return = "301 https://dns.l.nathan.gs$request_uri";
+    "photoprism.local".locations."/".return = "301 https://photoprism.l.nathan.gs$request_uri";
   };
 }
