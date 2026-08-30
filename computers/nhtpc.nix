@@ -155,6 +155,9 @@
   };
   networking.defaultGateway = "192.168.1.1";
   networking.nameservers = [ "127.0.0.1" ]; # blocky
+  # eno1 is static, not a DHCP client, so it never gets the domain-search
+  # suffix kea hands out to everyone else — set it explicitly here too.
+  networking.search = [ "l.nathan.gs" ];
   networking.interfaces.enp1s0.useDHCP = true;
 
   # Reject DHCP option 24 (path_mtu_aging_timeout) — router sends malformed values
