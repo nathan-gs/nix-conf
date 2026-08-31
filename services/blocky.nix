@@ -80,19 +80,29 @@ in
           # l.nathan.gs only — best-effort internet cutoff for devices that
           # respect the DHCP-provided DNS server (not a hard network block;
           # a device that hardcodes its own resolver bypasses this).
-          everything = [ "/.*/" ];
+          # Must be a multi-line block, not a single-line list item — a
+          # bare single-line entry (even regex-looking) gets treated as a
+          # source reference (file/URL) to fetch, not inline content, and
+          # silently fails to load (confirmed empirically: 0 entries).
+          everything = [
+            ''
+              /.*/
+            ''
+          ];
         };
         # NTP hostnames, so restricted devices can still sync their clock
         # even though they otherwise only get l.nathan.gs. Domain entries
         # cover subdomains too (e.g. 0.pool.ntp.org, europe.pool.ntp.org).
         allowlists.everything = [
-          "l.nathan.gs"
-          "pool.ntp.org"
-          "ntp.org"
-          "time.google.com"
-          "time.windows.com"
-          "time.apple.com"
-          "time.cloudflare.com"
+          ''
+            l.nathan.gs
+            pool.ntp.org
+            ntp.org
+            time.google.com
+            time.windows.com
+            time.apple.com
+            time.cloudflare.com
+          ''
         ];
         clientGroupsBlock = { default = [ "ads" "trackers" ]; } // restrictedClientsBlock;
         blockType = "zeroIp";
@@ -104,12 +114,16 @@ in
       # ha.l.nathan.gs (LAN) vs ha.wg.nathan.gs (WireGuard) — matching the
       # ACME SANs already issued in home-assistant.nix and friends.
       #
-      # l.nathan.gs has no wildcard: every name that should resolve there
-      # (home-network.nix devices + nhtpc's own aliases) has an explicit
-      # record, so an unlisted/typo'd name properly NXDOMAINs instead of
-      # silently resolving to nhtpc. wg.nathan.gs still has a wildcard
-      # since ha/photoprism/m/read's .wg. SANs aren't explicitly listed
-      # there — nhtpc is the only host serving these, so it's harmless.
+      # l.nathan.gs has no apex ("@") record and no wildcard: blocky matches
+      # customDNS entries the same way its blocklists do (domain + all
+      # subdomains), so an "@" record for l.nathan.gs itself would make
+      # ANY unlisted subdomain resolve too, same as "*" would (confirmed
+      # empirically — removing "*" alone wasn't enough). Every name that
+      # should resolve (home-network.nix devices + nhtpc's own aliases)
+      # has its own explicit record, so unlisted/typo'd names properly
+      # NXDOMAIN. wg.nathan.gs still has @ + a wildcard since
+      # ha/photoprism/m/read's .wg. SANs aren't explicitly listed there —
+      # nhtpc is the only host serving these, so it's harmless.
       customDNS = {
         filterUnmappedTypes = true;
         mapping =
@@ -123,7 +137,6 @@ in
           // bareDeviceMappings;
         zone = ''
           $ORIGIN l.nathan.gs.
-          @ 3600 IN A 192.168.1.2
           ${deviceZoneRecords}
           $ORIGIN wg.nathan.gs.
           @ 3600 IN A 10.73.221.1
