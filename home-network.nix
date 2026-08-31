@@ -76,5 +76,7 @@
     { name = "sonos-3"; mac = "54:2a:1b:c3:02:66"; ip = "192.168.1.72"; }
     { name = "sonos-4"; mac = "48:a6:b8:ad:2a:b2"; ip = "192.168.1.73"; }
     { name = "appletv-woonkamer"; mac = "6c:4a:85:0c:1e:22"; ip = "192.168.1.74"; }
+    { name = "fen-firetv"; mac = "88:29:bf:15:11:40"; ip = "192.168.1.75"; }
+    { name = "fen-xgimi"; mac = "4c:24:ce:8c:13:f6"; ip = "192.168.1.76"; }
   ];
 }
