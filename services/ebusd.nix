@@ -81,6 +81,11 @@ let
   #     ClockSwitchSummerWinterDone/SummerWinterTimeAdjust/DateTime (DST/DCF
   #     clock sync, not heating), HcUnderHundredStarts/HwcUnderHundredStarts/
   #     HwcTypes (cryptic, undocumented codes).
+  #   - Currenterror (tried 2026-08-30, removed 2026-08-31): reads as
+  #     "-;-;-;-;-" on both circuits (5 placeholder fields, no active error) —
+  #     ebusd can't decode "-" into a state, so all 5 sub-entities per circuit
+  #     sat at unknown/unavailable in HA. Not worth it; use VolatileLockout/
+  #     VolatileLockoutIFCGV for fault status instead.
   # ~110 registers auto-polled now (was 39) — bumped pollinterval to 30s
   # below so the extra volume doesn't starve the bus.
   haFilterName = lib.concatStringsSep "|" [
@@ -112,7 +117,6 @@ let
     "^HwcStarts$"
     "^HoursTillService$"
     # boiler (bai) — combustion/valve/pump live status
-    "^Currenterror$"
     "^CirPump$"
     "^Fluegasvalve$"
     "^FluegasvalveOpen$"
