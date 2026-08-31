@@ -24,8 +24,19 @@ let
          and states('sensor.system_house_pv_battery_current_direction') not in ['unknown', 'unavailable', 'none'] }}
     '';
     unit_of_measurement = "W";
-    attributes.workaround = ''{{ now().minute }}'';
     state_class = "measurement";
+    # HA suppresses state_changed events when the new state+attributes
+    # exactly match the old ones — even on a periodic trigger re-render.
+    # `force_update` would fix that, but it's not a valid key on the modern
+    # `template:` schema (HA rejects the whole block with it set, which
+    # silently dropped this sensor entirely on 2026-08-30). So carry an
+    # attribute that changes on every render instead, guaranteeing a fresh
+    # event at least once a minute (via the time_pattern trigger below) even
+    # when the computed power is unchanged — so the Riemann integration
+    # further down never has to interpolate across a long silent gap.
+    # Without this: a 72-minute silent gap plus one 3.7kW transient produced
+    # a false 2.25kWh step in the discharge total on 2026-08-30.
+    attributes.last_render = "{{ now().isoformat() }}";
   };
 
   # Split the signed power into two always-nonnegative sensors and
@@ -50,6 +61,12 @@ let
       device_class = "power";
       unit_of_measurement = "W";
       state_class = "measurement";
+      # Propagate the parent's heartbeat: this is a legacy (non-trigger)
+      # template that re-renders whenever electricity_battery_power fires a
+      # state_changed event — including its minutely same-value heartbeat —
+      # but a same-value recompute here would itself get suppressed by HA's
+      # identical-state dedup unless it also carries a changing attribute.
+      attributes.last_render = "{{ now().isoformat() }}";
     };
 
   batteryChargingPower = mkBatteryPowerSplit {
@@ -293,7 +310,16 @@ in
         ];
       }
       {
-        sensor = [ electricityBatteryPower batteryChargingPower batteryDischargingPower ] ++ aggregates;
+        trigger = [
+          (ha.trigger.state "sensor.system_house_pv_battery_current_bms")
+          (ha.trigger.state "sensor.system_house_pv_battery_voltage_bms")
+          (ha.trigger.state "sensor.system_house_pv_battery_current_direction")
+          (ha.trigger.time_pattern_minutes "/1")
+        ];
+        sensor = [ electricityBatteryPower ];
+      }
+      {
+        sensor = [ batteryChargingPower batteryDischargingPower ] ++ aggregates;
       }
     ];
 
