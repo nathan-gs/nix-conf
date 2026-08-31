@@ -2,9 +2,7 @@
 let
   devices = config.homeNetwork.devices;
 
-  # Explicit per-device records under l.nathan.gs (home-network.nix). An
-  # explicit name always wins over the "*" wildcard below, so this doesn't
-  # conflict with it.
+  # Explicit per-device records under l.nathan.gs (home-network.nix).
   deviceZoneRecords = lib.concatMapStrings (
     d:
     "${d.name} 3600 IN A ${d.ip}\n"
@@ -104,11 +102,14 @@ in
       # Split-horizon local names: the same short hostname resolves
       # differently depending on which zone it's queried under, e.g.
       # ha.l.nathan.gs (LAN) vs ha.wg.nathan.gs (WireGuard) — matching the
-      # ACME SANs already issued in home-assistant.nix and friends. nhtpc
-      # is currently the only host serving these web-facing names, so the
-      # wildcards point everything at it; nginx routes further by Host
-      # header. Devices from home-network.nix additionally get their own
-      # explicit name(s) under l.nathan.gs.
+      # ACME SANs already issued in home-assistant.nix and friends.
+      #
+      # l.nathan.gs has no wildcard: every name that should resolve there
+      # (home-network.nix devices + nhtpc's own aliases) has an explicit
+      # record, so an unlisted/typo'd name properly NXDOMAINs instead of
+      # silently resolving to nhtpc. wg.nathan.gs still has a wildcard
+      # since ha/photoprism/m/read's .wg. SANs aren't explicitly listed
+      # there — nhtpc is the only host serving these, so it's harmless.
       customDNS = {
         filterUnmappedTypes = true;
         mapping =
@@ -123,7 +124,6 @@ in
         zone = ''
           $ORIGIN l.nathan.gs.
           @ 3600 IN A 192.168.1.2
-          * 3600 IN A 192.168.1.2
           ${deviceZoneRecords}
           $ORIGIN wg.nathan.gs.
           @ 3600 IN A 10.73.221.1
