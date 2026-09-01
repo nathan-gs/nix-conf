@@ -39,8 +39,10 @@ in
       ports = {
         dns = [ 53 ];
         # local-only; DoH is exposed publicly via nginx (see below) on
-        # dns.l.nathan.gs / dns.wg.nathan.gs.
-        http = 4000;
+        # dns.l.nathan.gs / dns.wg.nathan.gs. High port deliberately picked
+        # to stay clear of 4000, which nathan reserves for occasional
+        # ad-hoc use.
+        http = 65080;
       };
 
       # DNS-over-HTTPS upstreams so blocky's outgoing queries aren't plain
@@ -66,8 +68,8 @@ in
       # Per-query logging ("query resolved ...") is very high volume and not
       # useful day-to-day — disabled. Periodic cached/resolved/blocked totals
       # are logged instead via the blocky-stats-log timer below, sourced from
-      # the Prometheus metrics endpoint enabled here (local-only, port 4000
-      # is not exposed beyond nginx's /dns-query proxy).
+      # the Prometheus metrics endpoint enabled here (local-only, not
+      # exposed beyond nginx's /dns-query proxy).
       queryLog.type = "none";
       prometheus.enable = true;
 
@@ -184,7 +186,7 @@ in
           *response_type=\"BLOCKED\"*) blocked=$((blocked + value)) ;;
           *) uncached=$((uncached + value)) ;;
         esac
-      done < <(${pkgs.curl}/bin/curl -sf http://127.0.0.1:4000/metrics | ${pkgs.gnugrep}/bin/grep '^blocky_response_total{')
+      done < <(${pkgs.curl}/bin/curl -sf http://127.0.0.1:65080/metrics | ${pkgs.gnugrep}/bin/grep '^blocky_response_total{')
 
       d_cached=$((cached - prev_cached))
       d_blocked=$((blocked - prev_blocked))
@@ -232,7 +234,7 @@ in
       deny all;
     '';
     locations."/dns-query" = {
-      proxyPass = "http://127.0.0.1:4000/dns-query";
+      proxyPass = "http://127.0.0.1:65080/dns-query";
     };
   };
 }
