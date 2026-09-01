@@ -323,10 +323,17 @@
                  automatically when battery reaches 60% (the template gate below turns false). #}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
               {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 50 %}
-              {# House-pack rebalance (grid TOU fill to 100 %) owns the 15-min peak
-                 budget — do not let the car import at the same time. Cancel
-                 automation.solar_battery_pylontech_rebalance_cancel to unblock. #}
-              {% set rebalance = is_state('input_boolean.solar_battery_rebalance_active', 'on') %}
+              {# House-pack rebalance: only block the car while it would actually
+                 compete with it — at/near the knee (PV priority to the pack) or
+                 mid grid-TOU charge (shares the 15-min peak budget, see
+                 docs/battery-grid-charge-to-100.md). A rebalance run can now span
+                 several days of partial sun (pylontech.nix); the car should not
+                 sit blocked through every overnight SoC dip in between. Cancel
+                 automation.solar_battery_pylontech_rebalance_cancel to unblock
+                 outright. #}
+              {% set rebalance_active = is_state('input_boolean.solar_battery_rebalance_active', 'on') %}
+              {% set rebalance_grid = is_state('input_boolean.solar_battery_rebalance_using_grid', 'on') %}
+              {% set rebalance = rebalance_active and (battery >= 97 or rebalance_grid) %}
               {# Hard last-resort safeguard (electricity_capacity_critical, capacity_peaks.nix):
                  the quarter's cap is projected to be breached by non-car load alone AND the
                  battery has nothing left to give — the car's 6A tail throttle can't fix this, so
