@@ -74,6 +74,10 @@ let
   touDischargeStartEntity = "time.system_house_pv_time_charging_discharge_start_slot_1";
   touDischargeEndEntity = "time.system_house_pv_time_charging_discharge_end_slot_1";
   carChargerSwitch = "switch.system_car_charger";
+  carChargerCurrentEntity = "number.system_car_charger_charging_current";
+  # "Limited enabled" — charger is on but sitting at (or below) its lowest
+  # ramp step, so blocking it for a rebalance costs ~nothing.
+  carChargerLimitedCurrentA = 8;
 
   # Poll cycle is 5 min; go unavailable well past that (not on one missed
   # cycle) if pylontech2mqtt stops running, rather than silently freezing
@@ -523,6 +527,30 @@ in
             ''Last full absorb was {{ states('${daysSinceEntity}') }} days ago ({{ states('${lastRebalanceEntity}') }}). Trigger Rebalance pack: a sunny afternoon only blocks the car and waits for PV; if remaining solar cannot finish the pack (typical winter) it grid-charges at ~1 kW under the 2.5 kW peak cap.''
           )
         ];
+        mode = "single";
+      })
+      (ha.automation "solar/battery/pylontech/rebalance.auto_trigger" {
+        # Overdue + near-full-on-solar + the car isn't going to miss the current: fire
+        # rebalance.run itself instead of waiting on the 18:00 nag. rebalance.run already
+        # no-ops if a run is already active, but the overdue/active conditions here keep
+        # this from re-triggering every 5 min once one starts.
+        triggers = [
+          (ha.trigger.above_for solisSocEntity 98 "00:05:00")
+          (ha.trigger.off carChargerSwitch)
+          (ha.trigger.below carChargerCurrentEntity (carChargerLimitedCurrentA + 1))
+        ];
+        conditions = [
+          (ha.condition.off rebalanceActiveEntity)
+          (ha.condition.on overdueEntity)
+          (ha.condition.above solisSocEntity 97)
+          (ha.condition.template ''
+            {% set charger_off = is_state('${carChargerSwitch}', 'off') %}
+            {% set charger_limited = is_state('${carChargerSwitch}', 'on')
+               and (states('${carChargerCurrentEntity}') | int(99)) <= ${toString carChargerLimitedCurrentA} %}
+            {{ charger_off or charger_limited }}
+          '')
+        ];
+        actions = [ (ha.action.automation "solar_battery_pylontech_rebalance_run") ];
         mode = "single";
       })
       (ha.automation "solar/battery/pylontech/rebalance.run" {

@@ -9,6 +9,7 @@
     [ # Include the results of the hardware scan.
       (modulesPath + "/installer/scan/not-detected.nix")
       ../disks.nix
+      ../home-network.nix
       ../headless.nix
       ../system.nix
       ../services/fail2ban.nix
@@ -29,6 +30,8 @@
       ../services/komga.nix
       ../services/jellyfin.nix
       ../services/nginx.nix
+      ../services/blocky.nix
+      ../services/dhcp.nix
       #../services/smb.nix
       #../services/ollama.nix
       ../services/sos2mqtt.nix
@@ -142,7 +145,19 @@
   # Per-interface useDHCP will be mandatory in the future, so this generated config
   # replicates the default behaviour.
   networking.useDHCP = false;
-  networking.interfaces.eno1.useDHCP = true;
+  # eno1 is now static: nhtpc runs the LAN's DHCP server (services/dhcp.nix)
+  # and can't be a DHCP client of itself.
+  networking.interfaces.eno1 = {
+    useDHCP = false;
+    ipv4.addresses = [
+      { address = "192.168.1.2"; prefixLength = 24; }
+    ];
+  };
+  networking.defaultGateway = "192.168.1.1";
+  networking.nameservers = [ "127.0.0.1" ]; # blocky
+  # eno1 is static, not a DHCP client, so it never gets the domain-search
+  # suffix kea hands out to everyone else — set it explicitly here too.
+  networking.search = [ "l.nathan.gs" ];
   networking.interfaces.enp1s0.useDHCP = true;
 
   # Reject DHCP option 24 (path_mtu_aging_timeout) — router sends malformed values

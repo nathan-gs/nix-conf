@@ -1,12 +1,15 @@
 { config, pkgs, lib, ha, ... }:
+let
+  deviceIp = name: (lib.findFirst (d: d.name == name) (throw "sonos.nix: device '${name}' not in home-network.nix") config.homeNetwork.devices).ip;
+in
 {
 
   services.home-assistant.config = {
-    sonos.media_player.hosts = [
-      "192.168.1.140"
-      "192.168.1.141"
-      "192.168.1.142"
-      "192.168.1.143"
+    sonos.media_player.hosts = map deviceIp [
+      "sonos-tv"
+      "sonos-keuken"
+      "sonos-3"
+      "sonos-4"
     ];
 
     # Kitchen One: idle ~4 W (Sonos spec 3.1–4.1 W), playing ~8 W.

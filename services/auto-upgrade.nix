@@ -209,6 +209,15 @@ let
     export GIT_COMMITTER_NAME="nixos-auto-upgrade"
     export GIT_COMMITTER_EMAIL="root@${hostname}"
 
+    # git commands run as root here leave root-owned objects/index/lock files
+    # behind in these repos, blocking nathan's own commits afterwards. Hand
+    # ownership back on every exit path (success or failure), not just the
+    # happy path.
+    restore_ownership() {
+      chown -R nathan:users ${flakeDir} ${secretsDir} 2>/dev/null || true
+    }
+    trap restore_ownership EXIT
+
     cd ${flakeDir}
 
     # Marker recording the sha256 of a flake.lock whose build, switch, or
