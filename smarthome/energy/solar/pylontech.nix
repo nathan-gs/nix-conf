@@ -31,8 +31,11 @@ let
   # (pylontech2mqtt only started recording 2026-08-21).
   lastRebalanceInitial = "2026-08-12 12:00:00";
   rebalanceMaxDaysDefault = 45;
-  # Continuous hours at Solis SoC ≥ 98 % that count as an absorb window.
-  # Touching 99 % for ~2 h (2026-08-26) was not enough for cell 12.
+  # CUMULATIVE hours at Solis SoC ≥ 98 % that count as an absorb window — the
+  # tick no longer resets this to zero when SoC dips below 98 % (sunset,
+  # a cloud), so a rebalance can legitimately span several days of partial
+  # sun and still finish once the total adds up. Touching 99 % for ~2 h
+  # (2026-08-26) was not enough for cell 12 in one sitting either way.
   # Manual grid fill: docs/battery-grid-charge-to-100.md.
   rebalanceAbsorbHours = 4;
   # Cells actually together *on* the knee: the gold-standard stamp.
@@ -47,9 +50,16 @@ let
   solisSocEntity = "sensor.system_house_pv_battery_soc";
 
   rebalanceActiveEntity = "input_boolean.solar_battery_rebalance_active";
+  # Live "currently at/above the knee" indicator — dashboard-only, no longer
+  # drives the absorb math (that's rebalanceAbsorbAccumulatedEntity below).
   rebalanceAbsorbTimingEntity = "input_boolean.solar_battery_rebalance_absorb_timing";
   rebalanceRunStartEntity = "input_datetime.solar_battery_rebalance_run_start";
-  rebalanceAbsorbStartEntity = "input_datetime.solar_battery_rebalance_absorb_start";
+  # Cumulative minutes spent ≥ 98 % this run, one +5 tick at a time. Not
+  # reset when SoC dips (unlike the old single "start" timestamp it
+  # replaced) — only reset to 0 on a fresh run or when a run finishes/aborts.
+  # No `initial` so it survives an HA restart mid-run, same trick as
+  # input_number.car_charge_grid_target in tuya.nix.
+  rebalanceAbsorbAccumulatedEntity = "input_number.solar_battery_rebalance_absorb_accumulated_minutes";
   rebalanceSnapshotEntity = "input_text.solar_battery_rebalance_snapshot";
   rebalanceUsingGridEntity = "input_boolean.solar_battery_rebalance_using_grid";
   rebalanceSolarEnoughEntity = "binary_sensor.solar_battery_rebalance_solar_enough";
@@ -59,7 +69,16 @@ let
   rebalanceChargeCurrentA = 20;
   rebalancePeakMarginKw = 0.2;
   rebalanceChargeCurrentTargetEntity = "sensor.solar_battery_rebalance_charge_current_target";
-  rebalanceTimeoutHours = 16;
+  # Was 16 h (same-day only). Now that absorb progress is cumulative, give a
+  # run up to 4 days of patchy/partial sun before the grid fallback is
+  # forced — see rebalanceGridFallbackHours below for how late that kicks in.
+  rebalanceTimeoutHours = 96;
+  # Grid fallback only arms once this few hours remain before the timeout —
+  # i.e. a run gets (rebalanceTimeoutHours - this) of solar-only patience
+  # first. Was armed immediately on the first insufficient-solar tick; that
+  # made single-day-only mode the only real behavior even though the timer
+  # itself could span days.
+  rebalanceGridFallbackHours = 24;
   # US5000 4.8 kWh + US3000C 3.5 kWh (same 83 Wh/% as battery.nix).
   rebalancePackKwh = 8.3;
   rebalanceSolarMarginKwh = 1.5;
@@ -217,18 +236,16 @@ let
 
   asLocal = entity: ''(states('${entity}') | as_datetime | as_local)'';
 
-  absorbElapsedOk = ''
-    {% set start = ${asLocal rebalanceAbsorbStartEntity} %}
-    {{ is_state('${rebalanceAbsorbTimingEntity}', 'on')
-       and start is not none
-       and (now() - start).total_seconds() >= ${toString (rebalanceAbsorbHours * 3600)}
-       and states('${solisSocEntity}') | float(0) >= 98 }}
-  '';
-
   runTimedOut = ''
     {% set start = ${asLocal rebalanceRunStartEntity} %}
     {{ start is not none
        and (now() - start).total_seconds() >= ${toString (rebalanceTimeoutHours * 3600)} }}
+  '';
+
+  runNearTimeout = ''
+    {% set start = ${asLocal rebalanceRunStartEntity} %}
+    {{ start is not none
+       and (now() - start).total_seconds() >= ${toString ((rebalanceTimeoutHours - rebalanceGridFallbackHours) * 3600)} }}
   '';
 
   restoreAllowGrid = ha.action.conditional
@@ -283,6 +300,7 @@ let
       [ ]
     )
     (ha.action.off rebalanceAbsorbTimingEntity)
+    (ha.action.set_value rebalanceAbsorbAccumulatedEntity 0)
     (ha.action.off rebalanceUsingGridEntity)
     (ha.action.off rebalanceActiveEntity)
     (ha.action.notify "Battery rebalance" message)
@@ -328,12 +346,6 @@ in
         has_time = true;
         icon = "mdi:timer-play";
       };
-      solar_battery_rebalance_absorb_start = {
-        name = "solar/battery/rebalance_absorb_start";
-        has_date = true;
-        has_time = true;
-        icon = "mdi:timer-check";
-      };
     };
 
     input_boolean = {
@@ -370,6 +382,15 @@ in
         unit_of_measurement = "d";
         icon = "mdi:calendar-clock";
       };
+      solar_battery_rebalance_absorb_accumulated_minutes = {
+        name = "solar/battery/rebalance_absorb_accumulated_minutes";
+        min = 0;
+        max = rebalanceAbsorbHours * 60 * 4;
+        step = 5;
+        mode = "box";
+        unit_of_measurement = "min";
+        icon = "mdi:timer-plus";
+      };
     };
 
     template = [
@@ -398,12 +419,9 @@ in
             state = ''
               {% if not is_state('${rebalanceActiveEntity}', 'on') %}
                 0
-              {% elif not is_state('${rebalanceAbsorbTimingEntity}', 'on') %}
-                ${toString (rebalanceAbsorbHours * 60)}
               {% else %}
-                {% set start = ${asLocal rebalanceAbsorbStartEntity} %}
-                {% set left = ${toString (rebalanceAbsorbHours * 3600)} - (now() - start).total_seconds() %}
-                {{ [0, (left / 60) | round(0)] | max | int }}
+                {% set left = ${toString (rebalanceAbsorbHours * 60)} - (states('${rebalanceAbsorbAccumulatedEntity}') | float(0)) %}
+                {{ [0, left] | max | round(0) | int }}
               {% endif %}
             '';
           }
@@ -565,36 +583,46 @@ in
               )
             ]
             [
-              (ha.action.set_value rebalanceSnapshotEntity snapshotJson)
-              (stampDatetime rebalanceRunStartEntity)
               (ha.action.conditional
-                [ (ha.condition.above solisSocEntity 97) ]
+                [ (ha.condition.template cellsBalancedTemplate) ]
                 [
-                  (stampDatetime rebalanceAbsorbStartEntity)
-                  (ha.action.on rebalanceAbsorbTimingEntity)
-                ]
-                [ (ha.action.off rebalanceAbsorbTimingEntity) ]
-              )
-              (ha.action.off rebalanceUsingGridEntity)
-              (ha.action.on rebalanceActiveEntity)
-              (ha.action.delay "00:00:05")
-              (ha.action.off carChargerSwitch)
-              (ha.action.conditional
-                [ (ha.condition.on rebalanceSolarEnoughEntity) ]
-                [
+                  stampLastRebalance
                   (ha.action.notify
-                    "Battery rebalance started (solar)"
-                    ''Enough PV left to finish the pack ({{ states('sensor.energy_production_today_remaining') | float(0) | round(1) }} kWh remaining). Car blocked; no grid charge. If the forecast fails, the watchdog switches to a ~1 kW grid fill. Cancel: automation.solar_battery_pylontech_rebalance_cancel.''
+                    "Battery rebalance skipped"
+                    ''Cells already balanced at ≥ 98 % SoC (both packs < ${toString rebalanceCellsImbalanceMv} mV, min cell > ${toString rebalanceCellsMinV} V) — recorded as done, no car block or grid charge needed.''
                   )
                 ]
-                (
-                  armGridActions ++ [
-                    (ha.action.notify
-                      "Battery rebalance started (grid)"
-                      ''Not enough PV left to finish the pack — grid TOU {{ states('${rebalanceChargeCurrentTargetEntity}') | int(${toString rebalanceChargeCurrentA}) }} A (max ${toString rebalanceChargeCurrentA} A ≈ 1 kW, peak-capped). Car blocked. Restores after ${toString rebalanceAbsorbHours} h at ≥ 98 %. Cancel: automation.solar_battery_pylontech_rebalance_cancel.''
+                [
+                  (ha.action.set_value rebalanceSnapshotEntity snapshotJson)
+                  (stampDatetime rebalanceRunStartEntity)
+                  (ha.action.set_value rebalanceAbsorbAccumulatedEntity 0)
+                  (ha.action.conditional
+                    [ (ha.condition.above solisSocEntity 97) ]
+                    [ (ha.action.on rebalanceAbsorbTimingEntity) ]
+                    [ (ha.action.off rebalanceAbsorbTimingEntity) ]
+                  )
+                  (ha.action.off rebalanceUsingGridEntity)
+                  (ha.action.on rebalanceActiveEntity)
+                  (ha.action.delay "00:00:05")
+                  (ha.action.off carChargerSwitch)
+                  (ha.action.conditional
+                    [ (ha.condition.on rebalanceSolarEnoughEntity) ]
+                    [
+                      (ha.action.notify
+                        "Battery rebalance started (solar)"
+                        ''Enough PV left to finish the pack ({{ states('sensor.energy_production_today_remaining') | float(0) | round(1) }} kWh remaining). Car blocked while at/near the top; no grid charge yet. Can span several days on patchy sun — grid only kicks in ${toString rebalanceGridFallbackHours} h before the ${toString rebalanceTimeoutHours} h timeout if solar still hasn't finished it. Cancel: automation.solar_battery_pylontech_rebalance_cancel.''
+                      )
+                    ]
+                    (
+                      armGridActions ++ [
+                        (ha.action.notify
+                          "Battery rebalance started (grid)"
+                          ''Not enough PV left today to finish the pack — grid TOU {{ states('${rebalanceChargeCurrentTargetEntity}') | int(${toString rebalanceChargeCurrentA}) }} A (max ${toString rebalanceChargeCurrentA} A ≈ 1 kW, peak-capped). Car blocked. Restores after ${toString rebalanceAbsorbHours} h cumulative at ≥ 98 %. Cancel: automation.solar_battery_pylontech_rebalance_cancel.''
+                        )
+                      ]
                     )
-                  ]
-                )
+                  )
+                ]
               )
             ]
           )
@@ -627,47 +655,44 @@ in
             [ (ha.action.set_value touChargeCurrentEntity "{{ states('${rebalanceChargeCurrentTargetEntity}') | int(0) }}") ]
             [ ]
           )
+          # Cumulative absorb tick — bump the accumulator whenever currently at/above
+          # the knee, and reflect that live in the timing indicator. Unlike the old
+          # single-start-timestamp design, a dip below 97 % (sunset, a cloud) just
+          # pauses this — it does not lose progress already banked.
+          (ha.action.conditional
+            [ (ha.condition.above solisSocEntity 97) ]
+            [
+              (ha.action.on rebalanceAbsorbTimingEntity)
+              (ha.action.set_value rebalanceAbsorbAccumulatedEntity
+                "{{ min(${toString (rebalanceAbsorbHours * 60)}, (states('${rebalanceAbsorbAccumulatedEntity}') | float(0)) + 5) }}")
+            ]
+            [ (ha.action.off rebalanceAbsorbTimingEntity) ]
+          )
           {
             choose = [
               {
                 conditions = [ (ha.condition.template runTimedOut) ];
-                sequence = restoreActions "Timed out after ${toString rebalanceTimeoutHours} h without ${toString rebalanceAbsorbHours} h at ≥ 98 %. Solis setpoints restored.";
+                sequence = restoreActions "Timed out after ${toString rebalanceTimeoutHours} h without ${toString rebalanceAbsorbHours} h cumulative at ≥ 98 %. Solis setpoints restored.";
               }
               {
-                conditions = [ (ha.condition.template absorbElapsedOk) ];
+                conditions = [ (ha.condition.above rebalanceAbsorbAccumulatedEntity ((rebalanceAbsorbHours * 60) - 1)) ];
                 sequence = [
                   stampLastRebalance
-                ] ++ restoreActions "Absorb complete (${toString rebalanceAbsorbHours} h at ≥ 98 %). Solis setpoints restored, car charging unblocked.";
+                ] ++ restoreActions "Absorb complete (${toString rebalanceAbsorbHours} h cumulative at ≥ 98 %, possibly across multiple sessions). Solis setpoints restored, car charging unblocked.";
               }
               {
                 conditions = [
                   (ha.condition.off rebalanceUsingGridEntity)
                   (ha.condition.off rebalanceSolarEnoughEntity)
                   (ha.condition.below solisSocEntity 98)
+                  (ha.condition.template runNearTimeout)
                 ];
                 sequence = armGridActions ++ [
                   (ha.action.notify
                     "Battery rebalance → grid"
-                    ''Remaining PV cannot finish the pack — switching to grid TOU {{ states('${rebalanceChargeCurrentTargetEntity}') | int(${toString rebalanceChargeCurrentA}) }} A (peak-capped under 2.5 kW).''
+                    ''Solar hasn't finished the pack after several days — switching to grid TOU {{ states('${rebalanceChargeCurrentTargetEntity}') | int(${toString rebalanceChargeCurrentA}) }} A (peak-capped under 2.5 kW) with ${toString rebalanceGridFallbackHours} h left before timeout.''
                   )
                 ];
-              }
-              {
-                conditions = [
-                  (ha.condition.above solisSocEntity 97)
-                  (ha.condition.off rebalanceAbsorbTimingEntity)
-                ];
-                sequence = [
-                  (stampDatetime rebalanceAbsorbStartEntity)
-                  (ha.action.on rebalanceAbsorbTimingEntity)
-                ];
-              }
-              {
-                conditions = [
-                  (ha.condition.below solisSocEntity 98)
-                  (ha.condition.on rebalanceAbsorbTimingEntity)
-                ];
-                sequence = [ (ha.action.off rebalanceAbsorbTimingEntity) ];
               }
             ];
             default = [
