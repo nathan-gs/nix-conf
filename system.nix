@@ -56,8 +56,12 @@
     "net.ipv4.conf.default.accept_source_route" = 0;
     "net.ipv6.conf.all.accept_source_route" = 0;
     "net.ipv6.conf.default.accept_source_route" = 0;
-    # Log packets with impossible source addresses.
-    "net.ipv4.conf.all.log_martians" = 1;
+    # Martian packets (impossible source/destination) are dropped by
+    # rp_filter/routing regardless of this setting — it only controls
+    # whether the drop gets logged. Off: flaky LAN IoT devices (seen: a
+    # Tuya car charger sending destination 0.0.0.0 packets during
+    # Wi-Fi reconnects) were spamming the journal with harmless noise.
+    "net.ipv4.conf.all.log_martians" = 0;
     # SYN flood mitigation.
     "net.ipv4.tcp_syncookies" = 1;
     # Restrict dmesg to root (leaks kernel pointers / boot info).
