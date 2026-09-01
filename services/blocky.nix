@@ -63,6 +63,14 @@ in
         prefetchThreshold = 5;
       };
 
+      # Per-query logging ("query resolved ...") is very high volume and not
+      # useful day-to-day — disabled. Periodic cached/resolved/blocked totals
+      # are logged instead via the blocky-stats-log timer below, sourced from
+      # the Prometheus metrics endpoint enabled here (local-only, port 4000
+      # is not exposed beyond nginx's /dns-query proxy).
+      queryLog.type = "none";
+      prometheus.enable = true;
+
       # Ads + trackers — no malware/social lists.
       blocking = {
         denylists = {
@@ -150,6 +158,50 @@ in
 
       logLevel = "info";
     };
+  };
+
+  # Hourly cached/uncached/blocked totals in the journal, since per-query
+  # logging is off above. Reads blocky's local Prometheus endpoint
+  # (response_type label: CACHED / BLOCKED / RESOLVED / CUSTOMDNS) and diffs
+  # against the previous run's cumulative counters to report a per-period
+  # delta. Counters reset on blocky restart; a negative delta is clamped to
+  # 0 for that one run rather than reporting garbage.
+  systemd.services.blocky-stats-log = {
+    description = "Log blocky cached/uncached/blocked query counts";
+    after = [ "blocky.service" ];
+    serviceConfig.StateDirectory = "blocky-stats";
+    script = ''
+      set -euo pipefail
+      STATE=/var/lib/blocky-stats/state
+      [ -f "$STATE" ] || echo "prev_cached=0 prev_blocked=0 prev_uncached=0" > "$STATE"
+      source "$STATE"
+
+      cached=0; blocked=0; uncached=0
+      while IFS= read -r line; do
+        value=$(echo "$line" | ${pkgs.gnugrep}/bin/grep -oE '[0-9]+$')
+        case "$line" in
+          *response_type=\"CACHED\"*) cached=$((cached + value)) ;;
+          *response_type=\"BLOCKED\"*) blocked=$((blocked + value)) ;;
+          *) uncached=$((uncached + value)) ;;
+        esac
+      done < <(${pkgs.curl}/bin/curl -sf http://127.0.0.1:4000/metrics | ${pkgs.gnugrep}/bin/grep '^blocky_response_total{')
+
+      d_cached=$((cached - prev_cached))
+      d_blocked=$((blocked - prev_blocked))
+      d_uncached=$((uncached - prev_uncached))
+      (( d_cached < 0 )) && d_cached=0
+      (( d_blocked < 0 )) && d_blocked=0
+      (( d_uncached < 0 )) && d_uncached=0
+
+      echo "blocky query stats (last hour): cached=$d_cached uncached=$d_uncached blocked=$d_blocked"
+
+      cat > "$STATE" <<EOF
+      prev_cached=$cached
+      prev_blocked=$blocked
+      prev_uncached=$uncached
+      EOF
+    '';
+    startAt = "hourly";
   };
 
   # DNS-over-HTTPS: nginx terminates TLS (same ACME-via-Cloudflare-DNS-01
