@@ -45,15 +45,25 @@
           {% endfor %}
           {% set completed = peaks.v %}
           {% if completed | length == 0 %}
-            {{ current | round(2) }}
+            {% set raw = current %}
           {% elif completed | length >= 12 %}
             {% set window = completed[-11:] + [current] %}
-            {{ (window | sum / 12) | round(2) }}
+            {% set raw = window | sum / 12 %}
           {% else %}
             {% set window = completed + [current] %}
-            {{ (window | sum / (window | length)) | round(2) }}
+            {% set raw = window | sum / (window | length) %}
+          {% endif %}
+          {# Hysteresis: `current` jitters live within the quarter, which can flip the
+             rounded average back and forth across a .xx5 boundary on pure float noise.
+             Only move the displayed value once it has drifted a full step away. #}
+          {% set previous = this.state | float(raw) %}
+          {% if (raw - previous) | abs >= 0.02 %}
+            {{ raw | round(2) }}
+          {% else %}
+            {{ previous | round(2) }}
           {% endif %}
         '';
+        json_attributes_topic = "dsmr/consumption/peak/last13months";
         json_attributes_template = ''
           {% set floor_kw = 2.5 %}
           {% set peaks = namespace(raw=[], floored=[]) %}
