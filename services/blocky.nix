@@ -83,7 +83,6 @@ in
           ];
           trackers = [
             "https://v.firebog.net/hosts/Easyprivacy.txt"
-            "https://raw.githubusercontent.com/anudeepND/blacklist/master/facebook.txt"
           ];
           # Catch-all: matches every domain. Combined with the allowlist
           # below, this gives select smarthome devices DNS resolution for
