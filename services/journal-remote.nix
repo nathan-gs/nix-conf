@@ -27,6 +27,11 @@ in
   # Only nnas (over wg0) may reach this port — not the LAN or internet.
   networking.firewall.interfaces.wg0.allowedTCPPorts = [ port ];
 
+  # Files land 0640 systemd-journal-remote:systemd-journal-remote — unlike
+  # the local journal dir, which grants wheel/adm read via ACL, journal-remote
+  # sets none.
+  users.users.nathan.extraGroups = [ "systemd-journal-remote" ];
+
   systemd.services.journal-remote-vacuum = {
     description = "Vacuum old remote journal files (nnas forwarding)";
     serviceConfig = {
