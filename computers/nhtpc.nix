@@ -46,6 +46,7 @@
       ../services/hw-health-report.nix
       ../services/media-rsync.nix
       ../services/wireguard.nix
+      ../services/journal-remote.nix
     ];
 
   # Leader: sole `nix flake update` + commit; then apply the same lock on nnas.
