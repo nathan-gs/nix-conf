@@ -25,6 +25,7 @@ let
   dataVolumes = disks.btrfs.volumes;
   dataVolumesTail = lib.tail dataVolumes;
   monthlySnapshotVolumes = disks.btrfs.snapshots.monthly.volumes;
+  scrubLimitFlag = lib.optionalString (disks.btrfs.scrubLimit != "") "--limit ${disks.btrfs.scrubLimit}";
   
   removeBackup = volume: ''
 SNAPSHOTS_TO_KEEP=40
@@ -99,6 +100,13 @@ with lib;
       btrfs = {
         volumes = mkOption {
           default = [];
+        };
+        # Passed as `btrfs scrub start --limit`; per-device throughput cap
+        # (bytes/s, KMGT suffixes accepted). Tune down on weaker/busier
+        # hosts so a scrub doesn't starve other traffic. Empty = unlimited.
+        scrubLimit = mkOption {
+          default = "";
+          type = types.str;
         };
         snapshots = {
           monthly = {
@@ -256,9 +264,9 @@ with lib;
         #
         # --limit is the actual reliable throttle: a kernel-enforced
         # per-device throughput cap, independent of scheduler/cgroups.
-        # 50M/s keeps the box responsive; raise if scrubs start taking too
-        # long (5.4TB at 50M/s is ~30h).
-        ${pkgs.btrfs-progs}/bin/btrfs scrub start --limit 50M -B -d /media/${lib.head dataVolumes}
+        # Tune disks.btrfs.scrubLimit per-host if scrubs start taking too
+        # long or the box still struggles under load.
+        ${pkgs.btrfs-progs}/bin/btrfs scrub start ${scrubLimitFlag} -B -d /media/${lib.head dataVolumes}
       '';
       startAt = "*-*-08 23:00:00";
       serviceConfig = {

@@ -37,12 +37,15 @@
     smartd.rootDiskOptions = "-a -f -p -t -o on -n standby,q -s (S/../.././02|L/../../6/03) -W 4,45,50";
 
     btrfs = {
-      volumes = [ 
+      volumes = [
        "documents"
        "media"
        "archive"
  #       "apps"
       ];
+      # Weaker/busier box than nhtpc; keep scrub gentler so it doesn't
+      # starve wg0/ssh again.
+      scrubLimit = "30M";
       snapshots = {
         monthly.volumes = [
          "documents"
