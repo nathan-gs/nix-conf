@@ -242,6 +242,14 @@ with lib;
     '') dataDisks);
   };
 
+    # -c3/IOSchedulingClass=idle on the scrub unit only matter if the block
+    # scheduler actually honors ioprio classes - mq-deadline/none (the
+    # default) don't, only bfq does. Without this, scrub's idle priority was
+    # a no-op and it kept saturating disk+CPU on rotational data disks.
+    services.udev.extraRules = mkIf btrfsEnabled ''
+      ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
+    '';
+
     systemd.services.btrfs-scrub = mkIf btrfsEnabled {
       description = "btrfs monthly scrub";
       after = [ "local-fs.target" ];
@@ -249,7 +257,18 @@ with lib;
         ${pkgs.btrfs-progs}/bin/btrfs scrub start -c3 -B -d /media/${lib.head dataVolumes}
       '';
       startAt = "*-*-08 23:00:00";
-      serviceConfig.CPUQuota = "50%";
+      serviceConfig = {
+        # Lowered further after scrub kept starving the box (high ping /
+        # unreachable ssh during a run) even with the settings below.
+        CPUQuota = "20%";
+        # -c3 above only sets ioprio on the btrfs binary itself; the actual
+        # checksum/endio work runs in kernel kworker threads that CPUQuota
+        # doesn't reliably throttle. Nice+IOWeight push those down too, so
+        # scrub stops starving latency-sensitive traffic (e.g. the wg0 link).
+        Nice = 19;
+        IOSchedulingClass = "idle";
+        IOWeight = 1;
+      };
     };
 
 
