@@ -14,7 +14,7 @@ let
   vacuumScript = pkgs.writeShellScript "journal-remote-vacuum" ''
     set -euo pipefail
     ${pkgs.systemd}/bin/journalctl --directory=/var/log/journal/remote \
-      --vacuum-size=5G --vacuum-time=60d
+      --vacuum-size=2G
   '';
 in
 {
