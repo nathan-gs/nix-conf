@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+# Pulls the secrets + nix-conf git repo's on nnas up to date with what's
+# pushed here. Does not switch; see bin/nnas-switch.sh for that.
+set -euo pipefail
+
+ssh nnas.wg "cd /etc/nixos/secrets ; git pull"
+ssh nnas.wg "cd /etc/nixos/nix-conf ; git pull"
