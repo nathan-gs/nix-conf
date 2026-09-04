@@ -246,10 +246,26 @@ with lib;
       description = "btrfs monthly scrub";
       after = [ "local-fs.target" ];
       script = ''
-        ${pkgs.btrfs-progs}/bin/btrfs scrub start -c3 -B -d /media/${lib.head dataVolumes}
+        # `btrfs scrub` runs its checksum/endio work in kernel kworker
+        # threads, not the calling process, so systemd's CPUQuota/Nice/
+        # IOWeight below don't reliably reach it - confirmed a scrub run
+        # still made the box unreachable over ssh despite those. The `-c`/
+        # `-n` ioprio flags (previously used here) are deprecated upstream
+        # and explicitly documented as not working with mq-deadline (the
+        # default scheduler), only bfq/kyber.
+        #
+        # --limit is the actual reliable throttle: a kernel-enforced
+        # per-device throughput cap, independent of scheduler/cgroups.
+        # 50M/s keeps the box responsive; raise if scrubs start taking too
+        # long (5.4TB at 50M/s is ~30h).
+        ${pkgs.btrfs-progs}/bin/btrfs scrub start --limit 50M -B -d /media/${lib.head dataVolumes}
       '';
       startAt = "*-*-08 23:00:00";
-      serviceConfig.CPUQuota = "50%";
+      serviceConfig = {
+        CPUQuota = "20%";
+        Nice = 19;
+        IOWeight = 1;
+      };
     };
 
 
