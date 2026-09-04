@@ -21,6 +21,17 @@ let
   bareDeviceMappings = lib.listToAttrs (
     lib.concatMap (d: map (n: lib.nameValuePair n d.ip) ([ d.name ] ++ d.aliases)) devices
   );
+
+  # See blocking.allowlists below. Multi-line block, not a list of
+  # single-line entries — same inline-vs-source gotcha as the denylists.
+  googleFunctional = ''
+    csi.gstatic.com
+    firebaselogging.googleapis.com
+    firebaselogging-pa.googleapis.com
+    fcmatch.google.com
+    fcmatch.youtube.com
+    video-stats.video.google.com
+  '';
 in
 {
   # Local resolver + ad-blocker + split-horizon DNS.
@@ -99,22 +110,39 @@ in
             ''
           ];
         };
-        # NTP hostnames, so restricted devices can still sync their clock
-        # even though they otherwise only get l.nathan.gs. Domain entries
-        # cover subdomains too (e.g. 0.pool.ntp.org, europe.pool.ntp.org).
-        allowlists.everything = [
-          ''
-            l.nathan.gs
-            pool.ntp.org
-            ntp.org
-            time.google.com
-            time.windows.com
-            time.apple.com
-            time.cloudflare.com
-          ''
-        ];
+        allowlists = {
+          # NTP hostnames, so restricted devices can still sync their clock
+          # even though they otherwise only get l.nathan.gs. Domain entries
+          # cover subdomains too (e.g. 0.pool.ntp.org, europe.pool.ntp.org).
+          everything = [
+            ''
+              l.nathan.gs
+              pool.ntp.org
+              ntp.org
+              time.google.com
+              time.windows.com
+              time.apple.com
+              time.cloudflare.com
+            ''
+          ];
+          # Google/YouTube telemetry endpoints that the upstream lists flag as
+          # trackers but that YouTube's own JS (watch page, Studio, upload,
+          # sign-in) hard-depends on: failures surface as a flood of console
+          # errors and can stall the sign-in/upload flows waiting on them.
+          # These carry no ads — the actual ad domains (ads.youtube.com,
+          # adservice.google.com, doubleclick, googlesyndication, …) stay
+          # blocked. Listed under both groups since `default` clients get
+          # ads + trackers and a domain may appear in either.
+          ads = [ googleFunctional ];
+          trackers = [ googleFunctional ];
+        };
         clientGroupsBlock = { default = [ "ads" "trackers" ]; } // restrictedClientsBlock;
-        blockType = "zeroIp";
+        # nxDomain, not zeroIp: on Linux a connect() to 0.0.0.0 targets
+        # localhost rather than failing, so a blocked name turns into a
+        # connection to whatever the client happens to be running (or a
+        # hang) instead of a clean, immediate DNS failure. NXDOMAIN fails
+        # fast, which is what browser fetch/XHR retry logic expects.
+        blockType = "nxDomain";
         loading.refreshPeriod = "24h";
       };
 
