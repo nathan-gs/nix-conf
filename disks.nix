@@ -242,31 +242,28 @@ with lib;
     '') dataDisks);
   };
 
-    # -c3/IOSchedulingClass=idle on the scrub unit only matter if the block
-    # scheduler actually honors ioprio classes - mq-deadline/none (the
-    # default) don't, only bfq does. Without this, scrub's idle priority was
-    # a no-op and it kept saturating disk+CPU on rotational data disks.
-    services.udev.extraRules = mkIf btrfsEnabled ''
-      ACTION=="add|change", KERNEL=="sd[a-z]", ATTR{queue/rotational}=="1", ATTR{queue/scheduler}="bfq"
-    '';
-
     systemd.services.btrfs-scrub = mkIf btrfsEnabled {
       description = "btrfs monthly scrub";
       after = [ "local-fs.target" ];
       script = ''
-        ${pkgs.btrfs-progs}/bin/btrfs scrub start -c3 -B -d /media/${lib.head dataVolumes}
+        # `btrfs scrub` runs its checksum/endio work in kernel kworker
+        # threads, not the calling process, so systemd's CPUQuota/Nice/
+        # IOWeight below don't reliably reach it - confirmed a scrub run
+        # still made the box unreachable over ssh despite those. The `-c`/
+        # `-n` ioprio flags (previously used here) are deprecated upstream
+        # and explicitly documented as not working with mq-deadline (the
+        # default scheduler), only bfq/kyber.
+        #
+        # --limit is the actual reliable throttle: a kernel-enforced
+        # per-device throughput cap, independent of scheduler/cgroups.
+        # 50M/s keeps the box responsive; raise if scrubs start taking too
+        # long (5.4TB at 50M/s is ~30h).
+        ${pkgs.btrfs-progs}/bin/btrfs scrub start --limit 50M -B -d /media/${lib.head dataVolumes}
       '';
       startAt = "*-*-08 23:00:00";
       serviceConfig = {
-        # Lowered further after scrub kept starving the box (high ping /
-        # unreachable ssh during a run) even with the settings below.
         CPUQuota = "20%";
-        # -c3 above only sets ioprio on the btrfs binary itself; the actual
-        # checksum/endio work runs in kernel kworker threads that CPUQuota
-        # doesn't reliably throttle. Nice+IOWeight push those down too, so
-        # scrub stops starving latency-sensitive traffic (e.g. the wg0 link).
         Nice = 19;
-        IOSchedulingClass = "idle";
         IOWeight = 1;
       };
     };
