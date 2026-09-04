@@ -20,6 +20,7 @@
      ../services/onedrive-schedule.nix
       ../gc.nix
       ../services/auto-upgrade.nix
+      ../services/journal-upload.nix
     ];
 
   # Follower: never runs `nix flake update` (nhtpc is the leader). Safety-net
