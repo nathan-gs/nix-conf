@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 # Pulls the secrets + nix-conf git repo's on nnas up to date with what's
-# pushed here. Does not switch; see bin/nnas-switch.sh for that.
+# on this host. Does not switch; see bin/nnas-switch.sh for that.
+#
+# secrets' origin on nnas already points at nhtpc.wg, so a plain pull is
+# direct. nix-conf's origin on nnas is GitHub, which we don't push to from
+# here (auto-upgrade owns that) - pull it straight from this host instead
+# so local commits made here reach nnas without waiting on a GitHub push.
 set -euo pipefail
 
 ssh nnas.wg "cd /etc/nixos/secrets ; git pull"
-ssh nnas.wg "cd /etc/nixos/nix-conf ; git pull"
+ssh nnas.wg "cd /etc/nixos/nix-conf ; git pull ssh://$(whoami)@nhtpc.wg/etc/nixos/nix-conf main"
