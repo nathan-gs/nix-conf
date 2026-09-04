@@ -31,11 +31,11 @@
           dewpoint_high = ''{{ states('sensor.indoor_dewpoint') | float(15.0) > 15.0 }}'';
           indoor_temperature = ''{{ states('sensor.indoor_temperature') | float(19) }}'';
           outdoor_temperature = ''{{ states('sensor.outdoor_temperature') | float(19) }}'';
-          house_needs_cooling = ''{{ indoor_temperature | float > 23.5 }}'';
+          house_needs_cooling = ''{{ states('sensor.indoor_temperature') | float(19) > 23.5 }}'';
           bypass = ''{{ states('binary_sensor.itho_wtw_bypass') | bool(false) }}'';
           tomorrow_max_temp = ''{{ states('sensor.weather_tomorrow_temperature_max') | float(30) }}'';
-          mild_day_ahead_and_house_still_cool = ''{{ tomorrow_max_temp | float <= 25 and indoor_temperature | float < 23 }}'';
-          house_needs_cooling_and_temp_outside_lower = ''{{ bypass and house_needs_cooling and (outdoor_temperature | float + 2.5) < indoor_temperature | float and not mild_day_ahead_and_house_still_cool }}'';
+          mild_day_ahead_and_house_still_cool = ''{{ tomorrow_max_temp | float <= 25 and states('sensor.indoor_temperature') | float(19) < 23 }}'';
+          house_needs_cooling_and_temp_outside_lower = ''{{ bypass and house_needs_cooling and (outdoor_temperature | float + 2.5) < states('sensor.indoor_temperature') | float(19) and not mild_day_ahead_and_house_still_cool }}'';
           dewpoint_outdoor_smaller_then_indoor = ''{{ (states('sensor.outdoor_dewpoint') | float + 1) < (states('sensor.indoor_dewpoint') | float) }}'';
           dewpoint_high_and_dewpoint_outdoor_lower = ''{{ (dewpoint_high and dewpoint_outdoor_smaller_then_indoor) | bool }}'';
           humidity_max_over_80 = ''{{ states('sensor.indoor_humidity_max') | float(100) > 80 }}'';
