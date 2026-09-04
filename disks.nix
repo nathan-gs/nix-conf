@@ -249,7 +249,16 @@ with lib;
         ${pkgs.btrfs-progs}/bin/btrfs scrub start -c3 -B -d /media/${lib.head dataVolumes}
       '';
       startAt = "*-*-08 23:00:00";
-      serviceConfig.CPUQuota = "50%";
+      serviceConfig = {
+        CPUQuota = "50%";
+        # -c3 above only sets ioprio on the btrfs binary itself; the actual
+        # checksum/endio work runs in kernel kworker threads that CPUQuota
+        # doesn't reliably throttle. Nice+IOWeight push those down too, so
+        # scrub stops starving latency-sensitive traffic (e.g. the wg0 link).
+        Nice = 19;
+        IOSchedulingClass = "idle";
+        IOWeight = 10;
+      };
     };
 
 
