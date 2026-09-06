@@ -19,10 +19,16 @@ map
       floor = "floor0";
     }
     {
-      zone = "basement";
-      name = "network";
+      zone = "network";
+      name = "server";
       ieee = "0xa4c138ae189cf8bd";
-      floor = "basement";
+      floor = "system";
+    }
+    {
+      zone = "network";
+      name = "router";
+      ieee = "0xa4c1389eba708210";
+      floor = "system";
     }
     {
       zone = "waskot";
