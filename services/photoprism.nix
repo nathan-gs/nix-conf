@@ -50,7 +50,6 @@
   services.nginx.virtualHosts."photoprism.nathan.gs" = {
     forceSSL = true;
     useACMEHost = "photoprism.nathan.gs";
-    serverAliases = [ "photoprism.l.nathan.gs" "photoprism.wg.nathan.gs" ];
     basicAuth = config.secrets.nginx.basicAuth;
     locations."/" = {
       proxyPass = "http://127.0.0.1:2342";
@@ -76,9 +75,13 @@
 
   };
 
+  # LAN/WireGuard names: no basic auth, reachable over both http and https.
+  # addSSL (not forceSSL) so port 80 keeps serving instead of redirecting; useACMEHost
+  # alone does not create a TLS listener - hasSSL is set only by addSSL/onlySSL/forceSSL.
   services.nginx.virtualHosts."photoprism.l.nathan.gs" = {
-    forceSSL = false;
-    enableACME = false;
+    addSSL = true;
+    useACMEHost = "photoprism.nathan.gs";
+    serverAliases = [ "photoprism.wg.nathan.gs" ];
     locations."/" = {
       proxyPass = "http://127.0.0.1:2342";
       proxyWebsockets = true; # needed if you need to use WebSocket
