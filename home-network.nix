@@ -1,5 +1,48 @@
-{ lib, ... }:
+{ config, lib, ... }:
 {
+  # Single source of truth for the network ranges. Consumed by kea's subnet
+  # (services/dhcp.nix) and by the nginx source ACLs that keep the internal
+  # hostnames off the public internet (services/nginx.nix and the individual
+  # service modules). Change a range here, not in five places.
+  options.homeNetwork.lanSubnet = lib.mkOption {
+    type = lib.types.str;
+    default = "192.168.0.0/24";
+    description = "LAN CIDR (nhtpc's eno1 lives here and serves DHCP on it).";
+  };
+
+  options.homeNetwork.wgSubnet = lib.mkOption {
+    type = lib.types.str;
+    default = "10.73.221.0/24";
+    description = "WireGuard CIDR (wg0, peers defined in computers/nhtpc.nix).";
+  };
+
+  options.homeNetwork.trustedSources = lib.mkOption {
+    type = lib.types.listOf lib.types.str;
+    description = ''
+      Source ranges nginx treats as internal. Anything under l.nathan.gs or
+      wg.nathan.gs is only served to these — see services/nginx.nix.
+    '';
+  };
+
+  # nginx access rules built from trustedSources, so a vhost restriction can
+  # never drift from the ranges above. Use in a vhost's extraConfig, but only
+  # on vhosts that serve no public name.
+  options.homeNetwork.nginxLanOnly = lib.mkOption {
+    type = lib.types.lines;
+    readOnly = true;
+    description = "nginx snippet restricting an entire vhost to trustedSources.";
+  };
+
+  config.homeNetwork.trustedSources = lib.mkDefault [
+    config.homeNetwork.lanSubnet
+    config.homeNetwork.wgSubnet
+    "127.0.0.1"
+  ];
+
+  config.homeNetwork.nginxLanOnly =
+    lib.concatMapStringsSep "\n" (r: "allow ${r};") config.homeNetwork.trustedSources
+    + "\ndeny all;";
+
   # Single source of truth for known LAN devices: MAC -> IP (for kea's DHCP
   # reservations, services/dhcp.nix), DNS name/aliases under l.nathan.gs
   # (services/blocky.nix), and whether the device gets internet access at

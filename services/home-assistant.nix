@@ -33,6 +33,10 @@
     forceSSL = true;
     useACMEHost = "ha.nathan.gs";
     serverAliases = [ "ha.l.nathan.gs" "ha.wg.nathan.gs" ];
+    # ha.nathan.gs stays public; the .l/.wg aliases are internal-only.
+    extraConfig = ''
+      if ($homenet_reject) { return 403; }
+    '';
     locations."/" = {
       proxyPass = "http://127.0.0.1:8123";
       proxyWebsockets = true; # needed if you need to use WebSocket

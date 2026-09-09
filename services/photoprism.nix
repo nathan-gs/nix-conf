@@ -82,6 +82,10 @@
     addSSL = true;
     useACMEHost = "photoprism.nathan.gs";
     serverAliases = [ "photoprism.wg.nathan.gs" ];
+    # This vhost has no basicAuth and PHOTOPRISM_AUTH_MODE is "public", so the
+    # source ACL is the only gate. It serves no public name, so deny outright
+    # rather than using the $homenet_reject guard.
+    extraConfig = config.homeNetwork.nginxLanOnly;
     locations."/" = {
       proxyPass = "http://127.0.0.1:2342";
       proxyWebsockets = true; # needed if you need to use WebSocket

@@ -31,7 +31,9 @@
     forceSSL = true;
     useACMEHost = "read.nathan.gs";
     serverAliases = [ "read.l.nathan.gs" "read.wg.nathan.gs" ];
+    # read.nathan.gs stays public; the .l/.wg aliases are internal-only.
     extraConfig = ''
+      if ($homenet_reject) { return 403; }
       proxy_buffering off;
     '';
     basicAuth = config.secrets.nginx.basicAuth;
