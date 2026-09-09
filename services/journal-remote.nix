@@ -21,7 +21,18 @@ in
   services.journald.remote = {
     enable = true;
     listen = "http";
-    settings.Remote.SplitMode = "host"; # one file per source host
+    settings.Remote = {
+      SplitMode = "host"; # one file per source host
+
+      # Without explicit limits journal-remote never rotates: the single
+      # remote-<ip>.journal grows to its built-in 32M ceiling and then every
+      # further append fails ("microhttpd: Application reported internal
+      # error"), which kills systemd-journal-upload on nnas — whose switch
+      # then exits 4, so the leader reports the remote apply as failed.
+      MaxFileSize = "128M";
+      MaxUse = "2G";
+      MaxFiles = 20;
+    };
   };
 
   # Only nnas (over wg0) may reach this port — not the LAN or internet.
