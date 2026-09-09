@@ -3,3 +3,4 @@ bin/mount-*
 esphome/secrets.yaml
 result
 .claude
+.env

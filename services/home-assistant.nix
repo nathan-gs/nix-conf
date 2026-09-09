@@ -206,6 +206,7 @@
       #(pkgs.callPackage ../pkgs/home-assistant/custom_components/volvo-cars.nix {})
       pkgs.nixpkgs-unstable.home-assistant-custom-components.tuya_local
       (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/audiconnect.nix { beautifulsoup4 = pkgs.nixpkgs-unstable.python314Packages.beautifulsoup4; })
+      (pkgs.nixpkgs-unstable.callPackage ../pkgs/home-assistant/custom_components/technicolor-cga.nix { pkgs = pkgs.nixpkgs-unstable; })
     ];
 
     customLovelaceModules = with pkgs.nixpkgs-unstable.home-assistant-custom-lovelace-modules; [
