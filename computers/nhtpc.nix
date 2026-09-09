@@ -151,10 +151,10 @@
   networking.interfaces.eno1 = {
     useDHCP = false;
     ipv4.addresses = [
-      { address = "192.168.1.2"; prefixLength = 24; }
+      { address = "192.168.0.2"; prefixLength = 24; }
     ];
   };
-  networking.defaultGateway = "192.168.1.1";
+  networking.defaultGateway = "192.168.0.1";
   networking.nameservers = [ "127.0.0.1" ]; # blocky
   # eno1 is static, not a DHCP client, so it never gets the domain-search
   # suffix kea hands out to everyone else — set it explicitly here too.

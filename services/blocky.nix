@@ -37,7 +37,7 @@ in
   # Local resolver + ad-blocker + split-horizon DNS.
   #
   # Router/DHCP (not managed by this flake) needs to hand LAN clients:
-  #   - DNS server: nhtpc's LAN address (192.168.1.2)
+  #   - DNS server: nhtpc's LAN address (192.168.0.2)
   #   - domain suffix: l.nathan.gs
   # WireGuard peers need DNS = 10.73.221.1 (nhtpc's wg0 address) and search
   # domain wg.nathan.gs configured client-side in their tunnel config.
@@ -169,7 +169,7 @@ in
             # address via upstream DNS otherwise) — override it back to the
             # actual router so browsing to it doesn't silently hit AVM's
             # servers instead of the local admin UI.
-            "fritz.box" = "192.168.1.1";
+            "fritz.box" = "192.168.0.1";
           }
           // bareDeviceMappings;
         zone = ''
@@ -255,7 +255,7 @@ in
     # LAN/WireGuard only — DoH has no business being reachable from the
     # public internet, unlike the rest of the vhosts on this nginx.
     extraConfig = ''
-      allow 192.168.1.0/24;
+      allow 192.168.0.0/24;
       allow 10.73.221.0/24;
       allow 127.0.0.1;
       deny all;

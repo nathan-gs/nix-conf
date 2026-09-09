@@ -22,13 +22,13 @@
       subnet4 = [
         {
           id = 1;
-          subnet = "192.168.1.0/24";
+          subnet = "192.168.0.0/24";
           pools = [
-            { pool = "192.168.1.200 - 192.168.1.250"; }
+            { pool = "192.168.0.200 - 192.168.0.250"; }
           ];
           option-data = [
-            { name = "routers"; data = "192.168.1.1"; }
-            { name = "domain-name-servers"; data = "192.168.1.2"; }
+            { name = "routers"; data = "192.168.0.1"; }
+            { name = "domain-name-servers"; data = "192.168.0.2"; }
             { name = "domain-name"; data = "l.nathan.gs"; }
             { name = "domain-search"; data = "l.nathan.gs"; }
           ];

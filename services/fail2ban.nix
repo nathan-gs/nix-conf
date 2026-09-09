@@ -4,7 +4,7 @@
     enable = true;
     bantime-increment.enable = true;
     ignoreIP = [
-      "192.168.1.0/24"
+      "192.168.0.0/24"
     ];
   };
 
