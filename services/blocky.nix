@@ -254,12 +254,7 @@ in
     serverAliases = [ "dns.l.nathan.gs" "dns.wg.nathan.gs" ];
     # LAN/WireGuard only — DoH has no business being reachable from the
     # public internet, unlike the rest of the vhosts on this nginx.
-    extraConfig = ''
-      allow 192.168.0.0/24;
-      allow 10.73.221.0/24;
-      allow 127.0.0.1;
-      deny all;
-    '';
+    extraConfig = config.homeNetwork.nginxLanOnly;
     locations."/dns-query" = {
       proxyPass = "http://127.0.0.1:65080/dns-query";
     };

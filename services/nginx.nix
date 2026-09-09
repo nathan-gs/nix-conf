@@ -43,6 +43,34 @@
 
       proxy_headers_hash_max_size 1024;
       proxy_headers_hash_bucket_size 128;
+
+      # Keep *.l.nathan.gs / *.wg.nathan.gs off the public internet.
+      #
+      # Those names share a server block (and therefore a listen socket) with
+      # the public name of the same service, and nginx selects the block from
+      # Host/SNI alone -- never from the address the connection arrived on.
+      # The router also DNATs WAN traffic to nhtpc's LAN address, so binding
+      # per-address cannot separate them either. That leaves the source IP as
+      # the only usable signal: an internal name from an external client is a
+      # spoofed Host header, so reject it.
+      #
+      # $homenet_reject is "1" only for (internal name, external client).
+      # Vhosts opt in with `if ($homenet_reject) { return 403; }`; a vhost with
+      # no public name at all uses homeNetwork.nginxLanOnly instead.
+      geo $homenet_client {
+        default 0;
+        ${lib.concatMapStringsSep "\n        " (r: "${r} 1;") config.homeNetwork.trustedSources}
+      }
+
+      map $host $homenet_only_name {
+        default 0;
+        "~^.+\.(l|wg)\.nathan\.gs$" 1;
+      }
+
+      map "$homenet_only_name$homenet_client" $homenet_reject {
+        default 0;
+        "10" 1;
+      }
     '';
 
   };

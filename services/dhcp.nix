@@ -22,7 +22,7 @@
       subnet4 = [
         {
           id = 1;
-          subnet = "192.168.0.0/24";
+          subnet = config.homeNetwork.lanSubnet;
           pools = [
             { pool = "192.168.0.200 - 192.168.0.250"; }
           ];
