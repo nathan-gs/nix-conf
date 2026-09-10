@@ -2,7 +2,7 @@
 
 **Plant:** RHI-5K-48ES-5G + PYLON_LV (US5000 + US3000C)  
 **Why:** Pylontech wants a long absorb at the top so the BMS can balance (US5000 cell 12 lags). Touching 99 % for an hour is not enough — sit **≥ 98 % for ~4 h**. The 45-day reminder (`binary_sensor.solar_battery_rebalance_overdue`) is when to do this.  
-**Related:** [[solis-modbus]], [[solis-steering]], [[ev-battery-peak-coordination]], `smarthome/energy/solar/pylontech.nix`.
+**Related:** [[solis-modbus]], [[solis-steering]], [[ev-battery-peak-coordination]], [[battery-cell-imbalance-knee-behavior]], `smarthome/energy/solar/pylontech.nix`.
 
 **Preferred:** trigger `automation.solar_battery_pylontech_rebalance_run` (energy dashboard **Rebalance pack**, or Developer Tools → Actions), or let `rebalance.auto_trigger` fire it automatically once overdue + SoC ≥ 98 % + the car charger is off/at its 8 A floor. If cells are already balanced (< 30 mV, min cell > 3.45 V) at ≥ 98 % SoC when triggered, it just stamps `last_rebalance` and skips — no car block, no grid. Otherwise: always prefer a **sunny afternoon**: the run blocks the car (only while at/near the knee or grid-charging, not the whole run) and lets PV finish the pack. Grid TOU (~1 kW, peak-capped) is only armed if remaining solar cannot reach 100 % **and** the run is within 24 h of timing out — a run gets up to ~3 days of solar-only patience first. The **4 h at ≥ 98 %** absorb is now cumulative — a dip below 98 % (sunset, a cloud) pauses it, it does not reset — so a rebalance can legitimately span several days of partial sun. A 5-minute watchdog restores on completion (or 96 h timeout / **Cancel rebalance**).
 
