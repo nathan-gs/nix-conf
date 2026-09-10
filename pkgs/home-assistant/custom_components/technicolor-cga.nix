@@ -14,8 +14,8 @@ buildHomeAssistantComponent rec {
   src = fetchFromGitHub {
     owner = "nathan-gs";
     repo = "techniclor_cga";              # note: upstream repo name is misspelled
-    rev = "2984cb0908976218a27fcc35538d54b6e49db3b2";
-    hash = "sha256-Lk5KxeRMuDioCDrk7W5j4aQFL8BdhREwnOosRvzoO+M=";
+    rev = "3ecfd844e67263618dcf77b17a9fc161a6ab6898";
+    hash = "sha256-e4fEZwgpYQ5MCjJ5wp3KNWHLFa5/UtYCOFaT8ks068Q=";
   };
 
   # manifest declares no requirements, but the code imports `requests`
