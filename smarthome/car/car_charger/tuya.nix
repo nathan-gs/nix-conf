@@ -12,12 +12,13 @@
         name = "car/charge_sunny_tomorrow";
         icon = "mdi:weather-sunny";
       };
-      # Set by the morning battery boost automation (re-evaluated every 15 min between 03:00
-      # and 07:00) when the solar forecast is >= 10 kWh and the home battery still has usable
-      # charge (>= 45%). Charging runs until the home battery reaches the 30% floor (gated in
-      # should_charge below), then car_charger.morning_battery_boost_done clears this flag.
-      # Also cleared at 09:00 and reset nightly at 21:00 by plan_tomorrow, so a battery that
-      # solar refills past the floor cannot silently re-arm the boost during peak hours.
+      # Set by the morning battery boost automation (re-evaluated every 15 min from 05:00 to
+      # 07:00) when the solar forecast is >= 9 kWh and the home battery holds meaningfully
+      # more than input_number.car_charge_boost_floor. Charging runs until the battery reaches
+      # that floor (gated in should_charge below), then car_charger.morning_battery_boost_done
+      # clears this flag. Also cleared at 09:00 and reset nightly at 21:00 by plan_tomorrow, so
+      # a battery that solar refills past the floor cannot silently re-arm the boost during
+      # peak hours.
       car_charge_morning_boost = {
         name = "car/charge_morning_boost";
         icon = "mdi:battery-arrow-up";
@@ -40,6 +41,22 @@
         step = 5;
         unit_of_measurement = "%";
         mode = "slider";
+      };
+
+      # Dynamic stop floor (%) for the morning battery boost, recomputed every 15 min from
+      # 05:00 by car_charger.morning_battery_boost. It is the SoC the pack must keep back to
+      # carry the house on its own until solar out-produces the baseload — the point of the
+      # boost is to move stored energy into the car, not to hand the house over to the grid at
+      # 07:00. Written by the automation, read by should_charge and by
+      # morning_battery_boost_done; never set by hand.
+      car_charge_boost_floor = {
+        name = "car/charge_boost_floor";
+        icon = "mdi:battery-lock";
+        min = 10;
+        max = 60;
+        step = 1;
+        unit_of_measurement = "%";
+        mode = "box";
       };
     };
 
@@ -323,11 +340,13 @@
                  charging when there is enough solar production. #}
               {% set force_on = state_attr('sensor.system_car_charger_override_mode', 'force_on') %}
               {# Morning battery boost: drain home battery into car before solar arrives. Stops
-                 at the 30% floor — both here and by clearing the flag outright (see
+                 at car_charge_boost_floor — the dynamically sized reserve that still has to
+                 bridge the house to sunrise — both here and by clearing the flag outright (see
                  car_charger.morning_battery_boost_done), so midday solar refilling the pack
                  cannot re-arm the boost and force peak-tariff charging in the afternoon. #}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
-              {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 30 %}
+              {% set boost_floor = states('input_number.car_charge_boost_floor') | int(30) %}
+              {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > boost_floor %}
               {# House-pack rebalance: only block the car while it would actually
                  compete with it — at/near the knee (PV priority to the pack) or
                  mid grid-TOU charge (shares the 15-min peak budget, see
@@ -675,15 +694,26 @@
       )
 
       # Morning battery boost. On a good solar day the pack will be refilled (and would
-      # otherwise clip/export at the low injection price), so anything it still holds before
-      # sunrise is better off in the car. Enable morning_boost and should_charge drains the
-      # pack into the car down to the 30% floor.
+      # otherwise clip and export at the low injection price), so anything it still holds
+      # before sunrise is worth more in the car than in the pack.
       #
-      # Evaluated every 15 min between 03:00 and 07:00 rather than once at 05:00: the pack
-      # falls ~2-3%/h overnight, so a single 05:00 snapshot samples the window at its lowest
-      # point and a battery a few % under the gate loses the whole morning (2026-09-10: 46%
-      # at 05:00 vs a 50% gate, car plugged in at 57% until 07:44 — boost skipped, and it had
-      # not fired since 2026-08-08). Re-evaluating means the first qualifying moment wins.
+      # Runs every 15 min from 05:00. Two jobs, in order:
+      #
+      #   1. Recompute input_number.car_charge_boost_floor from the HOURLY solar forecast --
+      #      how much SoC must stay in the pack to carry the house on its own until the sun
+      #      out-produces the baseload. This is the whole point: drain as deep as the day
+      #      allows, but never so deep that the house falls back on the grid at 07:00. A dull
+      #      morning pushes the crossover later, the deficit up and the floor with it; a bright
+      #      one lets the boost run the pack down close to the inverter's own cut-off.
+      #      Recomputed on every tick, so a forecast that degrades mid-boost raises the floor
+      #      and stops the charge early rather than overshooting.
+      #
+      #   2. Arm the boost, if the window and the gates allow.
+      #
+      # Re-evaluated rather than decided once at 05:00: the pack falls ~2-3%/h overnight, so a
+      # single 05:00 snapshot samples the window at its lowest point and a battery a few %
+      # under the gate loses the whole morning (2026-09-10: 46% at 05:00 vs a 50% gate, car
+      # plugged in at 57% until 07:44 -- boost skipped, and it had not fired since 2026-08-08).
       (
         ha.automation "system/car_charger.morning_battery_boost"
           {
@@ -691,58 +721,125 @@
               (ha.trigger.time_pattern_minutes "/15")
             ];
             conditions = [
-              # Pre-sunrise window only; solar takes over after this.
-              { condition = "time"; after = "03:00:00"; before = "07:00:00"; }
+              # Keep maintaining the floor past the arming window so a running boost stops on a
+              # current number; 09:00 matches morning_battery_boost_done's backstop.
+              { condition = "time"; after = "05:00:00"; before = "09:00:00"; }
               # Respect manual overrides
               {
                 condition = "state";
                 entity_id = "input_select.car_charge_override";
                 state = "auto";
               }
-              # Don't re-arm within the same morning after the floor cleared it.
-              (ha.condition.off "input_boolean.car_charge_morning_boost")
-              # Only worthwhile on a good solar day (>= 10 kWh today) — the pack has to be
-              # confident of being refilled before we empty it into the car.
-              {
-                condition = "template";
-                value_template = ''
-                  {{ states('sensor.energy_production_today_remaining') | float(0) >= 10 }}
-                '';
-              }
-              # Enough above the 30% floor to be worth a run: 45% on a ~8.3 kWh pack leaves
-              # ~1.2 kWh to move, ~25 min at 13A. A tighter band would arm the boost for a
-              # transfer of nearly nothing.
-              {
-                condition = "template";
-                value_template = ''
-                  {{ states('sensor.system_house_pv_battery_soc') | int(0) >= 45 }}
-                '';
-              }
-              # Pointless unless a car is actually attached with room to take the charge.
-              (ha.condition.on "binary_sensor.system_car_charger_vehicle_connected")
-              {
-                condition = "template";
-                value_template = ''
-                  {{ states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) < 90 }}
-                '';
-              }
             ];
             actions = [
-              (ha.action.on "input_boolean.car_charge_morning_boost")
+              # Hourly resolution: `watts` is the mean power forecast per hour, which is what
+              # the baseload has to be compared against. config_entry_id() avoids pinning the
+              # integration's opaque entry id into the config.
+              {
+                service = "forecast_solar.get_forecast";
+                data = {
+                  config_entry = "{{ config_entry_id('sensor.energy_production_today_remaining') }}";
+                  resolution = "hourly";
+                };
+                response_variable = "solar_fc";
+              }
+              (ha.action.set_value "input_number.car_charge_boost_floor" ''
+                {# Walk today's remaining hours until forecast power covers the house, summing
+                   the shortfall the pack has to cover in the meantime. #}
+                {% set baseload = states('sensor.electricity_house_baseload_power_mean_60m') | float(300) %}
+                {# The 60-min mean is sampled pre-dawn on a sleeping house, so it understates the
+                   07:00-09:00 wake-up ramp; uplift rather than trust it flat. 300W is a floor
+                   for a cold-start mean that has not filled yet. #}
+                {% set need = [baseload, 300] | max * 1.3 %}
+                {% set ns = namespace(deficit = 0.0, covered = false) %}
+                {% for slot, watts in (solar_fc['watts'] | default({}, true)) | dictsort %}
+                  {% set t = as_datetime(slot) | as_local %}
+                  {% if not ns.covered and t.date() == now().date()
+                        and t >= now().replace(minute=0, second=0, microsecond=0) %}
+                    {% if (watts | float(0)) >= need %}
+                      {% set ns.covered = true %}
+                    {% else %}
+                      {# The hour we are standing in only counts for the part still ahead. #}
+                      {% set frac = ((60 - now().minute) / 60) if t.hour == now().hour else 1.0 %}
+                      {% set ns.deficit = ns.deficit + (need - (watts | float(0))) * frac %}
+                    {% endif %}
+                  {% endif %}
+                {% endfor %}
+                {# 83 Wh per SoC point: US5000 (48) + US3000C (35), same constant as
+                   solar/battery/charging/remaining_minutes_till_overdischargesoc. #}
+                {% set reserve = (ns.deficit / 83) | round(0, 'ceil') | int %}
+                {# The inverter stops discharging at number.system_house_pv_overdischarge_soc
+                   (15% while there is solar left today; see smarthome/energy/solar/battery.nix)
+                   -- below that the house, and the car, silently switch to the grid, which is
+                   exactly what this is meant to avoid. That SoC is therefore NOT available to
+                   bridge the morning: the reserve has to sit ON TOP of it. Read live rather than
+                   hard-coded, so retuning that floor (to 12%, say) automatically retunes how deep
+                   the boost may drain. #}
+                {% set inverter_floor = states('number.system_house_pv_overdischarge_soc') | int(15) %}
+                {# Stop the car here: inverter cut-off + what the house still has to draw before
+                   the sun takes over + 2 points of slack for forecast error and for the lag in
+                   the SoC sensor the car stops on (aiming exactly would let the inverter cut out
+                   from under a still-drawing charger).
+                   If the forecast never covers the baseload today, `covered` stays false and the
+                   deficit runs to the end of the day -- the floor lands high and the boost simply
+                   never arms. That is the correct answer for a dull day. #}
+                {{ [ inverter_floor + reserve + 2, 60 ] | min }}
+              '')
+              (ha.action.conditional
+                [
+                  # Arming window proper. Past 07:00 the sun is taking over and the car should
+                  # be on solar, not on the pack.
+                  { condition = "time"; after = "05:00:00"; before = "07:00:00"; }
+                  # Don't re-arm within the same morning after the floor cleared it.
+                  (ha.condition.off "input_boolean.car_charge_morning_boost")
+                  # Only worthwhile on a good solar day -- the pack has to be confident of being
+                  # refilled before we empty it into the car.
+                  {
+                    condition = "template";
+                    value_template = ''
+                      {{ states('sensor.energy_production_today_remaining') | float(0) >= 9 }}
+                    '';
+                  }
+                  # Enough above the floor to be worth starting: 8 points is ~0.66 kWh, roughly
+                  # 13 min at 13A. Below that the boost would arm for almost no transfer.
+                  {
+                    condition = "template";
+                    value_template = ''
+                      {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
+                      {% set floor = states('input_number.car_charge_boost_floor') | int(60) %}
+                      {{ battery >= floor + 8 }}
+                    '';
+                  }
+                  # Pointless unless a car is actually attached with room to take the charge.
+                  (ha.condition.on "binary_sensor.system_car_charger_vehicle_connected")
+                  {
+                    condition = "template";
+                    value_template = ''
+                      {{ states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) < 90 }}
+                    '';
+                  }
+                ]
+                [ (ha.action.on "input_boolean.car_charge_morning_boost") ]
+                [ ]
+              )
             ];
           }
       )
 
       # Clear morning_boost once it has done its job. Without this the flag stays on until
       # 21:00, and should_charge's `battery > floor` gate goes true again the moment midday
-      # solar refills the pack — forcing the car on through peak hours with no solar or
-      # tariff check. Clear at the floor, and at 09:00 as a backstop if the pack never got
-      # there (car unplugged early, boost never actually drew).
+      # solar refills the pack -- forcing the car on through peak hours with no solar or tariff
+      # check. Clear at the floor, and at 09:00 as a backstop if the pack never got there (car
+      # unplugged early, boost never actually drew).
       (
         ha.automation "system/car_charger.morning_battery_boost_done"
           {
             triggers = [
-              (ha.trigger.below_for "sensor.system_house_pv_battery_soc" 31 "00:05:00")
+              (ha.trigger.template_for ''
+                {% set battery = states('sensor.system_house_pv_battery_soc') | int(100) %}
+                {% set floor = states('input_number.car_charge_boost_floor') | int(30) %}
+                {{ is_state('input_boolean.car_charge_morning_boost', 'on') and battery <= floor }}
+              '' "00:03:00")
               { platform = "time"; at = "09:00:00"; }
             ];
             conditions = [
