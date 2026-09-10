@@ -12,9 +12,12 @@
         name = "car/charge_sunny_tomorrow";
         icon = "mdi:weather-sunny";
       };
-      # Set by the 05:00 morning battery boost automation when solar forecast >= 10 kWh and
-      # home battery is still >= 60%. Charging runs until the home battery hits 60% (gated in
-      # should_charge below), then stops. Reset nightly at 21:00 by plan_tomorrow.
+      # Set by the morning battery boost automation (re-evaluated every 15 min between 03:00
+      # and 07:00) when the solar forecast is >= 10 kWh and the home battery still has usable
+      # charge (>= 45%). Charging runs until the home battery reaches the 30% floor (gated in
+      # should_charge below), then car_charger.morning_battery_boost_done clears this flag.
+      # Also cleared at 09:00 and reset nightly at 21:00 by plan_tomorrow, so a battery that
+      # solar refills past the floor cannot silently re-arm the boost during peak hours.
       car_charge_morning_boost = {
         name = "car/charge_morning_boost";
         icon = "mdi:battery-arrow-up";
@@ -320,9 +323,11 @@
                  charging when there is enough solar production. #}
               {% set force_on = state_attr('sensor.system_car_charger_override_mode', 'force_on') %}
               {# Morning battery boost: drain home battery into car before solar arrives. Stops
-                 automatically when battery reaches 60% (the template gate below turns false). #}
+                 at the 30% floor — both here and by clearing the flag outright (see
+                 car_charger.morning_battery_boost_done), so midday solar refilling the pack
+                 cannot re-arm the boost and force peak-tariff charging in the afternoon. #}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(0) %}
-              {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 50 %}
+              {% set morning_boost = is_state('input_boolean.car_charge_morning_boost', 'on') and battery > 30 %}
               {# House-pack rebalance: only block the car while it would actually
                  compete with it — at/near the knee (PV priority to the pack) or
                  mid grid-TOU charge (shares the 15-min peak budget, see
@@ -669,40 +674,82 @@
           }
       )
 
-      # 05:00 — morning battery boost. If today's solar forecast is >= 10 kWh and the home
-      # battery is still well-charged (>= 80%), enable morning_boost so the car charges from
-      # the home battery until it drops to 60%. Solar will recharge the battery during the day.
-      # Only runs in auto mode; skip if override is set to anything else.
+      # Morning battery boost. On a good solar day the pack will be refilled (and would
+      # otherwise clip/export at the low injection price), so anything it still holds before
+      # sunrise is better off in the car. Enable morning_boost and should_charge drains the
+      # pack into the car down to the 30% floor.
+      #
+      # Evaluated every 15 min between 03:00 and 07:00 rather than once at 05:00: the pack
+      # falls ~2-3%/h overnight, so a single 05:00 snapshot samples the window at its lowest
+      # point and a battery a few % under the gate loses the whole morning (2026-09-10: 46%
+      # at 05:00 vs a 50% gate, car plugged in at 57% until 07:44 — boost skipped, and it had
+      # not fired since 2026-08-08). Re-evaluating means the first qualifying moment wins.
       (
         ha.automation "system/car_charger.morning_battery_boost"
           {
             triggers = [
-              { platform = "time"; at = "05:00:00"; }
+              (ha.trigger.time_pattern_minutes "/15")
             ];
             conditions = [
+              # Pre-sunrise window only; solar takes over after this.
+              { condition = "time"; after = "03:00:00"; before = "07:00:00"; }
               # Respect manual overrides
               {
                 condition = "state";
                 entity_id = "input_select.car_charge_override";
                 state = "auto";
               }
-              # Only worthwhile on a good solar day (>= 10 kWh today)
+              # Don't re-arm within the same morning after the floor cleared it.
+              (ha.condition.off "input_boolean.car_charge_morning_boost")
+              # Only worthwhile on a good solar day (>= 10 kWh today) — the pack has to be
+              # confident of being refilled before we empty it into the car.
               {
                 condition = "template";
                 value_template = ''
                   {{ states('sensor.energy_production_today_remaining') | float(0) >= 10 }}
                 '';
               }
-              # Battery must be above the 60% stop threshold to have anything to give the car
+              # Enough above the 30% floor to be worth a run: 45% on a ~8.3 kWh pack leaves
+              # ~1.2 kWh to move, ~25 min at 13A. A tighter band would arm the boost for a
+              # transfer of nearly nothing.
               {
                 condition = "template";
                 value_template = ''
-                  {{ states('sensor.system_house_pv_battery_soc') | int(0) >= 50 }}
+                  {{ states('sensor.system_house_pv_battery_soc') | int(0) >= 45 }}
+                '';
+              }
+              # Pointless unless a car is actually attached with room to take the charge.
+              (ha.condition.on "binary_sensor.system_car_charger_vehicle_connected")
+              {
+                condition = "template";
+                value_template = ''
+                  {{ states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) < 90 }}
                 '';
               }
             ];
             actions = [
               (ha.action.on "input_boolean.car_charge_morning_boost")
+            ];
+          }
+      )
+
+      # Clear morning_boost once it has done its job. Without this the flag stays on until
+      # 21:00, and should_charge's `battery > floor` gate goes true again the moment midday
+      # solar refills the pack — forcing the car on through peak hours with no solar or
+      # tariff check. Clear at the floor, and at 09:00 as a backstop if the pack never got
+      # there (car unplugged early, boost never actually drew).
+      (
+        ha.automation "system/car_charger.morning_battery_boost_done"
+          {
+            triggers = [
+              (ha.trigger.below_for "sensor.system_house_pv_battery_soc" 31 "00:05:00")
+              { platform = "time"; at = "09:00:00"; }
+            ];
+            conditions = [
+              (ha.condition.on "input_boolean.car_charge_morning_boost")
+            ];
+            actions = [
+              (ha.action.off "input_boolean.car_charge_morning_boost")
             ];
           }
       )
