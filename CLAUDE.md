@@ -6,6 +6,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Personal NixOS flake managing three machines. Edits here flow to real running systems via `switch.sh`; there is no staging.
 
+## ⛔ NEVER run `switch.sh` (or otherwise switch/activate a configuration)
+
+**Deploying is exclusively the user's prerogative.** Claude must NEVER run
+`./switch.sh`, `nixos-rebuild switch`, `./upgrade.sh`, or any command that
+activates a configuration on a running host — not even to fix an outage, verify
+a change, or "close the loop", and not even if a previous task seemed to imply
+it. Applying changes is always the user's call, every time.
+
+Claude MAY build to verify (`sudo nixos-rebuild build --flake .#<host>`) and
+commit/merge to `main` locally, then stop and tell the user to run `switch.sh`
+themselves. If a change can only be verified live, say so and wait — do not
+switch.
+
 ## Common commands
 
 ```sh
