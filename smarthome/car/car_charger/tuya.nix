@@ -416,6 +416,11 @@
               # and the unplugged EVSE self-tripped back off within seconds each time (36 switch
               # flaps + 34 current writes observed in one 2h15m window on 2026-08-29).
               (ha.condition.on "binary_sensor.system_car_charger_vehicle_connected")
+              # Never start charging during a fire alarm. The fire automation cuts the
+              # charger as a large load; without this, should_charge would start it
+              # straight back up. See smarthome/air_quality/fire_alarm.nix and
+              # docs/fire-alarms.md.
+              (ha.condition.off "input_boolean.fire_alarm_active")
             ];
             actions = [
               # Ensure charger switch is on

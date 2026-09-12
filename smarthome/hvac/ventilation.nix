@@ -198,6 +198,16 @@
             for.minutes = 1;
           }
         ];
+        # Leave the WTW alone while a fire alarm is active - it is powered down on
+        # purpose, so that smoke is not distributed to the bedrooms. See
+        # smarthome/air_quality/fire_alarm.nix and docs/fire-alarms.md.
+        condition = [
+          {
+            condition = "state";
+            entity_id = "input_boolean.fire_alarm_active";
+            state = "off";
+          }
+        ];
         action = [
           {
             service = "fan.set_preset_mode";
