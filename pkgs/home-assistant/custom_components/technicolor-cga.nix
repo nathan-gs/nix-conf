@@ -2,20 +2,19 @@
 
 buildHomeAssistantComponent rec {
 
-  owner = "nathan-gs";
+  owner = "woody6402";
   domain = "technicolor_cga";
-  version = "0.9.5-docsis";
+  version = "0.9.6b1";
 
-  # Pinned to our fork's docsis-sensors branch, which adds DOCSIS RF sensors
-  # (downstream/upstream power, SNR, corrected/uncorrectable codewords) plus
-  # WAN/LAN interface sensors (packets, bytes, errors, link status) that
-  # upstream 0.9.5 fetches but never exposes. Submitted upstream as
-  # woody6402/techniclor_cga#3 — repoint back to woody6402 once merged.
+  # Back on upstream: our DOCSIS RF + WAN/LAN sensors and the session/login
+  # fixes (woody6402/techniclor_cga#3) were merged and released in 0.9.6b1,
+  # which also adds centralized polling, WiFi sensors and opt-in session
+  # takeover (force_logout).
   src = fetchFromGitHub {
-    owner = "nathan-gs";
+    owner = "woody6402";
     repo = "techniclor_cga";              # note: upstream repo name is misspelled
-    rev = "3ecfd844e67263618dcf77b17a9fc161a6ab6898";
-    hash = "sha256-e4fEZwgpYQ5MCjJ5wp3KNWHLFa5/UtYCOFaT8ks068Q=";
+    rev = version;
+    hash = "sha256-v8TfHb1yB+CerY0PaAikrCoZt4jgU50QftVidF/V2g0=";
   };
 
   # manifest declares no requirements, but the code imports `requests`
