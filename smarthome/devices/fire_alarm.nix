@@ -2,6 +2,11 @@ map
   (v: v // {
     type = "fire_alarm";
     homeassistant = { expire_after = null; };
+    # z2m defaults battery devices to availability.passive.timeout = 1500min (25h),
+    # which let a dead smoke alarm go unnoticed for two days. Both the Twinguard and
+    # the BSD-2 check in every 27min (checkinInterval 1620s), so 90min is three
+    # missed check-ins: quick enough to matter, loose enough not to cry wolf.
+    availability = { timeout = 90; };
   })
   [
     {
