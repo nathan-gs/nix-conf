@@ -6,6 +6,9 @@ let
   # it: "a detected smoke alarm is not being transmitted automatically to other
   # devices". Interlinking them is therefore our job, not the hardware's.
   #
+  # Coverage map, known gaps and the pairing/testing gotchas are in
+  # docs/fire-alarms.md. Read that before adding or re-pairing a device.
+  #
   # One entry per alarm - everything below is derived from this list, so adding a
   # fourth alarm means adding one block here and nothing else.
   #
@@ -18,18 +21,22 @@ let
   #           (stop/pre_alarm/fire/burglar), the BSD-2 takes a switch.
   alarms = [
     {
+      # covers: the living room
       label = "de living";
       smoke = "binary_sensor.floor0_living_fire_alarm_main_smoke";
       test = "switch.floor0_living_fire_alarm_main_self_test";
       siren = { kind = "twinguard"; entity = "select.floor0_living_fire_alarm_main_alarm"; };
     }
     {
+      # covers: waskot, fen, nikolai, badkamer, morgane
       label = "de gang (verdiep 1)";
       smoke = "binary_sensor.floor1_hallway_fire_alarm_main_smoke";
       test = "switch.floor1_hallway_fire_alarm_main_self_test";
       siren = { kind = "twinguard"; entity = "select.floor1_hallway_fire_alarm_main_alarm"; };
     }
     {
+      # covers: the basement, and partially the floor0 hallway and kitchen.
+      # NOTE: the CV room is only partially covered - the largest remaining gap.
       label = "de kelder";
       smoke = "binary_sensor.basement_basement_fire_alarm_top_smoke";
       test = "binary_sensor.basement_basement_fire_alarm_top_button_pushed";
