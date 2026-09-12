@@ -63,6 +63,63 @@ let
 
   allSmokeClear = { condition = "state"; entity_id = smokeSensors; state = "off"; };
 
+  # Set for the duration of a real alarm. Exists because turning things off is not
+  # enough on its own: electric_heating.nix and ventilation.nix would cheerfully
+  # switch the heaters and the WTW back on at their next trigger. Both consult this
+  # and hold off while it is on.
+  fireActive = "input_boolean.fire_alarm_active";
+
+  # Escape lighting. Enumerated rather than using the "all" keyword so the list is
+  # auditable and cannot silently change meaning - add new lights here.
+  escapeLights = [
+    "light.floor0_bureau_light_desk"
+    "light.floor0_keuken_light_plug_aanrecht_l1"
+    "light.floor0_keuken_light_switch_main_l1"
+    "light.floor0_keuken_light_switch_main_l2"
+    "light.floor0_living_light_bollamp"
+    "light.floor0_living_light_booglamp"
+    "light.floor0_living_light_kattenlamp"
+    "light.floor0_living_light_switch_raam_zuid"
+    "light.floor0_living_light_tv"
+    "light.floor0_wc_light_switch_main_l1"
+    "light.floor1_badkamer_light_switch_main_l1"
+    "light.floor1_badkamer_light_switch_main_l2"
+    "light.floor1_badkamer_light_switch_spiegel_l1"
+  ];
+
+  # Every electrical heat source. The gas CV is deliberately NOT touched: driving it
+  # through ebusd is complex and its failure modes in an emergency are worse than
+  # leaving it be. airco is included because split units heat as well as cool, and
+  # cutting a large load during a fire is no loss either way.
+  heaters = [
+    "switch.system_wtw_metering_plug_verwarming"
+    "switch.floor0_living_metering_plug_verwarming"
+    "switch.floor0_bureau_metering_plug_verwarming"
+    "switch.floor1_nikolai_metering_plug_verwarming"
+    "switch.floor1_badkamer_metering_plug_verwarming"
+    "switch.floor1_fen_metering_plug_deken"
+    "switch.floor1_fen_metering_plug_airco"
+  ];
+
+  # Other large loads worth killing during a fire. The EV charger is the biggest
+  # single load in the house, and an energised charge cable is not something you
+  # want live while the fire brigade is working.
+  largeLoads = [
+    "switch.system_car_charger"
+  ];
+
+  # Mains plug of the WTW unit, cut during a fire.
+  #
+  # A balanced MVHR extracts from the wet rooms and supplies into the bedrooms, so
+  # leaving it running during a fire distributes smoke to where people sleep, moves
+  # it between floors through the ducts, and feeds the fire air. It is far too weak
+  # to clear a fire's smoke but more than strong enough to relocate it. Shutdown on
+  # fire alarm is the normal requirement.
+  #
+  # It has to be the plug: fan.itho_wtw_fan exposes no "off" preset (low is its
+  # floor), and "low" would still transport smoke, only slower.
+  wtwPower = "switch.system_wtw_metering_plug_wtw";
+
   # True only when nothing is actually alarming. This is what separates "button
   # pushed to run a test" from "button pushed to silence a real alarm" - the BSD-2
   # reports both as the same button_pushed bit, so without this a panicked jab at
@@ -149,11 +206,27 @@ in
       };
     };
 
+    input_boolean = {
+      fire_alarm_active = {
+        name = "fire alarm active";
+        icon = "mdi:fire-alert";
+      };
+    };
+
     "automation manual" = [
 
+      # Ordered by urgency: raise the interlock first so nothing races us back on,
+      # then the life-safety actions (sirens, escape lighting), then notify, then
+      # the slower risk-reduction ones.
       (ha.automation "system/fire_alarm.detected" {
         triggers = [ (ha.trigger.on smokeSensors) ];
-        actions = sirensOn ++ notifyAlarm;
+        actions = [ (ha.action.on fireActive) ]
+          ++ sirensOn
+          ++ (map ha.action.on escapeLights)
+          ++ notifyAlarm
+          ++ (map ha.action.off heaters)
+          ++ (map ha.action.off largeLoads)
+          ++ [ (ha.action.off wtwPower) ];
       })
 
       # Physical test: hold the button on any alarm ~5s and every siren should sound.
@@ -174,6 +247,12 @@ in
       # so the worst a spurious run can do is stop sirens that are already stopped.
       # A guard template here would risk the opposite failure - being unable to
       # silence the house because a condition threw.
+      #
+      # Lights and heaters are deliberately NOT restored here. Switching the lights
+      # back off after a fire would be wrong, and the heaters resume on their own
+      # once the interlock lifts. The WTW is the exception: it is powered back up,
+      # both because ventilation is wanted once the smoke needs clearing and because
+      # a house silently left without ventilation is easy to forget about.
       (ha.automation "system/fire_alarm.clear" {
         triggers = [
           (ha.trigger.state "input_button.fire_alarm_clear")
@@ -183,7 +262,9 @@ in
             event_data = { action = "FIRE_ALARM_CLEAR"; };
           }
         ];
-        actions = sirensOff;
+        actions = sirensOff
+          ++ [ (ha.action.off fireActive) ]
+          ++ [ (ha.action.on wtwPower) ];
       })
 
     ];

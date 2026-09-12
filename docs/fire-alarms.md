@@ -48,6 +48,61 @@ via a switch, which with `broadcast_alarms` on is relayed to every BSD-2 on the
 network. So further BSD-2s are covered for free, but each new Twinguard (and the
 Aqara) must be added to the `alarms` list by hand.
 
+## What a real alarm does
+
+In order of urgency:
+
+1. `input_boolean.fire_alarm_active` on - the interlock, raised first
+2. all sirens sound
+3. 13 escape lights on
+4. critical push to all three phones
+5. 7 electrical heaters off
+6. the EV charger off - biggest load in the house, and an energised charge cable
+   is not wanted live while the fire brigade is working
+7. the WTW mains plug off
+
+The **button test deliberately does none of this** - it is sirens and a
+notification only. A test should not kill the heating and blank the house.
+
+### Why the WTW is cut rather than turned down
+
+A balanced MVHR extracts from the wet rooms and supplies into the bedrooms. Left
+running during a fire it distributes smoke to where people sleep, carries it
+between floors through the ducts, and feeds the fire air. It is far too weak to
+clear a fire's smoke (a few hundred m3/h) but more than strong enough to move it
+somewhere worse. Shutdown on fire alarm is the normal building-code requirement.
+
+It has to be the plug (`switch.system_wtw_metering_plug_wtw`): `fan.itho_wtw_fan`
+exposes no "off" preset - `low` is its floor - and `low` would still transport
+smoke, only more slowly.
+
+The gas CV is deliberately left alone: driving it through ebusd is complex and its
+failure modes in an emergency are worse than leaving it be.
+
+### The interlock, and how it can bite
+
+Turning things off is not enough on its own - the house would switch them back on:
+
+| Automation | Would have |
+|---|---|
+| `electric_heating.nix` `automateTurnOn` (x5) | re-energised a heater at the next target transition |
+| `appliances/deken.nix` | switched the electric blanket on when the living room empties after 21:50 - i.e. exactly during an evening fire |
+| `ventilation.nix` `itho_wtw_target` | re-applied a fan preset |
+| `car/car_charger/tuya.nix` start | restarted the EV charger via `should_charge` |
+
+All eight now hold off while `input_boolean.fire_alarm_active` is on.
+
+**This makes that boolean load-bearing for heating, ventilation, the blanket and
+car charging.** If an alarm is silenced at the device (battery pulled, button
+held) instead of through HA, the boolean stays on and all of those stay off
+indefinitely, with nothing to say why. In winter that is a cold house with no
+obvious cause, and a car that never charges overnight. Check it first if any of
+those mysteriously stop working.
+
+Clearing restores the WTW but deliberately not the lights or heaters: switching
+lights off after a fire would be wrong, and the heaters resume by themselves once
+the interlock lifts.
+
 ## Testing
 
 **Hold the button for ~5 seconds.** A short tap produces *no Zigbee message at

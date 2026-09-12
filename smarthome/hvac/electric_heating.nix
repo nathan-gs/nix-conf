@@ -14,6 +14,16 @@ let
           to = "on";
         }
       ];
+      # Never re-energise a heater while a fire alarm is active. Without this the
+      # fire automation's turn-off would be undone at the next target transition.
+      # See smarthome/air_quality/fire_alarm.nix and docs/fire-alarms.md.
+      condition = [
+        {
+          condition = "state";
+          entity_id = "input_boolean.fire_alarm_active";
+          state = "off";
+        }
+      ];
       action = [
         {
           service = "switch.turn_on";
