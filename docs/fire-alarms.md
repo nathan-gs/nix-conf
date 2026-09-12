@@ -149,6 +149,20 @@ sounded, auto-stopped after 15s.
   never receives `pairingCompleted` and sits paired-but-silent forever. Fix
   without touching the hardware:
   `mosquitto_pub -t zigbee2mqtt/bridge/request/device/configure -m '{"id":"<name>"}'`
+- **Some entities are permanently `unknown`, and that is not a fault.** Note
+  `unknown` (no value yet) is not `unavailable` (cannot be reached).
+  - `select.*_fire_alarm_main_alarm` - the Twinguard converter never *reports*
+    `alarm`; its from-Zigbee handlers set `smoke`, `siren_state`, `self_test` and
+    the measurements, but nothing populates `alarm`. It is write-only in practice.
+    This does **not** stop the automation commanding it: verified 2026-09-12, the
+    test set both selects to `fire` and every siren sounded.
+  - `number.*_test_mode_timeout` - only has a value while test mode is running.
+  - `aqi` / `eco2` on a freshly paired Twinguard - the VOC element needs a burn-in
+    period well beyond an hour. `eco2` is derived from `aqi` (`aqi * 10 + 500`), so
+    both appear together. These do resolve on their own.
+
+  The first two never resolve and are filtered out of the unavailable-entities
+  sensor in `smarthome/ha/default.nix`.
 - **`sensor.*_siren_state` lies after a stop.** For `alarm = "stop"` the
   converter sends the commands but returns no optimistic state, so Twinguards
   keep reading `fire` until the device reports otherwise. Do not put it on a
