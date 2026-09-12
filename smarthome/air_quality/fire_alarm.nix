@@ -118,6 +118,16 @@ let
     "switch.floor1_waskot_metering_plug_wasmachine"
   ];
 
+  # Grace period before the loads above are shed, so that clearing a false alarm
+  # from your phone saves a running wash or charge. Nothing life-safety waits on
+  # this - sirens, escape lighting, the notification, the heaters and the WTW all
+  # happen immediately; only these three are held back.
+  #
+  # 5 rather than 2 minutes because false alarms vastly outnumber fires and the
+  # safety difference is small: cutting power does not extinguish anything, it only
+  # stops adding heat. Shorten it if that trade feels wrong - it is just this value.
+  loadShedGrace = "00:05:00";
+
   # Mains plug of the WTW unit, cut during a fire.
   #
   # A balanced MVHR extracts from the wet rooms and supplies into the bedrooms, so
@@ -189,7 +199,7 @@ let
   notifyAlarm = map
     (notifyPhone {
       title = "🔥 BRANDALARM";
-      message = "Rook gedetecteerd in ${whichAlarm}. Alle sirenes zijn geactiveerd.";
+      message = "Rook gedetecteerd in ${whichAlarm}. Alle sirenes zijn geactiveerd. Wasmachine, droogkast en laadpaal gaan over 5 min uit - stop het alarm nu om dat te voorkomen.";
       tag = "fire_alarm";
       critical = true;
     })
@@ -235,8 +245,18 @@ in
           ++ (map ha.action.on escapeLights)
           ++ notifyAlarm
           ++ (map ha.action.off heaters)
-          ++ (map ha.action.off largeLoads)
           ++ [ (ha.action.off wtwPower) ];
+      })
+
+      # Shed the big loads only once the alarm has stood for the grace period.
+      # Expressed as a "for" on the interlock rather than a delay inside the detect
+      # automation: clearing the alarm turns fire_alarm_active off, which cancels
+      # the timer outright, so a cleared false alarm never reaches these actions.
+      # A delay+condition would also work but would tie up the detect automation,
+      # and under mode=single a second alarm during the wait would be dropped.
+      (ha.automation "system/fire_alarm.shed_loads" {
+        triggers = [ (ha.trigger.on_for fireActive loadShedGrace) ];
+        actions = map ha.action.off largeLoads;
       })
 
       # Physical test: hold the button on any alarm ~5s and every siren should sound.
