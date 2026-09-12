@@ -23,9 +23,10 @@
       ../services/journal-upload.nix
     ];
 
-  # Follower: never runs `nix flake update` (nhtpc is the leader). Safety-net
-  # timer at 06:00/06:30 (after leader remote apply at 04:00) applies an
-  # already-present flake.lock if the leader push/switch missed.
+  # Follower: never runs `nix flake update` (nhtpc is the leader). nhtpc pushes
+  # the repos after its own upgrade; this host then builds and switches itself
+  # at 05:00/05:45 from whatever flake.lock it finds, and mails its own
+  # failures. nhtpc does not switch us — see autoUpgrade.syncRemotes.
   autoUpgrade.updateFlake = false;
 
   disks = {

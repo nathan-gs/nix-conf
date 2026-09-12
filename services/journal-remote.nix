@@ -28,7 +28,9 @@ in
       # remote-<ip>.journal grows to its built-in 32M ceiling and then every
       # further append fails ("microhttpd: Application reported internal
       # error"), which kills systemd-journal-upload on nnas — whose switch
-      # then exits 4, so the leader reports the remote apply as failed.
+      # then exits 4, failing the upgrade. This raised the ceiling but did not
+      # stop the errors entirely (they still cluster around switches and
+      # rotation), so the client is hardened too: services/journal-upload.nix.
       MaxFileSize = "128M";
       MaxUse = "2G";
       MaxFiles = 20;
