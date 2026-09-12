@@ -49,11 +49,12 @@
       ../services/journal-remote.nix
     ];
 
-  # Leader: sole `nix flake update` + commit; then apply the same lock on nnas.
+  # Leader: sole `nix flake update` + commit; then push the repos to nnas, which
+  # builds and switches itself on its own timer.
   # After switch, wait for smarthome stack; rollback generation if still unhealthy.
   autoUpgrade = {
     updateFlake = true;
-    applyRemotes = [
+    syncRemotes = [
       { host = "nnas.wg"; flakeAttr = "nnas"; }
     ];
     healthCheck = {

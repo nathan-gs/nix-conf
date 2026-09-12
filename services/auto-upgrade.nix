@@ -9,9 +9,9 @@ let
   secretsDir = "/etc/nixos/secrets";
   hostname = config.networking.hostName;
 
-  # Remote apply (leader → followers over WireGuard) reuses the nhtpc-backup
+  # Repo sync (leader → followers over WireGuard) reuses the nhtpc-backup
   # key already authorized on nnas for media-rsync.
-  hasRemotes = cfg.applyRemotes != [ ];
+  hasRemotes = cfg.syncRemotes != [ ];
   stateDir = "/var/lib/nixos-auto-upgrade";
   identityFile = "${stateDir}/id_ed25519";
   knownHostsFile = "${stateDir}/known_hosts";
@@ -31,7 +31,7 @@ let
     "-o ConnectTimeout=30"
   ];
 
-  remoteFlakeAttrs = map (r: r.flakeAttr) cfg.applyRemotes;
+  remoteFlakeAttrs = map (r: r.flakeAttr) cfg.syncRemotes;
 
   # ---------------------------------------------------------------------------
   # Deployment health check (runtime, on the real host after switch).
@@ -299,24 +299,33 @@ let
 
     ${if hasRemotes then ''
     # Propagate nix-conf + secrets via plain git push over the existing
-    # nhtpc→nnas SSH key, then switch on the remote.
+    # nhtpc→nnas SSH key. That is ALL the leader does for a follower: each
+    # follower builds and switches itself on its own timer, from the lock it
+    # finds in its working tree.
     #
     # Why push instead of "git pull from nhtpc.wg" on the follower?
     # nnas already has origin → nhtpc.wg for secrets, but non-interactive pull
-    # needs a key nnas→nhtpc (only works with a logged-in agent today).
-    # We already have the reverse direction for media-rsync, so push is the
-    # dual that works unattended. Same end state as pull.
+    # needs a key nnas→nhtpc, which does not exist (nathan@nnas has no private
+    # key; bin/sync-nnas only works because an interactive session forwards an
+    # agent). We already have the reverse direction for media-rsync, so push is
+    # the dual that works unattended. Same end state as pull.
+    #
+    # Why the leader no longer switches the follower over ssh:
+    # it coupled the leader's exit status to the follower's switch, so any
+    # follower hiccup mailed a failure from nhtpc for an upgrade that had
+    # already succeeded locally. The follower has its own failure mail; let it
+    # own its own outcome. The leader still gates the flake.lock commit on the
+    # follower's config *building* (above), which is the part worth doing here
+    # — nhtpc is the faster machine and a broken lock never reaches nnas.
     export GIT_SSH_COMMAND="${pkgs.openssh}/bin/ssh ${sshOpts}"
 
-    apply_remote() {
-      local user="$1" host="$2" flake_attr="$3"
+    sync_remote() {
+      local user="$1" host="$2"
       local target="''${user}@''${host}"
       local secrets_url="ssh://''${user}@''${host}${secretsDir}"
       local conf_url="ssh://''${user}@''${host}${flakeDir}"
-      local lock_hash
-      lock_hash=$(sha256sum flake.lock | cut -d' ' -f1)
 
-      echo "=== Applying upgrade on ''${target} (#''${flake_attr}) ==="
+      echo "=== Syncing repos to ''${target} ==="
 
       # Non-bare checkouts refuse pushes to the current branch unless told
       # otherwise; updateInstead advances the working tree on ff.
@@ -324,6 +333,8 @@ let
         "git -C ${secretsDir} config receive.denyCurrentBranch updateInstead && \
          git -C ${flakeDir} config receive.denyCurrentBranch updateInstead"
 
+      # Secrets first: the rev pinned in flake.lock must exist on the follower
+      # before nix-conf lands, or its next build cannot resolve the input.
       # Default push refuses non-ff updates (no --force).
       echo "Pushing secrets to ''${secrets_url}..."
       git -C ${secretsDir} push "$secrets_url" HEAD:refs/heads/main
@@ -331,40 +342,19 @@ let
       echo "Pushing nix-conf to ''${conf_url}..."
       git -C ${flakeDir} push "$conf_url" HEAD:refs/heads/main
 
-      ${pkgs.openssh}/bin/ssh ${sshOpts} "$target" bash -s -- \
-        "$flake_attr" "$lock_hash" <<'REMOTE'
-    set -euo pipefail
-    flake_attr="$1"
-    lock_hash="$2"
-    flake_dir="/etc/nixos/nix-conf"
-    applied_marker="/var/lib/nixos-auto-upgrade/applied-lock.sha256"
-
-    # Wrappers first: /run/current-system/sw/bin/sudo is not setuid.
-    export PATH="/run/wrappers/bin:/run/current-system/sw/bin:$PATH"
-
-    echo "Building #''${flake_attr}..."
-    sudo nixos-rebuild build --flake "''${flake_dir}#''${flake_attr}"
-
-    echo "Switching #''${flake_attr}..."
-    sudo nixos-rebuild switch --flake "''${flake_dir}#''${flake_attr}"
-
-    sudo mkdir -p /var/lib/nixos-auto-upgrade
-    echo "$lock_hash" | sudo tee "$applied_marker" >/dev/null
-
-    echo "Remote apply complete for #''${flake_attr}."
-    REMOTE
+      echo "Sync complete for ''${target}; it will switch on its own timer."
     }
 
-    remote_failed=0
+    sync_failed=0
     ${lib.concatMapStrings (r: ''
-    if ! apply_remote "${r.user}" "${r.host}" "${r.flakeAttr}"; then
-      echo "WARNING: remote apply failed for ${r.user}@${r.host} (#${r.flakeAttr})"
-      remote_failed=1
+    if ! sync_remote "${r.user}" "${r.host}"; then
+      echo "WARNING: repo sync failed for ${r.user}@${r.host}"
+      sync_failed=1
     fi
-    '') cfg.applyRemotes}
+    '') cfg.syncRemotes}
 
-    if [[ "$remote_failed" -ne 0 ]]; then
-      echo "Local upgrade committed, but one or more remote applies failed."
+    if [[ "$sync_failed" -ne 0 ]]; then
+      echo "Local upgrade committed, but one or more repo syncs failed."
       exit 1
     fi
     '' else ""}
@@ -422,7 +412,7 @@ in
       '';
     };
 
-    applyRemotes = mkOption {
+    syncRemotes = mkOption {
       type = types.listOf (types.submodule {
         options = {
           host = mkOption {
@@ -431,12 +421,17 @@ in
           };
           flakeAttr = mkOption {
             type = types.str;
-            description = "nixosConfigurations attribute name on the remote.";
+            description = ''
+              nixosConfigurations attribute name on the remote. The leader
+              builds it locally before committing flake.lock, so a lock that
+              breaks the follower is never published. The leader does not
+              switch it — the follower does that itself.
+            '';
           };
           user = mkOption {
             type = types.str;
             default = "nathan";
-            description = "SSH user on the remote (needs passwordless sudo).";
+            description = "SSH user on the remote (push target; no sudo needed).";
           };
         };
       });
@@ -444,31 +439,41 @@ in
       description = ''
         After a successful local upgrade and flake.lock commit, git-push
         /etc/nixos/secrets and /etc/nixos/nix-conf to each remote over SSH
-        (ff-only), then nixos-rebuild switch there. Secrets first so the rev
-        pinned in flake.lock exists on the remote. Uses the nhtpc→remote key
-        (push is the dual of "pull from nhtpc.wg", which needs a reverse key
-        that is not set up non-interactively). Only when updateFlake is true.
+        (ff-only). Secrets first so the rev pinned in flake.lock exists on the
+        remote. Uses the nhtpc→remote key (push is the dual of "pull from
+        nhtpc.wg", which needs a reverse key that is not set up
+        non-interactively). Only when updateFlake is true.
+
+        Each remote then builds and switches itself on its own timer
+        (updateFlake = false), and mails its own failures. The leader
+        deliberately does not switch remotes: that coupled the leader's exit
+        status to the follower's, so a transient follower problem reported the
+        leader's already-successful upgrade as failed.
       '';
     };
 
     onCalendar = mkOption {
       type = types.listOf types.str;
-      # Role-based default: leader early; follower late so remote apply finishes
-      # first and they do not race on nixos-rebuild-switch-to-configuration.
+      # Role-based default: leader early, follower after the leader's push has
+      # had time to land. Nothing races any more (the leader only pushes; each
+      # host switches itself), so the follower only needs enough margin for the
+      # leader's update+build+switch+health-check, observed at ~10 min.
+      # The second follower run picks up a leader retry from its 05:00 slot.
       default =
         if cfg.updateFlake then
           [ "*-*-* 04:00:00" "*-*-* 05:00:00" ]
         else
-          [ "*-*-* 06:00:00" "*-*-* 06:30:00" ];
+          [ "*-*-* 05:00:00" "*-*-* 05:45:00" ];
       defaultText = lib.literalExpression ''
         if updateFlake
         then [ "*-*-* 04:00:00" "*-*-* 05:00:00" ]
-        else [ "*-*-* 06:00:00" "*-*-* 06:30:00" ]
+        else [ "*-*-* 05:00:00" "*-*-* 05:45:00" ]
       '';
       description = ''
         systemd OnCalendar expressions for the auto-upgrade timer.
-        Leaders default to 04:00/05:00. Followers default to 06:00/06:30 so
-        the leader can finish remote apply before the safety-net run.
+        Leaders default to 04:00/05:00. Followers default to 05:00/05:45,
+        leaving the leader room to finish and push before the first run; a run
+        that finds no new lock exits immediately, so an early one is free.
       '';
     };
 
@@ -573,7 +578,7 @@ in
         User = "root";
         WorkingDirectory = flakeDir;
         StateDirectory = "nixos-auto-upgrade";
-        # Remote apply + large builds + HA health wait can run a while
+        # Large builds + HA health wait can run a while
         TimeoutStartSec = "2h";
       };
     };
