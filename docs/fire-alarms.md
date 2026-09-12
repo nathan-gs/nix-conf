@@ -57,9 +57,19 @@ In order of urgency:
 3. 13 escape lights on
 4. critical push to all three phones
 5. 7 electrical heaters off
-6. the EV charger off - biggest load in the house, and an energised charge cable
-   is not wanted live while the fire brigade is working
+6. the EV charger, dryer and washing machine off - the charger is the biggest load
+   in the house and an energised charge cable is not wanted live while the fire
+   brigade is working; the dryer earns its place for a different reason, being
+   lint plus a heating element and so one of the likeliest appliances to *be* the
+   fire
 7. the WTW mains plug off
+
+Cutting a metering plug's relay stops the appliance but does **not** remove the
+plug from the Zigbee mesh - it stays mains-powered and keeps routing. Verified
+here: the living room alarm parents to `floor0/living/metering_plug/verwarming`
+at LQI 69 with zero ping failures while that relay has been off all summer. So
+none of these cuts degrade the mesh during a fire, which would otherwise be a
+reasonable worry.
 
 The **button test deliberately does none of this** - it is sirens and a
 notification only. A test should not kill the heating and blank the house.
