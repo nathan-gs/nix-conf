@@ -57,12 +57,31 @@ In order of urgency:
 3. 13 escape lights on
 4. critical push to all three phones
 5. 7 electrical heaters off
-6. the EV charger, dryer and washing machine off - the charger is the biggest load
+6. the WTW mains plug off
+
+Then, **only after the alarm has stood for 5 minutes** (`loadShedGrace`):
+
+7. the EV charger, dryer and washing machine off - the charger is the biggest load
    in the house and an energised charge cable is not wanted live while the fire
    brigade is working; the dryer earns its place for a different reason, being
    lint plus a heating element and so one of the likeliest appliances to *be* the
    fire
-7. the WTW mains plug off
+
+The grace period exists so that clearing a false alarm from your phone saves a
+running wash or charge. It is built as a separate automation
+(`system/fire_alarm.shed_loads`) triggered by `fire_alarm_active` being on *for*
+5 minutes, not as a delay inside the detect automation: clearing the alarm turns
+the interlock off, which breaks the `for` and cancels the timer outright, so a
+cleared alarm can never reach these actions. A delay plus condition would also
+work, but it would tie up the detect automation - and under `mode: single` a
+second alarm arriving during the wait would be dropped, losing its sirens.
+
+Nothing life-safety waits on the grace period. The notification states the window
+explicitly, since a grace period nobody knows about is of no use.
+
+Note this makes "clear alarm" do double duty: it silences the sirens *and* spares
+the appliances. Silencing a confirmed fire in order to think also cancels the
+load shed.
 
 Cutting a metering plug's relay stops the appliance but does **not** remove the
 plug from the Zigbee mesh - it stays mains-powered and keeps routing. Verified
