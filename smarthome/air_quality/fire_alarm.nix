@@ -11,6 +11,16 @@ let
     "binary_sensor.basement_basement_fire_alarm_top_smoke"
   ];
 
+  # Pushing the button on a device is the physical end-to-end test. On a Twinguard
+  # that shows up as self_test (alarm_status bit 24); on the BSD-2 as button_pushed
+  # (IAS zone bit 8). The Twinguard switches are settable too, so a test can also be
+  # started from HA without walking to the device.
+  selfTestSensors = [
+    "switch.floor0_living_fire_alarm_main_self_test"
+    "switch.floor1_hallway_fire_alarm_main_self_test"
+    "binary_sensor.basement_basement_fire_alarm_top_button_pushed"
+  ];
+
   # Twinguard (8750001213) sirens are driven by a select: stop/pre_alarm/fire/burglar.
   twinguardSirens = [
     "select.floor0_living_fire_alarm_main_alarm"
@@ -19,17 +29,24 @@ let
 
   # BSD-2 sirens are driven by a switch. Its broadcast_alarms option defaults to on,
   # so this one call is relayed to every BSD-2 on the network, not just this device.
-  bsd2Sirens = [
-    "switch.basement_basement_fire_alarm_top_manual_smoke_alarm"
-  ];
+  bsd2Siren = "switch.basement_basement_fire_alarm_top_manual_smoke_alarm";
 
   sirensOn =
     (map (e: ha.action.set_value e "fire") twinguardSirens)
-    ++ (map (e: ha.action.on e) bsd2Sirens);
+    ++ [ (ha.action.on bsd2Siren) ];
 
   sirensOff =
     (map (e: ha.action.set_value e "stop") twinguardSirens)
-    ++ (map (e: ha.action.off e) bsd2Sirens);
+    ++ [ (ha.action.off bsd2Siren) ];
+
+  # True only when nothing is actually alarming. This is what separates "button
+  # pushed to run a test" from "button pushed to silence a real alarm" - the BSD-2
+  # reports both as the same button_pushed bit, so without this a panicked jab at
+  # the silence button would re-sound the whole house.
+  nothingAlarming = [
+    { condition = "state"; entity_id = smokeSensors; state = "off"; }
+    { condition = "state"; entity_id = bsd2Siren; state = "off"; }
+  ];
 
   phones = [
     "mobile_app_nphone"
@@ -37,25 +54,25 @@ let
     "mobile_app_fphone"
   ];
 
-  # A fire alarm that a Do Not Disturb profile can mute is not a fire alarm, so this
-  # is sent as a high-priority/critical push. The Android keys (ttl/priority/channel/
-  # importance) and the iOS keys (push.sound.critical) are both set; each platform
-  # ignores the other's.
-  notifyPhone = target: {
+  # critical = true bypasses Do Not Disturb via the Android (ttl/priority/channel/
+  # importance) and iOS (push.sound.critical) keys; each platform ignores the
+  # other's. Tests deliberately do NOT get this - only a real fire may wake you.
+  notifyPhone = { title, message, tag, critical }: target: {
     service = "notify.${target}";
     data = {
-      title = "🔥 BRANDALARM";
-      message = "Rook gedetecteerd door {{ trigger.to_state.name | default('een rookmelder') }}. Alle sirenes zijn geactiveerd.";
+      title = title;
+      message = message;
       data = {
+        tag = tag;
+        actions = [
+          { action = "FIRE_ALARM_CLEAR"; title = "Alarm stoppen"; }
+        ];
+      } // lib.optionalAttrs critical {
         ttl = 0;
         priority = "high";
         channel = "fire_alarm";
         importance = "high";
         persistent = true;
-        tag = "fire_alarm";
-        actions = [
-          { action = "FIRE_ALARM_CLEAR"; title = "Alarm stoppen"; }
-        ];
         push = {
           sound = {
             name = "default";
@@ -66,6 +83,20 @@ let
       };
     };
   };
+
+  notifyAlarm = map (notifyPhone {
+    title = "🔥 BRANDALARM";
+    message = "Rook gedetecteerd door {{ trigger.to_state.name | default('een rookmelder') }}. Alle sirenes zijn geactiveerd.";
+    tag = "fire_alarm";
+    critical = true;
+  }) phones;
+
+  notifyTest = map (notifyPhone {
+    title = "🔔 Brandalarm test";
+    message = "Test gestart via {{ trigger.to_state.name | default('een rookmelder') }}. Alle sirenes loeien 15s en stoppen dan vanzelf.";
+    tag = "fire_alarm_test";
+    critical = false;
+  }) phones;
 
 in
 {
@@ -83,7 +114,21 @@ in
 
       (ha.automation "system/fire_alarm.detected" {
         triggers = [ (ha.trigger.on smokeSensors) ];
-        actions = sirensOn ++ (map notifyPhone phones);
+        actions = sirensOn ++ notifyAlarm;
+      })
+
+      # Physical test: push the button on any alarm and every siren should sound.
+      # Guarded by nothingAlarming so a button press during a real alarm is treated
+      # as "silence", not "test". Auto-stops after 15s, but re-checks for real smoke
+      # first so a genuine alarm starting mid-test is never silenced by the timer.
+      (ha.automation "system/fire_alarm.test" {
+        triggers = [ (ha.trigger.on selfTestSensors) ];
+        conditions = nothingAlarming;
+        actions = sirensOn
+          ++ notifyTest
+          ++ [ (ha.action.delay "00:00:15") ]
+          ++ [ { condition = "state"; entity_id = smokeSensors; state = "off"; } ]
+          ++ sirensOff;
       })
 
       # Deliberately unconditional and free of notifications: clearing is idempotent,
