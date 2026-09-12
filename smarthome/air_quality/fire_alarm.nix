@@ -103,9 +103,19 @@ let
 
   # Other large loads worth killing during a fire. The EV charger is the biggest
   # single load in the house, and an energised charge cable is not something you
-  # want live while the fire brigade is working.
+  # want live while the fire brigade is working. The dryer earns its place for a
+  # different reason: lint plus a heating element makes it one of the likeliest
+  # appliances to *be* the fire.
+  #
+  # These are relay switches on metering plugs, so cutting them stops the appliance
+  # without removing the plug from the Zigbee mesh - the plug stays mains-powered
+  # and keeps routing. Verified on this system: floor0/living's verwarming plug
+  # routes for the living room alarm at LQI 69 with zero ping failures while its
+  # relay has been off all summer.
   largeLoads = [
     "switch.system_car_charger"
+    "switch.floor1_waskot_metering_plug_droogkast"
+    "switch.floor1_waskot_metering_plug_wasmachine"
   ];
 
   # Mains plug of the WTW unit, cut during a fire.
