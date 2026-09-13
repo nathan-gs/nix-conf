@@ -78,18 +78,6 @@
         external_url = "https://ha.nathan.gs";
         internal_url = "https://ha.nathan.gs";
       };
-      prometheus = {
-        namespace = "ha";
-        filter.include_domains = [
-          "sensor"
-          "binary_sensor"
-          "switch"
-          "weather"
-          "sun"
-          "person"
-        ];
-      };
-     
       mqtt = {};
       lovelace = {
         resources = [
@@ -153,7 +141,6 @@
       "ohme"
       "ping"
       "plex"
-      "prometheus"
       "proximity"
       "radio_browser"
       "scrape"

@@ -43,7 +43,7 @@ The flake's `nixosConfigurations` are keyed by hostname (`nhtpc`, `ngo`, `nnas`)
 ## Layout
 
 - `computers/<host>.nix` — top-level per-host entry point. Imports shared modules + host-specific hardware/network.
-- `system.nix` — shared base (nix settings, timezone, prometheus node exporter, ssh/fail2ban/mail/wireguard). Every host imports this.
+- `system.nix` — shared base (nix settings, timezone, ssh/fail2ban/mail/wireguard). Every host imports this.
 - `disks.nix` — **custom module** exposing a `disks` option (see "Disk abstraction" below).
 - `software.nix` — system-wide packages.
 - `services/` — service modules. Hosts opt in by importing them individually from `computers/<host>.nix`.
@@ -64,7 +64,6 @@ Secrets live in a **separate git repo** at `/etc/nixos/secrets`, pulled in as th
 - `fileSystems."/media/<volume>"` btrfs subvolume mounts
 - `systemd.services.btrfs-backup-nightly` / `btrfs-backup-monthly` snapshots into `/media/disks/backup/<volume>/`
 - `systemd.services.btrfs-scrub` (monthly, on the first listed volume)
-- prometheus textfile exporters for btrfs + smartd via scripts in `ext/`
 
 When adding/removing data disks or btrfs volumes, edit the host file's `disks = { … }` block — don't hand-roll `fileSystems` entries.
 

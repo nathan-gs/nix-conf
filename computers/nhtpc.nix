@@ -39,7 +39,6 @@
       # ngo deleted -> no remote build clients; nixdist trusted-user removed.
       #../services/remote-build-host.nix
       ../services/matomo.nix
-      ../monitoring.nix
       ../smarthome.nix
       ../gc.nix
       ../services/auto-upgrade.nix
