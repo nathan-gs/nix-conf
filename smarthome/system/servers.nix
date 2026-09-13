@@ -11,6 +11,10 @@
 #   binary_sensor.system_network_server_nnas_btrfs_problem
 #   sensor.system_network_server_nnas_problem_count        <- host tier only
 #
+# The two aggregates below are named "servers" (plural) on purpose: the
+# discovery regex matches "system_network_server_", so a singular name would
+# make each aggregate match itself and count its own state.
+#
 # Two distinct failures, deliberately kept apart:
 #   .problem      — a server told us something is wrong.
 #   .unreachable  — a server stopped telling us anything (its host-tier
@@ -60,8 +64,8 @@ in
       {
         binary_sensor = [
           {
-            name = "system/network/server.problem";
-            unique_id = "system_network_server_problem";
+            name = "system/network/servers.problem";
+            unique_id = "system_network_servers_problem";
             device_class = "problem";
             state = ''
               ${problemEntities}
@@ -81,8 +85,8 @@ in
           {
             # expire_after on the host-tier entities turns "host went quiet"
             # into unavailable; that is the signal here.
-            name = "system/network/server.unreachable";
-            unique_id = "system_network_server_unreachable";
+            name = "system/network/servers.unreachable";
+            unique_id = "system_network_servers_unreachable";
             device_class = "connectivity";
             state = ''
               ${hostCountEntities}
@@ -107,12 +111,12 @@ in
       # restarting units, short enough to matter for a failing disk.
       (ha.automation "system/network/server.problem.notify" {
         triggers = [
-          (ha.trigger.on_for "binary_sensor.system_network_server_problem" "00:30:00")
+          (ha.trigger.on_for "binary_sensor.system_network_servers_problem" "00:30:00")
         ];
         actions = [
           (ha.action.notify "Server health"
             ''
-              {{ state_attr('binary_sensor.system_network_server_problem','problems')
+              {{ state_attr('binary_sensor.system_network_servers_problem','problems')
                  | join('\n') }}
             '')
         ];
@@ -122,13 +126,13 @@ in
       # itself — expire_after already is the grace period.
       (ha.automation "system/network/server.unreachable.notify" {
         triggers = [
-          (ha.trigger.off_for "binary_sensor.system_network_server_unreachable" "00:10:00")
+          (ha.trigger.off_for "binary_sensor.system_network_servers_unreachable" "00:10:00")
         ];
         actions = [
           (ha.action.notify "Server unreachable"
             ''
               No health data from: {{
-                state_attr('binary_sensor.system_network_server_unreachable','unreachable')
+                state_attr('binary_sensor.system_network_servers_unreachable','unreachable')
                 | join(', ') }}
             '')
         ];

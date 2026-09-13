@@ -80,6 +80,23 @@ problems_json() {
   jq -R -s 'split("\n") | map(select(length > 0))' <<<"${1:-}"
 }
 
+# Is there already a retained payload on this topic?
+#
+# Used to tell "asleep, but we have known-good data from an earlier run" from
+# "asleep and never once read" — the latter needs a placeholder, otherwise the
+# disk's entities sit at `unknown` forever on a host whose disks never happen
+# to be awake at poll time.
+retained_exists() {
+  local topic="$1"
+  [[ "${SH_DRY_RUN:-0}" == "1" ]] && return 1
+  local args=(-h "$BROKER" -p "$PORT" -t "$topic" -C 1 -W 2)
+  [[ -n "$MQTT_USER" ]] && args+=(-u "$MQTT_USER")
+  [[ -n "$MQTT_PASS" ]] && args+=(-P "$MQTT_PASS")
+  local out
+  out="$(mosquitto_sub "${args[@]}" 2>/dev/null)" || return 1
+  [[ -n "$out" ]]
+}
+
 # ── helpers ──────────────────────────────────────────────────────────────────
 
 # Super-I/O chips (nct6793 & friends) report wild values on pins that have no
@@ -361,8 +378,10 @@ collect_disk() {
   if [[ -z "$out" ]]; then
     pub "${topic}/standby" 'OFF'
     pub "$topic" "$(jq -n -c --argjson ts "$NOW" --arg id "$dev" --arg label "$label" --arg role "$role" \
-      '{ts:$ts, id:$id, label:$label, role:$role, available:false,
-        error:"smartctl returned no output", problems:["SMART unavailable"], problem_count:1}')"
+      '{ts:$ts, smart_ts:null, standby:false, id:$id, label:$label, role:$role,
+        available:false, error:"smartctl returned no output",
+        temperature_c:null, power_on_hours:null, wear_pct:null, smart_ok:null,
+        problems:["SMART unavailable"], problem_count:1}')"
     return
   fi
 
@@ -370,8 +389,20 @@ collect_disk() {
   power_mode="$(jq -r '.power_mode.name // ""' <<<"$out")"
   if [[ "$power_mode" == "STANDBY" || "$power_mode" == "SLEEP" ]]; then
     # Asleep. Do NOT wake it and do NOT overwrite the retained data topic —
-    # its last-known-good values and `ts` stay put.
+    # its last-known-good values and `smart_ts` stay put.
     pub "${topic}/standby" 'ON'
+    # ...unless we have never read this disk at all, in which case publish a
+    # placeholder. A sleeping disk has no *known* problems, so problem_count
+    # is 0 (reads "OK") rather than leaving the entity at `unknown`; the
+    # genuinely unknown values stay null and their entities unavailable.
+    if ! retained_exists "$topic"; then
+      pub "$topic" "$(jq -n -c --argjson ts "$NOW" --arg id "$dev" \
+        --arg label "$label" --arg role "$role" \
+        '{ts:$ts, smart_ts:null, id:$id, label:$label, role:$role,
+          available:false, standby:true, error:null,
+          temperature_c:null, power_on_hours:null, wear_pct:null,
+          smart_ok:null, problems:[], problem_count:0}')"
+    fi
     return
   fi
   pub "${topic}/standby" 'OFF'
@@ -382,7 +413,9 @@ collect_disk() {
   if [[ "$(jq -r 'has("smart_status")' <<<"$out")" != "true" ]]; then
     pub "$topic" "$(jq -n -c --argjson ts "$NOW" --arg id "$dev" --arg label "$label" \
       --arg role "$role" --arg err "${msg:-no SMART data}" \
-      '{ts:$ts, id:$id, label:$label, role:$role, available:false, error:$err,
+      '{ts:$ts, smart_ts:null, standby:false, id:$id, label:$label, role:$role,
+        available:false, error:$err,
+        temperature_c:null, power_on_hours:null, wear_pct:null, smart_ok:null,
         problems:["SMART unavailable: \($err)"], problem_count:1}')"
     return
   fi
@@ -392,7 +425,8 @@ collect_disk() {
     --argjson ts "$NOW" --arg id "$dev" --arg label "$label" --arg role "$role" '
     def attr($n): (.ata_smart_attributes.table // []) | map(select(.name == $n)) | .[0].raw.value;
     {
-      ts: $ts, id: $id, label: $label, role: $role, available: true, error: null,
+      ts: $ts, smart_ts: $ts, standby: false,
+      id: $id, label: $label, role: $role, available: true, error: null,
       model: (.model_name // null),
       serial: (.serial_number // null),
       protocol: (.device.protocol // null),
