@@ -249,15 +249,20 @@ views:
   #
   # Disks come from auto-entities filters on the entity-id shape, so swapping a
   # drive needs no edit here.
+  # max_columns is what bounds the view's total width — a sections view is only
+  # ever as wide as that many columns, whatever the screen. At 2 the rows were
+  # squeezed into ~2 column-widths with each host getting half of that. 4 lets
+  # the rows use the full width of a desktop window; every row spans all 4, and
+  # HA falls back to fewer columns on narrow screens on its own.
   - title: Disks
     path: disks
     type: sections
-    max_columns: 2
+    max_columns: 4
     icon: mdi:harddisk
 
     sections:
       - type: grid
-        column_span: 2
+        column_span: 4
         cards:
           - type: heading
             heading: SMART health
@@ -290,7 +295,7 @@ views:
                 sort:
                   method: friendly_name
       - type: grid
-        column_span: 2
+        column_span: 4
         cards:
           - type: heading
             heading: Reallocated sectors and media errors
@@ -327,7 +332,7 @@ views:
                   numeric: true
                   reverse: true
       - type: grid
-        column_span: 2
+        column_span: 4
         cards:
           - type: heading
             heading: Temperature
@@ -362,7 +367,7 @@ views:
                   numeric: true
                   reverse: true
       - type: grid
-        column_span: 2
+        column_span: 4
         cards:
           - type: heading
             heading: Standby
@@ -395,7 +400,7 @@ views:
                 sort:
                   method: friendly_name
       - type: grid
-        column_span: 2
+        column_span: 4
         cards:
           - type: heading
             heading: Last SMART read
@@ -426,7 +431,7 @@ views:
                 sort:
                   method: friendly_name
       - type: grid
-        column_span: 2
+        column_span: 4
         cards:
           - type: heading
             heading: Hours and wear
