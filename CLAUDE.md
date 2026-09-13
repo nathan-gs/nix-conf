@@ -101,6 +101,14 @@ sensors by entity-id shape — adding a disk needs no HA-side change.
 Thresholds (disk temp, fs %, scrub age, wear) are evaluated **on each host**, not in HA, so a host
 judges itself; HA only routes the resulting `problems` list to a notification.
 
+A **"Server health" dashboard** (`smarthome/dashboards/server-health.yaml`) is registered from
+`smarthome/system/servers.nix` as an additional YAML-mode dashboard at `/server-health` — the
+default dashboard stays storage-mode and UI-editable. It uses the sections view type, unlike the
+older masonry dashboards in that directory. Being YAML mode it is **not editable in the UI**: edit
+the file and switch. Host names are hardcoded (there are two); disk rows come from `auto-entities`
+filters on the entity-id shape, so swapping a disk needs no dashboard edit. Note HA requires the
+dashboard's url_path to contain a hyphen.
+
 `services/hw-health-report.nix` (monthly email, `nhtpc` only) is intentionally still in place:
 HA runs on nhtpc, so if nhtpc is down there is no one to alert. Keep a mail path for that case.
 

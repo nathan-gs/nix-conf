@@ -58,7 +58,27 @@ let
   '';
 in
 {
+  # The dashboard file has to live under HA's config dir for `filename:` to
+  # resolve, and the NixOS module only manages configuration.yaml — so link it
+  # in. Read-only from HA's side, which is what YAML mode wants anyway.
+  systemd.tmpfiles.rules = [
+    "d /var/lib/hass/dashboards 0750 hass hass -"
+    "L+ /var/lib/hass/dashboards/server-health.yaml - - - - ${../dashboards/server-health.yaml}"
+  ];
+
   services.home-assistant.config = {
+
+    # An *additional* dashboard: the default one stays storage-mode and
+    # UI-editable. url_path must contain a hyphen — HA rejects a single-word
+    # path here. YAML-mode dashboards cannot be edited in the UI; edit
+    # smarthome/dashboards/server-health.yaml and switch.
+    lovelace.dashboards."server-health" = {
+      mode = "yaml";
+      title = "Server health";
+      icon = "mdi:server";
+      show_in_sidebar = true;
+      filename = "dashboards/server-health.yaml";
+    };
 
     template = [
       {
