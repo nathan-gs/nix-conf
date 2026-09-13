@@ -126,6 +126,16 @@ platform sensor is not knowable at eval time — that value still ships inside t
 map. Likewise a sleeping disk publishes `problem_count: 0` ("OK") rather than nothing; only values
 that are genuinely unknown are left null, and those go unavailable rather than "unknown".
 
+For per-disk metrics this is **data-driven rather than guessed**, because which SMART fields a
+device exposes is not knowable at eval time and is not even implied by the bus — nnas's SATA DOM
+reports a temperature and a reallocated count but *no* power-on hours, while the Seagates report
+hours and no wear. So temperature / power-on hours / SMART-updated / reallocated / media errors /
+wear are published from `diskMetricEntities` by the **`disks` run**, which publishes each discovery
+config when the disk reports that value and clears it when it does not. Only `problem`,
+`problem_count` and `standby` are registered unconditionally by `discovery`. This is done only
+after a *successful* SMART read — a null from a skipped (standby) or failed read would otherwise be
+read as "this device does not report it" and delete a working entity.
+
 Entities are created from **retained** discovery configs, so removing one means publishing an empty
 payload over its topic — deleting it in the HA UI alone just brings it back. `server-health2mqtt-purge.service`
 (manual, never timed) does that for this host's configs, after which

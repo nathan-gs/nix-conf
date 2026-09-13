@@ -59,6 +59,37 @@ PURGE_WAIT="${SH_PURGE_WAIT:-10}"
 BASELINE_BTRFS_ERRORS="${SH_BASELINE_BTRFS_ERRORS:-0}"
 BASELINE_REALLOCATED="${SH_BASELINE_REALLOCATED:-}"
 
+# Register a disk's metric entities from what it actually reported.
+#
+# Which SMART fields a device exposes cannot be known ahead of time and is not
+# implied by the bus — the SATA DOM in nnas reports a temperature and a
+# reallocated count but no power-on hours, while the Seagates report hours and
+# no wear. Publishing every metric entity for every disk therefore leaves some
+# unavailable for the life of the machine, which is indistinguishable from a
+# fault. So the discovery config for each metric is published when the value is
+# present and cleared when it is not.
+#
+# Only ever called after a *successful* SMART read: a null from a skipped or
+# failed read would otherwise be mistaken for "this device does not report it"
+# and delete a working entity.
+publish_disk_metrics() {
+  local label="$1" record="$2"
+  [[ -n "${SH_DISK_METRICS_FILE:-}" ]] || return 0
+  [[ -r "$SH_DISK_METRICS_FILE" ]] || return 0
+
+  local key topic payload
+  while IFS=$'\t' read -r key topic payload; do
+    [[ -n "$topic" ]] || continue
+    if [[ "$(jq -r --arg k "$key" '.[$k] // null' <<<"$record")" == "null" ]]; then
+      pub "$topic" ""
+    else
+      pub "$topic" "$payload"
+    fi
+  done < <(jq -r --arg l "$label" \
+    '.[] | select(.label == $l) | [.key, .topic, (.payload | tojson)] | @tsv' \
+    "$SH_DISK_METRICS_FILE")
+}
+
 # Accepted reallocated-sector count for a disk, by serial; 0 if undeclared.
 baseline_reallocated() {
   local want="$1" pair
@@ -512,6 +543,10 @@ collect_disk() {
   if [[ "${v%.*}" -ge "$NVME_WEAR_WARN_PCT" ]] 2>/dev/null; then
     problems+="flash wear ${v%.*}%"$'\n'
   fi
+
+  # Register/deregister this disk's metric entities from what it just reported,
+  # before publishing the record so the entities exist when the state lands.
+  publish_disk_metrics "$label" "$record"
 
   pub "$topic" "$(jq -c --argjson problems "$(problems_json "$problems")" \
     '. + {problems:$problems, problem_count:($problems|length)}' <<<"$record")"

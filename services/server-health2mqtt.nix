@@ -349,6 +349,9 @@ let
     };
   });
 
+  # Entities that exist for every disk regardless of what it reports. These
+  # are always meaningful: whether we think it is healthy, how many problems,
+  # and whether it was asleep.
   diskEntities = d:
     let
       label = diskLabel d.dev;
@@ -357,44 +360,6 @@ let
       device = diskDevice d.dev;
     in
     [
-      (mkSensor {
-        path = "${base}.temperature";
-        label = "Temperature";
-        inherit topic device;
-        field = "temperature_c";
-        nullable = true;
-        extra = {
-          unit_of_measurement = "°C";
-          device_class = "temperature";
-          state_class = "measurement";
-        };
-      })
-      (mkSensor {
-        path = "${base}.power_on_hours";
-        label = "Power-on hours";
-        inherit topic device;
-        field = "power_on_hours";
-        nullable = true;
-        extra = {
-          unit_of_measurement = "h";
-          state_class = "total_increasing";
-          icon = "mdi:clock-outline";
-        };
-      })
-      # How old the retained SMART record is. On a host whose disks sleep, this
-      # is the sensor that tells you "not broken, just never awake". Driven by
-      # smart_ts (when SMART was actually read) rather than ts (when we last
-      # published): a never-yet-awake disk publishes a placeholder without
-      # reading anything, and must not claim a fresh SMART read.
-      (mkSensor {
-        path = "${base}.smart_updated";
-        label = "SMART updated";
-        inherit topic device;
-        field = "smart_ts";
-        nullable = true;
-        valueTemplate = "{{ value_json.smart_ts | int(0) | timestamp_local }}";
-        extra = { device_class = "timestamp"; icon = "mdi:clock-check-outline"; };
-      })
       (mkSensor {
         path = "${base}.problem_count";
         label = "Problem count";
@@ -416,50 +381,96 @@ let
           icon = "mdi:sleep";
         };
       })
-    ]
-    # NVMe reports percentage_used; the ATA disks here expose no equivalent,
-    # so creating this for them would mean an entity that is unavailable for
-    # the life of the drive.
-    ++ lib.optionals (isNvme d.dev) [
-      (mkSensor {
+    ];
+
+  # Per-disk *metrics*, registered from the data rather than from a guess.
+  #
+  # Which SMART fields a device exposes is not knowable at eval time and is not
+  # even implied by the bus: the SATA DOM in nnas reports a temperature and a
+  # reallocated-sector count but no power-on hours, while the Seagates report
+  # hours and no wear. Creating all of them everywhere leaves entities that are
+  # unavailable for the life of the machine, which is indistinguishable from a
+  # fault in an unavailable-entities check.
+  #
+  # So the script publishes each of these discovery configs when the disk
+  # actually reports the value, and clears the config when it does not. `key`
+  # is the field to look at in the published record.
+  diskMetricEntities = d:
+    let
+      label = diskLabel d.dev;
+      topic = "${prefix}/disk/${label}";
+      base = "${prefix}/disk/${label}";
+      device = diskDevice d.dev;
+      entry = key: entity: { inherit label key; inherit (entity) topic payload; };
+    in
+    [
+      (entry "temperature_c" (mkSensor {
+        path = "${base}.temperature";
+        label = "Temperature";
+        inherit topic device;
+        field = "temperature_c";
+        extra = {
+          unit_of_measurement = "°C";
+          device_class = "temperature";
+          state_class = "measurement";
+        };
+      }))
+      (entry "power_on_hours" (mkSensor {
+        path = "${base}.power_on_hours";
+        label = "Power-on hours";
+        inherit topic device;
+        field = "power_on_hours";
+        extra = {
+          unit_of_measurement = "h";
+          state_class = "total_increasing";
+          icon = "mdi:clock-outline";
+        };
+      }))
+      # When SMART was actually read, not when we last published — a sleeping
+      # disk is skipped, so this is how you tell a stale record from a fault.
+      (entry "smart_ts" (mkSensor {
+        path = "${base}.smart_updated";
+        label = "SMART updated";
+        inherit topic device;
+        field = "smart_ts";
+        valueTemplate = "{{ value_json.smart_ts | int(0) | timestamp_local }}";
+        extra = { device_class = "timestamp"; icon = "mdi:clock-check-outline"; };
+      }))
+      # The single best early warning of a failing drive, so it is a
+      # first-class entity rather than an attribute.
+      (entry "reallocated" (mkSensor {
+        path = "${base}.reallocated";
+        label = "Reallocated sectors";
+        inherit topic device;
+        field = "reallocated";
+        extra = {
+          state_class = "measurement";
+          icon = "mdi:alert-octagon-outline";
+        };
+      }))
+      # NVMe's analogue of a reallocated sector.
+      (entry "media_errors" (mkSensor {
+        path = "${base}.media_errors";
+        label = "Media errors";
+        inherit topic device;
+        field = "media_errors";
+        extra = {
+          state_class = "measurement";
+          icon = "mdi:alert-octagon-outline";
+        };
+      }))
+      (entry "wear_pct" (mkSensor {
         path = "${base}.wear";
         label = "Wear";
         inherit topic device;
         field = "wear_pct";
-        nullable = true;
         extra = {
           unit_of_measurement = "%";
           state_class = "measurement";
           icon = "mdi:chart-donut";
         };
-      })
-      # NVMe's equivalent of a reallocated sector: uncorrectable media errors.
-      (mkSensor {
-        path = "${base}.media_errors";
-        label = "Media errors";
-        inherit topic device;
-        field = "media_errors";
-        nullable = true;
-        extra = {
-          state_class = "measurement";
-          icon = "mdi:alert-octagon-outline";
-        };
-      })
-    ]
-    # The single best early warning of a failing drive, so it gets to be a
-    # first-class entity you can graph rather than an attribute. Not created
-    # for NVMe, which has no such attribute (media_errors above is its analogue).
-    ++ lib.optional (!isNvme d.dev) (mkSensor {
-      path = "${base}.reallocated";
-      label = "Reallocated sectors";
-      inherit topic device;
-      field = "reallocated";
-      nullable = true;
-      extra = {
-        state_class = "measurement";
-        icon = "mdi:alert-octagon-outline";
-      };
-    });
+      }))
+    ];
 
   btrfsEntities = lib.optionals (btrfsMount != "") [
     (mkSensor {
@@ -523,6 +534,13 @@ let
 
   discoveryFile = pkgs.writeText "server-health2mqtt-discovery.json" (builtins.toJSON discovery);
 
+  # Published by the `disks` run, per disk, according to what it actually
+  # reported — not by `discovery`.
+  diskMetrics = lib.concatMap diskMetricEntities allDisks;
+
+  diskMetricsFile = pkgs.writeText "server-health2mqtt-disk-metrics.json"
+    (builtins.toJSON diskMetrics);
+
   commonEnv = {
     SH_HOST = host;
     SH_TOPIC_PREFIX = prefix;
@@ -544,6 +562,7 @@ let
     SH_SCRUB_MAX_AGE_DAYS = toString cfg.scrubMaxAgeDays;
     SH_NVME_WEAR_WARN_PCT = toString cfg.wearWarnPct;
     SH_DISCOVERY_FILE = "${discoveryFile}";
+    SH_DISK_METRICS_FILE = "${diskMetricsFile}";
   };
 
   runtimePath = [
