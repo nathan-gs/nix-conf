@@ -176,8 +176,99 @@
 
   boot.initrd.availableKernelModules = [ "uhci_hcd" "ehci_pci" "ahci" "xhci_pci" "usb_storage" "sd_mod" ];
   boot.initrd.kernelModules = [ ];
-  boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
+
+  # Super-I/O fan + sensor chip. This box is a Thecus N-series on Intel's
+  # "Milstead Platform / Granite Well" board, which carries an IT8728F at 0x290.
+  # Loading it87 gives fan tachometers and three board temperatures on top of
+  # coretemp — worth having by itself, since server-health2mqtt ships every
+  # hwmon temp and fan as attributes.
+  boot.kernelModules = [ "it87" ];
+
+  # Without this the driver refuses PWM control outright:
+  #   it87: Found IT8728F chip at 0x290, revision 1
+  #   it87 it87.656: Detected broken BIOS defaults, disabling PWM interface
+  # With it:
+  #   it87 it87.656: Reconfiguring PWM to active high polarity
+  # This is the documented setting for this hardware — see
+  # https://wiki.debian.org/InstallingDebianOn/Thecus/N2800 ("set it87's
+  # fix_pwm_polarity option to 1"). The kernel still labels the option
+  # DANGEROUS, and on this board that is not theoretical: see the unit below.
+  boot.extraModprobeConfig = ''
+    options it87 fix_pwm_polarity=1
+  '';
+
+  # MUST ship with the modprobe option above — never one without the other.
+  #
+  # Taking PWM control away from the BIOS means the chip's PWM registers decide
+  # the fan speed, and on load they hold a low value. Measured on 2026-09-13,
+  # immediately after `modprobe it87 fix_pwm_polarity=1`:
+  #
+  #   t+1s  3497 RPM      <- BIOS had been holding ~3350
+  #   t+3s   962 RPM
+  #   t+5s   601 RPM      <- still falling
+  #
+  # i.e. the fan spins down towards stop within seconds of the driver taking
+  # over. On a box with three disks, one fan and ~7 C of thermal headroom that
+  # is far worse than the stalls this was meant to help. Writing pwm*=255
+  # recovered it to ~3900 RPM within two seconds.
+  #
+  # So this unit exists to guarantee a safe duty cycle the moment the driver is
+  # in charge. It is deliberately a dumb static maximum rather than a fan curve:
+  # a userspace control loop that dies, hangs or gets OOM-killed leaves the fan
+  # at whatever it last wrote, which on this chip trends towards stopped. Full
+  # speed has no failure mode worse than noise, and this machine sits in a
+  # cupboard at the other site.
+  #
+  # Honest note on the payoff: at idle, going from the BIOS's ~3350 RPM to ~3900
+  # RPM moved the CPU only 52-55 C -> 51-54 C, and the board sensors did not
+  # move at all (45/47/39 C). Roughly 1 C for 16% more fan. The cooling looks
+  # airflow-path limited rather than fan-speed limited, which points at the
+  # second, *empty* fan header on this board (fan1 reads 0 RPM with
+  # fan1_alarm=1) as the change that would actually add headroom. Keep this unit
+  # for the safety guarantee regardless; do not expect it to fix the thermal
+  # threshold storm on its own.
+  systemd.services.it87-fan-safe = {
+    description = "Set IT8728F fans to a safe duty cycle (see comment in nnas.nix)";
+    wantedBy = [ "multi-user.target" ];
+    after = [ "systemd-modules-load.service" ];
+    serviceConfig = {
+      Type = "oneshot";
+      RemainAfterExit = true;
+      # If this unit does not run, the fan sits near stop — so keep retrying
+      # rather than giving up after one attempt.
+      Restart = "on-failure";
+      RestartSec = "5s";
+    };
+    script = ''
+      set -eu
+
+      # The hwmon device may not exist the instant systemd-modules-load returns,
+      # so wait for it instead of racing it. Failing here is not cosmetic: the
+      # fan is already spun down by the time we get to run.
+      found=0
+      for _ in $(seq 1 30); do
+        for h in /sys/class/hwmon/hwmon*; do
+          [ -r "$h/name" ] || continue
+          [ "$(cat "$h/name")" = "it8728" ] || continue
+          found=1
+          for n in 1 2 3; do
+            # 1 = manual duty control; 255 = full. Order matters: enable, then duty.
+            [ -w "$h/pwm''${n}_enable" ] && echo 1   > "$h/pwm''${n}_enable" || true
+            [ -w "$h/pwm''${n}" ]        && echo 255 > "$h/pwm''${n}"        || true
+          done
+          echo "it87-fan-safe: set $h pwm1-3 to manual/255 (fan$(cat "$h/fan3_input" 2>/dev/null || echo "?") RPM)"
+        done
+        [ "$found" = 1 ] && break
+        sleep 1
+      done
+
+      if [ "$found" = 0 ]; then
+        echo "it87-fan-safe: no it8728 hwmon after 30s — fan may be at minimum, check it87" >&2
+        exit 1
+      fi
+    '';
+  };
 
   # EXPERIMENT (2026-09-13) — remove if it does not help, see below for how to judge.
   #
