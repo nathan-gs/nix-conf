@@ -161,9 +161,14 @@ symlinks into `/nix/store` where every mtime is epoch 1970 — so a symlinked da
 as newer and edits only appear after an HA restart. Host names are hardcoded (there are two); disk rows come from `auto-entities`
 filters on the entity-id shape, so swapping a disk needs no dashboard edit.
 
-Both views are **one column per host** — nhtpc left, nnas right. The Overview ends each column with
-that host's own open-problems list; the Disks view groups each column by metric (SMART health,
-temperature, …).
+The Overview and Disks views are **one column per host** — nhtpc left, nnas right. The Overview ends
+each column with that host's own open-problems list; the Disks view groups each column by metric
+(SMART health, temperature, …). A third **Network** view covers the path to the internet rather than
+a host: blocky left, the Technicolor CGA modem right (DOCSIS RF, WAN, Wi-Fi). Its entities are named
+explicitly — there is one of each and neither grows a family of entities, so there is nothing for an
+`auto-entities` filter to discover. The modem entity ids genuinely repeat the prefix
+(`sensor.system_network_system_network_router_orange_*`): the integration slugifies its device name,
+which is itself topic-shaped.
 
 A sections view is a left-aligned grid of fixed-width (~500px) columns, and HA clamps a section to
 however many columns fit the window. A host therefore only gets a readable width by owning a whole
