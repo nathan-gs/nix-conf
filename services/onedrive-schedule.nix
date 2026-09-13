@@ -48,39 +48,43 @@
       # when the box is otherwise idle.
       CPUWeight = 20;
 
-      # Cap absolute CPU, which on this box is really a heat cap.
+      # Ceiling on peak CPU so this job cannot take the whole machine. It was
+      # briefly set to 40% as a *heat* cap; that rationale did not survive
+      # testing and the number was far too low. Both corrections are recorded
+      # here so nobody re-derives the wrong conclusion from the git history.
       #
-      # Measured 2026-09-13: the residual soft lockups / RCU stalls that survived
-      # the compaction fix are gated on temperature. The CPU's thermal threshold
-      # interrupt fires in a storm — ~316/s, all on CPU0 — whenever the package
-      # is above roughly 64 C, and stops dead below it:
+      # The theory was that the residual stalls were gated on temperature: the
+      # thermal threshold interrupt appeared to storm (~316/s, all on CPU0)
+      # above ~64 C and stop dead below it. That held within a single boot, and
+      # not afterwards. The 2026-09-13 22:00 run spent 32 samples at or above
+      # 64 C, peaked at 66 C, and TRM stayed at exactly 0 the entire time —
+      # while also logging 0 soft lockups, 0 RCU stalls and 0 clocksource
+      # stalls across 3 h 20 m. So temperature was not the mechanism, or not all
+      # of it; the likelier candidates are the reboot itself (which would reset
+      # the thermal interrupt configuration) or nosmt (computers/nnas.nix).
+      # Treat "CPU heat causes the stalls" as unproven.
       #
-      #   65-70 C  ->  ~316 TRM/s      (counter climbing continuously)
-      #   60-63 C  ->  0 TRM in 20 s   (counter completely frozen)
+      # 40% was also simply a bad trade, measured on the same run:
       #
-      # Nothing is actually overheating: crit is 100 C and core_throttle_count
-      # stays 0. It is a threshold-crossing storm, not throttling, most likely
-      # because the kernel cannot read TjMax on this CPU ("coretemp.0: Unable to
-      # read TjMax from CPU 0") and there are no ACPI thermal zones. CPU0 is the
-      # HT sibling of CPU1, and CPU1 is named in every single stall — all nine
-      # RCU stalls and both soft lockups of the 17:06-17:59 run fell inside the
-      # hot window (17:36-17:52) and stopped when the box cooled.
+      #   quota   peak CPU   write rate   periods throttled
+      #    40%      57 C      2901 KB/s        80%
+      #    75%      57-58 C   4077 KB/s        51%
+      #   100%      59 C      -                -
       #
-      # There is no software fan control to reach for: the only hwmon device is
-      # coretemp, with no fan tachometers and no PWM. So the one lever left in
-      # software is to generate less heat. CPUWeight alone cannot do it — weights
-      # only bite under contention, and this job is usually the only heavy thing
-      # running, so it happily takes a whole core and cooks the package.
+      # i.e. going from 40% to a full core cost about 2 C out of a ~9 C working
+      # range, while 40% blocked the job for 5452 s against 2744 s of actual
+      # runtime — more than twice as long throttled as running. Note the trap in
+      # judging this: average CPU usage over wall clock looked like ~0.33 and
+      # suggested the cap was not binding. It was binding hard. nr_throttled /
+      # nr_periods in cpu.stat is the number that answers it, not the average.
       #
-      # 40% is chosen from the measured profile: the run consumed 28m57s of CPU
-      # over 53m12s wall, i.e. ~0.55 CPU sustained. Holding it to 0.4 should keep
-      # the package under the threshold, at the cost of stretching the run to
-      # roughly 70-75 min. That is fine for a 09:00 nightly job. If stalls
-      # persist, lower this before reaching for anything else, and watch
-      #   grep TRM /proc/interrupts
-      # during the run — if that counter stays flat, the heat problem is solved
-      # and any remaining stalls have a different cause.
-      CPUQuota = "40%";
+      # 75% still throttles ~51% of periods, so this remains a real ceiling
+      # rather than a formality, and the completed run at 75% moved 21.5 GB of
+      # downloads, 26.4 GB written and 53.8 GB read with no disruption. Raising
+      # it further is defensible on the thermal evidence; it has not been tested
+      # against a CPU-saturating re-hash phase, which is the shape that
+      # originally drove the package to 69 C.
+      CPUQuota = "75%";
     };
     environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
   };
