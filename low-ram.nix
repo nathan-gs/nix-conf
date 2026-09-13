@@ -28,13 +28,37 @@
     memoryPercent = 40;
   };
 
-  # Steady writeback during bulk I/O (media-rsync) so kcompactd does not
-  # soft-lockup migrating buffer-backed folios under SMR stalls.
+  # Memory policy for a 4 GiB, zram-only, spinning-disk fileserver.
   boot.kernel.sysctl = {
+    # Steady writeback during bulk I/O so a burst cannot park the box in
+    # writeback. Note the original rationale here ("so kcompactd does not
+    # soft-lockup ... under SMR stalls") was wrong on both halves: the kcompactd
+    # lockups are proactive compaction (see below), and media-rsync runs with
+    # --bwlimit=1500, i.e. ~1.5 MB/s, which cannot fill the CMR cache of an
+    # ST8000DM004 and so never reaches the SMR write cliff. Keeping the values
+    # anyway — bounded writeback is still right on a box this small.
     "vm.dirty_background_bytes" = 64 * 1024 * 1024;   # 64 MiB
     "vm.dirty_bytes" = 256 * 1024 * 1024;              # 256 MiB
-    "vm.swappiness" = 10;
-    "vm.vfs_cache_pressure" = 200;
+
+    # Swap is zram only (disk swap was removed to spare the root DOM), so a
+    # swap-out is a compress-into-RAM, not a write to the slow SATA DOM. 10 was
+    # correct when swapping meant touching that DOM; now it just tells the
+    # kernel to avoid the cheap option and reclaim page cache instead, which on
+    # this host means re-reading media metadata off spinning disks. 100 puts
+    # anon and file reclaim on equal footing. Not pushed to the 150-180 often
+    # suggested for zram: zstd compression is not free on a 2.13 GHz Atom, and
+    # spare CPU is what this machine is shortest on.
+    "vm.swappiness" = 100;
+
+    # 200 evicts dentry/inode cache twice as eagerly as default. On a fileserver
+    # that means re-stat-ing off spinning disks, and the extra reclaim churn
+    # feeds the fragmentation that gave kcompactd work to do. Back to the
+    # kernel default rather than the 50 usually suggested for fileservers:
+    # media-rsync walks the whole tree nightly, and on 4 GiB an aggressively
+    # retained dentry/inode slab from a multi-million-file traversal is its own
+    # pressure problem. 100 is the middle ground; drop to 50 if metadata re-reads
+    # still show up as iowait.
+    "vm.vfs_cache_pressure" = 100;
 
     # Disable *proactive* memory compaction (default 20). This is the actual
     # cause of the recurring multi-second soft lockups on nnas, observed on
