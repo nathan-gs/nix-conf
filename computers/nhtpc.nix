@@ -44,10 +44,17 @@
       ../gc.nix
       ../services/auto-upgrade.nix
       ../services/hw-health-report.nix
+      ../services/server-health2mqtt.nix
       ../services/media-rsync.nix
       ../services/wireguard.nix
       ../services/journal-remote.nix
     ];
+
+  # Broker is local here.
+  serverHealth2mqtt = {
+    enable = true;
+    password = config.secrets.mqtt.users.server-health2mqtt.password;
+  };
 
   # Leader: sole `nix flake update` + commit; then apply the same lock on nnas.
   # After switch, wait for smarthome stack; rollback generation if still unhealthy.

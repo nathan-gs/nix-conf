@@ -68,6 +68,42 @@ Secrets live in a **separate git repo** at `/etc/nixos/secrets`, pulled in as th
 
 When adding/removing data disks or btrfs volumes, edit the host file's `disks = { … }` block — don't hand-roll `fileSystems` entries.
 
+## Health monitoring (`services/server-health2mqtt.nix`)
+
+`nhtpc` and `nnas` publish their own health to MQTT for Home Assistant, retained, under
+`system/network/server/<host>/`:
+
+| Topic | Tier | Contents |
+|-------|------|----------|
+| `…/host` | fast | uptime, load, CPU used/iowait, memory, swap, CPU/NVMe/chipset temps (+ all hwmon temps & fans as attributes), root fs usage, failed units, reboot-required |
+| `…/disk/<serial>` | slow | per-disk SMART: health, temperature, power-on hours, wear, reallocated/pending sectors |
+| `…/disk/<serial>/standby` | slow | `ON` when the disk was asleep and deliberately not read |
+| `…/btrfs` | slow | device error counters, usage, missing devices, scrub status/age/errors |
+
+Two rules drive the design, both because these boxes boot off small flash and `nnas` is weak:
+
+- **Never wake a disk.** Every `smartctl` call passes `-n standby`. A sleeping disk publishes
+  only to `…/standby` — its data topic is left untouched so the retained last-known-good values
+  and their `ts` survive. On a host whose disks sleep, a disk record being days old is *normal*;
+  the `.smart_updated` sensor is how you tell that apart from a fault.
+- **Never write local state.** MQTT retain is the state store — no spool or stamp files. Units run
+  at `LogLevelMax=warning` so the frequent timer does not dribble journal writes onto root.
+
+The fast tier (`hostInterval`, 5m / 10m on nnas) reads only `/proc`, `/sys` and `/run` — zero disk
+IO. The slow tier (`disksInterval`, 2h / 4h on nnas) is the only one that forks `smartctl`/`btrfs`.
+
+Entities register themselves through **MQTT discovery**, generated in Nix from each host's own
+`disks` block, so `nnas` publishes its own inventory and nhtpc's HA config never enumerates it.
+Each host becomes one HA device, with every physical disk a child device (real model + serial)
+linked via `via_device`. Alerting lives in `smarthome/system/servers.nix` and finds the problem
+sensors by entity-id shape — adding a disk needs no HA-side change.
+
+Thresholds (disk temp, fs %, scrub age, wear) are evaluated **on each host**, not in HA, so a host
+judges itself; HA only routes the resulting `problems` list to a notification.
+
+`services/hw-health-report.nix` (monthly email, `nhtpc` only) is intentionally still in place:
+HA runs on nhtpc, so if nhtpc is down there is no one to alert. Keep a mail path for that case.
+
 ## Auto-upgrade (`services/auto-upgrade.nix`)
 
 Nightly **leader / follower** timers (±delay 10m) so only one host advances flake inputs, without racing on switch:
