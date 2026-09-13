@@ -57,6 +57,15 @@ let
     (lib.optional (rootDisk != "") { dev = rootDisk; role = "root"; })
     ++ (map (d: { dev = d; role = "data"; }) dataDisks);
 
+  # The bus prefix in /dev/disk/by-id tells us which SMART shape a device has,
+  # at eval time. That matters for *which entities to create at all*: an
+  # entity for a metric the hardware cannot report is unavailable forever,
+  # which is indistinguishable from a fault in an unavailable-entities check.
+  # So: wear only for NVMe (percentage_used); the Seagates here expose no
+  # equivalent and would sit unavailable for the life of the disk.
+  isNvme = dev: lib.hasPrefix "nvme-" (lib.last (lib.splitString "/" dev));
+  anyNvme = lib.any (d: isNvme d.dev) allDisks;
+
   genId = id: lib.toLower (builtins.replaceStrings [ "/" "." " " "-" ] [ "_" "_" "_" "_" ] id);
 
   # One HA device per server, and one per physical disk hanging off it via
@@ -151,7 +160,12 @@ let
       }
       // lib.optionalAttrs nullable {
         availability_topic = topic;
-        availability_template = "{{ 'online' if value_json.${field} is not none else 'offline' }}";
+        # `is defined` matters as much as `is not none`: a retained payload
+        # written by an older version of the publisher simply lacks the key,
+        # and an undefined value would otherwise read as available and then
+        # render as a garbage state.
+        availability_template =
+          "{{ 'online' if value_json.${field} is defined and value_json.${field} is not none else 'offline' }}";
       }
       // extra;
     };
@@ -193,30 +207,10 @@ let
         state_class = "measurement";
       };
     })
-    (mkSensor {
-      path = "${prefix}.nvme_temperature";
-      label = "NVMe temperature";
-      topic = hostTopic;
-      field = "nvme_temp_c";
-      nullable = true;
-      extra = hostExpire // {
-        unit_of_measurement = "°C";
-        device_class = "temperature";
-        state_class = "measurement";
-      };
-    })
-    (mkSensor {
-      path = "${prefix}.chipset_temperature";
-      label = "Chipset temperature";
-      topic = hostTopic;
-      field = "chipset_temp_c";
-      nullable = true;
-      extra = hostExpire // {
-        unit_of_measurement = "°C";
-        device_class = "temperature";
-        state_class = "measurement";
-      };
-    })
+    # No chipset_temperature entity on purpose: whether a host exposes a
+    # trustworthy platform sensor is not knowable at eval time, and on a host
+    # without one the entity would be unavailable forever. The value is still
+    # published and visible in the `temps` attribute map.
     (mkSensor {
       path = "${prefix}.cpu_used";
       label = "CPU used";
@@ -339,7 +333,21 @@ let
       };
     })
     (mkProblem { path = "${prefix}.problem"; topic = hostTopic; })
-  ];
+  ]
+  # Only where there is an NVMe to report one. nnas boots off a SATA DOM, so
+  # this entity would never have a value there.
+  ++ lib.optional anyNvme (mkSensor {
+    path = "${prefix}.nvme_temperature";
+    label = "NVMe temperature";
+    topic = hostTopic;
+    field = "nvme_temp_c";
+    nullable = true;
+    extra = hostExpire // {
+      unit_of_measurement = "°C";
+      device_class = "temperature";
+      state_class = "measurement";
+    };
+  });
 
   diskEntities = d:
     let
@@ -371,18 +379,6 @@ let
           unit_of_measurement = "h";
           state_class = "total_increasing";
           icon = "mdi:clock-outline";
-        };
-      })
-      (mkSensor {
-        path = "${base}.wear";
-        label = "Wear";
-        inherit topic device;
-        field = "wear_pct";
-        nullable = true;
-        extra = {
-          unit_of_measurement = "%";
-          state_class = "measurement";
-          icon = "mdi:chart-donut";
         };
       })
       # How old the retained SMART record is. On a host whose disks sleep, this
@@ -420,7 +416,22 @@ let
           icon = "mdi:sleep";
         };
       })
-    ];
+    ]
+    # NVMe reports percentage_used; the ATA disks here expose no equivalent,
+    # so creating this for them would mean an entity that is unavailable for
+    # the life of the drive.
+    ++ lib.optional (isNvme d.dev) (mkSensor {
+      path = "${base}.wear";
+      label = "Wear";
+      inherit topic device;
+      field = "wear_pct";
+      nullable = true;
+      extra = {
+        unit_of_measurement = "%";
+        state_class = "measurement";
+        icon = "mdi:chart-donut";
+      };
+    });
 
   btrfsEntities = lib.optionals (btrfsMount != "") [
     (mkSensor {
@@ -516,7 +527,13 @@ let
     pkgs.systemd
   ];
 
-  mkUnit = { description, mode }: {
+  # quiet: suppress systemd's routine per-run chatter. Only worth it for the
+  # frequent host timer, where "Started …" every few minutes is pure write
+  # amplification on a small root flash. NOT for the others: it also swallows
+  # the script's own stderr, and a silently failing disks run is exactly how a
+  # broker outage turned into "all the disk entities are unavailable" with
+  # nothing in the journal to say why.
+  mkUnit = { description, mode, quiet ? false }: {
     inherit description;
     path = runtimePath;
     environment = commonEnv;
@@ -529,9 +546,6 @@ let
       CPUSchedulingPolicy = "idle";
       # A monitor must never be the reason the box is unhealthy.
       TimeoutStartSec = "2min";
-      # Routine "Started …" lines every few minutes are pure write amplification
-      # on a small root flash; keep only what actually went wrong.
-      LogLevelMax = "warning";
       PrivateTmp = true;
       ProtectHome = true;
       ProtectKernelModules = true;
@@ -540,7 +554,7 @@ let
       RestrictSUIDSGID = true;
       MemoryDenyWriteExecute = true;
       SystemCallArchitectures = "native";
-    };
+    } // lib.optionalAttrs quiet { LogLevelMax = "warning"; };
   };
 in
 {
@@ -641,6 +655,7 @@ in
     systemd.services.server-health2mqtt-host = mkUnit {
       description = "server-health2mqtt: host vitals";
       mode = "host";
+      quiet = true;
     };
 
     systemd.timers.server-health2mqtt-host = {
