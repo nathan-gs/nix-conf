@@ -62,8 +62,11 @@
 
     # Disable *proactive* memory compaction (default 20). This is the actual
     # cause of the recurring multi-second soft lockups on nnas, observed on
-    # 2026-09-09/10/12/13, always mid-morning while media-rsync is still
-    # running. The kcompactd stack is unambiguous:
+    # 2026-09-09/10/12/13. The trigger is the daily onedrive sync, which reads
+    # 40+ GB in an hour on a 3.8 GiB host — see services/onedrive-schedule.nix,
+    # where that is measured and capped. (Not media-rsync: every lockup falls
+    # inside an onedrive run window, and media-rsync exits in ~10 s on an
+    # in-sync tree.) The kcompactd stack is unambiguous:
     #
     #   kcompactd -> compact_node -> compact_zone -> migrate_pages
     #     -> migrate_pages_sync -> migrate_pages_batch -> try_to_unmap_flush
