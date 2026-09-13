@@ -117,14 +117,33 @@ let
   # availability_template so a metric the hardware does not expose (ATA disks
   # have no wear_pct, NVMe has no reallocated count) goes unavailable instead
   # of spamming "unknown" states into the recorder.
-  mkEntity = { component, name, topic, extra ? { }, nullable ? false, valueTemplate ? null, field ? null, device ? serverDevice }:
-    let id = genId name;
+  #
+  # Two names, on purpose:
+  #   `path`  the full topic-shaped identity ("…/disk/wcj0nk0l.wear"). Drives
+  #           unique_id and entity_id, so the entity id is the topic with "_"
+  #           instead of "/".
+  #   `label` the short display name ("Wear"). HA prefixes the device name for
+  #           display, so a full path here would read
+  #           "nhtpc disk wcj0nk0l system/network/server/…/wear".
+  #
+  # entity_id comes from `default_entity_id`, NOT `object_id`: MQTT dropped
+  # object_id, and without an explicit entity id HA derives one by slugifying
+  # *device name + entity name*, which doubles the identity up into
+  # sensor.nhtpc_disk_x_system_network_server_nhtpc_disk_x_wear.
+  #
+  # NOTE: default_entity_id only applies when the entity is first created (or
+  # re-created after deletion). Changing it here does not rename entities that
+  # are already in HA's registry — delete the MQTT device in HA and re-run
+  # server-health2mqtt-discovery.service to have them come back renamed.
+  mkEntity = { component, path, label, topic, extra ? { }, nullable ? false, valueTemplate ? null, field ? null, device ? serverDevice }:
+    let id = genId path;
     in {
       topic = "homeassistant/${component}/${id}/config";
       payload = {
-        inherit name device;
+        inherit device;
+        name = label;
         unique_id = id;
-        object_id = id;
+        default_entity_id = "${component}.${id}";
         state_topic = topic;
         value_template =
           if valueTemplate != null then valueTemplate
@@ -139,9 +158,9 @@ let
 
   mkSensor = args: mkEntity (args // { component = "sensor"; });
 
-  mkProblem = { name, topic, device ? serverDevice }: mkEntity {
+  mkProblem = { path, label ? "Problem", topic, device ? serverDevice }: mkEntity {
     component = "binary_sensor";
-    inherit name topic device;
+    inherit path label topic device;
     valueTemplate = "{{ 'ON' if value_json.problem_count | int(0) > 0 else 'OFF' }}";
     extra = {
       device_class = "problem";
@@ -163,7 +182,8 @@ let
 
   hostEntities = [
     (mkSensor {
-      name = "${prefix}.cpu_temperature";
+      path = "${prefix}.cpu_temperature";
+      label = "CPU temperature";
       topic = hostTopic;
       field = "cpu_temp_c";
       nullable = true;
@@ -174,7 +194,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.nvme_temperature";
+      path = "${prefix}.nvme_temperature";
+      label = "NVMe temperature";
       topic = hostTopic;
       field = "nvme_temp_c";
       nullable = true;
@@ -185,7 +206,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.chipset_temperature";
+      path = "${prefix}.chipset_temperature";
+      label = "Chipset temperature";
       topic = hostTopic;
       field = "chipset_temp_c";
       nullable = true;
@@ -196,7 +218,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.cpu_used";
+      path = "${prefix}.cpu_used";
+      label = "CPU used";
       topic = hostTopic;
       field = "cpu_used_pct";
       extra = hostExpire // {
@@ -208,7 +231,8 @@ let
     # iowait is the number that actually explains a sluggish NAS: the CPU is
     # idle but blocked on spinning rust.
     (mkSensor {
-      name = "${prefix}.cpu_iowait";
+      path = "${prefix}.cpu_iowait";
+      label = "CPU iowait";
       topic = hostTopic;
       field = "cpu_iowait_pct";
       extra = hostExpire // {
@@ -218,7 +242,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.uptime";
+      path = "${prefix}.uptime";
+      label = "Uptime";
       topic = hostTopic;
       field = "uptime_s";
       extra = hostExpire // {
@@ -229,7 +254,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.load_1m";
+      path = "${prefix}.load_1m";
+      label = "Load 1m";
       topic = hostTopic;
       field = "load1";
       extra = hostExpire // {
@@ -238,7 +264,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.memory_used";
+      path = "${prefix}.memory_used";
+      label = "Memory used";
       topic = hostTopic;
       field = "mem_used_pct";
       extra = hostExpire // {
@@ -248,7 +275,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.swap_used";
+      path = "${prefix}.swap_used";
+      label = "Swap used";
       topic = hostTopic;
       field = "swap_used_pct";
       extra = hostExpire // {
@@ -258,7 +286,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.root_fs_used";
+      path = "${prefix}.root_fs_used";
+      label = "Root filesystem used";
       topic = hostTopic;
       field = "root_used_pct";
       extra = hostExpire // {
@@ -268,7 +297,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.root_fs_free";
+      path = "${prefix}.root_fs_free";
+      label = "Root filesystem free";
       topic = hostTopic;
       valueTemplate = "{{ (value_json.root_free_b | float(0) / 1024**3) | round(1) }}";
       extra = hostExpire // {
@@ -278,7 +308,8 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.failed_units";
+      path = "${prefix}.failed_units";
+      label = "Failed units";
       topic = hostTopic;
       field = "failed_units";
       extra = hostExpire // {
@@ -288,14 +319,16 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}.problem_count";
+      path = "${prefix}.problem_count";
+      label = "Problem count";
       topic = hostTopic;
       field = "problem_count";
       extra = hostExpire // { state_class = "measurement"; icon = "mdi:alert"; };
     })
     (mkEntity {
       component = "binary_sensor";
-      name = "${prefix}.reboot_required";
+      path = "${prefix}.reboot_required";
+      label = "Reboot required";
       topic = hostTopic;
       valueTemplate = "{{ 'ON' if value_json.reboot_required else 'OFF' }}";
       extra = hostExpire // {
@@ -305,7 +338,7 @@ let
         icon = "mdi:restart-alert";
       };
     })
-    (mkProblem { name = "${prefix}.problem"; topic = hostTopic; })
+    (mkProblem { path = "${prefix}.problem"; topic = hostTopic; })
   ];
 
   diskEntities = d:
@@ -317,7 +350,8 @@ let
     in
     [
       (mkSensor {
-        name = "${base}.temperature";
+        path = "${base}.temperature";
+        label = "Temperature";
         inherit topic device;
         field = "temperature_c";
         nullable = true;
@@ -328,7 +362,8 @@ let
         };
       })
       (mkSensor {
-        name = "${base}.power_on_hours";
+        path = "${base}.power_on_hours";
+        label = "Power-on hours";
         inherit topic device;
         field = "power_on_hours";
         nullable = true;
@@ -339,7 +374,8 @@ let
         };
       })
       (mkSensor {
-        name = "${base}.wear";
+        path = "${base}.wear";
+        label = "Wear";
         inherit topic device;
         field = "wear_pct";
         nullable = true;
@@ -350,25 +386,34 @@ let
         };
       })
       # How old the retained SMART record is. On a host whose disks sleep, this
-      # is the sensor that tells you "not broken, just never awake".
+      # is the sensor that tells you "not broken, just never awake". Driven by
+      # smart_ts (when SMART was actually read) rather than ts (when we last
+      # published): a never-yet-awake disk publishes a placeholder without
+      # reading anything, and must not claim a fresh SMART read.
       (mkSensor {
-        name = "${base}.smart_updated";
+        path = "${base}.smart_updated";
+        label = "SMART updated";
         inherit topic device;
-        valueTemplate = "{{ value_json.ts | int(0) | timestamp_local }}";
+        field = "smart_ts";
+        nullable = true;
+        valueTemplate = "{{ value_json.smart_ts | int(0) | timestamp_local }}";
         extra = { device_class = "timestamp"; icon = "mdi:clock-check-outline"; };
       })
       (mkSensor {
-        name = "${base}.problem_count";
+        path = "${base}.problem_count";
+        label = "Problem count";
         inherit topic device;
         field = "problem_count";
         extra = { state_class = "measurement"; icon = "mdi:alert"; };
       })
-      (mkProblem { name = "${base}.problem"; inherit topic device; })
+      (mkProblem { path = "${base}.problem"; inherit topic device; })
       (mkEntity {
         component = "binary_sensor";
-        name = "${base}.standby";
+        path = "${base}.standby";
+        label = "Standby";
         topic = "${topic}/standby";
         valueTemplate = "{{ value }}";
+        inherit device;
         extra = {
           payload_on = "ON";
           payload_off = "OFF";
@@ -379,13 +424,15 @@ let
 
   btrfsEntities = lib.optionals (btrfsMount != "") [
     (mkSensor {
-      name = "${prefix}/btrfs.used";
+      path = "${prefix}/btrfs.used";
+      label = "Btrfs used";
       topic = btrfsTopic;
       field = "used_pct";
       extra = { unit_of_measurement = "%"; state_class = "measurement"; icon = "mdi:harddisk"; };
     })
     (mkSensor {
-      name = "${prefix}/btrfs.free";
+      path = "${prefix}/btrfs.free";
+      label = "Btrfs free";
       topic = btrfsTopic;
       valueTemplate = "{{ (value_json.free_b | float(0) / 1024**4) | round(2) }}";
       extra = {
@@ -395,37 +442,42 @@ let
       };
     })
     (mkSensor {
-      name = "${prefix}/btrfs.device_errors";
+      path = "${prefix}/btrfs.device_errors";
+      label = "Btrfs device errors";
       topic = btrfsTopic;
       field = "err_total";
       extra = { state_class = "measurement"; icon = "mdi:alert-octagon-outline"; };
     })
     (mkSensor {
-      name = "${prefix}/btrfs.devices_missing";
+      path = "${prefix}/btrfs.devices_missing";
+      label = "Btrfs devices missing";
       topic = btrfsTopic;
       field = "devices_missing";
       extra = { state_class = "measurement"; icon = "mdi:harddisk-remove"; };
     })
     (mkSensor {
-      name = "${prefix}/btrfs.scrub_age";
+      path = "${prefix}/btrfs.scrub_age";
+      label = "Btrfs scrub age";
       topic = btrfsTopic;
       field = "scrub_age_days";
       nullable = true;
       extra = { unit_of_measurement = "d"; state_class = "measurement"; icon = "mdi:broom"; };
     })
     (mkSensor {
-      name = "${prefix}/btrfs.scrub_status";
+      path = "${prefix}/btrfs.scrub_status";
+      label = "Btrfs scrub status";
       topic = btrfsTopic;
       field = "scrub_status";
       extra = { icon = "mdi:broom"; };
     })
     (mkSensor {
-      name = "${prefix}/btrfs.problem_count";
+      path = "${prefix}/btrfs.problem_count";
+      label = "Btrfs problem count";
       topic = btrfsTopic;
       field = "problem_count";
       extra = { state_class = "measurement"; icon = "mdi:alert"; };
     })
-    (mkProblem { name = "${prefix}/btrfs.problem"; topic = btrfsTopic; })
+    (mkProblem { path = "${prefix}/btrfs.problem"; label = "Btrfs problem"; topic = btrfsTopic; })
   ];
 
   discovery = hostEntities ++ (lib.concatMap diskEntities allDisks) ++ btrfsEntities;
