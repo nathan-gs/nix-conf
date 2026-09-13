@@ -23,14 +23,14 @@
         create_group = "system/network";
         entities = [
           {
-            name = "system/fritz_repeater";
-            unique_id = "system_fritz_repeater";
+            name = "system/network/fritz_repeater/shed";
+            unique_id = "system_network_fritz_repeater_shed";
             entity_id = "sensor.dummy";
             fixed.power = 4;
           }
           {
-            name = "zigbee/switches";
-            unique_id = "zigbee_switches";
+            name = "system/network/zigbee/all";
+            unique_id = "system_network_zigbee_all";
             entity_id = "sensor.dummy";
             fixed.power = 5;
           }
