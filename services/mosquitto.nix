@@ -46,6 +46,12 @@
               acl = ["readwrite pylontech/#"];
               password = config.secrets.mqtt.users.pylontech2mqtt.password;
             };
+            # Both nhtpc and nnas publish here; nnas connects over WireGuard.
+            # Needs homeassistant/# for the MQTT discovery configs it registers.
+            server-health2mqtt = {
+              acl = ["readwrite system/network/server/#" "readwrite homeassistant/#" ];
+              password = config.secrets.mqtt.users.server-health2mqtt.password;
+            };
         };
         
         port = 1883;

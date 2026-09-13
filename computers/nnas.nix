@@ -21,7 +21,24 @@
       ../gc.nix
       ../services/auto-upgrade.nix
       ../services/journal-upload.nix
+      ../services/server-health2mqtt.nix
     ];
+
+  # Health goes to the broker on nhtpc over WireGuard. This host had no health
+  # reporting at all before (hw-health-report.nix is imported only by nhtpc),
+  # which is backwards — the 8 TB SMR spinners live here.
+  #
+  # The intervals are deliberately slack: this box is underpowered, its data
+  # disks are asleep most of the time, and the fast tier is the only one that
+  # runs often (it reads /proc and /sys only, so it costs no IO).
+  serverHealth2mqtt = {
+    enable = true;
+    broker = "nhtpc.wg";
+    password = config.secrets.mqtt.users.server-health2mqtt.password;
+    hostInterval = "10min";
+    disksInterval = "4h";
+    hostExpireSeconds = 3600;
+  };
 
   # Follower: never runs `nix flake update` (nhtpc is the leader). nhtpc pushes
   # the repos after its own upgrade; this host then builds and switches itself

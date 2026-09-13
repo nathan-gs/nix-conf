@@ -13,6 +13,7 @@
     ./hvac
     ./occupancy
     ./recorder.nix
+    ./system
     ./waste.nix
     ./water.nix
     ./weather.nix
