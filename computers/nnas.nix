@@ -40,6 +40,15 @@
     # disks sleep, and this box's disks sleep nearly all the time — a long
     # interval mostly meant missing the rare window when one is awake.
     hostExpireSeconds = 3600;
+
+    # Root DOM (ata-SDV-32_987032400115) has carried 10 reallocated sectors
+    # since at least 2026-09-13, with SMART overall still PASSED. Accept that
+    # count so it is not a permanent alert, and alert the moment it grows —
+    # on a 32 GB DOM holding root, 11 means replace it.
+    #
+    # The sensor still reports the real number; only the problem threshold
+    # moves. Per-serial, so the two Seagates here still alert from 0.
+    baselineReallocated."987032400115" = 10;
   };
 
   # Follower: never runs `nix flake update` (nhtpc is the leader). nhtpc pushes
