@@ -32,6 +32,186 @@ let
     fcmatch.youtube.com
     video-stats.video.google.com
   '';
+
+  # ── blocky stats → MQTT ─────────────────────────────────────────────────────
+  # blocky's own Prometheus endpoint, local-only (not exposed beyond nginx's
+  # /dns-query proxy). Nothing scrapes it — the flake has no Prometheus at all
+  # any more — it is read once an hour by blocky-stats2mqtt below and turned
+  # into Home Assistant entities, the same way server-health2mqtt reports host
+  # health. Same two rules as that module: the host judges its own health
+  # (`problems` is computed here, not in HA), and every entity registers itself
+  # through retained MQTT discovery so HA's config never enumerates blocky.
+  httpPort = 65080;
+
+  statsScript = ../ext/blocky-stats2mqtt.sh;
+  statsTopic = "system/network/blocky";
+  # Hourly timer, so ~3 missed runs before HA calls it stale. Blocky being dead
+  # is the interesting case: its counters stop, and there is no per-metric
+  # heartbeat that would otherwise keep the sensors looking fresh.
+  statsExpire = 3 * 3600;
+
+  blockyDevice = {
+    identifiers = [ "blocky" ];
+    name = "blocky";
+    manufacturer = "nathan.gs";
+    model = "DNS resolver";
+  };
+
+  genId = id: lib.toLower (builtins.replaceStrings [ "/" "." " " "-" ] [ "_" "_" "_" "_" ] id);
+
+  # Same shape as server-health2mqtt's mkEntity, deliberately: entity_id comes
+  # from default_entity_id (the topic with "_" for "/"), which HA only honours
+  # when the entity is *created* — changing a key here means running
+  # blocky-stats2mqtt-purge and then -discovery, not just a switch.
+  mkEntity =
+    { component ? "sensor"
+    , key
+    , label
+    , valueTemplate ? "{{ value_json.${key} }}"
+    , nullable ? false
+    , extra ? { }
+    }:
+    let id = genId "${statsTopic}.${key}";
+    in {
+      topic = "homeassistant/${component}/${id}/config";
+      payload = {
+        device = blockyDevice;
+        name = label;
+        unique_id = id;
+        default_entity_id = "${component}.${id}";
+        state_topic = statsTopic;
+        value_template = valueTemplate;
+        expire_after = statsExpire;
+      }
+      // lib.optionalAttrs nullable {
+        availability_topic = statsTopic;
+        availability_template =
+          "{{ 'online' if value_json.${key} is defined and value_json.${key} is not none else 'offline' }}";
+      }
+      // extra;
+    };
+
+  mkCount = { key, label, icon }: mkEntity {
+    inherit key label;
+    extra = {
+      inherit icon;
+      unit_of_measurement = "queries";
+      state_class = "measurement";
+    };
+  };
+
+  mkPct = { key, label, icon }: mkEntity {
+    inherit key label;
+    extra = {
+      inherit icon;
+      unit_of_measurement = "%";
+      state_class = "measurement";
+    };
+  };
+
+  # The hourly deltas are what you read day to day; the cumulative counters are
+  # there so HA's statistics can draw a long-run graph across restarts —
+  # total_increasing is exactly the state_class for a counter that resets to 0
+  # when blocky restarts.
+  mkTotal = { key, label, icon }: mkEntity {
+    inherit key label;
+    extra = {
+      inherit icon;
+      unit_of_measurement = "queries";
+      state_class = "total_increasing";
+    };
+  };
+
+  statsEntities = [
+    (mkCount { key = "queries"; label = "Queries last hour"; icon = "mdi:dns"; })
+    (mkCount { key = "cached"; label = "Cached last hour"; icon = "mdi:lightning-bolt"; })
+    (mkCount { key = "blocked"; label = "Blocked last hour"; icon = "mdi:cancel"; })
+    (mkCount { key = "resolved"; label = "Resolved last hour"; icon = "mdi:cloud-arrow-up-outline"; })
+    (mkPct { key = "blocked_pct"; label = "Blocked share last hour"; icon = "mdi:shield-check"; })
+    (mkPct { key = "cache_hit_pct"; label = "Cache hit rate last hour"; icon = "mdi:speedometer"; })
+    (mkTotal { key = "queries_total"; label = "Queries total"; icon = "mdi:dns"; })
+    (mkTotal { key = "blocked_total"; label = "Blocked total"; icon = "mdi:cancel"; })
+    (mkEntity {
+      key = "cache_entries";
+      label = "Cache entries";
+      extra = {
+        state_class = "measurement";
+        icon = "mdi:database";
+      };
+    })
+    (mkEntity {
+      key = "denylist_entries";
+      label = "Denylist entries";
+      extra = {
+        state_class = "measurement";
+        icon = "mdi:playlist-remove";
+      };
+    })
+    (mkEntity {
+      key = "errors";
+      label = "Errors last hour";
+      extra = {
+        state_class = "measurement";
+        icon = "mdi:alert";
+      };
+    })
+    # Nullable: blocky refreshes its lists at startup, so this is only unset in
+    # the window before the first refresh completes — transient, unlike the
+    # metrics a device can never report (which get no entity at all).
+    (mkEntity {
+      key = "list_refreshed";
+      label = "Blocklists refreshed";
+      nullable = true;
+      extra = {
+        device_class = "timestamp";
+        icon = "mdi:playlist-check";
+      };
+    })
+    # The whole record hangs off the problem sensor as attributes, so version,
+    # allowlist size, failed downloads and the problem list itself are one click
+    # away without minting an entity each.
+    (mkEntity {
+      component = "binary_sensor";
+      key = "problem";
+      label = "Problem";
+      valueTemplate = "{{ 'ON' if value_json.problem_count | int(0) > 0 else 'OFF' }}";
+      extra = {
+        device_class = "problem";
+        payload_on = "ON";
+        payload_off = "OFF";
+        json_attributes_topic = statsTopic;
+      };
+    })
+  ];
+
+  statsDiscoveryFile = pkgs.writeText "blocky-stats2mqtt-discovery.json"
+    (builtins.toJSON statsEntities);
+
+  mkStatsUnit = { description, mode }: {
+    inherit description;
+    path = [ pkgs.bash pkgs.coreutils pkgs.curl pkgs.gawk pkgs.jq pkgs.mosquitto ];
+    environment = {
+      BS_METRICS_URL = "http://127.0.0.1:${toString httpPort}/metrics";
+      BS_TOPIC = statsTopic;
+      BS_MQTT_USER = "blocky2mqtt";
+      BS_MQTT_PASS = config.secrets.mqtt.users.blocky2mqtt.password;
+      BS_DISCOVERY_FILE = "${statsDiscoveryFile}";
+      BS_STATE = "/var/lib/blocky-stats/state";
+    };
+    serviceConfig = {
+      Type = "oneshot";
+      ExecStart = "${pkgs.bash}/bin/bash ${statsScript} ${mode}";
+      StateDirectory = "blocky-stats";
+      Nice = 19;
+      TimeoutStartSec = "2min";
+      PrivateTmp = true;
+      ProtectHome = true;
+      ProtectSystem = "strict";
+      RestrictRealtime = true;
+      RestrictSUIDSGID = true;
+      SystemCallArchitectures = "native";
+    };
+  };
 in
 {
   # Local resolver + ad-blocker + split-horizon DNS.
@@ -53,7 +233,7 @@ in
         # dns.l.nathan.gs / dns.wg.nathan.gs. High port deliberately picked
         # to stay clear of 4000, which nathan reserves for occasional
         # ad-hoc use.
-        http = 65080;
+        http = httpPort;
       };
 
       # DNS-over-HTTPS upstreams so blocky's outgoing queries aren't plain
@@ -189,48 +369,60 @@ in
     };
   };
 
-  # Hourly cached/uncached/blocked totals in the journal, since per-query
-  # logging is off above. Reads blocky's local Prometheus endpoint
-  # (response_type label: CACHED / BLOCKED / RESOLVED / CUSTOMDNS) and diffs
-  # against the previous run's cumulative counters to report a per-period
-  # delta. Counters reset on blocky restart; a negative delta is clamped to
-  # 0 for that one run rather than reporting garbage.
-  systemd.services.blocky-stats-log = {
-    description = "Log blocky cached/uncached/blocked query counts";
-    after = [ "blocky.service" ];
-    serviceConfig.StateDirectory = "blocky-stats";
-    script = ''
-      set -euo pipefail
-      STATE=/var/lib/blocky-stats/state
-      [ -f "$STATE" ] || echo "prev_cached=0 prev_blocked=0 prev_uncached=0" > "$STATE"
-      source "$STATE"
+  # Hourly cached/uncached/blocked counts into MQTT (and one journal line),
+  # since per-query logging is off above. Reads blocky's local Prometheus
+  # endpoint (response_type label: CACHED / BLOCKED / RESOLVED / CUSTOMDNS) and
+  # diffs against the previous run's cumulative counters for the per-hour
+  # delta. Counters reset on blocky restart; a negative delta is clamped to 0
+  # for that one run rather than reporting garbage.
+  systemd.services.blocky-stats2mqtt = lib.recursiveUpdate
+    (mkStatsUnit {
+      description = "blocky-stats2mqtt: query counts to MQTT";
+      mode = "stats";
+    })
+    {
+      after = [ "blocky.service" "mosquitto.service" ];
+    };
 
-      cached=0; blocked=0; uncached=0
-      while IFS= read -r line; do
-        value=$(echo "$line" | ${pkgs.gnugrep}/bin/grep -oE '[0-9]+$')
-        case "$line" in
-          *response_type=\"CACHED\"*) cached=$((cached + value)) ;;
-          *response_type=\"BLOCKED\"*) blocked=$((blocked + value)) ;;
-          *) uncached=$((uncached + value)) ;;
-        esac
-      done < <(${pkgs.curl}/bin/curl -sf http://127.0.0.1:65080/metrics | ${pkgs.gnugrep}/bin/grep '^blocky_response_total{')
+  systemd.timers.blocky-stats2mqtt = {
+    description = "blocky-stats2mqtt: query counts timer";
+    wantedBy = [ "timers.target" ];
+    timerConfig = {
+      OnBootSec = "10min";
+      OnUnitActiveSec = "1h";
+      # Deliberately not Persistent: the counters are cumulative, so a catch-up
+      # run after downtime would attribute hours of queries to a single "last
+      # hour" bucket.
+      AccuracySec = "1min";
+    };
+  };
 
-      d_cached=$((cached - prev_cached))
-      d_blocked=$((blocked - prev_blocked))
-      d_uncached=$((uncached - prev_uncached))
-      (( d_cached < 0 )) && d_cached=0
-      (( d_blocked < 0 )) && d_blocked=0
-      (( d_uncached < 0 )) && d_uncached=0
+  # Retained discovery, republished at boot and after every switch so an HA
+  # restart or a changed entity list converges without manual work.
+  systemd.services.blocky-stats2mqtt-discovery = lib.recursiveUpdate
+    (mkStatsUnit {
+      description = "blocky-stats2mqtt: publish Home Assistant MQTT discovery";
+      mode = "discovery";
+    })
+    {
+      wantedBy = [ "multi-user.target" ];
+      after = [ "network-online.target" "mosquitto.service" ];
+      wants = [ "network-online.target" ];
+      # At boot the broker may not be accepting connections yet, and without
+      # discovery the entities never appear at all — so this one retries.
+      serviceConfig = {
+        Restart = "on-failure";
+        RestartSec = "30s";
+      };
+    };
 
-      echo "blocky query stats (last hour): cached=$d_cached uncached=$d_uncached blocked=$d_blocked"
-
-      cat > "$STATE" <<EOF
-      prev_cached=$cached
-      prev_blocked=$blocked
-      prev_uncached=$uncached
-      EOF
-    '';
-    startAt = "hourly";
+  # Manual, never timed: clears the retained discovery configs so the entities
+  # are dropped and can be recreated (needed after an entity_id change — HA only
+  # honours default_entity_id on creation). Follow with
+  # `systemctl start blocky-stats2mqtt-discovery`.
+  systemd.services.blocky-stats2mqtt-purge = mkStatsUnit {
+    description = "blocky-stats2mqtt: purge Home Assistant MQTT discovery";
+    mode = "purge";
   };
 
   # DNS-over-HTTPS: nginx terminates TLS (same ACME-via-Cloudflare-DNS-01
@@ -256,7 +448,7 @@ in
     # public internet, unlike the rest of the vhosts on this nginx.
     extraConfig = config.homeNetwork.nginxLanOnly;
     locations."/dns-query" = {
-      proxyPass = "http://127.0.0.1:65080/dns-query";
+      proxyPass = "http://127.0.0.1:${toString httpPort}/dns-query";
     };
   };
 }

@@ -52,6 +52,13 @@
               acl = ["readwrite system/network/server/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.server-health2mqtt.password;
             };
+            # blocky-stats2mqtt on nhtpc: DNS query counts + blocklist state.
+            # "system/network/blocky/#" covers the bare topic too (MQTT's "#"
+            # matches its own parent level), and leaves room for sub-topics.
+            blocky2mqtt = {
+              acl = ["readwrite system/network/blocky/#" "readwrite homeassistant/#" ];
+              password = config.secrets.mqtt.users.blocky2mqtt.password;
+            };
         };
         
         port = 1883;
