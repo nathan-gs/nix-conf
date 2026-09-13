@@ -109,6 +109,14 @@ sensors by entity-id shape — adding a disk needs no HA-side change.
 Thresholds (disk temp, fs %, scrub age, wear) are evaluated **on each host**, not in HA, so a host
 judges itself; HA only routes the resulting `problems` list to a notification.
 
+Reallocated sectors are tracked as a first-class per-disk entity (`…_reallocated`, or
+`…_media_errors` on NVMe) — it is the best early warning of a failing drive. Both it and the btrfs
+device-error counters are **cumulative and never decrease**, so alerting on "> 0" would pin a
+machine carrying an old count into a permanent alert. They alert on growth past a declared
+baseline instead: `serverHealth2mqtt.baselineReallocated.<serial>` and `baselineBtrfsErrors`, both
+defaulting to 0. Set them by hand with a comment saying when and why — never auto-learned, since a
+baseline that absorbs whatever it sees would absorb a slowly-growing fault too.
+
 **No entity is created for a metric the hardware cannot report.** An entity that is unavailable for
 the life of the machine is indistinguishable from a fault in the `unavailable_entities` check in
 `smarthome/ha/default.nix`, and would have to be added to that ignore list. So `wear` exists only
@@ -138,7 +146,10 @@ A **"Server health" dashboard** (`smarthome/dashboards/server-health.yaml`) is r
 `smarthome/system/servers.nix` as an additional YAML-mode dashboard at `/server-health` — the
 default dashboard stays storage-mode and UI-editable. It uses the sections view type, unlike the
 older masonry dashboards in that directory. Being YAML mode it is **not editable in the UI**: edit
-the file and switch. Host names are hardcoded (there are two); disk rows come from `auto-entities`
+the file and switch. It is **copied** into `/var/lib/hass/dashboards/` and touched, not symlinked
+into the store: HA caches a YAML dashboard and invalidates by `os.path.getmtime()`, which follows
+symlinks into `/nix/store` where every mtime is epoch 1970 — so a symlinked dashboard is never seen
+as newer and edits only appear after an HA restart. Host names are hardcoded (there are two); disk rows come from `auto-entities`
 filters on the entity-id shape, so swapping a disk needs no dashboard edit. Note HA requires the
 dashboard's url_path to contain a hyphen.
 

@@ -53,6 +53,24 @@ NVME_WEAR_WARN_PCT="${SH_NVME_WEAR_WARN_PCT:-85}"
 # there are a few thousand of them here, from every integration.
 PURGE_WAIT="${SH_PURGE_WAIT:-10}"
 
+# Cumulative counters that never decrease. Alerting on "> 0" would mean a
+# permanent alert on any machine carrying an old count, so alert on growth past
+# a declared baseline instead. See serverHealth2mqtt.baseline* options.
+BASELINE_BTRFS_ERRORS="${SH_BASELINE_BTRFS_ERRORS:-0}"
+BASELINE_REALLOCATED="${SH_BASELINE_REALLOCATED:-}"
+
+# Accepted reallocated-sector count for a disk, by serial; 0 if undeclared.
+baseline_reallocated() {
+  local want="$1" pair
+  for pair in $BASELINE_REALLOCATED; do
+    if [[ "${pair%%=*}" == "$want" ]]; then
+      printf '%s' "${pair#*=}"
+      return
+    fi
+  done
+  printf '0'
+}
+
 NOW="$(date +%s)"
 PUB_FAILURES=0
 
@@ -458,7 +476,24 @@ collect_disk() {
   v="$(jq -r '.smart_ok' <<<"$record")"
   [[ "$v" == "false" ]] && problems+="SMART overall health: FAILING"$'\n'
 
-  for field in reallocated pending offline_uncorrectable media_errors; do
+  # Reallocated sectors are cumulative: alert on growth past the accepted
+  # count, not on the count being non-zero. A drive that reallocated a handful
+  # of sectors years ago and has been stable since is not news; the same drive
+  # gaining one more is.
+  local realloc realloc_base
+  realloc="$(jq -r '.reallocated // 0' <<<"$record")"
+  realloc="${realloc%.*}"
+  realloc_base="$(baseline_reallocated "$label")"
+  if [[ "$realloc" -gt "$realloc_base" ]] 2>/dev/null; then
+    if [[ "$realloc_base" -gt 0 ]]; then
+      problems+="reallocated sectors: ${realloc} (was ${realloc_base})"$'\n'
+    else
+      problems+="reallocated sectors: ${realloc}"$'\n'
+    fi
+  fi
+
+  # These are not "wear that happened once" — any non-zero value is current.
+  for field in pending offline_uncorrectable media_errors; do
     v="$(jq -r --arg f "$field" '.[$f] // 0' <<<"$record")"
     if [[ "${v%.*}" -gt 0 ]] 2>/dev/null; then
       problems+="${field//_/ }: ${v%.*}"$'\n'
@@ -522,8 +557,14 @@ collect_btrfs() {
   err_corruption="$(awk '/corruption_errs/{s+=$2} END{print s+0}' <<<"$stats")"
   err_generation="$(awk '/generation_errs/{s+=$2} END{print s+0}' <<<"$stats")"
   local err_total=$(( err_write + err_read + err_flush + err_corruption + err_generation ))
-  if [[ "$err_total" -gt 0 ]]; then
-    problems+="btrfs device errors: write=${err_write} read=${err_read} flush=${err_flush} corruption=${err_corruption} generation=${err_generation}"$'\n'
+  # Cumulative since the last `btrfs device stats -z`, so compare against the
+  # accepted count rather than zero.
+  if [[ "$err_total" -gt "$BASELINE_BTRFS_ERRORS" ]]; then
+    if [[ "$BASELINE_BTRFS_ERRORS" -gt 0 ]]; then
+      problems+="btrfs device errors: ${err_total} (was ${BASELINE_BTRFS_ERRORS}) write=${err_write} read=${err_read} flush=${err_flush} corruption=${err_corruption} generation=${err_generation}"$'\n'
+    else
+      problems+="btrfs device errors: write=${err_write} read=${err_read} flush=${err_flush} corruption=${err_corruption} generation=${err_generation}"$'\n'
+    fi
   fi
 
   # Devices that dropped out of the array — the failure mode behind the
