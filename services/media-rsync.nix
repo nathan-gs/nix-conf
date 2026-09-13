@@ -40,8 +40,17 @@ let
     # --partial/--partial-dir: resume multi-day first sync over a slow link.
     # --delete-after: only remove dest files after the transfer succeeds.
     # --bwlimit intentionally below the ~22 Mbit router-WG path (~12 Mbit) so
-    # nnas (Atom, 4 GiB, SMR btrfs) can absorb writeback without kcompactd
-    # soft lockups. Complements vm.dirty_* sysctls on nnas.
+    # this backup cannot saturate the inter-site link.
+    #
+    # It is NOT a kcompactd mitigation, despite what this comment used to say.
+    # Measured 2026-09-13: nnas's soft lockups are proactive memory compaction
+    # (vm.compaction_proactiveness in low-ram.nix) triggered by the onedrive
+    # sync (services/onedrive-schedule.nix), not by this job. On an in-sync tree
+    # this transfers 0 bytes and exits in ~10 s — the 06:04 run that day
+    # finished at 06:04:19, nearly four hours before the 09:50 lockup — and
+    # 1500 KB/s cannot fill an ST8000DM004's CMR cache anyway, so it never
+    # reaches the SMR write cliff. Keep the limit for the link's sake; do not
+    # tune it hoping to fix lockups.
     ${pkgs.rsync}/bin/rsync \
       --archive \
       --human-readable \

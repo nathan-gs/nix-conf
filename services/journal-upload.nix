@@ -13,9 +13,18 @@
   # several times a day: the wg tunnel between the two sites blips ("Failed to
   # connect ... Could not connect to server"), or journal-remote on nhtpc drops
   # the connection mid-stream ("Empty reply from server", logged there as
-  # "microhttpd: Application reported internal error"). The latter still occurs
-  # after the MaxFileSize fix in services/journal-remote.nix — it clusters
-  # around switches and journal rotation, not around the old 32M ceiling.
+  # "microhttpd: Application reported internal error").
+  #
+  # The second one is neither a network blip nor journal rotation, which is
+  # what this comment used to claim. Debug logging on journal-remote
+  # (2026-09-13) showed it answering 400 "Decompression of received blob
+  # failed" after "ZSTD decoded less data than indicated" — a systemd 260.2 bug
+  # handling zstd-compressed journal data objects, hidden behind microhttpd's
+  # generic message at default log level. See services/journal-remote.nix for
+  # the full trace and the evidence ruling out the link, the file size limits
+  # and version skew. No entries are lost; upload resumes from its cursor and
+  # the retry succeeds. Reproduces on demand by logging entries over ~512 B
+  # (journald's zstd threshold) from nnas.
   #
   # Restart=always already recovers within seconds, so the upload itself is
   # fine. The damage is the transient `failed` state: if a `nixos-rebuild
