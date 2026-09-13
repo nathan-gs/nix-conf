@@ -420,16 +420,44 @@ let
     # NVMe reports percentage_used; the ATA disks here expose no equivalent,
     # so creating this for them would mean an entity that is unavailable for
     # the life of the drive.
-    ++ lib.optional (isNvme d.dev) (mkSensor {
-      path = "${base}.wear";
-      label = "Wear";
+    ++ lib.optionals (isNvme d.dev) [
+      (mkSensor {
+        path = "${base}.wear";
+        label = "Wear";
+        inherit topic device;
+        field = "wear_pct";
+        nullable = true;
+        extra = {
+          unit_of_measurement = "%";
+          state_class = "measurement";
+          icon = "mdi:chart-donut";
+        };
+      })
+      # NVMe's equivalent of a reallocated sector: uncorrectable media errors.
+      (mkSensor {
+        path = "${base}.media_errors";
+        label = "Media errors";
+        inherit topic device;
+        field = "media_errors";
+        nullable = true;
+        extra = {
+          state_class = "measurement";
+          icon = "mdi:alert-octagon-outline";
+        };
+      })
+    ]
+    # The single best early warning of a failing drive, so it gets to be a
+    # first-class entity you can graph rather than an attribute. Not created
+    # for NVMe, which has no such attribute (media_errors above is its analogue).
+    ++ lib.optional (!isNvme d.dev) (mkSensor {
+      path = "${base}.reallocated";
+      label = "Reallocated sectors";
       inherit topic device;
-      field = "wear_pct";
+      field = "reallocated";
       nullable = true;
       extra = {
-        unit_of_measurement = "%";
         state_class = "measurement";
-        icon = "mdi:chart-donut";
+        icon = "mdi:alert-octagon-outline";
       };
     });
 
@@ -507,6 +535,10 @@ let
     SH_BTRFS_MOUNT = btrfsMount;
     SH_BTRFS_VOLUMES = lib.concatStringsSep " " btrfsVolumes;
     SH_CPU_TEMP_WARN_C = toString cfg.cpuTempWarnC;
+    SH_BASELINE_BTRFS_ERRORS = toString cfg.baselineBtrfsErrors;
+    # "serial=count serial=count" — parsed by the script into a lookup.
+    SH_BASELINE_REALLOCATED = lib.concatStringsSep " "
+      (lib.mapAttrsToList (serial: n: "${serial}=${toString n}") cfg.baselineReallocated);
     SH_DISK_TEMP_WARN_C = toString cfg.diskTempWarnC;
     SH_FS_WARN_PCT = toString cfg.fsWarnPct;
     SH_SCRUB_MAX_AGE_DAYS = toString cfg.scrubMaxAgeDays;
@@ -618,6 +650,36 @@ in
       description = ''
         Mark the host's entities unavailable after this much silence. This is
         the "is the box alive" alert; keep it comfortably above hostInterval.
+      '';
+    };
+
+    # Reallocated sectors and btrfs device-error counters are cumulative and
+    # never go down, so a machine carrying an old, stable count would sit in a
+    # permanent alert state — which trains you to ignore the alert. What
+    # matters is *growth*. Declare the known-good count here and the alert
+    # fires when it is exceeded.
+    #
+    # Deliberately not auto-learned: a baseline that quietly absorbs whatever
+    # it sees would absorb a genuine, slowly-growing fault too. Set it by hand,
+    # with a comment saying when and why.
+    baselineBtrfsErrors = mkOption {
+      type = types.int;
+      default = 0;
+      description = ''
+        Total btrfs device errors (all counters, all devices) that are known
+        and accepted. Alert only above this. Reset the counters themselves
+        with `btrfs device stats -z <mount>` and put this back to 0.
+      '';
+    };
+
+    baselineReallocated = mkOption {
+      type = types.attrsOf types.int;
+      default = { };
+      example = { "987032400115" = 10; };
+      description = ''
+        Per-disk reallocated-sector counts that are known and accepted, keyed
+        by the disk's serial (the same label used in its entity ids). Alert
+        only above this.
       '';
     };
 

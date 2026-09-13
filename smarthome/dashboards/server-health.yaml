@@ -95,6 +95,43 @@ views:
             entity: sensor.system_network_server_nhtpc_btrfs_scrub_status
             name: Scrub status
 
+          - type: heading
+            heading: Open problems
+            heading_style: subtitle
+            icon: mdi:alert
+          - type: markdown
+            content: >-
+              {% set ns = namespace(lines=[]) %}
+
+              {% for e in states.binary_sensor
+                   | selectattr('entity_id','search','^binary_sensor\\.system_network_server_nhtpc_')
+                   | selectattr('attributes.device_class','defined')
+                   | selectattr('attributes.device_class','eq','problem')
+                   | rejectattr('entity_id','search','_reboot_required$')
+                   | selectattr('state','eq','on') %}
+
+              {% for p in (e.attributes.problems | default([])) %}
+
+              {% set ns.lines = ns.lines + [p] %}
+
+              {% endfor %}
+
+              {% endfor %}
+
+              {% if ns.lines %}
+
+              {% for l in ns.lines %}
+
+              - {{ l }}
+
+              {% endfor %}
+
+              {% else %}
+
+              No problems reported.
+
+              {% endif %}
+
       - type: grid
         cards:
           - type: heading
@@ -154,25 +191,41 @@ views:
             entity: sensor.system_network_server_nnas_btrfs_scrub_status
             name: Scrub status
 
-      # Spans both columns so it sits below the two hosts rather than being
-      # dealt into one of their columns.
-      - type: grid
-        column_span: 2
-        cards:
           - type: heading
             heading: Open problems
-            heading_style: title
+            heading_style: subtitle
             icon: mdi:alert
           - type: markdown
             content: >-
-              {% set problems =
-                state_attr('binary_sensor.system_network_servers_problem','problems') %}
-              {% if problems %}
-              {% for p in problems %}
-              - {{ p }}
+              {% set ns = namespace(lines=[]) %}
+
+              {% for e in states.binary_sensor
+                   | selectattr('entity_id','search','^binary_sensor\\.system_network_server_nnas_')
+                   | selectattr('attributes.device_class','defined')
+                   | selectattr('attributes.device_class','eq','problem')
+                   | rejectattr('entity_id','search','_reboot_required$')
+                   | selectattr('state','eq','on') %}
+
+              {% for p in (e.attributes.problems | default([])) %}
+
+              {% set ns.lines = ns.lines + [p] %}
+
               {% endfor %}
+
+              {% endfor %}
+
+              {% if ns.lines %}
+
+              {% for l in ns.lines %}
+
+              - {{ l }}
+
+              {% endfor %}
+
               {% else %}
+
               No problems reported.
+
               {% endif %}
 
   # One column per host, nhtpc left and nnas right, with the *same* subheadings
@@ -210,6 +263,22 @@ views:
               exclude: []
             sort:
               method: friendly_name
+          - type: heading
+            heading: Reallocated sectors and media errors
+            heading_style: subtitle
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: sensor.system_network_server_nhtpc_disk_*_reallocated
+                - entity_id: sensor.system_network_server_nhtpc_disk_*_media_errors
+              exclude: []
+            sort:
+              method: state
+              numeric: true
+              reverse: true
           - type: heading
             heading: Temperature
             heading_style: subtitle
@@ -286,6 +355,22 @@ views:
               exclude: []
             sort:
               method: friendly_name
+          - type: heading
+            heading: Reallocated sectors and media errors
+            heading_style: subtitle
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: sensor.system_network_server_nnas_disk_*_reallocated
+                - entity_id: sensor.system_network_server_nnas_disk_*_media_errors
+              exclude: []
+            sort:
+              method: state
+              numeric: true
+              reverse: true
           - type: heading
             heading: Temperature
             heading_style: subtitle

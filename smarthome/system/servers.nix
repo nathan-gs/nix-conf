@@ -63,8 +63,23 @@ in
   # in. Read-only from HA's side, which is what YAML mode wants anyway.
   systemd.tmpfiles.rules = [
     "d /var/lib/hass/dashboards 0750 hass hass -"
-    "L+ /var/lib/hass/dashboards/server-health.yaml - - - - ${../dashboards/server-health.yaml}"
   ];
+
+  # Copy, with a fresh mtime — deliberately NOT a symlink into the store.
+  #
+  # HA caches a YAML dashboard and invalidates the cache by comparing
+  # `os.path.getmtime(path)` against when it last read the file. getmtime
+  # follows symlinks, and every file in /nix/store has mtime epoch 1 (1970), so
+  # a symlinked dashboard is *never* considered newer: the cached copy from the
+  # last HA start is served forever, and edits only appear after restarting HA.
+  #
+  # Copying and touching gives the file a current mtime, so HA notices on the
+  # next dashboard load and picks up the change without a restart.
+  system.activationScripts.serverHealthDashboard = ''
+    install -D -m 0644 ${../dashboards/server-health.yaml} \
+      /var/lib/hass/dashboards/server-health.yaml
+    touch /var/lib/hass/dashboards/server-health.yaml
+  '';
 
   services.home-assistant.config = {
 
