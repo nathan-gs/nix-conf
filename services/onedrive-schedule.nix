@@ -47,6 +47,40 @@
       # Yield CPU to everything else when they compete; does not cap throughput
       # when the box is otherwise idle.
       CPUWeight = 20;
+
+      # Cap absolute CPU, which on this box is really a heat cap.
+      #
+      # Measured 2026-09-13: the residual soft lockups / RCU stalls that survived
+      # the compaction fix are gated on temperature. The CPU's thermal threshold
+      # interrupt fires in a storm — ~316/s, all on CPU0 — whenever the package
+      # is above roughly 64 C, and stops dead below it:
+      #
+      #   65-70 C  ->  ~316 TRM/s      (counter climbing continuously)
+      #   60-63 C  ->  0 TRM in 20 s   (counter completely frozen)
+      #
+      # Nothing is actually overheating: crit is 100 C and core_throttle_count
+      # stays 0. It is a threshold-crossing storm, not throttling, most likely
+      # because the kernel cannot read TjMax on this CPU ("coretemp.0: Unable to
+      # read TjMax from CPU 0") and there are no ACPI thermal zones. CPU0 is the
+      # HT sibling of CPU1, and CPU1 is named in every single stall — all nine
+      # RCU stalls and both soft lockups of the 17:06-17:59 run fell inside the
+      # hot window (17:36-17:52) and stopped when the box cooled.
+      #
+      # There is no software fan control to reach for: the only hwmon device is
+      # coretemp, with no fan tachometers and no PWM. So the one lever left in
+      # software is to generate less heat. CPUWeight alone cannot do it — weights
+      # only bite under contention, and this job is usually the only heavy thing
+      # running, so it happily takes a whole core and cooks the package.
+      #
+      # 40% is chosen from the measured profile: the run consumed 28m57s of CPU
+      # over 53m12s wall, i.e. ~0.55 CPU sustained. Holding it to 0.4 should keep
+      # the package under the threshold, at the cost of stretching the run to
+      # roughly 70-75 min. That is fine for a 09:00 nightly job. If stalls
+      # persist, lower this before reaching for anything else, and watch
+      #   grep TRM /proc/interrupts
+      # during the run — if that counter stays flat, the heat problem is solved
+      # and any remaining stalls have a different cause.
+      CPUQuota = "40%";
     };
     environment.SSL_CERT_FILE = "/etc/ssl/certs/ca-bundle.crt";
   };
