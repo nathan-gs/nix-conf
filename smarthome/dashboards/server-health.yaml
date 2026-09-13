@@ -14,6 +14,10 @@
 title: Server health
 
 views:
+  # One column per host: nhtpc left, nnas right, each with its own btrfs block
+  # underneath. Sections are dealt into columns in order, so max_columns: 2
+  # with the hosts first is what pins the sides; anything added after them must
+  # either belong to a host or span both columns.
   - title: Overview
     path: overview
     type: sections
@@ -49,9 +53,6 @@ views:
             entity: sensor.system_network_server_nhtpc_cpu_temperature
             name: CPU temp
           - type: tile
-            entity: sensor.system_network_server_nhtpc_chipset_temperature
-            name: Chipset temp
-          - type: tile
             entity: sensor.system_network_server_nhtpc_memory_used
             name: Memory
           - type: tile
@@ -69,6 +70,30 @@ views:
           - type: tile
             entity: binary_sensor.system_network_server_nhtpc_reboot_required
             name: Reboot required
+          # Filesystem-wide, not per-volume: every volume is a subvolume of the
+          # same multi-device filesystem.
+          - type: heading
+            heading: Btrfs
+            heading_style: subtitle
+            icon: mdi:harddisk
+          - type: tile
+            entity: sensor.system_network_server_nhtpc_btrfs_used
+            name: Used
+          - type: tile
+            entity: sensor.system_network_server_nhtpc_btrfs_free
+            name: Free
+          - type: tile
+            entity: sensor.system_network_server_nhtpc_btrfs_device_errors
+            name: Device errors
+          - type: tile
+            entity: sensor.system_network_server_nhtpc_btrfs_devices_missing
+            name: Devices missing
+          - type: tile
+            entity: sensor.system_network_server_nhtpc_btrfs_scrub_age
+            name: Scrub age
+          - type: tile
+            entity: sensor.system_network_server_nhtpc_btrfs_scrub_status
+            name: Scrub status
 
       - type: grid
         cards:
@@ -89,9 +114,6 @@ views:
             entity: sensor.system_network_server_nnas_cpu_temperature
             name: CPU temp
           - type: tile
-            entity: sensor.system_network_server_nnas_chipset_temperature
-            name: Chipset temp
-          - type: tile
             entity: sensor.system_network_server_nnas_memory_used
             name: Memory
           - type: tile
@@ -109,39 +131,10 @@ views:
           - type: tile
             entity: binary_sensor.system_network_server_nnas_reboot_required
             name: Reboot required
-
-      # All volumes are subvolumes of one filesystem per host, so these are
-      # filesystem-wide figures, not per-volume.
-      - type: grid
-        cards:
           - type: heading
             heading: Btrfs
-            heading_style: title
+            heading_style: subtitle
             icon: mdi:harddisk
-          - type: heading
-            heading: nhtpc
-            heading_style: subtitle
-          - type: tile
-            entity: sensor.system_network_server_nhtpc_btrfs_used
-            name: Used
-          - type: tile
-            entity: sensor.system_network_server_nhtpc_btrfs_free
-            name: Free
-          - type: tile
-            entity: sensor.system_network_server_nhtpc_btrfs_device_errors
-            name: Device errors
-          - type: tile
-            entity: sensor.system_network_server_nhtpc_btrfs_devices_missing
-            name: Devices missing
-          - type: tile
-            entity: sensor.system_network_server_nhtpc_btrfs_scrub_age
-            name: Scrub age
-          - type: tile
-            entity: sensor.system_network_server_nhtpc_btrfs_scrub_status
-            name: Scrub status
-          - type: heading
-            heading: nnas
-            heading_style: subtitle
           - type: tile
             entity: sensor.system_network_server_nnas_btrfs_used
             name: Used
@@ -161,7 +154,10 @@ views:
             entity: sensor.system_network_server_nnas_btrfs_scrub_status
             name: Scrub status
 
+      # Spans both columns so it sits below the two hosts rather than being
+      # dealt into one of their columns.
       - type: grid
+        column_span: 2
         cards:
           - type: heading
             heading: Open problems
@@ -179,104 +175,170 @@ views:
               No problems reported.
               {% endif %}
 
+  # One column per host, nhtpc left and nnas right, with the *same* subheadings
+  # in the same order in both so the two columns read across even though the
+  # hosts have different disk counts (nhtpc 4, nnas 3) — the columns end at
+  # different heights, the rows still line up group for group.
+  #
+  # Within a column the disks come from auto-entities filters on the entity-id
+  # shape rather than being listed, so swapping a drive needs no edit here.
+  # show_empty hides a group a host has nothing for (only the NVMe root
+  # reports wear), rather than leaving an empty card under its heading.
   - title: Disks
     path: disks
     type: sections
     max_columns: 2
-    icon: mdi:harddisk
 
     sections:
-      # Inventory-free: anything matching the entity-id shape appears, so a
-      # disk swap needs no dashboard edit.
       - type: grid
         cards:
+          - type: heading
+            heading: nhtpc
+            heading_style: title
+            icon: mdi:server
           - type: heading
             heading: SMART health
-            heading_style: title
-            icon: mdi:heart-pulse
+            heading_style: subtitle
           - type: custom:auto-entities
+            show_empty: false
             card:
               type: entities
               state_color: true
             filter:
               include:
-                - entity_id: binary_sensor.system_network_server_*_disk_*_problem
+                - entity_id: binary_sensor.system_network_server_nhtpc_disk_*_problem
               exclude: []
             sort:
               method: friendly_name
-
-      - type: grid
-        cards:
           - type: heading
             heading: Temperature
-            heading_style: title
-            icon: mdi:thermometer
+            heading_style: subtitle
           - type: custom:auto-entities
+            show_empty: false
             card:
               type: entities
             filter:
               include:
-                - entity_id: sensor.system_network_server_*_disk_*_temperature
+                - entity_id: sensor.system_network_server_nhtpc_disk_*_temperature
               exclude: []
             sort:
               method: state
               numeric: true
               reverse: true
-
-      # A disk that is asleep is skipped rather than woken, so its SMART record
-      # is deliberately stale. "SMART updated" is how you tell a stale record
-      # from a broken one — do not read an old timestamp here as a fault.
-      - type: grid
-        cards:
           - type: heading
-            heading: Standby / last SMART read
-            heading_style: title
-            icon: mdi:sleep
+            heading: Standby
+            heading_style: subtitle
           - type: custom:auto-entities
+            show_empty: false
             card:
               type: entities
               state_color: true
             filter:
               include:
-                - entity_id: binary_sensor.system_network_server_*_disk_*_standby
+                - entity_id: binary_sensor.system_network_server_nhtpc_disk_*_standby
               exclude: []
             sort:
               method: friendly_name
+          - type: heading
+            heading: Last SMART read
+            heading_style: subtitle
           - type: custom:auto-entities
+            show_empty: false
             card:
               type: entities
             filter:
               include:
-                - entity_id: sensor.system_network_server_*_disk_*_smart_updated
+                - entity_id: sensor.system_network_server_nhtpc_disk_*_smart_updated
               exclude: []
             sort:
               method: friendly_name
-
+          - type: heading
+            heading: Hours and wear
+            heading_style: subtitle
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: sensor.system_network_server_nhtpc_disk_*_power_on_hours
+                - entity_id: sensor.system_network_server_nhtpc_disk_*_wear
+              exclude: []
+            sort:
+              method: friendly_name
       - type: grid
         cards:
           - type: heading
-            heading: Wear and hours
+            heading: nnas
             heading_style: title
-            icon: mdi:chart-donut
+            icon: mdi:nas
+          - type: heading
+            heading: SMART health
+            heading_style: subtitle
           - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+              state_color: true
+            filter:
+              include:
+                - entity_id: binary_sensor.system_network_server_nnas_disk_*_problem
+              exclude: []
+            sort:
+              method: friendly_name
+          - type: heading
+            heading: Temperature
+            heading_style: subtitle
+          - type: custom:auto-entities
+            show_empty: false
             card:
               type: entities
             filter:
               include:
-                - entity_id: sensor.system_network_server_*_disk_*_wear
+                - entity_id: sensor.system_network_server_nnas_disk_*_temperature
               exclude: []
             sort:
               method: state
               numeric: true
               reverse: true
+          - type: heading
+            heading: Standby
+            heading_style: subtitle
           - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+              state_color: true
+            filter:
+              include:
+                - entity_id: binary_sensor.system_network_server_nnas_disk_*_standby
+              exclude: []
+            sort:
+              method: friendly_name
+          - type: heading
+            heading: Last SMART read
+            heading_style: subtitle
+          - type: custom:auto-entities
+            show_empty: false
             card:
               type: entities
             filter:
               include:
-                - entity_id: sensor.system_network_server_*_disk_*_power_on_hours
+                - entity_id: sensor.system_network_server_nnas_disk_*_smart_updated
               exclude: []
             sort:
-              method: state
-              numeric: true
-              reverse: true
+              method: friendly_name
+          - type: heading
+            heading: Hours and wear
+            heading_style: subtitle
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: sensor.system_network_server_nnas_disk_*_power_on_hours
+                - entity_id: sensor.system_network_server_nnas_disk_*_wear
+              exclude: []
+            sort:
+              method: friendly_name

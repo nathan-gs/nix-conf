@@ -101,6 +101,15 @@ sensors by entity-id shape — adding a disk needs no HA-side change.
 Thresholds (disk temp, fs %, scrub age, wear) are evaluated **on each host**, not in HA, so a host
 judges itself; HA only routes the resulting `problems` list to a notification.
 
+**No entity is created for a metric the hardware cannot report.** An entity that is unavailable for
+the life of the machine is indistinguishable from a fault in the `unavailable_entities` check in
+`smarthome/ha/default.nix`, and would have to be added to that ignore list. So `wear` exists only
+for NVMe (the ATA disks here expose no equivalent), `nvme_temperature` only on a host that has an
+NVMe, and there is no chipset-temperature entity at all since whether a host exposes a trustworthy
+platform sensor is not knowable at eval time — that value still ships inside the `temps` attribute
+map. Likewise a sleeping disk publishes `problem_count: 0` ("OK") rather than nothing; only values
+that are genuinely unknown are left null, and those go unavailable rather than "unknown".
+
 Entities are created from **retained** discovery configs, so removing one means publishing an empty
 payload over its topic — deleting it in the HA UI alone just brings it back. `server-health2mqtt-purge.service`
 (manual, never timed) does that for this host's configs, after which
