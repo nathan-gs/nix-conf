@@ -36,7 +36,9 @@
     broker = "nhtpc.wg";
     password = config.secrets.mqtt.users.server-health2mqtt.password;
     hostInterval = "10min";
-    disksInterval = "4h";
+    # disksInterval inherits the 30min default: a run costs nothing while the
+    # disks sleep, and this box's disks sleep nearly all the time — a long
+    # interval mostly meant missing the rare window when one is awake.
     hostExpireSeconds = 3600;
   };
 

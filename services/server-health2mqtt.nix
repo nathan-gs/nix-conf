@@ -593,11 +593,22 @@ in
 
     disksInterval = mkOption {
       type = types.str;
-      default = "2h";
+      default = "30min";
       description = ''
-        Slow tier (SMART + btrfs). Deliberately infrequent: it forks smartctl
-        per disk. It still never wakes a sleeping disk (`-n standby`), so the
-        cost of a lower value is CPU, not spin-ups.
+        Slow tier (SMART + btrfs).
+
+        Measured on nhtpc with all three data disks in standby: a full run
+        leaves every one of them in standby. `smartctl -n standby` returns
+        without touching a sleeping disk, and the btrfs commands read in-kernel
+        counters (`device stats`, `filesystem usage`) or a status file on the
+        root filesystem (`scrub status`) — none of them reach the platters.
+
+        The floor on this value is therefore NOT CPU, it is the spin-down
+        timer. `disks.hdparm.standby` is 120 (= 10 minutes idle). On a disk
+        that happens to be *awake*, the SMART command may reset that idle
+        timer, so an interval near or below the spin-down timeout risks
+        holding disks awake indefinitely. Keep a comfortable margin above
+        `disks.hdparm.standby * 5` seconds.
       '';
     };
 
