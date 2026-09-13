@@ -150,7 +150,13 @@ the file and switch. It is **copied** into `/var/lib/hass/dashboards/` and touch
 into the store: HA caches a YAML dashboard and invalidates by `os.path.getmtime()`, which follows
 symlinks into `/nix/store` where every mtime is epoch 1970 — so a symlinked dashboard is never seen
 as newer and edits only appear after an HA restart. Host names are hardcoded (there are two); disk rows come from `auto-entities`
-filters on the entity-id shape, so swapping a disk needs no dashboard edit. Note HA requires the
+filters on the entity-id shape, so swapping a disk needs no dashboard edit.
+
+The Overview is one column per host (nhtpc left, nnas right), each ending in its own open-problems
+list. The Disks view is the other way round — **rows, not columns**: one full-width section per
+metric holding a `horizontal-stack` of the two hosts. Column-per-host drifts out of alignment as
+soon as the hosts have different disk counts (nhtpc 4, nnas 3), whereas a row starts both hosts at
+the same height and the next row begins below the taller of the pair. Note HA requires the
 dashboard's url_path to contain a hyphen.
 
 `services/hw-health-report.nix` (monthly email, `nhtpc` only) is intentionally still in place:
