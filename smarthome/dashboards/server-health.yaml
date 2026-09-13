@@ -237,193 +237,228 @@ views:
   # shape rather than being listed, so swapping a drive needs no edit here.
   # show_empty hides a group a host has nothing for (only the NVMe root
   # reports wear), rather than leaving an empty card under its heading.
+  # Laid out as rows, not as one column per host.
+  #
+  # Two column-sections (nhtpc | nnas) drift apart vertically as soon as the
+  # hosts have different disk counts — nhtpc has 4 disks and nnas 3, so every
+  # group after the first sat at a different height on each side. Instead each
+  # metric is a full-width row (column_span: 2) holding a horizontal-stack of
+  # the two hosts, so both start at the same y and the next row begins below
+  # the taller of the pair. nhtpc stays left, nnas right, and the alignment
+  # holds however many disks either host has.
+  #
+  # Disks come from auto-entities filters on the entity-id shape, so swapping a
+  # drive needs no edit here.
   - title: Disks
     path: disks
     type: sections
     max_columns: 2
+    icon: mdi:harddisk
 
     sections:
       - type: grid
+        column_span: 2
         cards:
           - type: heading
-            heading: nhtpc
-            heading_style: title
-            icon: mdi:server
-          - type: heading
             heading: SMART health
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-              state_color: true
-            filter:
-              include:
-                - entity_id: binary_sensor.system_network_server_nhtpc_disk_*_problem
-              exclude: []
-            sort:
-              method: friendly_name
-          - type: heading
-            heading: Reallocated sectors and media errors
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nhtpc_disk_*_reallocated
-                - entity_id: sensor.system_network_server_nhtpc_disk_*_media_errors
-              exclude: []
-            sort:
-              method: state
-              numeric: true
-              reverse: true
-          - type: heading
-            heading: Temperature
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nhtpc_disk_*_temperature
-              exclude: []
-            sort:
-              method: state
-              numeric: true
-              reverse: true
-          - type: heading
-            heading: Standby
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-              state_color: true
-            filter:
-              include:
-                - entity_id: binary_sensor.system_network_server_nhtpc_disk_*_standby
-              exclude: []
-            sort:
-              method: friendly_name
-          - type: heading
-            heading: Last SMART read
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nhtpc_disk_*_smart_updated
-              exclude: []
-            sort:
-              method: friendly_name
-          - type: heading
-            heading: Hours and wear
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nhtpc_disk_*_power_on_hours
-                - entity_id: sensor.system_network_server_nhtpc_disk_*_wear
-              exclude: []
-            sort:
-              method: friendly_name
+            heading_style: title
+            icon: mdi:heart-pulse
+          - type: horizontal-stack
+            cards:
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nhtpc
+                  state_color: true
+                filter:
+                  include:
+                    - entity_id: binary_sensor.system_network_server_nhtpc_disk_*_problem
+                  exclude: []
+                sort:
+                  method: friendly_name
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nnas
+                  state_color: true
+                filter:
+                  include:
+                    - entity_id: binary_sensor.system_network_server_nnas_disk_*_problem
+                  exclude: []
+                sort:
+                  method: friendly_name
       - type: grid
+        column_span: 2
         cards:
           - type: heading
-            heading: nnas
-            heading_style: title
-            icon: mdi:nas
-          - type: heading
-            heading: SMART health
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-              state_color: true
-            filter:
-              include:
-                - entity_id: binary_sensor.system_network_server_nnas_disk_*_problem
-              exclude: []
-            sort:
-              method: friendly_name
-          - type: heading
             heading: Reallocated sectors and media errors
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nnas_disk_*_reallocated
-                - entity_id: sensor.system_network_server_nnas_disk_*_media_errors
-              exclude: []
-            sort:
-              method: state
-              numeric: true
-              reverse: true
+            heading_style: title
+            icon: mdi:alert-octagon-outline
+          - type: horizontal-stack
+            cards:
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nhtpc
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nhtpc_disk_*_reallocated
+                    - entity_id: sensor.system_network_server_nhtpc_disk_*_media_errors
+                  exclude: []
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nnas
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nnas_disk_*_reallocated
+                    - entity_id: sensor.system_network_server_nnas_disk_*_media_errors
+                  exclude: []
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+      - type: grid
+        column_span: 2
+        cards:
           - type: heading
             heading: Temperature
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nnas_disk_*_temperature
-              exclude: []
-            sort:
-              method: state
-              numeric: true
-              reverse: true
+            heading_style: title
+            icon: mdi:thermometer
+          - type: horizontal-stack
+            cards:
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nhtpc
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nhtpc_disk_*_temperature
+                  exclude: []
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nnas
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nnas_disk_*_temperature
+                  exclude: []
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+      - type: grid
+        column_span: 2
+        cards:
           - type: heading
             heading: Standby
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-              state_color: true
-            filter:
-              include:
-                - entity_id: binary_sensor.system_network_server_nnas_disk_*_standby
-              exclude: []
-            sort:
-              method: friendly_name
+            heading_style: title
+            icon: mdi:sleep
+          - type: horizontal-stack
+            cards:
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nhtpc
+                  state_color: true
+                filter:
+                  include:
+                    - entity_id: binary_sensor.system_network_server_nhtpc_disk_*_standby
+                  exclude: []
+                sort:
+                  method: friendly_name
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nnas
+                  state_color: true
+                filter:
+                  include:
+                    - entity_id: binary_sensor.system_network_server_nnas_disk_*_standby
+                  exclude: []
+                sort:
+                  method: friendly_name
+      - type: grid
+        column_span: 2
+        cards:
           - type: heading
             heading: Last SMART read
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nnas_disk_*_smart_updated
-              exclude: []
-            sort:
-              method: friendly_name
+            heading_style: title
+            icon: mdi:clock-check-outline
+          - type: horizontal-stack
+            cards:
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nhtpc
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nhtpc_disk_*_smart_updated
+                  exclude: []
+                sort:
+                  method: friendly_name
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nnas
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nnas_disk_*_smart_updated
+                  exclude: []
+                sort:
+                  method: friendly_name
+      - type: grid
+        column_span: 2
+        cards:
           - type: heading
             heading: Hours and wear
-            heading_style: subtitle
-          - type: custom:auto-entities
-            show_empty: false
-            card:
-              type: entities
-            filter:
-              include:
-                - entity_id: sensor.system_network_server_nnas_disk_*_power_on_hours
-                - entity_id: sensor.system_network_server_nnas_disk_*_wear
-              exclude: []
-            sort:
-              method: friendly_name
+            heading_style: title
+            icon: mdi:chart-donut
+          - type: horizontal-stack
+            cards:
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nhtpc
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nhtpc_disk_*_power_on_hours
+                    - entity_id: sensor.system_network_server_nhtpc_disk_*_wear
+                  exclude: []
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
+              - type: custom:auto-entities
+                show_empty: false
+                card:
+                  type: entities
+                  title: nnas
+                filter:
+                  include:
+                    - entity_id: sensor.system_network_server_nnas_disk_*_power_on_hours
+                    - entity_id: sensor.system_network_server_nnas_disk_*_wear
+                  exclude: []
+                sort:
+                  method: state
+                  numeric: true
+                  reverse: true
