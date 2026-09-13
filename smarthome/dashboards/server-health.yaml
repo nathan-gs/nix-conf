@@ -11,6 +11,11 @@
 # computers/. Disk *inventory* is not: those rows come from auto-entities
 # filters on the entity-id shape, so a replaced or added disk shows up here
 # with no edit, matching how the alerting in smarthome/system/servers.nix works.
+#
+# Three views: Overview and Disks cover the two servers; Network covers the
+# path to the internet (blocky + the Technicolor modem), which is not
+# server-health2mqtt data at all but fails in ways that look identical from
+# the sofa.
 title: Server health
 
 views:
@@ -461,3 +466,254 @@ views:
               method: state
               numeric: true
               reverse: true
+
+  # Network: the two boxes that carry the house's internet, side by side —
+  # blocky (DNS, services/blocky.nix → system/network/blocky) on the left, the
+  # Technicolor CGA modem (technicolor_cga custom integration, a UI config
+  # entry rather than anything in this flake) on the right.
+  #
+  # Same one-column-per-subject layout as the Disks view, for the same reason:
+  # a sections view is a left-aligned grid of fixed-width columns, so each
+  # subject only gets a readable width by owning a whole column.
+  #
+  # Unlike the host views, every entity here is named explicitly. There is
+  # exactly one blocky and one modem, and neither publishes a family of
+  # entities whose membership changes — so there is nothing for an
+  # auto-entities filter to discover.
+  #
+  # The modem entity ids really do carry "system_network_" twice
+  # (sensor.system_network_system_network_router_orange_*): the integration
+  # slugifies its device name, which is itself the topic-shaped
+  # "system/network/router/orange". Left as-is — renaming them in the entity
+  # registry would break on the next re-add of the config entry.
+  #
+  # Markdown blocks use "|-" (literal) rather than the ">-" (folded) style the
+  # host views use: folding joins consecutive lines, which is why those blocks
+  # need a blank line between every Jinja statement. Literal keeps the template
+  # readable as written.
+  - title: Network
+    path: network
+    type: sections
+    max_columns: 2
+    icon: mdi:lan
+
+    badges:
+      - type: entity
+        entity: binary_sensor.system_network_blocky_problem
+        name: blocky
+        color: red
+      - type: entity
+        entity: sensor.system_network_system_network_router_orange_wan_status
+        name: WAN
+
+    sections:
+      - type: grid
+        cards:
+          - type: heading
+            heading: blocky
+            heading_style: title
+            icon: mdi:dns
+            badges:
+              - type: entity
+                entity: binary_sensor.system_network_blocky_problem
+          # The hourly deltas, not the cumulative counters: this is the "what
+          # is my DNS doing right now" block. The totals live under Lifetime
+          # below, where a counter that resets on restart belongs.
+          - type: tile
+            entity: sensor.system_network_blocky_queries
+            name: Queries (hour)
+          - type: tile
+            entity: sensor.system_network_blocky_blocked
+            name: Blocked (hour)
+          - type: tile
+            entity: sensor.system_network_blocky_cached
+            name: Cached (hour)
+          - type: tile
+            entity: sensor.system_network_blocky_resolved
+            name: Resolved upstream (hour)
+          - type: tile
+            entity: sensor.system_network_blocky_blocked_pct
+            name: Blocked share
+          - type: tile
+            entity: sensor.system_network_blocky_cache_hit_pct
+            name: Cache hit rate
+          - type: history-graph
+            hours_to_show: 48
+            entities:
+              - entity: sensor.system_network_blocky_queries
+                name: Queries
+              - entity: sensor.system_network_blocky_blocked
+                name: Blocked
+              - entity: sensor.system_network_blocky_cached
+                name: Cached
+
+          - type: heading
+            heading: Lists and cache
+            heading_style: subtitle
+            icon: mdi:playlist-check
+          - type: tile
+            entity: sensor.system_network_blocky_denylist_entries
+            name: Denylist entries
+          - type: tile
+            entity: sensor.system_network_blocky_cache_entries
+            name: Cache entries
+          - type: tile
+            entity: sensor.system_network_blocky_list_refreshed
+            name: Lists refreshed
+          - type: tile
+            entity: sensor.system_network_blocky_errors
+            name: Errors (hour)
+
+          - type: heading
+            heading: Lifetime
+            heading_style: subtitle
+            icon: mdi:counter
+          - type: tile
+            entity: sensor.system_network_blocky_queries_total
+            name: Queries since restart
+          - type: tile
+            entity: sensor.system_network_blocky_blocked_total
+            name: Blocked since restart
+          # Everything else the publisher sends rides along as attributes of
+          # the problem sensor, so this is where to read the blocky version and
+          # the allowlist size without minting an entity for either.
+          - type: markdown
+            content: |-
+              {% set p = 'binary_sensor.system_network_blocky_problem' %}
+              {% if state_attr(p,'version') %}
+              blocky **{{ state_attr(p,'version') }}** ·
+              blocking {{ 'on' if state_attr(p,'blocking_enabled') else '**OFF**' }} ·
+              allowlist {{ state_attr(p,'allowlist_entries') or 0 }} entries ·
+              lists {{ state_attr(p,'list_age_hours') or 0 }}h old
+              {% else %}
+              Waiting for the first report from blocky-stats2mqtt.
+              {% endif %}
+
+          - type: heading
+            heading: Open problems
+            heading_style: subtitle
+            icon: mdi:alert
+          - type: markdown
+            content: |-
+              {% set ps = state_attr('binary_sensor.system_network_blocky_problem','problems') %}
+              {% if ps %}
+              {% for p in ps %}
+              - {{ p }}
+              {% endfor %}
+              {% else %}
+              No problems reported.
+              {% endif %}
+
+      - type: grid
+        cards:
+          - type: heading
+            heading: Modem — Technicolor CGA
+            heading_style: title
+            icon: mdi:router-network
+            badges:
+              - type: entity
+                entity: sensor.system_network_system_network_router_orange_wan_status
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_wan_status
+            name: WAN
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_system
+            name: Modem state
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_docsis_channels
+            name: DOCSIS channels
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_hosts
+            name: Known hosts
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_missing_inactive_hosts
+            name: Missing hosts
+
+          # DOCSIS RF is the part worth watching: a line going bad shows up in
+          # SNR and uncorrectables long before the WAN link actually drops.
+          - type: heading
+            heading: DOCSIS signal
+            heading_style: subtitle
+            icon: mdi:signal
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_downstream_snr
+            name: Downstream SNR (worst)
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_downstream_power
+            name: Downstream power
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_upstream_power
+            name: Upstream power
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_downstream_uncorrectables
+            name: Uncorrectable errors
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_downstream_correcteds
+            name: Corrected errors
+          # Each RF sensor's state is one number across all channels; the
+          # spread across channels is in its attributes and is what tells a
+          # single bad channel apart from the whole line drifting.
+          - type: markdown
+            content: |-
+              {% set ds = 'sensor.system_network_system_network_router_orange_downstream_power' %}
+              {% set sn = 'sensor.system_network_system_network_router_orange_downstream_snr' %}
+              {% set us = 'sensor.system_network_system_network_router_orange_upstream_power' %}
+              {% set ch = 'sensor.system_network_system_network_router_orange_docsis_channels' %}
+              | | min | avg | max | channels |
+              |---|---|---|---|---|
+              | DS power (dBmV) | {{ state_attr(ds,'min_dbmv') }} | — | {{ state_attr(ds,'max_dbmv') }} | {{ state_attr(ds,'channel_count') }} |
+              | DS SNR (dB) | {{ state_attr(sn,'min_db') }} | {{ state_attr(sn,'avg_db') }} | {{ state_attr(sn,'max_db') }} | {{ state_attr(sn,'channel_count') }} |
+              | US power (dBmV) | {{ state_attr(us,'min_dbmv') }} | — | {{ state_attr(us,'max_dbmv') }} | {{ state_attr(us,'channel_count') }} |
+
+              Locked: {{ state_attr(ch,'downstream_locked') }}/{{ state_attr(ch,'downstream_total') }} down ·
+              {{ state_attr(ch,'upstream_locked') }}/{{ state_attr(ch,'upstream_total') }} up
+          - type: history-graph
+            hours_to_show: 48
+            entities:
+              - entity: sensor.system_network_system_network_router_orange_downstream_snr
+                name: DS SNR
+              - entity: sensor.system_network_system_network_router_orange_downstream_power
+                name: DS power
+              - entity: sensor.system_network_system_network_router_orange_upstream_power
+                name: US power
+
+          - type: heading
+            heading: WAN
+            heading_style: subtitle
+            icon: mdi:wan
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_wan_bytes_received
+            name: Received
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_wan_bytes_sent
+            name: Sent
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_wan_errors_received
+            name: Errors in
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_wan_errors_sent
+            name: Errors out
+          # Public IP and uptime: what you actually want when something
+          # upstream is broken and you are on the phone to the ISP.
+          - type: markdown
+            content: |-
+              {% set w = 'sensor.system_network_system_network_router_orange_wan_status' %}
+              {% set s = 'sensor.system_network_system_network_router_orange_system' %}
+              Public IP **{{ states('sensor.system_network_system_network_router_orange_cga_dhcp_ipaddressrt') }}**
+              via {{ states('sensor.system_network_system_network_router_orange_cga_dhcp_ipaddressgw') }} ·
+              {{ state_attr(w,'max_bitrate_mbps') }} Mbps {{ state_attr(w,'duplex') | lower }}
+
+              Link up {{ (state_attr(w,'last_change_s') | int(0) / 86400) | round(1) }} d ·
+              modem up {{ (state_attr(s,'UpTime') | int(0) / 86400) | round(1) }} d ·
+              firmware {{ state_attr(s,'FirmwareName') or 'unknown' }}
+
+          - type: heading
+            heading: Wi-Fi
+            heading_style: subtitle
+            icon: mdi:wifi
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_wifi_2_4_ghz
+            name: 2.4 GHz
+          - type: tile
+            entity: sensor.system_network_system_network_router_orange_wifi_5_ghz
+            name: 5 GHz
