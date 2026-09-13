@@ -178,6 +178,45 @@
   boot.initrd.kernelModules = [ ];
   boot.kernelModules = [ ];
   boot.extraModulePackages = [ ];
+
+  # EXPERIMENT (2026-09-13) — remove if it does not help, see below for how to judge.
+  #
+  # After vm.compaction_proactiveness=0 killed the compaction-driven lockups
+  # (verified: compact_daemon_wake / compact_stall / pgmigrate_success all stayed
+  # at 0 through a full onedrive run), nnas still stalled 20-25 s — but via a
+  # different path: RCU/timer starvation rather than page migration.
+  #
+  #   rcu: INFO: rcu_preempt detected stalls on CPUs/tasks: 1-...0
+  #   rcu: rcu_preempt kthread timer wakeup didn't happen for 22070 jiffies!
+  #   rcu:         Possible timer handling issue on cpu=1
+  #   watchdog: BUG: soft lockup - CPU#1 stuck for 25s!
+  #
+  # Every occurrence names CPU#1, with victims that are merely whatever ran
+  # there (systemctl in exit_mmap, journalctl and nsncd in an IPI handler).
+  # This box is a 2-core/4-thread in-order Atom D2701 where cpu0+cpu1 are HT
+  # siblings of core 0 and cpu2+cpu3 of core 1 — so CPU#1 shares execution
+  # resources with CPU#0, which carries a thermal-interrupt storm measured at
+  # ~316/s (TRM in /proc/interrupts, all on CPU0). Temperatures are fine at
+  # 65-70 C against a 100 C crit and core_throttle_count is 0, so nothing is
+  # actually throttling; the threshold interrupt just fires continuously,
+  # plausibly because the kernel cannot read TjMax on this CPU ("platform
+  # coretemp.0: Unable to read TjMax from CPU 0" at boot) and there are no ACPI
+  # thermal zones at all. The 0x19B/0x19C thermal MSRs return EIO here, so that
+  # could not be confirmed directly.
+  #
+  # nosmt drops the two siblings, leaving 2 physical cores, so one thread can no
+  # longer starve the other. Ruled out first, by counters rather than argument:
+  # compaction (all zero), memory pressure (memory PSI avg300=0.03, cgroup
+  # reclaim absorbed it, pgscan_direct=0), C-states (only POLL and C1E at 10 us
+  # exit latency), intel_powerclamp (cur_state=0) and thermal throttling.
+  #
+  # Trade-off: 4 logical CPUs become 2. HT on an in-order Atom buys maybe
+  # 20-30% throughput, so expect the onedrive sync to run somewhat longer in
+  # exchange for worst-case latency. Judge it on the next onedrive run:
+  #   journalctl -k | grep -cE "soft lockup|rcu_preempt detected stalls"
+  # If that is still non-zero, SMT was not the mechanism — drop this parameter
+  # again rather than leaving a halved CPU count in place for nothing.
+  boot.kernelParams = [ "nosmt" ];
   
   # Use the GRUB 2 boot loader.
   boot.loader.grub.memtest86.enable = true;
