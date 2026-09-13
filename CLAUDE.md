@@ -90,7 +90,15 @@ Two rules drive the design, both because these boxes boot off small flash and `n
   at `LogLevelMax=warning` so the frequent timer does not dribble journal writes onto root.
 
 The fast tier (`hostInterval`, 5m / 10m on nnas) reads only `/proc`, `/sys` and `/run` — zero disk
-IO. The slow tier (`disksInterval`, 2h / 4h on nnas) is the only one that forks `smartctl`/`btrfs`.
+IO. The slow tier (`disksInterval`, 30m) is the only one that forks `smartctl`/`btrfs`.
+
+That 30m is bounded by the **spin-down timer, not CPU**. Verified on nhtpc with all three data
+disks in standby: a full `disks` run leaves every one of them in standby — `smartctl -n standby`
+does not touch a sleeping disk, and `btrfs device stats` / `filesystem usage` read in-kernel
+counters while `scrub status` reads a file on the root filesystem. But on a disk that happens to be
+*awake*, the SMART command may reset its idle timer, so an interval at or below
+`disks.hdparm.standby * 5` seconds (120 → 10 minutes here) risks holding disks awake forever.
+Keep a comfortable margin above that.
 
 Entities register themselves through **MQTT discovery**, generated in Nix from each host's own
 `disks` block, so `nnas` publishes its own inventory and nhtpc's HA config never enumerates it.
