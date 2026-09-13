@@ -629,6 +629,15 @@ in
       };
     };
 
+    # Manual, never timed: removes this host's HA discovery configs so the
+    # entities are dropped and can be recreated (after an entity_id change, or
+    # to clear out a disk that is no longer here). Follow it with
+    # `systemctl start server-health2mqtt-discovery`.
+    systemd.services.server-health2mqtt-purge = mkUnit {
+      description = "server-health2mqtt: purge Home Assistant MQTT discovery";
+      mode = "purge";
+    };
+
     systemd.services.server-health2mqtt-host = mkUnit {
       description = "server-health2mqtt: host vitals";
       mode = "host";

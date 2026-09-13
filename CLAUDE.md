@@ -101,6 +101,22 @@ sensors by entity-id shape — adding a disk needs no HA-side change.
 Thresholds (disk temp, fs %, scrub age, wear) are evaluated **on each host**, not in HA, so a host
 judges itself; HA only routes the resulting `problems` list to a notification.
 
+Entities are created from **retained** discovery configs, so removing one means publishing an empty
+payload over its topic — deleting it in the HA UI alone just brings it back. `server-health2mqtt-purge.service`
+(manual, never timed) does that for this host's configs, after which
+`server-health2mqtt-discovery.service` recreates them:
+
+```sh
+sudo systemctl start server-health2mqtt-purge      # drop the HA entities
+sudo systemctl start server-health2mqtt-discovery  # recreate them
+```
+
+Needed whenever a generated `entity_id` changes (HA only honours `default_entity_id` when an entity
+is *created*) and to clear out a disk that has been replaced, whose retained topics would otherwise
+keep its entities alive forever. Purge touches discovery topics only — state topics keep their
+retained payloads, so recreated entities repopulate at once rather than sitting unknown until the
+next slow-tier run, which for a sleeping disk could be days.
+
 A **"Server health" dashboard** (`smarthome/dashboards/server-health.yaml`) is registered from
 `smarthome/system/servers.nix` as an additional YAML-mode dashboard at `/server-health` — the
 default dashboard stays storage-mode and UI-editable. It uses the sections view type, unlike the
