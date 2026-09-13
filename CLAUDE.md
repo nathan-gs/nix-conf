@@ -172,6 +172,23 @@ again and reads as cramped. The accepted trade-off is that metric groups do not 
 two columns, since nhtpc has 4 disks and nnas 3. Note HA requires the dashboard's url_path to
 contain a hyphen.
 
+`services/blocky.nix` publishes DNS stats the same way, on `nhtpc` only, retained under
+`system/network/blocky`: hourly cached/blocked/resolved deltas, cumulative totals
+(`total_increasing`), cache/denylist sizes, blocklist refresh time, and a `problem` sensor whose
+attributes carry the whole record. Source is blocky's own Prometheus endpoint (`blocky.settings.prometheus`,
+local-only) read by `ext/blocky-stats2mqtt.sh` — the only remaining consumer of anything
+Prometheus-shaped in this flake. Same discovery/purge pair as above:
+
+```sh
+sudo systemctl start blocky-stats2mqtt-purge      # drop the HA entities
+sudo systemctl start blocky-stats2mqtt-discovery  # recreate them
+```
+
+Its problem sensor feeds the same "Server health" notification — `smarthome/system/servers.nix`
+matches `system_network_(server_|blocky_)`. Alerts are on *growth* (a blocklist download that
+failed in the last hour), never on the cumulative counter, for the same reason as the reallocated
+baselines.
+
 `services/hw-health-report.nix` (monthly email, `nhtpc` only) is intentionally still in place:
 HA runs on nhtpc, so if nhtpc is down there is no one to alert. Keep a mail path for that case.
 

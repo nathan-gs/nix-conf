@@ -1,4 +1,6 @@
-# Alerting on top of services/server-health2mqtt.nix.
+# Alerting on top of services/server-health2mqtt.nix, plus blocky's own
+# problem sensor from services/blocky.nix (same publisher shape, different
+# topic root — see problemEntities below).
 #
 # The per-metric entities are created by MQTT discovery published by each
 # server, so nothing here enumerates hosts or disks: the templates below find
@@ -30,10 +32,15 @@ let
          | list %}
   '';
 
-  # Every problem binary_sensor across all servers (host, disks, btrfs).
+  # Every problem binary_sensor across all servers (host, disks, btrfs), plus
+  # blocky (services/blocky.nix publishes the same problem/problems shape under
+  # system/network/blocky). Matched as an explicit alternation rather than a
+  # bare "system_network_" prefix: the aggregate below is itself
+  # binary_sensor.system_network_servers_problem, and a looser regex would make
+  # it match — and then count — its own state.
   problemEntities = ''
     {% set problems = states.binary_sensor
-         | selectattr('entity_id','search','^binary_sensor\\.system_network_server_')
+         | selectattr('entity_id','search','^binary_sensor\\.system_network_(server_|blocky_)')
          | selectattr('attributes.device_class','defined')
          | selectattr('attributes.device_class','eq','problem')
          | list %}
@@ -47,6 +54,7 @@ let
     {% for e in problems if e.state == 'on' %}
       {% set name = e.entity_id
            | replace('binary_sensor.system_network_server_',"")
+           | replace('binary_sensor.system_network_',"")
            | replace('_problem',"") %}
       {% for p in (e.attributes.problems | default([])) %}
         {% set ns.lines = ns.lines + [name ~ ': ' ~ p] %}
