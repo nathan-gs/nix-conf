@@ -90,9 +90,23 @@
     options = ["noatime" "discard" ];
   };
 
-  swapDevices = [
-    { device = "/dev/disk/by-id/ata-SDV-32_987032400115-part2"; }
-  ];
+  # No disk swap: zram only (low-ram.nix, 40% of RAM).
+  #
+  # Swap used to live on -part2 of the root DOM, which is the flash module now
+  # carrying 10 reallocated sectors. Paging onto a small DOM is write
+  # amplification aimed squarely at the one device whose failure takes this
+  # host down, and it was barely earning its keep — 0.6% used in steady state.
+  #
+  # There is nowhere else to put it: the data array is multi-device btrfs
+  # (RAID1), and btrfs does not support swapfiles on multi-device filesystems.
+  # So this is a removal, not a move, and it is a real trade-off: under memory
+  # starvation the OOM killer now fires instead of the box thrashing the DOM.
+  # That is arguably the better failure — a starvation episode is what produced
+  # the ~9400 btrfs device errors, and thrashing swap only prolongs it.
+  #
+  # -part2 is left in place on the disk, unused; reclaim it if the DOM is ever
+  # replaced (see baselineReallocated above).
+  swapDevices = [ ];
 
   # Use the GRUB 2 boot loader.
   boot.loader.grub.enable = true;
