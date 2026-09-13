@@ -162,12 +162,16 @@ symlinks into `/nix/store` where every mtime is epoch 1970 — so a symlinked da
 as newer and edits only appear after an HA restart. Host names are hardcoded (there are two); disk rows come from `auto-entities`
 filters on the entity-id shape, so swapping a disk needs no dashboard edit.
 
-The Overview is one column per host (nhtpc left, nnas right), each ending in its own open-problems
-list. The Disks view is the other way round — **rows, not columns**: one full-width section per
-metric holding a `horizontal-stack` of the two hosts. Column-per-host drifts out of alignment as
-soon as the hosts have different disk counts (nhtpc 4, nnas 3), whereas a row starts both hosts at
-the same height and the next row begins below the taller of the pair. Note HA requires the
-dashboard's url_path to contain a hyphen.
+Both views are **one column per host** — nhtpc left, nnas right. The Overview ends each column with
+that host's own open-problems list; the Disks view groups each column by metric (SMART health,
+temperature, …).
+
+A sections view is a left-aligned grid of fixed-width (~500px) columns, and HA clamps a section to
+however many columns fit the window. A host therefore only gets a readable width by owning a whole
+column: nesting both hosts side by side in a `horizontal-stack` inside one full-width row halves it
+again and reads as cramped. The accepted trade-off is that metric groups do not line up across the
+two columns, since nhtpc has 4 disks and nnas 3. Note HA requires the dashboard's url_path to
+contain a hyphen.
 
 `services/hw-health-report.nix` (monthly email, `nhtpc` only) is intentionally still in place:
 HA runs on nhtpc, so if nhtpc is down there is no one to alert. Keep a mail path for that case.
