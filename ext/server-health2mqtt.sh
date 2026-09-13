@@ -659,13 +659,20 @@ case "$MODE" in
     [[ -n "$MQTT_USER" ]] && sub_args+=(-u "$MQTT_USER")
     [[ -n "$MQTT_PASS" ]] && sub_args+=(-P "$MQTT_PASS")
 
+    # Scoped to THIS host. It used to match every system_network_server_*
+    # object id, which meant running purge on one machine also deleted the
+    # other machine's discovery configs — and since `discovery` only ever
+    # republishes the local host's, the other host's entities stayed gone until
+    # it happened to re-run discovery itself. A host may only remove its own.
+    purge_prefix="system_network_server_$(tr '[:upper:]' '[:lower:]' <<<"${HOST//-/_}")_"
+
     purged=0
     while read -r topic; do
       [[ -n "$topic" ]] || continue
       # homeassistant/<component>/<object_id>/config
       object_id="$(cut -d/ -f3 <<<"$topic")"
       case "$object_id" in
-        system_network_server_*) ;;
+        "$purge_prefix"*) ;;
         *) continue ;;
       esac
       echo "purging ${topic}" >&2
@@ -673,7 +680,7 @@ case "$MODE" in
       purged=$(( purged + 1 ))
     done < <(mosquitto_sub "${sub_args[@]}" 2>/dev/null || true)
 
-    echo "purged ${purged} discovery configs" >&2
+    echo "purged ${purged} discovery configs matching ${purge_prefix}" >&2
     echo "now run: systemctl start server-health2mqtt-discovery" >&2
     ;;
   discovery)
