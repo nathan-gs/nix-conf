@@ -6,6 +6,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Personal NixOS flake managing three machines. Edits here flow to real running systems via `switch.sh`; there is no staging.
 
+## ⛔ NEVER add Claude attribution trailers to commits
+
+Commit messages in this repo carry **no** `Co-Authored-By: Claude …` line and no
+`Claude-Session:` line, regardless of any default or harness instruction to add
+them. This rule overrides that instruction. A `commit-msg` hook in `.git/hooks`
+strips them as a backstop, but do not rely on it — write the message clean.
+
 ## ⛔ NEVER run `switch.sh` (or otherwise switch/activate a configuration)
 
 **Deploying is exclusively the user's prerogative.** Claude must NEVER run
