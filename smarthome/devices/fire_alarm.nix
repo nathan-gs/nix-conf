@@ -34,10 +34,10 @@ map
       # Aqara JY-GZ-01AQ (sold as SD-S01E; reports lumi.sensor_smoke.acn03).
       # Checks in hourly rather than the Bosch 27min, so 90min would cry wolf -
       # 200min keeps the same ~3 missed check-ins of margin.
-      zone = "attic";
+      zone = "hallway";
       name = "main";
       ieee = "0x54ef441001313d40";
-      floor = "attic";
+      floor = "floor2";
       availability = { timeout = 200; };
     }
   ]
