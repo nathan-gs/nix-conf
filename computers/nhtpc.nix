@@ -46,6 +46,7 @@
       ../services/server-health2mqtt.nix
       ../services/media-rsync.nix
       ../services/wireguard.nix
+      ../services/wireguard2mqtt.nix
       ../services/journal-remote.nix
     ];
 
@@ -53,6 +54,16 @@
   serverHealth2mqtt = {
     enable = true;
     password = config.secrets.mqtt.users.server-health2mqtt.password;
+  };
+
+  # nhtpc is the WireGuard hub, so it is the only host that can see peer state.
+  # Only nnas alerts: it is the site-to-site link that carries the offsite
+  # backup, journal upload and auto-upgrade push, so a quiet one is a real
+  # fault. The phones and the laptop roam — they are reported but never alert.
+  wireguard2mqtt = {
+    enable = true;
+    password = config.secrets.mqtt.users.wireguard2mqtt.password;
+    alwaysOnPeers = [ "nnas" ];
   };
 
   # Leader: sole `nix flake update` + commit; then push the repos to nnas, which

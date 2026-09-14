@@ -59,6 +59,14 @@
               acl = ["readwrite system/network/blocky/#" "readwrite homeassistant/#" ];
               password = config.secrets.mqtt.users.blocky2mqtt.password;
             };
+            # wireguard2mqtt on nhtpc: per-peer link state for the VPN hub.
+            # Same "#-covers-its-own-parent" trick as blocky above, which is
+            # what lets the bare topic and system/network/wireguard/peer/<name>
+            # share one rule.
+            wireguard2mqtt = {
+              acl = ["readwrite system/network/wireguard/#" "readwrite homeassistant/#" ];
+              password = config.secrets.mqtt.users.wireguard2mqtt.password;
+            };
         };
         
         port = 1883;

@@ -214,6 +214,40 @@ matches `system_network_(server_|blocky_)`. Alerts are on *growth* (a blocklist 
 failed in the last hour), never on the cumulative counter, for the same reason as the reallocated
 baselines.
 
+`services/wireguard2mqtt.nix` does the same for the VPN hub, on `nhtpc` only (the hub is the only
+host that can see peer state), retained under `system/network/wireguard` with one record per peer at
+`system/network/wireguard/peer/<name>`. Each peer is an HA child device of the hub via `via_device`,
+the same shape as the per-disk devices. The peer list is read from
+`networking.wireguard.interfaces.wg0.peers` itself, so peers are declared exactly once — in
+`computers/nhtpc.nix` — and adding one needs no change to the module, the script, or the dashboard
+(the dashboard discovers peers with `auto-entities` on the entity-id shape). Same discovery/purge
+pair:
+
+```sh
+sudo systemctl start wireguard2mqtt-purge      # drop the HA entities
+sudo systemctl start wireguard2mqtt-discovery  # recreate them
+```
+
+Two things drive its design:
+
+- **Only `alwaysOnPeers` may alert.** WireGuard is silent by design — it rekeys roughly every two
+  minutes *while traffic flows* and not at all when idle — so a fresh handshake proves a peer is up
+  while a stale one proves nothing. Phones and laptops roam, so alerting on every peer would mean a
+  notification every time someone leaves the house. Only `nnas` is listed: it carries the offsite
+  backup, the journal upload and the auto-upgrade push, so a quiet link there is a real fault. Peer
+  connectivity sensors are `device_class: connectivity`, not `problem`, so a disconnected phone shows
+  on the dashboard without ever reaching the "Server health" notification.
+- **No entity that could sit unavailable for months.** A peer that has not connected since the
+  interface came up has no handshake time and no endpoint, so those ride along as *attributes* of its
+  connectivity sensor instead of being entities — otherwise they would be indistinguishable from a
+  fault in the `unavailable_entities` check and would each need an ignore-list entry. `handshake` is
+  a real entity only for an `alwaysOnPeers` member, where it is expected to always have a value.
+
+`wg show` needs `CAP_NET_ADMIN`, so the units run as root with the capability bounding set narrowed
+to just that. The first field of `wg show <iface> dump`'s first line is the interface's **private
+key**; the script reads that line only for the listen port, and no key material of any kind — private,
+public or preshared — is ever published.
+
 `services/hw-health-report.nix` (monthly email, `nhtpc` only) is intentionally still in place:
 HA runs on nhtpc, so if nhtpc is down there is no one to alert. Keep a mail path for that case.
 

@@ -34,13 +34,16 @@ let
 
   # Every problem binary_sensor across all servers (host, disks, btrfs), plus
   # blocky (services/blocky.nix publishes the same problem/problems shape under
-  # system/network/blocky). Matched as an explicit alternation rather than a
+  # system/network/blocky) and wireguard2mqtt (same shape under
+  # system/network/wireguard). Matched as an explicit alternation rather than a
   # bare "system_network_" prefix: the aggregate below is itself
   # binary_sensor.system_network_servers_problem, and a looser regex would make
-  # it match — and then count — its own state.
+  # it match — and then count — its own state. The per-peer WireGuard sensors
+  # are device_class connectivity, not problem, so a roaming phone going offline
+  # is reported on the dashboard without ever reaching this list.
   problemEntities = ''
     {% set problems = states.binary_sensor
-         | selectattr('entity_id','search','^binary_sensor\\.system_network_(server_|blocky_)')
+         | selectattr('entity_id','search','^binary_sensor\\.system_network_(server_|blocky_|wireguard_)')
          | selectattr('attributes.device_class','defined')
          | selectattr('attributes.device_class','eq','problem')
          | list %}
