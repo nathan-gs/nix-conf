@@ -55,9 +55,9 @@ let
       # factory with linkage_alarm already true; if this device is ever re-paired,
       # check that again before trusting the interlink.
       label = "de zolder";
-      smoke = "binary_sensor.attic_attic_fire_alarm_main_smoke";
-      test = "binary_sensor.attic_attic_fire_alarm_main_test";
-      siren = { kind = "aqara"; entity = "select.attic_attic_fire_alarm_main_buzzer"; };
+      smoke = "binary_sensor.floor2_hallway_fire_alarm_main_smoke";
+      test = "binary_sensor.floor2_hallway_fire_alarm_main_test";
+      siren = { kind = "aqara"; entity = "select.floor2_hallway_fire_alarm_main_buzzer"; };
     }
   ];
 

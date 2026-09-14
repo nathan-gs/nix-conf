@@ -10,17 +10,31 @@ Config lives in `smarthome/devices/fire_alarm.nix` (z2m device entries) and
 | `floor0/living/fire_alarm/main` | Bosch Twinguard 8750001213 | `0x000d6f00196fc58f` | `floor0/living/metering_plug/verwarming` | 69 |
 | `floor1/hallway/fire_alarm/main` | Bosch Twinguard 8750001213 | `0x000d6f0019104455` | `floor1/badkamer/light_switch/main` | 78 |
 | `basement/basement/fire_alarm/top` | Bosch BSD-2 (Smoke alarm II) | `0xf84477fffe0c62e1` | Coordinator (direct) | 132 |
-| _(ordered 2026-09-12)_ attic, top of staircase | Aqara JY-GZ-01AQ | — | plan: `floor0/living/wtw_valve/main` | — |
+| `floor2/hallway/fire_alarm/main` | Aqara JY-GZ-01AQ (sold as SD-S01E) | `0x54ef441001313d40` | `floor1/badkamer/light_switch/main` | 87 |
 
 All optical/photoelectric. No heat or CO detection anywhere in the house.
+
+The attic unit is at the top of the staircase. It is sold as **SD-S01E**, which is
+not a model z2m knows by that name - the box SKU is not what z2m matches on. Over
+the air it reports `lumi.sensor_smoke.acn03` and is recognised as JY-GZ-01AQ, so
+no external converter is needed.
+
+It was paired through the NIKO badkamer switch, a floor below, rather than the
+SONOFF `wtw_valve/main` that is physically in the attic. It would not join via
+`wtw_valve` but took first time via the NIKO. The upstream discussion for this
+model reports having to "remove and add it like twenty times"; the difference is
+probably that the NIKO has a direct one-hop path to the coordinator while
+`wtw_valve` has none, and interviews are round-trip heavy. If the day-to-day link
+at LQI 87 proves weak, re-pairing via `wtw_valve` is the thing to try - but expect
+the join itself to be harder.
 
 ## Coverage
 
 - **basement top** — the basement, and partially `floor0` hallway and kitchen.
 - **living** — the living room.
 - **floor1 hallway** — `waskot`, `fen`, `nikolai`, `badkamer`, `morgane`.
-- **attic (future)** — nominally the whole house from the top of the staircase,
-  but realistically mostly `fen` and `morgane`.
+- **floor2 hallway (attic)** — nominally the whole house from the top of the
+  staircase, but realistically mostly `fen` and `morgane`.
 
 ### Gaps
 
@@ -189,20 +203,26 @@ sounded, auto-stopped after 15s.
   raise the level temporarily. Note `ExecStartPre` recopies `configuration.yaml`
   from the nix store on every start, so any runtime change reverts on restart.
 
-## Aqara JY-GZ-01AQ notes (before it arrives)
+## Aqara JY-GZ-01AQ notes
 
 - Works with z2m; the "requires Aqara Hub" claim on the box is marketing.
 - **Do not OTA it.** Firmware v21 made it beep *once* and self-mute on detecting
   smoke; z2m retracted that version, but the device supports OTA and could take
-  it. Check the firmware version on arrival.
-- **Set `linkage_alarm: true`,** otherwise the buzzer cannot be sounded remotely
-  when the device has no local smoke - i.e. exactly the interlink case - and it
-  fails silently.
-- Pairing is 3 button presses, no install code.
-- Replaceable CR17450 cell, ~10y claimed.
+  it. This unit's firmware version **cannot be read** - it reports
+  `installed_version: -1` and a garbled `swBuildId` - so there is no way to tell
+  whether it carries v21. That is a reason to leave OTA alone, not to reach for it.
+- **`linkage_alarm` must be true,** otherwise the buzzer silently refuses to sound
+  when commanded while the device sees no smoke of its own - exactly the interlink
+  case. This unit arrived with it already set; re-check after any re-pair.
+- It **does** use an install code, contrary to the z2m docs page saying 3 button
+  presses. The QR is the Aqara `G$M:...$A:<ieee>$I:<key>` format, which z2m parses.
+- Replaceable CR17450 cell. Arrived at 100% / 3100 mV.
+- Ignore the reported `dateCode` - this unit reports `20230310` while the printed
+  manufacturing date is 05/2025, so the date code is a firmware or design date and
+  says nothing about service life.
 - Aqara end devices have a poor reputation on Tuya-heavy meshes, and this mesh is
-  mostly Tuya. Pair it through the SONOFF `wtw_valve/main` (in the attic, wooden
-  wall to the staircase, ~5m) rather than anything Tuya.
+  mostly Tuya - so it is worth keeping it on the NIKO or SONOFF routers rather than
+  letting it land on a Tuya plug.
 
 ## Heat and CO, if ever added
 
