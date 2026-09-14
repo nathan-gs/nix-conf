@@ -110,12 +110,31 @@ let
           json_attributes_topic = t;
         };
       })
+      # Published in GB rather than bytes. The payload keeps the raw byte
+      # counter (exact, and what `wg` reports); only the entity is scaled, in
+      # the value template.
+      #
+      # This is presentation, and it is done here because there is nowhere
+      # better: a card shows a sensor's own unit, so a raw byte counter renders
+      # as "12798764084 B" on a tile. The entities card's `format:` option only
+      # covers timestamps (relative/total/date/time/datetime), and MQTT
+      # discovery does not implement `suggested_unit_of_measurement` — the
+      # integration reads `suggested_display_precision` only (checked against
+      # the running 2026.9.1). That leaves the unit itself.
+      #
+      # GB with 2 decimals: an idle peer reads 0.00 GB and a busy one 12.80 GB,
+      # which is the right trade for a counter that resets whenever wg0 is
+      # recreated and so rarely reaches TB. device_class data_size means HA
+      # still offers per-entity unit conversion in the UI for anyone who wants
+      # MB instead.
       (e {
         key = "rx_bytes";
         label = "Received";
+        valueTemplate = "{{ (value_json.rx_bytes | float(0) / 1000000000) | round(3) }}";
         extra = {
           device_class = "data_size";
-          unit_of_measurement = "B";
+          unit_of_measurement = "GB";
+          suggested_display_precision = 2;
           # Resets to 0 whenever the interface is recreated, which is exactly
           # what total_increasing is for.
           state_class = "total_increasing";
@@ -125,9 +144,11 @@ let
       (e {
         key = "tx_bytes";
         label = "Sent";
+        valueTemplate = "{{ (value_json.tx_bytes | float(0) / 1000000000) | round(3) }}";
         extra = {
           device_class = "data_size";
-          unit_of_measurement = "B";
+          unit_of_measurement = "GB";
+          suggested_display_precision = 2;
           state_class = "total_increasing";
           icon = "mdi:upload";
         };

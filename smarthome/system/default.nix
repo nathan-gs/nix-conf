@@ -3,5 +3,6 @@
 {
   imports = [
     ./servers.nix
+    ./network.nix
   ];
 }

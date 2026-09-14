@@ -700,18 +700,16 @@ views:
             heading: WAN
             heading_style: subtitle
             icon: mdi:wan
-          # Rendered through filesizeformat rather than shown as tiles: these
-          # are raw byte counters, and a tile prints the native unit, so a WAN
-          # total reads as "1298764084 B". The sensors keep bytes as their
-          # native unit — exact, and what long-run statistics want — while the
-          # dashboard auto-scales to B/MB/GB/TB per value. Same treatment as the
-          # WireGuard peer traffic in the next column.
-          - type: markdown
-            content: |-
-              {% set rx = 'sensor.system_network_system_network_router_orange_wan_bytes_received' %}
-              {% set tx = 'sensor.system_network_system_network_router_orange_wan_bytes_sent' %}
-              Received **{{ states(rx) | int(0) | filesizeformat }}** &middot;
-              sent **{{ states(tx) | int(0) | filesizeformat }}**
+          # The GB-scaled sensors from smarthome/system/network.nix, not the
+          # integration's own *_wan_bytes_* entities: a tile shows a sensor's
+          # own unit, so the raw byte counters render as "870163456 B". See
+          # that file for why the conversion lives there and not here.
+          - type: tile
+            entity: sensor.system_network_router_orange_wan_received_gb
+            name: Received
+          - type: tile
+            entity: sensor.system_network_router_orange_wan_sent_gb
+            name: Sent
           - type: tile
             entity: sensor.system_network_system_network_router_orange_wan_errors_received
             name: Errors in
@@ -809,26 +807,20 @@ views:
           # Resets to zero whenever wg0 is recreated (a switch that touches the
           # interface will do it), which is why these are total_increasing.
           #
-          # A markdown block rather than auto-entities, for the same reason as
-          # the modem's WAN counters: these sensors are raw bytes and an
-          # entities row prints the native unit, so a busy peer reads as
-          # "12798764084 B". filesizeformat auto-scales each value on its own,
-          # which matters here because one peer can be on GB while another that
-          # has not connected since the interface came up is still on zero.
-          #
-          # Peers are still discovered rather than listed — the selectattr on
-          # the entity-id shape does what the auto-entities filter did, so
-          # adding a peer still needs no dashboard edit.
-          - type: markdown
-            content: |-
-              {% set rxs = states.sensor
-                   | selectattr('entity_id','search','^sensor\.system_network_wireguard_peer_.*_rx_bytes$')
-                   | map(attribute='entity_id') | sort | list %}
-              {% for rx in rxs -%}
-              {%- set name = rx | replace('sensor.system_network_wireguard_peer_','') | replace('_rx_bytes','') -%}
-              {%- set tx = rx | replace('_rx_bytes','_tx_bytes') %}
-              - **{{ name }}** &darr; {{ states(rx) | int(0) | filesizeformat }} &middot; &uarr; {{ states(tx) | int(0) | filesizeformat }}
-              {% endfor %}
+          # These publish in GB (services/wireguard2mqtt.nix scales them in the
+          # value template), so ordinary rows read correctly — a raw byte
+          # counter would render as "12798764084 B" here.
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: sensor.system_network_wireguard_peer_*_rx_bytes
+                - entity_id: sensor.system_network_wireguard_peer_*_tx_bytes
+              exclude: []
+            sort:
+              method: friendly_name
 
           - type: markdown
             content: |-
