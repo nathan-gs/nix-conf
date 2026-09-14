@@ -23,6 +23,10 @@ MQTT_USER="${BS_MQTT_USER:-}"
 MQTT_PASS="${BS_MQTT_PASS:-}"
 STATE="${BS_STATE:-/var/lib/blocky-stats/state}"
 LIST_MAX_AGE_HOURS="${BS_LIST_MAX_AGE_HOURS:-48}"
+# Denylist groups that exist to cut devices off from the internet entirely
+# rather than to filter ads/trackers. Their blocks are reported separately as
+# `devices_without_internet_blocked` (see the `blocked` split below).
+DEVICES_WITHOUT_INTERNET_GROUPS="${BS_DEVICES_WITHOUT_INTERNET_GROUPS:-everything}"
 
 PUB_FAILURES=0
 
@@ -96,13 +100,52 @@ case "$MODE" in
       ' <<<"$metrics"
     }
 
+    # Blocks attributed to a cutoff group (BS_DEVICES_WITHOUT_INTERNET_GROUPS).
+    # blocky spells the reason as `BLOCKED (ads,trackers)` or
+    # `BLOCKED CNAME (everything)`, so the group list is whatever sits in the
+    # parentheses; a reason naming several groups counts as a cutoff if any one
+    # of them matches.
+    #
+    # Note the label value contains a space, so $1 is only the head of the
+    # series name — hence the prefix test rather than an equality one, same as
+    # sum_response above. $NF is still the value.
+    sum_devices_without_internet_blocked() {
+      awk -v groups="$DEVICES_WITHOUT_INTERNET_GROUPS" '
+        BEGIN {
+          n = split(groups, g, ",")
+          for (i = 1; i <= n; i++) {
+            gsub(/^[ \t]+|[ \t]+$/, "", g[i])
+            if (g[i] != "") want[g[i]] = 1
+          }
+        }
+        index($1, "blocky_response_total{") == 1 && index($0, "response_type=\"BLOCKED\"") {
+          if (!match($0, /reason="[^"]*"/)) next
+          reason = substr($0, RSTART + 8, RLENGTH - 9)
+          if (!match(reason, /\([^)]*\)/)) next
+          m = split(substr(reason, RSTART + 1, RLENGTH - 2), parts, ",")
+          for (i = 1; i <= m; i++) {
+            gsub(/^[ \t]+|[ \t]+$/, "", parts[i])
+            if (parts[i] in want) { s += $NF; next }
+          }
+        }
+        END { printf "%.0f", s + 0 }
+      ' <<<"$metrics"
+    }
+
     queries_total="$(sum_metric blocky_response_total)"
     cached_total="$(sum_response CACHED)"
-    blocked_total="$(sum_response BLOCKED)"
+    all_blocked_total="$(sum_response BLOCKED)"
+    devices_without_internet_blocked_total="$(sum_devices_without_internet_blocked)"
+    # `blocked` means ad/tracker filtering from here on; the cutoff is
+    # its own counter. Clamped because the two sums come from independent awk
+    # passes — a reason blocky spells in some way this does not anticipate must
+    # not push the published figure negative.
+    blocked_total=$(( all_blocked_total - devices_without_internet_blocked_total ))
+    (( blocked_total < 0 )) && blocked_total=0
     # Everything that was neither served from cache nor blocked: RESOLVED plus
-    # CUSTOMDNS and any response_type a future blocky adds. Deriving it keeps
-    # the three published counts summing to the total by construction.
-    resolved_total=$(( queries_total - cached_total - blocked_total ))
+    # CUSTOMDNS and any response_type a future blocky adds. Derived from the
+    # *combined* blocked count so the published counts still sum to the total.
+    resolved_total=$(( queries_total - cached_total - all_blocked_total ))
     (( resolved_total < 0 )) && resolved_total=0
 
     errors_total="$(sum_metric blocky_error_total)"
@@ -138,6 +181,14 @@ case "$MODE" in
     # for failed downloads that is a spurious problem alert on first run.
     prev_cached=-1; prev_blocked=-1; prev_uncached=-1
     prev_errors=-1; prev_failed=-1
+    # Added with the cutoff/filter split. An older state file has no baseline
+    # for it, which the -1 turns into a single 0 hour rather than charging every
+    # cutoff block since blocky started to that hour. Note prev_blocked changes
+    # meaning at the same time (it now excludes cutoff blocks), so on the first
+    # run after this lands the new, smaller total is below the stored baseline
+    # and the existing negative-delta clamp reports `blocked=0` for that one
+    # hour. Self-correcting, and cheaper than migrating the state file.
+    prev_devices_without_internet_blocked=-1
     # shellcheck disable=SC1090
     [[ -f "$STATE" ]] && source "$STATE"
 
@@ -158,16 +209,25 @@ case "$MODE" in
 
     d_cached="$(delta "$cached_total" "$prev_cached")"
     d_blocked="$(delta "$blocked_total" "$prev_blocked")"
+    d_devices_without_internet_blocked="$(delta "$devices_without_internet_blocked_total" "$prev_devices_without_internet_blocked")"
     d_resolved="$(delta "$resolved_total" "$prev_uncached")"
     d_errors="$(delta "$errors_total" "$prev_errors")"
     d_failed="$(delta "$failed_downloads_total" "$prev_failed")"
-    d_queries=$(( d_cached + d_blocked + d_resolved ))
+    # `queries` stays every query blocky answered, cutoff blocks included.
+    d_queries=$(( d_cached + d_blocked + d_devices_without_internet_blocked + d_resolved ))
 
     pct() {
       awk -v n="$1" -v d="$2" 'BEGIN { if (d <= 0) print 0; else printf "%.1f", (n / d) * 100 }'
     }
-    blocked_pct="$(pct "$d_blocked" "$d_queries")"
-    cache_hit_pct="$(pct "$d_cached" "$d_queries")"
+    # Both percentages are over the queries that could plausibly have been
+    # filtered or cached — i.e. excluding the cutoff blocks. A cut-off device
+    # spinning on an unreachable cloud endpoint answers NXDOMAIN from the
+    # denylist every time: it can never be cached and was never a filtering
+    # decision, so leaving it in the denominator drags both rates toward that
+    # one device's retry interval instead of describing the network.
+    d_filterable=$(( d_queries - d_devices_without_internet_blocked ))
+    blocked_pct="$(pct "$d_blocked" "$d_filterable")"
+    cache_hit_pct="$(pct "$d_cached" "$d_filterable")"
 
     # ── problems ─────────────────────────────────────────────────────────────
     # Judged here rather than in HA, same as server-health2mqtt: the host that
@@ -203,6 +263,7 @@ case "$MODE" in
       --argjson queries "$d_queries" \
       --argjson cached "$d_cached" \
       --argjson blocked "$d_blocked" \
+      --argjson devices_without_internet_blocked "$d_devices_without_internet_blocked" \
       --argjson resolved "$d_resolved" \
       --argjson errors "$d_errors" \
       --argjson failed_downloads "$d_failed" \
@@ -211,6 +272,7 @@ case "$MODE" in
       --argjson queries_total "$queries_total" \
       --argjson cached_total "$cached_total" \
       --argjson blocked_total "$blocked_total" \
+      --argjson devices_without_internet_blocked_total "$devices_without_internet_blocked_total" \
       --argjson resolved_total "$resolved_total" \
       --argjson cache_entries "$cache_entries" \
       --argjson prefetch_entries "$prefetch_entries" \
@@ -224,11 +286,14 @@ case "$MODE" in
       '{
          ts: $ts, version: $version,
          queries: $queries, cached: $cached, blocked: $blocked,
+         devices_without_internet_blocked: $devices_without_internet_blocked,
          resolved: $resolved, errors: $errors,
          failed_downloads: $failed_downloads,
          blocked_pct: $blocked_pct, cache_hit_pct: $cache_hit_pct,
          queries_total: $queries_total, cached_total: $cached_total,
-         blocked_total: $blocked_total, resolved_total: $resolved_total,
+         blocked_total: $blocked_total,
+         devices_without_internet_blocked_total: $devices_without_internet_blocked_total,
+         resolved_total: $resolved_total,
          cache_entries: $cache_entries, prefetch_entries: $prefetch_entries,
          denylist_entries: $denylist_entries, allowlist_entries: $allowlist_entries,
          blocking_enabled: ($blocking_enabled == 1),
@@ -241,15 +306,15 @@ case "$MODE" in
 
     # Kept from the journal-only version: one line an hour is nothing on the
     # root flash, and it is the only record left if the broker is unreachable.
-    echo "blocky query stats (last hour): cached=${d_cached} uncached=${d_resolved} blocked=${d_blocked}"
+    echo "blocky query stats (last hour): cached=${d_cached} uncached=${d_resolved} blocked=${d_blocked} no-internet-devices=${d_devices_without_internet_blocked}"
 
     if [[ "${BS_DRY_RUN:-0}" != "1" ]]; then
       mkdir -p "$(dirname "$STATE")"
       # prev_uncached keeps its old name so an existing state file from the
       # journal-only version carries over instead of reporting one bogus hour.
-      printf 'prev_cached=%s\nprev_blocked=%s\nprev_uncached=%s\nprev_errors=%s\nprev_failed=%s\n' \
-        "$cached_total" "$blocked_total" "$resolved_total" \
-        "$errors_total" "$failed_downloads_total" > "$STATE"
+      printf 'prev_cached=%s\nprev_blocked=%s\nprev_devices_without_internet_blocked=%s\nprev_uncached=%s\nprev_errors=%s\nprev_failed=%s\n' \
+        "$cached_total" "$blocked_total" "$devices_without_internet_blocked_total" \
+        "$resolved_total" "$errors_total" "$failed_downloads_total" > "$STATE"
     fi
     ;;
 

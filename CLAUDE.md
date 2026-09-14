@@ -189,6 +189,19 @@ sudo systemctl start blocky-stats2mqtt-purge      # drop the HA entities
 sudo systemctl start blocky-stats2mqtt-discovery  # recreate them
 ```
 
+**`blocked` counts ad/tracker filtering only.** The catch-all denylist group named by
+`devicesWithoutInternetGroup` (`everything`) is not filtering — it is the deliberate internet cutoff
+for devices declared `internet = false` in `home-network.nix`, and those devices retry their
+unreachable cloud endpoints forever. The Tuya car charger alone asks for `h3-eu.iot-dns.com` every
+~5s, ~740 blocks/hour around the clock, which was ~90% of the raw blocked count and made the sensor
+useless as a measure of ad blocking. Blocks from that group are published separately as
+`devices_without_internet_blocked` (+ `_total`), and are excluded from the denominator of both
+`blocked_pct` and `cache_hit_pct` — a cut-off device's NXDOMAIN can never be cached and was never a
+filtering decision, so leaving it in drags both rates toward one device's retry interval. `queries`
+still counts every query blocky answered, cutoff blocks included. The group name is defined once in
+`services/blocky.nix` and reaches the script as `BS_DEVICES_WITHOUT_INTERNET_GROUPS`, so a new
+cutoff group needs no script edit.
+
 Its problem sensor feeds the same "Server health" notification — `smarthome/system/servers.nix`
 matches `system_network_(server_|blocky_)`. Alerts are on *growth* (a blocklist download that
 failed in the last hour), never on the cumulative counter, for the same reason as the reallocated
