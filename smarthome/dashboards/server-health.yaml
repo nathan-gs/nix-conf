@@ -816,8 +816,8 @@ views:
               type: entities
             filter:
               include:
-                - entity_id: sensor.system_network_wireguard_peer_*_rx_bytes
-                - entity_id: sensor.system_network_wireguard_peer_*_tx_bytes
+                - entity_id: sensor.system_network_wireguard_peer_*_rx
+                - entity_id: sensor.system_network_wireguard_peer_*_tx
               exclude: []
             sort:
               method: friendly_name

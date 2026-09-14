@@ -127,8 +127,22 @@ let
       # recreated and so rarely reaches TB. device_class data_size means HA
       # still offers per-entity unit conversion in the UI for anyone who wants
       # MB instead.
+      #
+      # The keys are `rx`/`tx` and not `rx_bytes`/`tx_bytes` because these
+      # shipped once in bytes, and HA will not let an existing sensor change
+      # unit. When a sensor's unit changes and its device class has a converter,
+      # sensor/__init__.py deliberately pins the *old* registry unit into
+      # `sensor.private.suggested_unit_of_measurement` ("Set
+      # suggested_unit_of_measurement to the old unit to enable automatic
+      # conversion") so existing history keeps its meaning — and then
+      # short-circuits on that option ever after. The result is a sensor whose
+      # native value is GB being converted back to B for display.
+      #
+      # That option survives purge + rediscovery, so the only way out is a
+      # unique_id that has never had a unit. Renaming the key mints one. Worth
+      # knowing before renaming these back: the same trap would apply again.
       (e {
-        key = "rx_bytes";
+        key = "rx";
         label = "Received";
         valueTemplate = "{{ (value_json.rx_bytes | float(0) / 1000000000) | round(3) }}";
         extra = {
@@ -142,7 +156,7 @@ let
         };
       })
       (e {
-        key = "tx_bytes";
+        key = "tx";
         label = "Sent";
         valueTemplate = "{{ (value_json.tx_bytes | float(0) / 1000000000) | round(3) }}";
         extra = {
