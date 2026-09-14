@@ -187,9 +187,26 @@ let
   discoveryFile = pkgs.writeText "wireguard2mqtt-discovery.json"
     (builtins.toJSON (ifaceEntities ++ lib.concatMap peerEntities wgPeers));
 
-  mkUnit = { description, mode, quiet ? false }: {
+  # Deliberately no LogLevelMax here, unlike server-health2mqtt's frequent
+  # timer. That setting exists there to stop a 5-minute timer dribbling journal
+  # writes onto root flash — but this script prints nothing at all on success,
+  # so there is no dribble to suppress, and the first release of this unit
+  # failed every run with its "awk: command not found" swallowed by exactly
+  # that setting. Silence on success, loud on failure.
+  mkUnit = { description, mode }: {
     inherit description;
-    path = [ pkgs.bash pkgs.coreutils pkgs.jq pkgs.mosquitto pkgs.wireguard-tools ];
+    # gawk and gnugrep are listed even though systemd appends a small default
+    # path of its own: relying on that suffix is how the first version of this
+    # unit shipped without awk and died with a bare exit 127.
+    path = [
+      pkgs.bash
+      pkgs.coreutils
+      pkgs.gawk
+      pkgs.gnugrep
+      pkgs.jq
+      pkgs.mosquitto
+      pkgs.wireguard-tools
+    ];
     environment = {
       WG_IFACE = cfg.interface;
       WG_TOPIC = cfg.topic;
@@ -220,7 +237,7 @@ let
       RestrictSUIDSGID = true;
       MemoryDenyWriteExecute = true;
       SystemCallArchitectures = "native";
-    } // lib.optionalAttrs quiet { LogLevelMax = "warning"; };
+    };
   };
 in
 {
@@ -301,7 +318,6 @@ in
       (mkUnit {
         description = "wireguard2mqtt: peer state to MQTT";
         mode = "state";
-        quiet = true;
       })
       {
         after = [ "wireguard-${cfg.interface}.service" "mosquitto.service" ];
