@@ -467,19 +467,23 @@ views:
               numeric: true
               reverse: true
 
-  # Network: the two boxes that carry the house's internet, side by side —
-  # blocky (DNS, services/blocky.nix → system/network/blocky) on the left, the
-  # Technicolor CGA modem (technicolor_cga custom integration, a UI config
-  # entry rather than anything in this flake) on the right.
+  # Network: the three things that carry traffic in and out of the house, side
+  # by side — blocky (DNS, services/blocky.nix → system/network/blocky) on the
+  # left, the Technicolor CGA modem (technicolor_cga custom integration, a UI
+  # config entry rather than anything in this flake) in the middle, and the
+  # WireGuard hub (services/wireguard2mqtt.nix → system/network/wireguard) on
+  # the right.
   #
   # Same one-column-per-subject layout as the Disks view, for the same reason:
   # a sections view is a left-aligned grid of fixed-width columns, so each
   # subject only gets a readable width by owning a whole column.
   #
-  # Unlike the host views, every entity here is named explicitly. There is
-  # exactly one blocky and one modem, and neither publishes a family of
-  # entities whose membership changes — so there is nothing for an
-  # auto-entities filter to discover.
+  # blocky and the modem are named explicitly: there is exactly one of each and
+  # neither publishes a family of entities whose membership changes, so there is
+  # nothing for an auto-entities filter to discover. WireGuard is the opposite —
+  # its peers are a family that grows whenever a device is added to the hub — so
+  # that column uses auto-entities on the entity-id shape, the same way the
+  # Disks view handles disks. Adding a peer needs no dashboard edit.
   #
   # The modem entity ids really do carry "system_network_" twice
   # (sensor.system_network_system_network_router_orange_*): the integration
@@ -494,7 +498,7 @@ views:
   - title: Network
     path: network
     type: sections
-    max_columns: 2
+    max_columns: 3
     icon: mdi:lan
 
     badges:
@@ -505,6 +509,9 @@ views:
       - type: entity
         entity: sensor.system_network_system_network_router_orange_wan_status
         name: WAN
+      - type: entity
+        entity: sensor.system_network_wireguard_peers_online
+        name: VPN peers
 
     sections:
       - type: grid
@@ -729,3 +736,105 @@ views:
           - type: tile
             entity: sensor.system_network_system_network_router_orange_wifi_5_ghz
             name: 5 GHz
+
+      # WireGuard hub (services/wireguard2mqtt.nix). nhtpc is the only host that
+      # can see peer state, so this is the hub's own view of its links.
+      #
+      # Peers are discovered by entity-id shape rather than listed, because the
+      # peer list genuinely changes — every entity here comes from the
+      # interface's own `peers` block in computers/nhtpc.nix.
+      #
+      # Note what is deliberately NOT alerted: only peers named in
+      # `alwaysOnPeers` (nnas, the site-to-site link) can raise a problem. The
+      # phones and the laptop roam, so their connectivity rows show disconnected
+      # here while never producing a notification.
+      - type: grid
+        cards:
+          - type: heading
+            heading: WireGuard
+            heading_style: title
+            icon: mdi:vpn
+            badges:
+              - type: entity
+                entity: binary_sensor.system_network_wireguard_problem
+          - type: tile
+            entity: sensor.system_network_wireguard_peers_online
+            name: Peers online
+          - type: tile
+            entity: sensor.system_network_wireguard_peers_total
+            name: Peers configured
+
+          - type: heading
+            heading: Peers
+            heading_style: subtitle
+            icon: mdi:lan-connect
+          # Handshake time, endpoint and allowed-ips ride along as attributes of
+          # each connectivity sensor, so clicking a row shows the detail without
+          # minting entities that would sit unavailable for a peer that has not
+          # connected since the interface came up.
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+              state_color: true
+            filter:
+              include:
+                - entity_id: binary_sensor.system_network_wireguard_peer_*_online
+              exclude: []
+            sort:
+              method: friendly_name
+
+          - type: heading
+            heading: Site-to-site link
+            heading_style: subtitle
+            icon: mdi:handshake
+          # nnas carries the offsite backup, the journal upload and the
+          # auto-upgrade push, so its handshake age is the one number here worth
+          # watching directly. WireGuard rekeys only while traffic flows, so a
+          # few minutes of age is normal and not a fault.
+          - type: tile
+            entity: sensor.system_network_wireguard_peer_nnas_handshake
+            name: nnas last handshake
+
+          - type: heading
+            heading: Traffic since interface start
+            heading_style: subtitle
+            icon: mdi:swap-vertical
+          # Resets to zero whenever wg0 is recreated (a switch that touches the
+          # interface will do it), which is why these are total_increasing.
+          - type: custom:auto-entities
+            show_empty: false
+            card:
+              type: entities
+            filter:
+              include:
+                - entity_id: sensor.system_network_wireguard_peer_*_rx_bytes
+                - entity_id: sensor.system_network_wireguard_peer_*_tx_bytes
+              exclude: []
+            sort:
+              method: friendly_name
+
+          - type: markdown
+            content: |-
+              {% set p = 'binary_sensor.system_network_wireguard_problem' %}
+              {% if states(p) not in ['unknown','unavailable'] %}
+              Interface **{{ state_attr(p,'interface') }}** ·
+              port {{ state_attr(p,'listen_port') }} ·
+              {{ state_attr(p,'peers_online') }}/{{ state_attr(p,'peers_total') }} peers up
+              {% else %}
+              Waiting for the first report from wireguard2mqtt.
+              {% endif %}
+
+          - type: conditional
+            conditions:
+              - condition: state
+                entity: binary_sensor.system_network_wireguard_problem
+                state: "on"
+            card:
+              type: markdown
+              content: |-
+                {% set ps = state_attr('binary_sensor.system_network_wireguard_problem','problems') %}
+                ### Open problems
+                {% for p in (ps or []) %}
+                - {{ p }}
+                {% endfor %}
