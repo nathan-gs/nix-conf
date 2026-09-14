@@ -156,6 +156,25 @@ transmitted.
 Verified working 2026-09-12: button held on the basement BSD-2, all three sirens
 sounded, auto-stopped after 15s.
 
+Verified again 2026-09-14 with all four: self-test triggered on the floor1
+Twinguard from the z2m frontend, **all four sirens sounded** including the attic
+Aqara, and it auto-stopped after 15s. Run twice, cleanly both times.
+
+### Which devices can start a test
+
+| Device | Can trigger a test? |
+|---|---|
+| BSD-2 | yes - hold the button ~5s |
+| Twinguard | yes - `switch.*_self_test`, or the z2m frontend's self-test |
+| Aqara | **no** |
+
+The Aqara **does not report its self-test state**. Measured 2026-09-14: the
+selftest command was delivered and the device audibly alarmed, yet
+`binary_sensor..._test` never left `unknown` and `lastSeen` did not move for
+another half hour. Its `test` is therefore `null` in the `alarms` list rather
+than wired to a trigger that could never fire. Its siren and smoke sensor are
+unaffected.
+
 ## Gotchas
 
 - **Twinguard rejoin does not re-run `configure`.** A factory-reset device joins

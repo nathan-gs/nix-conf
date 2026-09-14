@@ -56,13 +56,21 @@ let
       # check that again before trusting the interlink.
       label = "de zolder";
       smoke = "binary_sensor.floor2_hallway_fire_alarm_main_smoke";
-      test = "binary_sensor.floor2_hallway_fire_alarm_main_test";
+      # test = null: this device does not report its self-test state. Measured
+      # 2026-09-14 - the selftest command was delivered and the device audibly
+      # alarmed, yet binary_sensor..._test never left unknown and lastSeen did not
+      # move for another half hour. So its button can never trigger the interlink;
+      # wiring one here would only look like it worked. Its siren and smoke sensor
+      # are unaffected - both verified the same evening.
+      test = null;
       siren = { kind = "aqara"; entity = "select.floor2_hallway_fire_alarm_main_buzzer"; };
     }
   ];
 
   smokeSensors = map (a: a.smoke) alarms;
-  selfTestSensors = map (a: a.test) alarms;
+  # Devices whose self-test is observable. A device may set test = null when it
+  # does not report one - see the attic Aqara.
+  selfTestSensors = lib.filter (t: t != null) (map (a: a.test) alarms);
 
   sirensOf = kind: map (a: a.siren.entity) (lib.filter (a: a.siren.kind == kind) alarms);
   twinguardSirens = sirensOf "twinguard";
@@ -173,7 +181,8 @@ let
   whichAlarm =
     let
       pairs = lib.concatStringsSep ", " (lib.flatten (map
-        (a: [ "'${a.smoke}': '${a.label}'" "'${a.test}': '${a.label}'" ])
+        (a: [ "'${a.smoke}': '${a.label}'" ]
+          ++ lib.optional (a.test != null) "'${a.test}': '${a.label}'")
         alarms));
     in
     "{% set locations = {${pairs}} %}{{ locations.get(trigger.entity_id, 'een onbekende melder') }}";
