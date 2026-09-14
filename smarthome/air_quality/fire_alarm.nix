@@ -18,7 +18,8 @@ let
   #           tap transmits nothing at all (measured 2026-09-12 - a brief press
   #           produced no Zigbee message whatsoever).
   #   siren : how this model is commanded. Twinguards take a select
-  #           (stop/pre_alarm/fire/burglar), the BSD-2 takes a switch.
+  #           (stop/pre_alarm/fire/burglar), the BSD-2 takes a switch, and the
+  #           Aqara takes a buzzer select (alarm/mute).
   alarms = [
     {
       # covers: the living room
@@ -44,6 +45,20 @@ let
       # on the network, not just this device.
       siren = { kind = "bsd2"; entity = "switch.basement_basement_fire_alarm_top_manual_smoke_alarm"; };
     }
+    {
+      # covers: nominally the whole house from the top of the staircase, but
+      # realistically mostly fen and morgane.
+      #
+      # Aqara JY-GZ-01AQ, sold as SD-S01E. Its buzzer can only be commanded while
+      # the device sees no smoke of its own if linkage_alarm is on - i.e. exactly
+      # the interlink case - and it fails silently otherwise. It came from the
+      # factory with linkage_alarm already true; if this device is ever re-paired,
+      # check that again before trusting the interlink.
+      label = "de zolder";
+      smoke = "binary_sensor.attic_attic_fire_alarm_main_smoke";
+      test = "binary_sensor.attic_attic_fire_alarm_main_test";
+      siren = { kind = "aqara"; entity = "select.attic_attic_fire_alarm_main_buzzer"; };
+    }
   ];
 
   smokeSensors = map (a: a.smoke) alarms;
@@ -52,14 +67,17 @@ let
   sirensOf = kind: map (a: a.siren.entity) (lib.filter (a: a.siren.kind == kind) alarms);
   twinguardSirens = sirensOf "twinguard";
   bsd2Sirens = sirensOf "bsd2";
+  aqaraSirens = sirensOf "aqara";
 
   sirensOn =
     (map (e: ha.action.set_value e "fire") twinguardSirens)
-    ++ (map (e: ha.action.on e) bsd2Sirens);
+    ++ (map (e: ha.action.on e) bsd2Sirens)
+    ++ (map (e: ha.action.set_value e "alarm") aqaraSirens);
 
   sirensOff =
     (map (e: ha.action.set_value e "stop") twinguardSirens)
-    ++ (map (e: ha.action.off e) bsd2Sirens);
+    ++ (map (e: ha.action.off e) bsd2Sirens)
+    ++ (map (e: ha.action.set_value e "mute") aqaraSirens);
 
   allSmokeClear = { condition = "state"; entity_id = smokeSensors; state = "off"; };
 
