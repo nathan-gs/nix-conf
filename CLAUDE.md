@@ -243,6 +243,19 @@ Two things drive its design:
   fault in the `unavailable_entities` check and would each need an ignore-list entry. `handshake` is
   a real entity only for an `alwaysOnPeers` member, where it is expected to always have a value.
 
+Peer traffic is published in **GB**, scaled in the value template while the MQTT payload keeps the
+raw byte counter. A card shows a sensor's own unit, so a raw byte counter renders as
+`12798764084 B`; the entities card's `format:` covers timestamps only, and MQTT discovery does not
+implement `suggested_unit_of_measurement`.
+
+**A sensor's unit cannot be changed after it ships.** When a sensor's unit changes and its device
+class has a converter (`data_size` does), `sensor/__init__.py` deliberately pins the *old* registry
+unit into `sensor.private.suggested_unit_of_measurement` to keep existing history meaningful, then
+short-circuits on that option ever after — so a sensor whose native value is now GB gets converted
+back to B for display. **The option survives purge + rediscovery.** The only way out is a `unique_id`
+that has never had a unit, which means renaming the key (this is why the keys are `rx`/`tx` and not
+`rx_bytes`/`tx_bytes`). Get the unit right the first time; renaming costs the entity's history.
+
 `wg show` needs `CAP_NET_ADMIN`, so the units run as root with the capability bounding set narrowed
 to just that. The first field of `wg show <iface> dump`'s first line is the interface's **private
 key**; the script reads that line only for the listen port, and no key material of any kind — private,
