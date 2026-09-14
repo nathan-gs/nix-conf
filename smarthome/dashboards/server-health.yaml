@@ -525,6 +525,13 @@ views:
           - type: tile
             entity: sensor.system_network_blocky_blocked
             name: Blocked (hour)
+          # Not ad blocking: the catch-all cutoff for `internet = false`
+          # devices, which retry their unreachable clouds forever. Kept next to
+          # Blocked so the two are read together — it is normally the larger of
+          # the pair and flat around the clock.
+          - type: tile
+            entity: sensor.system_network_blocky_devices_without_internet_blocked
+            name: No-internet devices (hour)
           - type: tile
             entity: sensor.system_network_blocky_cached
             name: Cached (hour)
@@ -544,6 +551,8 @@ views:
                 name: Queries
               - entity: sensor.system_network_blocky_blocked
                 name: Blocked
+              - entity: sensor.system_network_blocky_devices_without_internet_blocked
+                name: No-internet devices
               - entity: sensor.system_network_blocky_cached
                 name: Cached
 
@@ -574,6 +583,9 @@ views:
           - type: tile
             entity: sensor.system_network_blocky_blocked_total
             name: Blocked since restart
+          - type: tile
+            entity: sensor.system_network_blocky_devices_without_internet_blocked_total
+            name: No-internet devices since restart
           # Everything else the publisher sends rides along as attributes of
           # the problem sensor, so this is where to read the blocky version and
           # the allowlist size without minting an entity for either.

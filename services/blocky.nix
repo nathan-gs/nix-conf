@@ -9,8 +9,14 @@ let
     + lib.concatMapStrings (a: "${a} 3600 IN A ${d.ip}\n") d.aliases
   ) devices;
 
+  # The catch-all group applied to devices with `internet = false`. Named once
+  # here because three places have to agree on it: the deny/allow lists below,
+  # the per-client group assignment, and blocky-stats2mqtt — which splits the
+  # blocks this group produces out of the ad/tracker figures (see statsEntities).
+  devicesWithoutInternetGroup = "everything";
+
   restrictedClientsBlock = lib.listToAttrs (
-    map (d: lib.nameValuePair d.ip [ "everything" ]) (lib.filter (d: !d.internet) devices)
+    map (d: lib.nameValuePair d.ip [ devicesWithoutInternetGroup ]) (lib.filter (d: !d.internet) devices)
   );
 
   # Bare (no .l.nathan.gs suffix) mapping for every device name + alias, so
@@ -125,12 +131,30 @@ let
   statsEntities = [
     (mkCount { key = "queries"; label = "Queries last hour"; icon = "mdi:dns"; })
     (mkCount { key = "cached"; label = "Cached last hour"; icon = "mdi:lightning-bolt"; })
+    # `blocked` counts ad/tracker blocks only. The catch-all
+    # `devicesWithoutInternetGroup` denylist is a deliberate internet cutoff for
+    # `internet = false` devices, not filtering, and those devices retry their
+    # unreachable cloud endpoints forever — the Tuya car charger alone produced
+    # ~740 blocks/hour, ~90% of the raw blocked count, swamping the number this
+    # sensor exists to show. Those are counted separately below and excluded
+    # from the denominator of both percentages (see the script), so the
+    # percentages describe the traffic actually subject to filtering.
     (mkCount { key = "blocked"; label = "Blocked last hour"; icon = "mdi:cancel"; })
+    (mkCount {
+      key = "devices_without_internet_blocked";
+      label = "Devices without internet blocked last hour";
+      icon = "mdi:lan-disconnect";
+    })
     (mkCount { key = "resolved"; label = "Resolved last hour"; icon = "mdi:cloud-arrow-up-outline"; })
     (mkPct { key = "blocked_pct"; label = "Blocked share last hour"; icon = "mdi:shield-check"; })
     (mkPct { key = "cache_hit_pct"; label = "Cache hit rate last hour"; icon = "mdi:speedometer"; })
     (mkTotal { key = "queries_total"; label = "Queries total"; icon = "mdi:dns"; })
     (mkTotal { key = "blocked_total"; label = "Blocked total"; icon = "mdi:cancel"; })
+    (mkTotal {
+      key = "devices_without_internet_blocked_total";
+      label = "Devices without internet blocked total";
+      icon = "mdi:lan-disconnect";
+    })
     (mkEntity {
       key = "cache_entries";
       label = "Cache entries";
@@ -196,6 +220,11 @@ let
       BS_MQTT_USER = "blocky2mqtt";
       BS_MQTT_PASS = config.secrets.mqtt.users.blocky2mqtt.password;
       BS_DISCOVERY_FILE = "${statsDiscoveryFile}";
+      # Blocks attributed to these denylist groups are reported as
+      # `devices_without_internet_blocked` rather than `blocked`.
+      # Comma-separated; a block whose reason names several groups counts as a
+      # cutoff if any one of them matches.
+      BS_DEVICES_WITHOUT_INTERNET_GROUPS = devicesWithoutInternetGroup;
       BS_STATE = "/var/lib/blocky-stats/state";
     };
     serviceConfig = {
@@ -284,7 +313,7 @@ in
           # bare single-line entry (even regex-looking) gets treated as a
           # source reference (file/URL) to fetch, not inline content, and
           # silently fails to load (confirmed empirically: 0 entries).
-          everything = [
+          "${devicesWithoutInternetGroup}" = [
             ''
               /.*/
             ''
@@ -294,7 +323,7 @@ in
           # NTP hostnames, so restricted devices can still sync their clock
           # even though they otherwise only get l.nathan.gs. Domain entries
           # cover subdomains too (e.g. 0.pool.ntp.org, europe.pool.ntp.org).
-          everything = [
+          "${devicesWithoutInternetGroup}" = [
             ''
               l.nathan.gs
               pool.ntp.org
