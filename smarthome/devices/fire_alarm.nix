@@ -32,12 +32,25 @@ map
     }
     {
       # Aqara JY-GZ-01AQ (sold as SD-S01E; reports lumi.sensor_smoke.acn03).
-      # Checks in hourly rather than the Bosch 27min, so 90min would cry wolf -
-      # 200min keeps the same ~3 missed check-ins of margin.
+      #
+      # 1500min (25h) is z2m's own default for battery devices, and a deliberate
+      # exception to the 90min used for the Bosch units. This device does not
+      # self-report: measured 2026-09-14/15 it went 5.5h and then 21h without
+      # sending anything, and every lastSeen update came from something poking it.
+      # Any shorter timeout just flaps, and the honest answer is not a keepalive
+      # poll - that would spend a sealed CR17450's ten year budget to keep an
+      # indicator green.
+      #
+      # The risk is bounded because the detection chamber and local buzzer are
+      # autonomous hardware: smoke in the attic sounds this device whatever Zigbee,
+      # the NIKO or HA are doing. What a long timeout delays is notice that the
+      # *linkage* has degraded, and linkage here is a best-effort enhancement, not
+      # a certified interconnect. Commanding it still works - verified 2026-09-14,
+      # it sounded with the other three inside the 15s test window.
       zone = "hallway";
       name = "main";
       ieee = "0x54ef441001313d40";
       floor = "floor2";
-      availability = { timeout = 200; };
+      availability = { timeout = 1500; };
     }
   ]

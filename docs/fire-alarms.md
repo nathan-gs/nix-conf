@@ -200,11 +200,27 @@ unaffected.
   converter sends the commands but returns no optimistic state, so Twinguards
   keep reading `fire` until the device reports otherwise. Do not put it on a
   dashboard as proof a siren is off. The BSD-2's switch state is trustworthy.
-- **Availability timeout is 90 min** (`availability.timeout` per device),
-  against z2m's 1500 min default for battery devices. Both Bosch models check in
-  every 27 min, so 90 is three missed check-ins. The Aqara checks in **hourly**
-  (`quirkCheckinInterval("1_HOUR")`) and will need roughly 200 min instead, or it
-  will cry wolf.
+- **Availability timeout is 90 min for the Bosch units** (`availability.timeout`
+  per device), against z2m's 1500 min default for battery devices. Both Bosch
+  models check in every 27 min, so 90 is three missed check-ins.
+
+  **The Aqara is deliberately left at 1500 min (25h).** Its converter claims
+  hourly check-ins, but in practice it does not self-report at all: measured
+  2026-09-14/15 it went 5.5h and then 21h in silence, and every `lastSeen` update
+  came from something poking it. Anything shorter simply flaps.
+
+  A keepalive poll was considered and rejected. A `{"smoke": ""}` read probe would
+  work (`battery` is *not* GET-able on this device, despite being the obvious
+  choice - `e.battery()` carries no `ea.STATE_GET`), but it spends a sealed
+  CR17450's ten-year budget to keep an indicator green, and a green light earned
+  by poking says nothing about whether the device would report smoke.
+
+  The risk is bounded: the detection chamber and local buzzer are autonomous
+  hardware, so smoke in the attic sounds that device whatever Zigbee, the NIKO or
+  HA are doing. A long timeout delays notice that the *linkage* has degraded, and
+  linkage here is a best-effort enhancement rather than a certified interconnect.
+  Commanding it still works - verified 2026-09-14, it sounded with the other three
+  inside the 15s test window.
 - **Parent choice matters more than signal.** The living room unit died on
   2026-09-10 because it had parented to `floor0/living/light/tv`, a Tuya bulb
   that leaves the mesh whenever the lamp is switched off. Always pair through an
