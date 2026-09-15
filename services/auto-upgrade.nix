@@ -195,6 +195,14 @@ let
       pkgs.openssh
       pkgs.curl
       pkgs.systemd
+      # git runs this repo's .git/hooks/commit-msg, a bash script that shells
+      # out to grep and awk. Without these on PATH the commit at the very end
+      # of a successful upgrade dies with "env: 'bash': No such file or
+      # directory" — after the switch already happened — so flake.lock is left
+      # staged and the git push that carries it to the followers never runs.
+      pkgs.bash
+      pkgs.gnugrep
+      pkgs.gawk
     ]}:$PATH"
     export HOME="/root"
 
