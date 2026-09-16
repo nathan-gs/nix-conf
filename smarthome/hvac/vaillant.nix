@@ -214,6 +214,46 @@ in
         mode = "queued";
       }
       {
+        # The calorMATIC 370 has no radio clock: `bai DateTime` reads
+        # "nosignal" and the DCF registers are deliberately not polled (see
+        # services/ebusd.nix), so its RTC free-runs and drifts. Nothing else on
+        # the bus corrects it -- the boiler takes its time *from* the
+        # controller, not the other way round -- so left alone it slowly walks
+        # away from real time, which silently shifts the heating schedule, the
+        # legionella start slot (HwcLegioStartDay/Time) and StoragereleaseClock.
+        #
+        # nhtpc is NTP-synced, so HA is the accurate clock here. Both registers
+        # have a `w` row at access level "" in vaillant/15.370.csv (Date =
+        # b509/0e6100 HDA:3, Time = b509/0e6000 VTI), so no installer code is
+        # needed -- the same /set path the climate entities already use.
+        #
+        # Date is written before Time: the controller derives ActualWeekday
+        # from the date, and the weekday is what the schedules key off. Time
+        # goes last so the most precision-sensitive value is the freshest.
+        #
+        # Every 6h rather than daily so a DST jump is corrected within a few
+        # hours instead of being visible until the next night, and so drift
+        # stays in the seconds. Offset to :07 to stay clear of the on-the-hour
+        # cv.query poll burst above.
+        id = "cv_sync_clock";
+        alias = "cv.sync_clock";
+        trigger = [
+          {
+            platform = "time_pattern";
+            hours = "/6";
+            minutes = "7";
+          }
+        ];
+        action = [
+          # HDA:3 -> dd.mm.yyyy. now() is local time, so DST is handled.
+          (ha.action.mqtt_publish "ebusd/370/Date/set" "{{ now().strftime('%d.%m.%Y') }}" false)
+          (ha.action.delay "0:00:05")
+          # VTI -> HH:MM:SS
+          (ha.action.mqtt_publish "ebusd/370/Time/set" "{{ now().strftime('%H:%M:%S') }}" false)
+        ];
+        mode = "single";
+      }
+      {
         # Vaillant ecoTEC boilers warn on the display below ~1.0 bar and lock
         # out (F.22/F.75-style fault) around 0.7-0.8 bar. Warn early so it can
         # be topped up before the boiler actually faults.
