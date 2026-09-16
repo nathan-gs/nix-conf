@@ -3,9 +3,13 @@
   services.fail2ban = {
     enable = true;
     bantime-increment.enable = true;
-    ignoreIP = [
-      "192.168.0.0/24"
-    ];
+
+    # Same ranges nginx treats as internal (home-network.nix): LAN, the
+    # WireGuard subnet and localhost. Sourced from there rather than repeated
+    # so the two can never drift -- previously only the LAN was listed, which
+    # left a WireGuard client bannable by any jail even though nginx already
+    # trusts it.
+    ignoreIP = config.homeNetwork.trustedSources;
   };
 
 }

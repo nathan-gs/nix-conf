@@ -81,11 +81,30 @@
   };
 
   environment.etc."fail2ban/filter.d/nginx-http-auth-custom.conf".source = ./fail2ban/nginx-http-auth-custom.conf;
+  environment.etc."fail2ban/filter.d/nginx-forbidden-custom.conf".source = ./fail2ban/nginx-forbidden-custom.conf;
 
   services.fail2ban.jails = {
     nginx-http-auth-custom = {
       filter = "nginx-http-auth-custom";
       enabled = true;
+    };
+
+    # Scanners denied by an access rule (see the filter for why that is only
+    # ever a scanner). A handful of hosts are the overwhelming majority of the
+    # traffic -- one of them managed 2999 requests in 60 seconds -- so the
+    # point of this jail is to cut a burst off after the first second rather
+    # than to catch the long tail of one-shot drive-by probes, which no
+    # maxretry can ever see. bantime-increment is on globally
+    # (services/fail2ban.nix), so a host that comes back escalates from the
+    # hour below.
+    nginx-forbidden-custom = {
+      settings = {
+        enabled = true;
+        filter = "nginx-forbidden-custom";
+        maxretry = 5;
+        findtime = 600;
+        bantime = 3600;
+      };
     };
   };
 
