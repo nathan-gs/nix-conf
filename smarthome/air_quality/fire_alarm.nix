@@ -64,8 +64,31 @@ let
       # are unaffected - both verified the same evening.
       test = null;
       siren = { kind = "aqara"; entity = "select.floor2_hallway_fire_alarm_main_buzzer"; };
+      # z2m friendly name to probe daily - see probeAutomations below. Only this
+      # device needs it; the three Bosch units report on their own.
+      probe = "floor2/hallway/fire_alarm/main";
     }
   ];
+
+  # Daily keepalive read for devices that never report on their own.
+  #
+  # The attic Aqara is reachable but silent: it answers a request in ~4s, yet it
+  # sent nothing unprompted for 37h straight (measured 2026-09-15..17). A read is
+  # used rather than a write so nothing is committed to the device's flash, and
+  # `smoke` rather than `battery` because battery carries no ea.STATE_GET on this
+  # model and the request would simply be rejected. Reading `smoke` also has the
+  # nice property that a successful probe proves the safety-critical attribute is
+  # retrievable, not merely that the radio answered.
+  #
+  # One probe a day against the 25h availability timeout: if a probe fails,
+  # lastSeen stops advancing and the device goes offline about an hour later, so
+  # this is a real check rather than a green light manufactured on a timer.
+  probeAutomations = map
+    (a: ha.automation "system/fire_alarm.probe_${ha.genId a.probe}" {
+      triggers = [ (ha.trigger.at "09:00:00") ];
+      actions = [ (ha.action.mqtt_publish "zigbee2mqtt/${a.probe}/get" ''{"smoke":""}'' false) ];
+    })
+    (lib.filter (a: a ? probe) alarms);
 
   smokeSensors = map (a: a.smoke) alarms;
   # Devices whose self-test is observable. A device may set test = null when it
@@ -324,7 +347,7 @@ in
           ++ [ (ha.action.on wtwPower) ];
       })
 
-    ];
+    ] ++ probeAutomations;
 
     sensor = [];
     template = [
