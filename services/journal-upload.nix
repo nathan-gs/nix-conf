@@ -1,6 +1,6 @@
 # Forwards this host's journald to nhtpc (services/journal-remote.nix) over
 # the existing WireGuard link. Plain HTTP: wg0 is already encrypted.
-{ config, lib, ... }:
+{ config, lib, pkgs, ... }:
 
 {
   services.journald.upload = {
@@ -32,11 +32,36 @@
   # following units failed" and exits 4, which auto-upgrade reads as a failed
   # switch — so a log shipper hiccup fails the whole upgrade.
   #
-  # Treat exit 1 as success so the unit cycles through `inactive` instead of
-  # `failed`, and keep the restart delay flat rather than letting upstream's
-  # RestartSteps back it off toward 60s (a longer window is a bigger target).
-  # Trade-off: a genuine misconfiguration now shows up as a restart loop in
-  # the journal rather than a failed unit.
+  # `SuccessExitStatus=1` was the first attempt at that and is *not* enough. It
+  # keeps the unit out of `failed`, but switch-to-configuration's end-of-switch
+  # scan (pkgs/by-name/sw/switch-to-configuration-ng/src/main.rs) walks every
+  # active unit and flags any `.service` in the `auto-restart` substate whose
+  # D-Bus `ExecMainStatus != 0`. ExecMainStatus is the raw wait status of the
+  # last main process; SuccessExitStatus only changes how systemd *judges* that
+  # status, not the number it reports. So a service that keeps exiting 1 is
+  # flagged during its 10s restart gap even though it never enters `failed` —
+  # exactly the state nnas was caught in on 2026-09-19 (`activating
+  # (auto-restart)`, `code=exited, status=1/FAILURE`, switch exit 4). Note the
+  # scan is over *all* active units, so `restartIfChanged = false` would not
+  # have helped either: the unit does not have to be touched by the switch to
+  # be reported by it.
+  #
+  # The only thing that scan reads is the exit status, so make the process
+  # genuinely exit 0: wrap ExecStart in a shell that swallows the exit code.
+  # Restart=always still brings it back 10s later, and the restart delay is
+  # kept flat rather than letting upstream's RestartSteps back it off toward
+  # 60s (a longer window is a bigger target for a switch to land in).
+  #
+  # Trade-off: a genuine misconfiguration now shows up only as a restart loop
+  # in the journal — never as a failed unit, and so never in a switch summary
+  # or in `systemctl --failed`.
+  #
+  # Upstream's WatchdogSec=3min has to go with it. The wrapper, not
+  # systemd-journal-upload, is now the main process, and NotifyAccess defaults
+  # to `main`, so the real binary's WATCHDOG=1 pings would be ignored and
+  # systemd would kill the service every three minutes. `exec`ing the binary
+  # instead would keep the watchdog but hand its exit code straight back to
+  # systemd, which is the whole thing being avoided here.
   systemd.services.systemd-journal-upload = {
     # Never let repeated restarts park the unit in
     # `failed (start-request-repeated-too-quickly)` — same exit-4 problem.
@@ -44,7 +69,17 @@
     startLimitIntervalSec = 0;
 
     serviceConfig = {
-      SuccessExitStatus = [ 1 ];
+      # The empty first element emits a bare `ExecStart=` reset line, which
+      # systemd requires before overriding an upstream unit's ExecStart from a
+      # drop-in — without it this would be *appended* to the original.
+      ExecStart = lib.mkForce [
+        ""
+        "${pkgs.writeShellScript "journal-upload-ignore-exit" ''
+          ${config.systemd.package}/lib/systemd/systemd-journal-upload --save-state || :
+        ''}"
+      ];
+      WatchdogSec = lib.mkForce 0;
+
       RestartSec = lib.mkForce "10s";
       RestartSteps = 0;
       RestartMaxDelaySec = "10s";
