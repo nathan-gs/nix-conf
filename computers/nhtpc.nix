@@ -74,6 +74,9 @@
     syncRemotes = [
       { host = "nnas.wg"; flakeAttr = "nnas"; }
     ];
+    # nhtpc is the only host running nginx, and the only one that may commit,
+    # so it owns the refresh of the Cloudflare trust list (services/nginx.nix).
+    cloudflareIpsFile = "data/cloudflare-ips.nix";
     healthCheck = {
       enable = true;
       units = [

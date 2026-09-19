@@ -1,33 +1,15 @@
 { config, pkgs, lib, ... }:
 let
-  # Cloudflare's published edge ranges, from https://www.cloudflare.com/ips-v4
-  # and .../ips-v6, fetched 2026-09-19. They change rarely -- refresh by hand.
-  # A stale list fails safe: a new Cloudflare range simply goes back to showing
-  # the edge address, it never trusts something it shouldn't.
-  cloudflareRanges = [
-    "173.245.48.0/20"
-    "103.21.244.0/22"
-    "103.22.200.0/22"
-    "103.31.4.0/22"
-    "141.101.64.0/18"
-    "108.162.192.0/18"
-    "190.93.240.0/20"
-    "188.114.96.0/20"
-    "197.234.240.0/22"
-    "198.41.128.0/17"
-    "162.158.0.0/15"
-    "104.16.0.0/13"
-    "104.24.0.0/14"
-    "172.64.0.0/13"
-    "131.0.72.0/22"
-    "2400:cb00::/32"
-    "2606:4700::/32"
-    "2803:f800::/32"
-    "2405:b500::/32"
-    "2405:8100::/32"
-    "2a06:98c0::/29"
-    "2c0f:f248::/32"
-  ];
+  # Cloudflare's published edge ranges. The list is a GENERATED file, refreshed
+  # nightly by auto-upgrade (see data/cloudflare-ips.nix for the mechanics)
+  # so it cannot quietly rot: Cloudflare moves these rarely, but "rarely" is
+  # exactly the cadence a hand-maintained list is worst at tracking.
+  #
+  # A stale list fails safe either way: a range Cloudflare has added but we do
+  # not know about simply goes back to showing the edge address, and one they
+  # have retired is at worst a range we no longer receive traffic from. It
+  # never trusts something it shouldn't.
+  cloudflareRanges = import ../data/cloudflare-ips.nix;
 in
 {
 
