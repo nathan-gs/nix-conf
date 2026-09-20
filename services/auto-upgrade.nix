@@ -281,19 +281,18 @@ let
 
     cat "$tmp/v4" "$tmp/v6" > "$tmp/new"
 
-    # Compare against what the file already holds, so an unchanged list never
-    # rewrites it — otherwise the "Last updated" line alone would produce a
-    # commit every single night.
-    if [[ -f "$target" ]]; then
-      grep -oE '"[0-9a-fA-F.:]+/[0-9]{1,3}"' "$target" | tr -d '"' > "$tmp/current" || true
-      if cmp -s "$tmp/new" "$tmp/current"; then
-        echo "Cloudflare ranges unchanged ($v4_count IPv4, $v6_count IPv6)."
-        exit 0
-      fi
-    fi
-
-    echo "Cloudflare ranges CHANGED ($v4_count IPv4, $v6_count IPv6) — rewriting $target."
-
+    # Render the finished file first, then write it only if it differs from
+    # what is already on disk.
+    #
+    # The file carries no timestamp on purpose: it is a pure function of the
+    # fetched data, so an unchanged list renders byte-identically and produces
+    # no diff and no commit. When it *did* change, git log is the record of
+    # when — a "Last updated" line would only restate that while guaranteeing
+    # a diff every night.
+    #
+    # Comparing the rendered output rather than just the range list means a
+    # change to the header text below propagates too, so the file cannot drift
+    # from its own template.
     {
       echo "# Cloudflare edge IP ranges. GENERATED FILE — do not edit by hand."
       echo "#"
@@ -305,13 +304,22 @@ let
       echo "#"
       echo "# Hand edits here are lost on the next refresh. To change how the"
       echo "# list is fetched or validated, edit services/auto-upgrade.nix."
-      echo "#"
-      echo "# Last updated: $(date -u +%Y-%m-%d)"
       echo "["
       while read -r cidr; do printf '  "%s"\n' "$cidr"; done < "$tmp/new"
       echo "]"
     } > "$tmp/out.nix"
 
+    # Deliberately a bash string compare and not cmp(1): cmp ships in
+    # diffutils, not coreutils, so it was absent from this unit's PATH. Being
+    # inside an `if` condition it was exempt from `set -e`, so the failure was
+    # silent, the comparison always read false, and the file was rewritten
+    # every single night. Comparing in the shell needs no binary at all.
+    if [[ -f "$target" && "$(<"$target")" == "$(<"$tmp/out.nix")" ]]; then
+      echo "Cloudflare ranges unchanged ($v4_count IPv4, $v6_count IPv6)."
+      exit 0
+    fi
+
+    echo "Cloudflare ranges CHANGED ($v4_count IPv4, $v6_count IPv6) — rewriting $target."
     mv "$tmp/out.nix" "$target"
   '';
 
