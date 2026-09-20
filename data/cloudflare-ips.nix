@@ -1,14 +1,15 @@
 # Cloudflare edge IP ranges. GENERATED FILE — do not edit by hand.
 #
-# Refreshed nightly by the leader's auto-upgrade run (services/auto-upgrade.nix,
-# autoUpgrade.cloudflareIpsFile) from https://www.cloudflare.com/ips-v4 and
-# .../ips-v6, and committed alongside flake.lock. Consumed by services/nginx.nix
-# as the set_real_ip_from trust list that restores the real client address.
+# Refreshed nightly by the leader's auto-upgrade run
+# (services/auto-upgrade.nix, autoUpgrade.cloudflareIpsFile) from
+# https://www.cloudflare.com/ips-v4 and .../ips-v6, and committed
+# alongside flake.lock. Consumed by services/nginx.nix as the
+# set_real_ip_from trust list that restores the real client address.
 #
-# Hand edits here are lost on the next refresh. To change how the list is
-# fetched or validated, edit services/auto-upgrade.nix.
+# Hand edits here are lost on the next refresh. To change how the
+# list is fetched or validated, edit services/auto-upgrade.nix.
 #
-# Last updated: 2026-09-19
+# Last updated: 2026-09-20
 [
   "173.245.48.0/20"
   "103.21.244.0/22"
