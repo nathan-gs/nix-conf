@@ -8,8 +8,6 @@
 #
 # Hand edits here are lost on the next refresh. To change how the
 # list is fetched or validated, edit services/auto-upgrade.nix.
-#
-# Last updated: 2026-09-20
 [
   "173.245.48.0/20"
   "103.21.244.0/22"
