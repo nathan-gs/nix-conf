@@ -226,10 +226,10 @@
             # front-of-quarter headroom calc it is safe for set_current to react to immediately,
             # with no debounce.
             #
-            # Margin widened 0.3 -> 0.5 kW: set_current now debounces (1 min) and steps every 2
-            # min instead of reacting near-instantly, so reaching the 6A floor from 13A takes up
-            # to ~4 minutes once this trips. The wider margin gives that time back by triggering
-            # earlier, so the average still lands under the cap.
+            # Margin widened 0.3 -> 0.5 kW when set_current debounced for 1 min and stepped every
+            # 2 min, so 13A -> 6A could take ~4 min once this tripped. The step delay is 45s now
+            # (see set_current), so 13A -> 6A is ~1.5 min and this margin is conservative. It still
+            # triggers early enough that the average lands under the cap.
             name = "system/car_charger/capacity_near";
             unique_id = "system_car_charger_capacity_near";
             icon = "mdi:meter-electric";
@@ -519,7 +519,10 @@
                         {% endif %}
                       '';
                     }
-                    (ha.action.delay "00:01:00")
+                    # One step per 45s. Faster than this retrips the charger (E5, 2026-08-29:
+                    # three steps in ~2s). 13 -> 6 is three steps, so the floor is reached
+                    # after two waits, ~90s. capacity_near above is undebounced on purpose.
+                    (ha.action.delay "00:00:45")
                   ];
                 };
               }
