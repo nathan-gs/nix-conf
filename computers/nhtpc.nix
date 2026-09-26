@@ -214,6 +214,19 @@
     enable = true;
     externalInterface = "eno1";
     internalInterfaces = [ "wg0" ];
+    # Do not route the LAN. ip_forward is on for WireGuard, and without
+    # this the forward chain falls through to ACCEPT: a client told to use
+    # nhtpc as its gateway (the internet = false reservations in
+    # services/dhcp.nix) would be forwarded straight back out eno1, original
+    # source address, and the Technicolor would NAT it.
+    #
+    # This hook runs after the wg0→eno1 accept and the ESTABLISHED,RELATED
+    # accept, and before the chain is attached to FORWARD. INPUT is
+    # untouched, so DHCP, DNS and MQTT to this host still match nixos-fw.
+    # WireGuard return traffic is ESTABLISHED and is accepted first.
+    extraCommands = ''
+      iptables -w -t filter -A nixos-filter-forward -i eno1 -j DROP
+    '';
   };
 
   networking.wireguard.interfaces.wg0 = {

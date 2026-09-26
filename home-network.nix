@@ -67,9 +67,13 @@
             type = lib.types.bool;
             default = true;
             description = ''
-              Whether this device may resolve arbitrary internet domains.
-              false restricts it to l.nathan.gs only (best-effort DNS-level
-              cutoff — see services/blocky.nix).
+              Whether this device may reach the internet.
+              false hands it nhtpc as its DHCP gateway (services/dhcp.nix);
+              nhtpc drops forwarded traffic from the LAN, and blocky still
+              answers only l.nathan.gs for it. On-link traffic to nhtpc
+              (MQTT, Home Assistant, ebusd) is unaffected. A device that
+              ignores the gateway and sends to the router directly still
+              gets out — this is not a separate layer 2.
             '';
           };
         };
@@ -79,6 +83,13 @@
   };
 
   config.homeNetwork.devices = [
+    # Gateway. Not a DHCP client (it is the router option handed out by
+    # kea), so the reservation is inert — listed for router.l.nathan.gs.
+    # MAC is the Technicolor's LAN address (locally administered), read
+    # from the neighbor table. fritz.box still points here too, via the
+    # separate override in services/blocky.nix.
+    { name = "router"; mac = "02:10:18:ec:68:54"; ip = "192.168.0.1"; }
+
     # Local important stuff: .2-.20
     # Reservation is inert (nhtpc's eno1 is statically configured, never a
     # DHCP client) — listed for the DNS aliases. Bare "nhtpc" (no suffix,
