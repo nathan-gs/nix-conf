@@ -27,9 +27,16 @@ let
   # and balancing. 45 d is the outer edge of that (a bit past 30 d) and is
   # OK here: 147 mV at the 90–100 % knee is not capacity loss, the plateau
   # / cell-low alerts catch a real weak cell, and summer still clips 98 %+
-  # on big PV days. Seeded to 2026-08-12 — last known full
-  # (pylontech2mqtt only started recording 2026-08-21).
-  lastRebalanceInitial = "2026-08-12 12:00:00";
+  # on big PV days.
+  #
+  # No `initial` on input_datetime.solar_battery_last_rebalance. HA applies
+  # `initial` before restore and returns without reading the saved state
+  # (input_datetime/__init__.py, "Priority 1: Initial value"), so every
+  # restart — the 04:00 auto-upgrade included — rewrote the helper. A seed
+  # of 2026-08-12 did exactly that: rebalance.record stamped 2026-09-25
+  # 17:59 after a 4 h absorb, the 04:11 restart put 2026-08-12 back, and
+  # the 18:00 overdue nag fired the next evening because that day was 45.
+  # Same reason rebalance_absorb_accumulated_minutes has no `initial`.
   rebalanceMaxDaysDefault = 45;
   # CUMULATIVE hours at Solis SoC ≥ 98 % that count as an absorb window — the
   # tick no longer resets this to zero when SoC dips below 98 % (sunset,
@@ -337,7 +344,8 @@ in
         name = "solar/battery/last_rebalance";
         has_date = true;
         has_time = true;
-        initial = lastRebalanceInitial;
+        # No initial — see the comment on rebalanceMaxDaysDefault. A value
+        # here is reapplied on every HA start and discards the stamp.
         icon = "mdi:battery-sync";
       };
       solar_battery_rebalance_run_start = {
