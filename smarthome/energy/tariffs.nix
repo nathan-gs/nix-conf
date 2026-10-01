@@ -29,21 +29,40 @@ let
     gasFixedYear = 60.00;
   };
 
-  # Welkomstvoordeel: a per-kWh cut on the energy component only (explicitly
-  # excluding the vaste vergoeding and the groene stroom/WKK cost), for the
-  # first contract year -- 2026-10-01 .. 2027-09-30. Kept out of the input
-  # helpers so those keep showing the contract list price; the sensors below
-  # drop it by themselves once it lapses. The one-off 45 / 60 EUR welcome
-  # credits are not modelled: they land on an invoice, not on a price.
-  welcomeDiscountUntil = "2027-10-01";
+  # Both welkomstvoordelen run for the first contract year, 2026-10-01 ..
+  # 2027-09-30. That window is month-aligned, which is what lets the one-off
+  # credits below amortise as an exact 1/12 per month.
+  welcomeUntil = "2027-10-01";
+
+  # Welkomstvoordeel, per kWh: a cut on the energy component only, explicitly
+  # excluding the vaste vergoeding and the groene stroom/WKK cost. c(euro)/kWh.
+  # Kept out of the input helpers so those keep showing the contract list
+  # price; the sensors below drop it by themselves once it lapses.
   welcome = {
     electricity = 2.60;
     gas = 1.20;
   };
 
+  # Welkomstvoordeel, one-off: a credit on the first-year invoices, EUR incl.
+  # 6% BTW. It buys down the standing charge rather than the energy price, so
+  # it is prorated into the *fixed* cost -- 1/12 per month off
+  # `*_cost_monthly_fixed`, which carries it through `*_cost_daily_fixed` into
+  # the `*_fixed_cost_total` the Energy dashboard accrues. Spreading it beats
+  # dropping it on one month: the fixed/variable split we track stays
+  # comparable month to month, and the accrued total never has to step
+  # backwards (`total_increasing` would read that as a meter reset).
+  welcomeCredit = {
+    electricity = 45.00;
+    gas = 60.00;
+  };
+
   # Jinja expression: the welcome discount in EUR/kWh, 0 once it has lapsed.
   welcomeDiscount = c: ''
-    (${toString c} / 100 if now() < as_local(as_datetime('${welcomeDiscountUntil}')) else 0)'';
+    (${toString c} / 100 if now() < as_local(as_datetime('${welcomeUntil}')) else 0)'';
+
+  # Jinja expression: this month's share of the one-off credit, 0 once lapsed.
+  welcomeCreditMonthly = c: ''
+    (${toString c} / 12 if now() < as_local(as_datetime('${welcomeUntil}')) else 0)'';
 in
 {
 
@@ -156,7 +175,8 @@ in
                 {% set imewo = 18.61 %}
               {% endif %}
               {% set databeheer = 18.92 %}
-              {{ ((engie / 12) + (imewo / 12) + (databeheer / 12)) | round(5) }}
+              {% set welcome_credit = ${welcomeCreditMonthly welcomeCredit.gas} %}
+              {{ ((engie / 12) + (imewo / 12) + (databeheer / 12) - welcome_credit) | round(5) }}
             '';
             state_class = "measurement";
           }           
@@ -202,7 +222,8 @@ in
               {% set imewo_capacitytariffs_per_kw_year = 57.453 %}
               {% set capacity_kw = states('sensor.electricity_capacity_peak_12months') | float(2.5) %}
               {% set databeheer = 18.92 %}
-              {{ ((engie / 12) + ((imewo_capacitytariffs_per_kw_year / 12) * capacity_kw) + (databeheer / 12)) | round(5) }}
+              {% set welcome_credit = ${welcomeCreditMonthly welcomeCredit.electricity} %}
+              {{ ((engie / 12) + ((imewo_capacitytariffs_per_kw_year / 12) * capacity_kw) + (databeheer / 12) - welcome_credit) | round(5) }}
             '';
             state_class = "measurement";
           }
