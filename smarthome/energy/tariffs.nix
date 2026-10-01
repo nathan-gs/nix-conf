@@ -14,6 +14,13 @@ let
   # All c(euro)/kWh incl. 6% BTW, except the injection price, which is not
   # VAT-liable. These are the *energy component* only -- grid fees, green
   # energy/WKK and accijns are added by the sensors below.
+  #
+  # The grid terms are the FLUVIUS IMEWO rows of the prijsfiche. The contract
+  # itself names only "FLUVIUS", so for the record: Gent is an Imewo member
+  # municipality for both elektriciteit and aardgas (Imewo activiteitenverslag
+  # 2024, gemeenten table), and 9042 Sint-Kruis-Winkel is a Gent deelgemeente.
+  # Picking the wrong DNB row would be silent and expensive -- the Fluvius
+  # kWh-tarieven span 5.28 .. 6.70 c(euro)/kWh -- so don't re-guess it.
   engie = {
     # Tweevoudige meter (day/night registers), Vlaams Gewest.
     electricityPeak = 18.765;     # piekuren
