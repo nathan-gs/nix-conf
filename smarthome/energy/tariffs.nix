@@ -137,9 +137,9 @@ in
             state = ''
               {% set energycomponent = (states('input_number.gas_cost_engie_drive_kwh_energycomponent') | float) - ${welcomeDiscount welcome.gas} %}
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
-              {# Imewo prop. term T2 (>=5001 kWh) / T1 (0-5000), incl. ODV+toeslagen, incl. BTW #}
+              {# Imewo prop. term T2 (5001-150000 kWh) / T1 (<=5000), incl. ODV+toeslagen, incl. BTW #}
               {% set imewo = (1.02399 / 100) %}
-              {% if gas_yearly < 5000 %}
+              {% if gas_yearly <= 5000 %}
                 {% set imewo = (2.62774 / 100) %}
               {% endif %}
               {# Fluxys transport ~1.56 €/MWh excl. → ~0.165 c€/kWh incl. BTW #}
@@ -147,9 +147,9 @@ in
               {# Energiebijdrage abolished 2026-08-01 #}
               {% set energiebijdrage = 0 %}
               {# Bijzondere accijns incl. BTW: >12 MWh / 0-12 MWh (from 2026-08-01) #}
-              {% set accijns = (1.183 / 100) %}
-              {% if gas_yearly < 12000 %}
-                {% set accijns = (1.093 / 100) %}
+              {% set accijns = (1.18296 / 100) %}
+              {% if gas_yearly <= 12000 %}
+                {% set accijns = (1.09286 / 100) %}
               {% endif %}
               {{ (energycomponent + imewo + transport + energiebijdrage + accijns) | round(5) }}
             '';
