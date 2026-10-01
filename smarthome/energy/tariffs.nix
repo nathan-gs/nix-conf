@@ -1,12 +1,64 @@
 { config, pkgs, lib, ha, ... }:
+let
+  # -- ENGIE Empower Vast ----------------------------------------------------
+  # Current contract, replacing Engie Drive. Prijsfiche "Vaste prijzen voor
+  # contracten afgesloten in Augustus 2026, onbepaalde duur", contract version
+  # 10/08/2026, supply from 2026-10-01. Price is guaranteed for at least one
+  # year and may be revised yearly (ENGIE notifies 2 months ahead) -- when that
+  # letter arrives, update the numbers here.
+  #
+  # Entity names still say `engie_drive`: renaming them would cost the input
+  # helpers their history and their place on the dashboards, and they have
+  # always meant "whatever the current ENGIE contract charges".
+  #
+  # All c(euro)/kWh incl. 6% BTW, except the injection price, which is not
+  # VAT-liable. These are the *energy component* only -- grid fees, green
+  # energy/WKK and accijns are added by the sensors below.
+  engie = {
+    # Tweevoudige meter (day/night registers), Vlaams Gewest.
+    electricityPeak = 18.765;     # piekuren
+    electricityOffpeak = 13.384;  # daluren -- "extra laag daltarief"
+    gas = 6.576;
+    # Injection is paid at the same rate on every register (piek/dal/nacht).
+    injectionPeak = 3.190;
+    injectionOffpeak = 3.190;
+    # Vaste vergoeding, EUR/year. Charged pro rata the actual supply days, and
+    # only once for a customer who both draws and injects -- so this single
+    # 90 EUR also covers the injection contract.
+    electricityFixedYear = 90.00;
+    gasFixedYear = 60.00;
+  };
+
+  # Welkomstvoordeel: a per-kWh cut on the energy component only (explicitly
+  # excluding the vaste vergoeding and the groene stroom/WKK cost), for the
+  # first contract year -- 2026-10-01 .. 2027-09-30. Kept out of the input
+  # helpers so those keep showing the contract list price; the sensors below
+  # drop it by themselves once it lapses. The one-off 45 / 60 EUR welcome
+  # credits are not modelled: they land on an invoice, not on a price.
+  welcomeDiscountUntil = "2027-10-01";
+  welcome = {
+    electricity = 2.60;
+    gas = 1.20;
+  };
+
+  # Jinja expression: the welcome discount in EUR/kWh, 0 once it has lapsed.
+  welcomeDiscount = c: ''
+    (${toString c} / 100 if now() < as_local(as_datetime('${welcomeDiscountUntil}')) else 0)'';
+in
 {
 
   # https://try.jsoup.org/
 
   services.home-assistant.config = {
 
+    # `initial` is what makes the repo -- rather than whatever was last typed
+    # into the UI -- the source of truth for the contract price: HA forces it on
+    # every restart instead of restoring the previous state. The CREG injection
+    # rate below has no `initial`: it is a regulated figure that changes on its
+    # own schedule and is maintained by hand.
     input_number = {
       gas_cost_engie_drive_kwh_energycomponent = {
+        initial = engie.gas / 100;
         step = 0.001;
         min = 0;
         max = 2;
@@ -14,6 +66,7 @@
         mode = "box";
       };
       electricity_cost_engie_drive_peak_kwh_energycomponent = {
+        initial = engie.electricityPeak / 100;
         step = 0.001;
         min = 0;
         max = 2;
@@ -21,6 +74,7 @@
         mode = "box";
       };
       electricity_cost_engie_drive_offpeak_kwh_energycomponent = {
+        initial = engie.electricityOffpeak / 100;
         step = 0.001;
         min = 0;
         max = 2;
@@ -28,6 +82,7 @@
         mode = "box";
       };
       electricity_injection_engie_drive_peak_kwh = {
+        initial = engie.injectionPeak / 100;
         step = 0.001;
         min = 0;
         max = 2;
@@ -35,6 +90,7 @@
         mode = "box";
       };
       electricity_injection_engie_drive_offpeak_kwh = {
+        initial = engie.injectionOffpeak / 100;
         step = 0.001;
         min = 0;
         max = 2;
@@ -60,7 +116,7 @@
             # Fluvius Imewo 2026 net + federal (post 2026-08-01). All c€/€ incl. 6% BTW.
             # VNR: FI ELEK/GAS 2026; federal accijns reform abolishes energiebijdrage from Aug 2026.
             state = ''
-              {% set energycomponent = states('input_number.gas_cost_engie_drive_kwh_energycomponent') | float %}
+              {% set energycomponent = (states('input_number.gas_cost_engie_drive_kwh_energycomponent') | float) - ${welcomeDiscount welcome.gas} %}
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
               {# Imewo prop. term T2 (>=5001 kWh) / T1 (0-5000), incl. ODV+toeslagen, incl. BTW #}
               {% set imewo = (1.02399 / 100) %}
@@ -93,7 +149,7 @@
             unit_of_measurement = "€";
             state = ''
               {% set gas_yearly = (states('sensor.gas_delivery_yearly') | float * 11.5822997166)  %}
-              {% set engie = 37.1 %}
+              {% set engie = ${toString engie.gasFixedYear} %}
               {# Imewo vaste term T2 / T1, incl. BTW #}
               {% set imewo = 98.81 %}
               {% if gas_yearly < 5000 %}
@@ -109,7 +165,7 @@
             unique_id = "electricity_cost_peak_kwh";
             unit_of_measurement = "€/kWh";
             state = ''
-              {% set energycomponent = states('input_number.electricity_cost_engie_drive_peak_kwh_energycomponent') | float %}
+              {% set energycomponent = (states('input_number.electricity_cost_engie_drive_peak_kwh_energycomponent') | float) - ${welcomeDiscount welcome.electricity} %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
               {# Imewo LS piekmeting: netgebruik + ODV + toeslagen, incl. BTW (same peak/offpeak) #}
               {% set imewo = (5.54236 / 100) %}
@@ -126,7 +182,7 @@
             unique_id = "electricity_cost_offpeak_kwh";
             unit_of_measurement = "€/kWh";            
             state = ''
-              {% set energycomponent = states('input_number.electricity_cost_engie_drive_offpeak_kwh_energycomponent') | float %}
+              {% set energycomponent = (states('input_number.electricity_cost_engie_drive_offpeak_kwh_energycomponent') | float) - ${welcomeDiscount welcome.electricity} %}
               {% set wkk_and_greenenergy = (1.582 / 100) %}
               {% set imewo = (5.54236 / 100) %}
               {% set energiebijdrage = 0 %}
@@ -140,7 +196,7 @@
             unique_id = "electricity_cost_monthly_fixed";
             unit_of_measurement = "€";
             state = ''
-              {% set engie = 100.7 %}
+              {% set engie = ${toString engie.electricityFixedYear} %}
               {# Imewo capaciteitstarief 2026 €/kW/year incl. BTW; billed monthly as 1/12.
                  Billable kW = avg of last 12 monthly peaks (each floored at 2.5 kW). #}
               {% set imewo_capacitytariffs_per_kw_year = 57.453 %}
