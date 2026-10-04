@@ -3,8 +3,8 @@
 {
   environment.systemPackages = with pkgs; [
     pkgs.nixpkgs-unstable.esphome
-    claude-code
-    grok-build
+    pkgs.nixpkgs-unstable.claude-code
+    pkgs.nixpkgs-unstable.grok-build
     gemini-cli
     github-cli
   ];
