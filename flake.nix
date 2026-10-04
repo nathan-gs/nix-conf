@@ -17,7 +17,7 @@
 
   outputs = { self, nixpkgs, nixpkgs-unstable, secrets, photoprism-slideshow, nixos-vscode-server, ... }:
     let
-      overlay = final: prev: { nixpkgs-unstable = nixpkgs-unstable.legacyPackages.${prev.stdenv.hostPlatform.system}; };
+      overlay = final: prev: { nixpkgs-unstable = import nixpkgs-unstable { inherit (prev.stdenv.hostPlatform) system; inherit (prev) config; }; };
       overlayModule = ({ config, pkgs, ... }: { nixpkgs.overlays = [ overlay ]; });
       platformModule = { nixpkgs.hostPlatform = "x86_64-linux"; };
 
