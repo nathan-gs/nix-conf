@@ -2,7 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ config, pkgs, modulesPath, ... }:
+{ config, lib, pkgs, modulesPath, ... }:
 
 {
   imports =
@@ -56,6 +56,20 @@
   # at 05:00/05:45 from whatever flake.lock it finds, and mails its own
   # failures. nhtpc does not switch us — see autoUpgrade.syncRemotes.
   autoUpgrade.updateFlake = false;
+
+  # Root is a 32 GB DOM whose ext4 inode table is fixed at mkfs (~1.9M) and
+  # cannot grow. Flake systems pin the whole nixpkgs tree from
+  # /etc/nix/registry.json, ~90k inodes per generation, and auto-optimise-store
+  # is off so those copies do not share inodes. gc.nix keeps 14 days, which on
+  # this host is ~14 full nixpkgs checkouts — the table hit 100% on 2026-10-09
+  # with 6 GB of blocks still free.
+  #
+  # GC runs nightly, before the 05:00 upgrade. Four days of generations plus
+  # the one the upgrade is about to add stays near half the inode table.
+  # grub.configurationLimit in gc.nix is already 5, so the boot menu never
+  # offered the generations this drops.
+  nix.gc.dates = lib.mkForce "daily";
+  nix.gc.options = lib.mkForce "--delete-older-than 4d";
 
   disks = {
     root = "ata-SDV-32_987032400115";
