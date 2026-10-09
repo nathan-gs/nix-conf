@@ -209,18 +209,23 @@ unaffected.
   2026-09-14/15 it went 5.5h and then 21h in silence, and every `lastSeen` update
   came from something poking it. Anything shorter simply flaps.
 
-  A keepalive poll was considered and rejected. A `{"smoke": ""}` read probe would
-  work (`battery` is *not* GET-able on this device, despite being the obvious
-  choice - `e.battery()` carries no `ea.STATE_GET`), but it spends a sealed
-  CR17450's ten-year budget to keep an indicator green, and a green light earned
-  by poking says nothing about whether the device would report smoke.
+  The poke is a `{"smoke": ""}` read (`battery` is not GET-able - `e.battery()`
+  carries no `ea.STATE_GET`). `system/fire_alarm.probe_floor2_hallway_fire_alarm_main`
+  publishes it at 09:00, and again when
+  `binary_sensor.floor2_hallway_fire_alarm_main_smoke` has been `unavailable`
+  for 2 minutes — that is z2m marking the device offline, so a dropped link is
+  read when it happens instead of waiting for the next morning. A read, so
+  nothing is committed to the cell's flash. The trigger only counts a change
+  from `on`/`off`, and the 2 minutes skips the availability republish every z2m
+  restart does. A failed read leaves `lastSeen` where it is, so the entity stays
+  unavailable and the offline trigger does not re-fire; the next try is 09:00.
 
-  The risk is bounded: the detection chamber and local buzzer are autonomous
-  hardware, so smoke in the attic sounds that device whatever Zigbee, the NIKO or
-  HA are doing. A long timeout delays notice that the *linkage* has degraded, and
-  linkage here is a best-effort enhancement rather than a certified interconnect.
-  Commanding it still works - verified 2026-09-14, it sounded with the other three
-  inside the 15s test window.
+  The detection chamber and local buzzer are autonomous hardware, so smoke in
+  the attic sounds that device whatever Zigbee, the NIKO or HA are doing. A long
+  timeout delays notice that the *linkage* has degraded, and linkage here is a
+  best-effort enhancement rather than a certified interconnect. Commanding it
+  still works - verified 2026-09-14, it sounded with the other three inside the
+  15s test window.
 - **Parent choice matters more than signal.** The living room unit died on
   2026-09-10 because it had parented to `floor0/living/light/tv`, a Tuya bulb
   that leaves the mesh whenever the lamp is switched off. Always pair through an

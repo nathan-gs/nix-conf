@@ -64,13 +64,13 @@ let
       # are unaffected - both verified the same evening.
       test = null;
       siren = { kind = "aqara"; entity = "select.floor2_hallway_fire_alarm_main_buzzer"; };
-      # z2m friendly name to probe daily - see probeAutomations below. Only this
-      # device needs it; the three Bosch units report on their own.
+      # z2m friendly name for the keepalive read - see probeAutomations below.
+      # Only this device needs it; the three Bosch units report on their own.
       probe = "floor2/hallway/fire_alarm/main";
     }
   ];
 
-  # Daily keepalive read for devices that never report on their own.
+  # Keepalive read for devices that never report on their own.
   #
   # The attic Aqara is reachable but silent: it answers a request in ~4s, yet it
   # sent nothing unprompted for 37h straight (measured 2026-09-15..17). A read is
@@ -80,12 +80,30 @@ let
   # nice property that a successful probe proves the safety-critical attribute is
   # retrievable, not merely that the radio answered.
   #
-  # One probe a day against the 25h availability timeout: if a probe fails,
-  # lastSeen stops advancing and the device goes offline about an hour later, so
-  # this is a real check rather than a green light manufactured on a timer.
+  # Two ways in, one read:
+  #   - 09:00, so a device that stays quiet is still touched once a day.
+  #   - its smoke entity sitting unavailable. z2m flips that 25h after the last
+  #     answer (availability.timeout on the device entry), which is exactly when
+  #     the daily read was missed or the link dropped. Probe then, instead of
+  #     leaving it offline until the next morning.
+  # `from` is on/off so a startup `unknown` is not a dropped link. `for` skips
+  # the few seconds every z2m restart spends republishing availability — each
+  # probe spends a sealed cell, so a restart must not become one. A failed probe
+  # leaves lastSeen where it is, the entity stays unavailable, and this trigger
+  # does not re-fire; the next attempt is the following 09:00.
+  probeOfflineFor = "00:02:00";
   probeAutomations = map
     (a: ha.automation "system/fire_alarm.probe_${ha.genId a.probe}" {
-      triggers = [ (ha.trigger.at "09:00:00") ];
+      triggers = [
+        (ha.trigger.at "09:00:00")
+        {
+          platform = "state";
+          entity_id = a.smoke;
+          from = [ "on" "off" ];
+          to = "unavailable";
+          for = probeOfflineFor;
+        }
+      ];
       actions = [ (ha.action.mqtt_publish "zigbee2mqtt/${a.probe}/get" ''{"smoke":""}'' false) ];
     })
     (lib.filter (a: a ? probe) alarms);

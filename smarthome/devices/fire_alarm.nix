@@ -37,9 +37,10 @@ map
       # exception to the 90min used for the Bosch units. This device does not
       # self-report: measured 2026-09-14/15 it went 5.5h and then 21h without
       # sending anything, and every lastSeen update came from something poking it.
-      # Any shorter timeout just flaps, and the honest answer is not a keepalive
-      # poll - that would spend a sealed CR17450's ten year budget to keep an
-      # indicator green.
+      # Any shorter timeout just flaps. The poke is the smoke read in
+      # smarthome/air_quality/fire_alarm.nix: once a day, and again when this
+      # device goes offline. The timeout stays long so a missed read shows up as
+      # offline instead of the availability bit flapping on its own.
       #
       # The risk is bounded because the detection chamber and local buzzer are
       # autonomous hardware: smoke in the attic sounds this device whatever Zigbee,
