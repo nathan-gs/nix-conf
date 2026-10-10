@@ -8,6 +8,7 @@
     ./dishwasher.nix
     ./kiosk.nix
     ./lights.nix
+    ./mini_garden.nix
     ./pump.nix
     ./sonos.nix
     ./tv.nix

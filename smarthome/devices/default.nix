@@ -8,6 +8,7 @@ let
   lights = import ./light.nix;
   metering_plugs = import ./metering_plug.nix;
   plugs = import ./plug.nix;
+  remotes = import ./remote.nix;
   rtv = import ./rtv.nix;
   temperature = import ./temperature.nix;
   windows = import ./window.nix;
@@ -23,6 +24,7 @@ in
 ++ light_switch
 ++ metering_plugs
 ++ plugs
+++ remotes
 ++ rtv
 ++ temperature
 ++ windows

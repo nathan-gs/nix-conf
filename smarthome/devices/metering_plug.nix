@@ -115,6 +115,12 @@ map
       floor = "floor0";
     }
     {
+      zone = "keuken";
+      name = "mini_garden";
+      ieee = "0xa4c1384a53e2023e";
+      floor = "floor0";
+    }
+    {
       zone = "fen";
       name = "airco";
       ieee = "0xa4c1381f8ccf7230";
