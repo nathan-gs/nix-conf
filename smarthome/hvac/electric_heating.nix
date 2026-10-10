@@ -214,6 +214,90 @@ in
       }
     ];
 
+    # Auxiliary is the solar-dump heaters (living, bureau, Nikolai). Sun is
+    # assigned here before the car charger: grid import is absorbed by the car
+    # first, and only the leftover import is this group's grid share.
+    powercalc.sensors = [
+      {
+        create_group = "electric_heating_auxiliary";
+        entities = [
+          {
+            power_sensor_id = "sensor.floor0_living_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.floor0_living_metering_plug_verwarming_energy";
+          }
+          {
+            power_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_energy";
+          }
+          {
+            power_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_energy";
+          }
+        ];
+      }
+      {
+        name = "electric_heating_auxiliary_solar";
+        unique_id = "electric_heating_auxiliary_solar";
+        entity_id = "sensor.dummy";
+        fixed.power = ''
+          {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
+          {% set heating = states('sensor.electric_heating_auxiliary_power') | float(0) %}
+          {% set car = states('sensor.car_charger_power') | float(0) %}
+          {% set solar_pool = heating + car - import_from_grid %}
+          {% if solar_pool < 0 %}
+            {% set solar_pool = 0 %}
+          {% endif %}
+          {% set power = min(heating, solar_pool) %}
+          {{ power }}
+        '';
+        create_utility_meters = true;
+        utility_meter_types = [ "hourly" "daily" "monthly" ];
+      }
+      {
+        name = "electric_heating_auxiliary_grid";
+        unique_id = "electric_heating_auxiliary_grid";
+        entity_id = "sensor.dummy";
+        fixed.power = ''
+          {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
+          {% set heating = states('sensor.electric_heating_auxiliary_power') | float(0) %}
+          {% set car = states('sensor.car_charger_power') | float(0) %}
+          {% set grid_left = import_from_grid - car %}
+          {% if grid_left < 0 %}
+            {% set grid_left = 0 %}
+          {% endif %}
+          {% set power = min(heating, grid_left) %}
+          {{ power }}
+        '';
+        create_utility_meters = true;
+        utility_meter_types = [ "hourly" "daily" "monthly" ];
+      }
+      {
+        create_group = "electric_heating";
+        entities = [
+          {
+            power_sensor_id = "sensor.floor0_living_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.floor0_living_metering_plug_verwarming_energy";
+          }
+          {
+            power_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_energy";
+          }
+          {
+            power_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_energy";
+          }
+          {
+            power_sensor_id = "sensor.floor1_badkamer_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.floor1_badkamer_metering_plug_verwarming_energy";
+          }
+          {
+            power_sensor_id = "sensor.system_wtw_metering_plug_verwarming_power";
+            energy_sensor_id = "sensor.system_wtw_metering_plug_verwarming_energy";
+          }
+        ];
+      }
+    ];
+
     "automation manual" = []
       ++ map (v: automateTurnOn v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" "floor1_nikolai_metering_plug_verwarming" "floor1_badkamer_metering_plug_verwarming"]
       ++ map (v: automateTurnOff v) [ "system_wtw_metering_plug_verwarming" "floor0_living_metering_plug_verwarming" "floor0_bureau_metering_plug_verwarming" "floor1_nikolai_metering_plug_verwarming" "floor1_badkamer_metering_plug_verwarming"];

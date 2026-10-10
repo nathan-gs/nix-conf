@@ -1,0 +1,69 @@
+# YAML-mode dashboard, registered from smarthome/dashboards.nix.
+# Not editable in the UI: edit this file and switch.
+# Same URL as the existing sidebar dashboard, so the storage copy is hidden.
+views:
+- title: Home
+  cards:
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.floor0_living_in_use
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.floor0_bureau_in_use
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.floor0_keuken_in_use
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.floor1_badkamer_in_use
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.floor1_fen_in_use
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.floor1_morgane_in_use
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.floor1_nikolai_in_use
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.holiday_at_home
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.coming_home
+    name: Coming Home?
+    show_state: false
+  - show_name: true
+    show_icon: true
+    type: button
+    tap_action:
+      action: toggle
+    entity: input_boolean.occupancy_somebody_home
+    name: Somebody Home

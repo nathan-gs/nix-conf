@@ -1,1744 +1,1747 @@
+# YAML-mode dashboard, registered from smarthome/dashboards.nix.
+# Not editable in the UI: edit this file and switch.
+# Same URL as the existing sidebar dashboard, so the storage copy is hidden.
 views:
-  - title: WTW
-    icon: mdi:fan
-    badges: []
+- title: WTW
+  icon: mdi:fan
+  badges: []
+  cards:
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          - type: entities
-            title: WTW
-            show_header_toggle: false
-            entities:
-              - entity: fan.itho_wtw_fan
-                name: WTW Unit
-                type: custom:fan-mode-button-row
-            state_color: false
-          - type: history-graph
-            entities:
-              - entity: sensor.itho_wtw_actual_mode
-            hours_to_show: 24
-          - type: entities
-            entities:
-              - type: attribute
-                name: house needs cooling and temp outside lower
-                entity: sensor.wtw_target_fan
-                attribute: house_needs_cooling_and_temp_outside_lower
-              - type: attribute
-                name: dew pointhigh and outdoor lower
-                entity: sensor.wtw_target_fan
-                attribute: dewpoint_high_and_dewpoint_outdoor_lower
-              - type: attribute
-                name: humidity max over 80%
-                entity: sensor.wtw_target_fan
-                attribute: humidity_max_over_80
-              - type: attribute
-                name: is cooking
-                entity: sensor.wtw_target_fan
-                attribute: is_cooking
-              - type: attribute
-                name: is using sanitary
-                entity: sensor.wtw_target_fan
-                attribute: is_using_sanitary
-          - type: entities
-            show_header_toggle: false
-            entities:
-              - entity: sensor.itho_wtw_inlet_fan
-              - entity: sensor.itho_wtw_outlet_fan
-              - entity: binary_sensor.itho_wtw_bypass
-              - entity: binary_sensor.itho_wtw_valve
-              - entity: binary_sensor.itho_wtw_is_summerday
-              - entity: sensor.itho_wtw_airfilter
-              - entity: sensor.itho_wtw_inlet_temperature
-              - entity: sensor.itho_wtw_outlet_temperature
-              - entity: binary_sensor.system_wtw_metering_plug_verwarming_target
-              - entity: switch.floor0_living_wtw_valve_main
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
-            entities:
-              - sensor.system_wtw_metering_plug_wtw_power
-              - sensor.system_wtw_metering_plug_verwarming_power
-            stat_types:
-              - mean
-              - max
-            days_to_show: 0.2
-            hide_legend: true
-      - type: vertical-stack
-        cards:
-          - type: weather-forecast
-            entity: weather.openweathermap
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: dewpoint
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 7
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#3498db'
-              - '#e74c3c'
-              - '#1a4c6e'
-              - '#f3721e'
-            header:
-              show: false
-            series:
-              - entity: sensor.indoor_dewpoint
-                name: Indoor Dewpoint
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: dewpoint
-              - entity: sensor.outdoor_dewpoint
-                name: Outdoor Dewpoint
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: dewpoint
-              - entity: sensor.indoor_humidity
-                name: Indoor Humidity
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-              - entity: sensor.outdoor_humidity
-                name: Outdoor Humidity
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-              - entity: sensor.indoor_humidity_max
-                name: Indoor Humidity (max)
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 7
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#f3721e'
-              - '#2772a5'
-              - '#e74c3c'
-              - '#1a4c6e'
-              - '#f3721e'
-            header:
-              show: false
-            series:
-              - entity: sensor.indoor_temperature
-                name: Indoor Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.outdoor_temperature
-                name: Outdoor Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.indoor_humidity
-                name: Indoor Humidity
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-              - entity: sensor.outdoor_humidity
-                name: Outdoor Humidity
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-              - entity: sensor.indoor_humidity_max
-                name: Indoor Humidity (max)
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 7
-            color_list:
-              - '#ff9800'
-              - '#3498db'
-              - '#e74c3c'
-              - '#1a4c6e'
-              - '#f3721e'
-            header:
-              show: false
-            series:
-              - entity: sensor.system_wtw_air_quality_inlet_temperature
-                name: Inlet Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.system_wtw_air_quality_to_house_temperature
-                name: To House Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.system_wtw_air_quality_outlet_temperature
-                name: Outlet Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: temperature
-      - type: vertical-stack
-        cards:
-          - type: markdown
-            content: ' '
-            title: Air Quality
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: pm25
-                apex_config:
-                  forceNiceScale: true
-                  tickAmount: 7
-            color_list:
-              - '#ff9800'
-              - '#3498db'
-              - '#e74c3c'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.system_wtw_air_quality_inlet_pm25
-                name: Inlet PM2.5
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: pm25
-              - entity: sensor.system_wtw_air_quality_to_house_pm25
-                name: To House PM2.5
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: pm25
-              - entity: sensor.system_wtw_air_quality_outlet_pm25
-                name: Outlet PM2.5
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: pm25
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: tvoc
-                min: 0
-                max: 500
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 10
-            color_list:
-              - '#ff9800'
-              - '#3498db'
-              - '#e74c3c'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.system_wtw_air_quality_inlet_voc_index
-                name: Inlet VOC
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: tvoc
-              - entity: sensor.system_wtw_air_quality_to_house_voc_index
-                name: To House VOC
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: tvoc
-              - entity: sensor.system_wtw_air_quality_outlet_voc_index
-                name: Outlet VOC
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: tvoc
-      - type: vertical-stack
-        cards:
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            color_list:
-              - '#3498db'
-              - '#ff9800'
-              - '#e74c3c'
-              - '#1a4c6e'
-            header:
-              show: true
-              title: CO2
-              show_states: true
-              colorize_states: true
-            series:
-              - entity: sensor.floor0_living_fire_alarm_main_eco2
-                name: Living CO2 (fire)
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-              - entity: sensor.floor0_bureau_switchbot_carbon_dioxide
-                name: Bureau CO2
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-              - entity: sensor.floor0_living_switchbot_carbon_dioxide
-                name: Living CO2
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-              - entity: sensor.floor1_fen_switchbot_carbon_dioxide
-                name: FeN CO2
-                type: line
-                group_by:
-                  func: max
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-  - theme: Backend-selected
-    icon: mdi:radiator
-    badges: []
+    - type: entities
+      title: WTW
+      show_header_toggle: false
+      entities:
+      - entity: fan.itho_wtw_fan
+        name: WTW Unit
+        type: custom:fan-mode-button-row
+      state_color: false
+    - type: history-graph
+      entities:
+      - entity: sensor.itho_wtw_actual_mode
+      hours_to_show: 24
+    - type: entities
+      entities:
+      - type: attribute
+        name: house needs cooling and temp outside lower
+        entity: sensor.wtw_target_fan
+        attribute: house_needs_cooling_and_temp_outside_lower
+      - type: attribute
+        name: dew pointhigh and outdoor lower
+        entity: sensor.wtw_target_fan
+        attribute: dewpoint_high_and_dewpoint_outdoor_lower
+      - type: attribute
+        name: humidity max over 80%
+        entity: sensor.wtw_target_fan
+        attribute: humidity_max_over_80
+      - type: attribute
+        name: is cooking
+        entity: sensor.wtw_target_fan
+        attribute: is_cooking
+      - type: attribute
+        name: is using sanitary
+        entity: sensor.wtw_target_fan
+        attribute: is_using_sanitary
+    - type: entities
+      show_header_toggle: false
+      entities:
+      - entity: sensor.itho_wtw_inlet_fan
+      - entity: sensor.itho_wtw_outlet_fan
+      - entity: binary_sensor.itho_wtw_bypass
+      - entity: binary_sensor.itho_wtw_valve
+      - entity: binary_sensor.itho_wtw_is_summerday
+      - entity: sensor.itho_wtw_airfilter
+      - entity: sensor.itho_wtw_inlet_temperature
+      - entity: sensor.itho_wtw_outlet_temperature
+      - entity: binary_sensor.system_wtw_metering_plug_verwarming_target
+      - entity: switch.floor0_living_wtw_valve_main
+    - chart_type: line
+      period: 5minute
+      type: statistics-graph
+      entities:
+      - sensor.system_wtw_metering_plug_wtw_power
+      - sensor.system_wtw_metering_plug_verwarming_power
+      stat_types:
+      - mean
+      - max
+      days_to_show: 0.2
+      hide_legend: true
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: thermostat
-                entity: climate.cv
-              - type: grid
-                cards: []
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 7
-              - id: temperature_diff
-                opposite: true
-                min: -8
-                max: 8
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.heating_temperature_desired
-                name: Heating Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.indoor_temperature
-                name: House Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.outdoor_temperature
-                name: Outdoor Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.heating_temperature_diff_wanted
-                name: Temperature Diff Wanted
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: temperature_diff
-      - type: vertical-stack
-        cards:
-          - square: true
-            columns: 2
-            type: grid
-            cards:
-              - type: thermostat
-                entity: climate.floor0_bureau_rtv_na
-                name: Bureau
-              - show_name: false
-                show_icon: true
-                show_state: true
-                type: glance
-                state_color: false
-                columns: 1
-                entities:
-                  - entity: sensor.floor0_bureau_temperature
-                  - entity: sensor.floor0_bureau_humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 6
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.floor0_bureau_rtv_na_temperature_wanted
-                name: Wanted Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_bureau_temperature_auto_wanted
-                name: Auto Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_bureau_temperature
-                name: Actual Temperature (Sensor)
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_bureau_humidity
-                name: Humidity
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-      - type: vertical-stack
-        cards:
-          - square: true
-            columns: 2
-            type: grid
-            cards:
-              - type: thermostat
-                entity: climate.floor0_keuken_rtv_na
-                name: Keuken
-              - show_name: false
-                show_icon: true
-                show_state: true
-                type: glance
-                state_color: false
-                columns: 1
-                entities:
-                  - entity: sensor.floor0_keuken_temperature
-                  - entity: sensor.floor0_keuken_humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 6
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.floor0_keuken_rtv_na_temperature_wanted
-                name: Wanted Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_keuken_temperature_auto_wanted
-                name: Auto Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_keuken_temperature
-                name: Actual Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_keuken_humidity
-                name: Humidity
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-      - type: vertical-stack
-        cards:
-          - square: true
-            columns: 2
-            type: grid
-            cards:
-              - type: thermostat
-                entity: climate.floor0_living_rtv_vooraan
-                name: Living Vooraan
-              - type: thermostat
-                entity: climate.floor0_living_rtv_achteraan
-                name: Living Achteraan
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 6
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            header:
-              show: false
-            series:
-              - entity: sensor.floor0_living_rtv_vooraan_temperature_wanted
-                name: Wanted Temperature (Vooraan)
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: temperature
-                color: '#ff9800'
-                show:
-                  header_color_threshold: true
-              - entity: sensor.floor0_living_rtv_achteraan_temperature_wanted
-                name: Wanted Temperature (Achteraan)
-                type: line
-                color: '#f3721e'
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_living_temperature_auto_wanted
-                name: Auto Temperature
-                type: line
-                color: '#e74c3c'
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_living_temperature
-                name: Actual Temperature
-                type: line
-                color: '#3498db'
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor0_living_humidity
-                name: Humidity
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-      - type: vertical-stack
-        cards:
-          - square: true
-            columns: 2
-            type: grid
-            cards:
-              - type: thermostat
-                entity: climate.floor1_badkamer_rtv_na
-                name: Badkamer
-              - show_name: false
-                show_icon: true
-                show_state: true
-                type: glance
-                state_color: false
-                columns: 1
-                entities:
-                  - entity: sensor.floor1_badkamer_temperature
-                  - entity: sensor.floor1_badkamer_humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 6
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.floor1_badkamer_rtv_na_temperature_wanted
-                name: Wanted Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_badkamer_temperature_auto_wanted
-                name: Auto Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_badkamer_temperature
-                name: Actual Temperature (Sensor)
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_badkamer_humidity
-                name: Humidity
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-      - type: vertical-stack
-        cards:
-          - square: true
-            columns: 2
-            type: grid
-            cards:
-              - type: thermostat
-                entity: climate.floor1_fen_rtv_na
-                name: Slaapkamer FeN
-              - show_name: false
-                show_icon: true
-                show_state: true
-                type: glance
-                state_color: false
-                columns: 1
-                entities:
-                  - entity: sensor.floor1_fen_temperature
-                  - entity: sensor.floor1_fen_humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 6
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.floor1_fen_rtv_na_temperature_wanted
-                name: Wanted Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_fen_temperature_auto_wanted
-                name: Auto Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_fen_temperature
-                name: Actual Temperature (Sensor)
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_fen_humidity
-                name: Humidity
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-      - type: vertical-stack
-        cards:
-          - square: true
-            columns: 2
-            type: grid
-            cards:
-              - type: thermostat
-                entity: climate.floor1_nikolai_rtv_na
-                name: Nikolaï
-              - show_name: false
-                show_icon: true
-                show_state: true
-                type: glance
-                state_color: false
-                columns: 1
-                entities:
-                  - entity: sensor.floor1_nikolai_temperature
-                  - entity: sensor.floor1_nikolai_humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 6
-              - id: humidity
-                opposite: true
-                min: 40
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.floor1_nikolai_rtv_na_temperature_wanted
-                name: Wanted Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_nikolai_temperature_auto_wanted
-                name: Auto Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_nikolai_temperature
-                name: Actual Temperature (Sensor)
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_nikolai_humidity
-                name: Humidity
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-      - type: vertical-stack
-        cards:
-          - square: true
-            columns: 2
-            type: grid
-            cards:
-              - type: thermostat
-                entity: climate.floor1_morgane_rtv_na
-                name: Morgane
-              - show_name: false
-                show_icon: true
-                show_state: true
-                type: glance
-                state_color: false
-                columns: 1
-                entities:
-                  - entity: sensor.floor1_morgane_temperature
-                  - entity: sensor.floor1_morgane_humidity
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 6
-              - id: humidity
-                opposite: true
-                min: 20
-                max: 100
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.floor1_morgane_rtv_na_temperature_wanted
-                name: Wanted Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_morgane_temperature_auto_wanted
-                name: Auto Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_morgane_temperature
-                name: Actual Temperature (Sensor)
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.floor1_morgane_humidity
-                name: Humidity
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: humidity
-      - type: custom:apexcharts-card
-        graph_span: 24h
+    - type: weather-forecast
+      entity: weather.openweathermap
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: dewpoint
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 7
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#3498db'
+      - '#e74c3c'
+      - '#1a4c6e'
+      - '#f3721e'
+      header:
+        show: false
+      series:
+      - entity: sensor.indoor_dewpoint
+        name: Indoor Dewpoint
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
         show:
-          last_updated: true
-        yaxis:
-          - id: temperature
-            min: 10
-            max: 26
-            apex_config:
-              forceNiceScale: true
-              decimalsInFloat: 0
-              tickAmount: 6
-          - id: humidity
-            opposite: true
-            min: 40
-            max: 100
-            apex_config:
-              forceNiceScale: false
-              decimalsInFloat: 0
-              tickAmount: 4
-        color_list:
-          - '#1a4c6e'
-        header:
-          show: true
-          title: Basement
-        series:
-          - entity: sensor.basement_basement_temperature
-            name: Actual Temperature (Sensor)
-            type: line
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: sensor.basement_basement_humidity
-            name: Humidity
-            type: line
-            color: black
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            yaxis_id: humidity
-      - type: custom:apexcharts-card
-        graph_span: 24h
+          header_color_threshold: true
+        yaxis_id: dewpoint
+      - entity: sensor.outdoor_dewpoint
+        name: Outdoor Dewpoint
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
         show:
-          last_updated: true
-        yaxis:
-          - id: temperature
-            apex_config:
-              forceNiceScale: true
-              decimalsInFloat: 0
-              tickAmount: 7
-          - id: humidity
-            opposite: true
-            apex_config:
-              forceNiceScale: false
-              decimalsInFloat: 0
-              tickAmount: 4
-        color_list:
-          - '#1a4c6e'
-        header:
-          show: true
-          title: Tuin (Noordkant)
-        series:
-          - entity: sensor.outdoor_temperature
-            name: Outdoor
-            type: line
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: sensor.garden_garden_temperature_grasmaaier_temperature
-            name: Grasmaaier
-            type: line
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 1
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: sensor.garden_garden_temperature_noordkant_temperature
-            name: Noordkant
-            type: line
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 1
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: sensor.outdoor_humidity
-            name: Humidity
-            type: line
-            color: black
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            yaxis_id: humidity
-          - entity: sensor.outdoor_temperature_24h_avg
-            name: Average
-            type: line
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            color: '#2772a5'
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-      - type: entities
+          header_color_threshold: true
+        yaxis_id: dewpoint
+      - entity: sensor.indoor_humidity
+        name: Indoor Humidity
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+      - entity: sensor.outdoor_humidity
+        name: Outdoor Humidity
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+      - entity: sensor.indoor_humidity_max
+        name: Indoor Humidity (max)
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 7
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#f3721e'
+      - '#2772a5'
+      - '#e74c3c'
+      - '#1a4c6e'
+      - '#f3721e'
+      header:
+        show: false
+      series:
+      - entity: sensor.indoor_temperature
+        name: Indoor Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.outdoor_temperature
+        name: Outdoor Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.indoor_humidity
+        name: Indoor Humidity
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+      - entity: sensor.outdoor_humidity
+        name: Outdoor Humidity
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+      - entity: sensor.indoor_humidity_max
+        name: Indoor Humidity (max)
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 7
+      color_list:
+      - '#ff9800'
+      - '#3498db'
+      - '#e74c3c'
+      - '#1a4c6e'
+      - '#f3721e'
+      header:
+        show: false
+      series:
+      - entity: sensor.system_wtw_air_quality_inlet_temperature
+        name: Inlet Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.system_wtw_air_quality_to_house_temperature
+        name: To House Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.system_wtw_air_quality_outlet_temperature
+        name: Outlet Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: temperature
+  - type: vertical-stack
+    cards:
+    - type: markdown
+      content: " "
+      title: Air Quality
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: pm25
+        apex_config:
+          forceNiceScale: true
+          tickAmount: 7
+      color_list:
+      - '#ff9800'
+      - '#3498db'
+      - '#e74c3c'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.system_wtw_air_quality_inlet_pm25
+        name: Inlet PM2.5
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: pm25
+      - entity: sensor.system_wtw_air_quality_to_house_pm25
+        name: To House PM2.5
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: pm25
+      - entity: sensor.system_wtw_air_quality_outlet_pm25
+        name: Outlet PM2.5
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: pm25
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: tvoc
+        min: 0
+        max: 500
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 10
+      color_list:
+      - '#ff9800'
+      - '#3498db'
+      - '#e74c3c'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.system_wtw_air_quality_inlet_voc_index
+        name: Inlet VOC
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: tvoc
+      - entity: sensor.system_wtw_air_quality_to_house_voc_index
+        name: To House VOC
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: tvoc
+      - entity: sensor.system_wtw_air_quality_outlet_voc_index
+        name: Outlet VOC
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: tvoc
+  - type: vertical-stack
+    cards:
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      color_list:
+      - '#3498db'
+      - '#ff9800'
+      - '#e74c3c'
+      - '#1a4c6e'
+      header:
+        show: true
+        title: CO2
+        show_states: true
+        colorize_states: true
+      series:
+      - entity: sensor.floor0_living_fire_alarm_main_eco2
+        name: Living CO2 (fire)
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+      - entity: sensor.floor0_bureau_switchbot_carbon_dioxide
+        name: Bureau CO2
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+      - entity: sensor.floor0_living_switchbot_carbon_dioxide
+        name: Living CO2
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+      - entity: sensor.floor1_fen_switchbot_carbon_dioxide
+        name: FeN CO2
+        type: line
+        group_by:
+          func: max
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+- theme: Backend-selected
+  icon: mdi:radiator
+  badges: []
+  cards:
+  - type: vertical-stack
+    cards:
+    - type: horizontal-stack
+      cards:
+      - type: thermostat
+        entity: climate.cv
+      - type: grid
+        cards: []
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 7
+      - id: temperature_diff
+        opposite: true
+        min: -8
+        max: 8
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.heating_temperature_desired
+        name: Heating Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.indoor_temperature
+        name: House Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.outdoor_temperature
+        name: Outdoor Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.heating_temperature_diff_wanted
+        name: Temperature Diff Wanted
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: temperature_diff
+  - type: vertical-stack
+    cards:
+    - square: true
+      columns: 2
+      type: grid
+      cards:
+      - type: thermostat
+        entity: climate.floor0_bureau_rtv_na
+        name: Bureau
+      - show_name: false
+        show_icon: true
+        show_state: true
+        type: glance
+        state_color: false
+        columns: 1
         entities:
-          - entity: sensor.floor0_bureau_rtv_na_battery
-          - entity: sensor.floor0_bureau_temperature_na_battery
-          - entity: sensor.floor0_keuken_rtv_na_battery
-          - entity: sensor.floor0_keuken_temperature_na_battery
-          - entity: sensor.floor0_living_rtv_vooraan_battery
-          - entity: sensor.floor0_living_rtv_achteraan_battery
-          - entity: sensor.floor0_living_temperature_na_battery
-        title: Battery
-        show_header_toggle: true
-      - type: entities
+        - entity: sensor.floor0_bureau_temperature
+        - entity: sensor.floor0_bureau_humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 6
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.floor0_bureau_rtv_na_temperature_wanted
+        name: Wanted Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_bureau_temperature_auto_wanted
+        name: Auto Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_bureau_temperature
+        name: Actual Temperature (Sensor)
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_bureau_humidity
+        name: Humidity
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+  - type: vertical-stack
+    cards:
+    - square: true
+      columns: 2
+      type: grid
+      cards:
+      - type: thermostat
+        entity: climate.floor0_keuken_rtv_na
+        name: Keuken
+      - show_name: false
+        show_icon: true
+        show_state: true
+        type: glance
+        state_color: false
+        columns: 1
         entities:
-          - entity: sensor.floor1_badkamer_rtv_na_battery
-          - entity: sensor.floor1_badkamer_temperature_na_battery
-          - entity: sensor.floor1_fen_rtv_na_battery
-          - entity: sensor.floor1_fen_temperature_na_battery
-          - entity: sensor.floor1_morgane_rtv_na_battery
-          - entity: sensor.floor1_morgane_temperature_na_battery
-          - entity: sensor.floor1_nikolai_rtv_na_battery
-          - entity: sensor.floor1_nikolai_temperature_na_battery
-        title: Battery
-        show_header_toggle: true
-      - type: entities
+        - entity: sensor.floor0_keuken_temperature
+        - entity: sensor.floor0_keuken_humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 6
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.floor0_keuken_rtv_na_temperature_wanted
+        name: Wanted Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_keuken_temperature_auto_wanted
+        name: Auto Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_keuken_temperature
+        name: Actual Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_keuken_humidity
+        name: Humidity
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+  - type: vertical-stack
+    cards:
+    - square: true
+      columns: 2
+      type: grid
+      cards:
+      - type: thermostat
+        entity: climate.floor0_living_rtv_vooraan
+        name: Living Vooraan
+      - type: thermostat
+        entity: climate.floor0_living_rtv_achteraan
+        name: Living Achteraan
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 6
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      header:
+        show: false
+      series:
+      - entity: sensor.floor0_living_rtv_vooraan_temperature_wanted
+        name: Wanted Temperature (Vooraan)
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: temperature
+        color: '#ff9800'
+        show:
+          header_color_threshold: true
+      - entity: sensor.floor0_living_rtv_achteraan_temperature_wanted
+        name: Wanted Temperature (Achteraan)
+        type: line
+        color: '#f3721e'
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_living_temperature_auto_wanted
+        name: Auto Temperature
+        type: line
+        color: '#e74c3c'
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_living_temperature
+        name: Actual Temperature
+        type: line
+        color: '#3498db'
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor0_living_humidity
+        name: Humidity
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+  - type: vertical-stack
+    cards:
+    - square: true
+      columns: 2
+      type: grid
+      cards:
+      - type: thermostat
+        entity: climate.floor1_badkamer_rtv_na
+        name: Badkamer
+      - show_name: false
+        show_icon: true
+        show_state: true
+        type: glance
+        state_color: false
+        columns: 1
         entities:
-          - entity: sensor.basement_basement_temperature_na_battery
-          - entity: sensor.garden_garden_temperature_noordkant_battery
-        title: Battery
-        show_header_toggle: true
-  - theme: Backend-selected
-    icon: mdi:water-boiler
-    badges: []
-    cards:
-      - type: vertical-stack
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: thermostat
-                entity: climate.boiler
-              - type: grid
-                cards: []
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 7
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: climate.boiler
-                attribute: temperature
-                name: Desired Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: climate.boiler
-                attribute: current_temperature
-                name: Current Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-  - title: CV
-    path: cv
-    icon: mdi:heat-wave
-    badges: []
-    cards:
-      - type: vertical-stack
-        cards:
-          - type: horizontal-stack
-            cards:
-              - type: thermostat
-                entity: climate.cv
-              - type: grid
-                cards:
-                  - type: gauge
-                    entity: sensor.heating_ebusd_bai_waterpressure_press
-                    name: Waterdruk
-                    min: 0
-                    max: 3
-                    needle: true
-                    severity:
-                      red: 0
-                      yellow: 0.8
-                      green: 1.0
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            show:
-              last_updated: true
-            yaxis:
-              - id: temperature
-                min: 10
-                max: 26
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  tickAmount: 7
-              - id: temperature_diff
-                opposite: true
-                min: -8
-                max: 8
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 0
-                  tickAmount: 4
-            color_list:
-              - '#ff9800'
-              - '#e74c3c'
-              - '#3498db'
-              - '#1a4c6e'
-            header:
-              show: false
-            series:
-              - entity: sensor.heating_temperature_desired
-                name: Heating Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.indoor_temperature
-                name: House Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.outdoor_temperature
-                name: Outdoor Temperature
-                type: line
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 1
-                show:
-                  header_color_threshold: true
-                yaxis_id: temperature
-              - entity: sensor.heating_temperature_diff_wanted
-                name: Temperature Diff Wanted
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 5m
-                stroke_width: 2
-                yaxis_id: temperature_diff
-      - type: custom:apexcharts-card
-        graph_span: 4h
+        - entity: sensor.floor1_badkamer_temperature
+        - entity: sensor.floor1_badkamer_humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 6
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.floor1_badkamer_rtv_na_temperature_wanted
+        name: Wanted Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
         show:
-          last_updated: true
-        yaxis:
-          - id: temperature
-            min: 10
-            max: 26
-            apex_config:
-              forceNiceScale: true
-              decimalsInFloat: 0
-              tickAmount: 7
-          - id: cv_temperature
-            opposite: false
-            min: 0
-            max: 100
-            apex_config:
-              forceNiceScale: false
-              decimalsInFloat: 0
-              tickAmount: 4
-        color_list:
-          - '#1a4c6e'
-          - '#2772a5'
-          - '#3498db'
-          - '#ff9800'
-          - '#f3721e'
-          - '#e74c3c'
-        header:
-          show: false
-        series:
-          - entity: sensor.ebusd_bai_returntemp_temp
-            name: Return Temperature (CV)
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: cv_temperature
-          - entity: sensor.ebusd_bai_flowtemp_temp
-            name: Flow Temperature (CV)
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: cv_temperature
-          - entity: sensor.ebusd_bai_flowtempdesired
-            name: Flow Temperature Desired (CV)
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: cv_temperature
-      - type: custom:apexcharts-card
-        graph_span: 4h
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_badkamer_temperature_auto_wanted
+        name: Auto Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
         show:
-          last_updated: true
-        yaxis:
-          - id: temperature
-            min: 10
-            max: 26
-            apex_config:
-              forceNiceScale: true
-              decimalsInFloat: 0
-              tickAmount: 7
-        color_list:
-          - '#3498db'
-          - '#ff9800'
-          - '#f3721e'
-          - '#e74c3c'
-        header:
-          show: false
-        series:
-          - entity: sensor.heating_temperature_desired
-            name: Desired Temperature
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: climate.cv
-            attribute: temperature
-            name: Desired Temperature (CV)
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: climate.cv
-            attribute: current_temperature
-            name: Current Temperature (CV)
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-      - type: custom:apexcharts-card
-        graph_span: 36h
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_badkamer_temperature
+        name: Actual Temperature (Sensor)
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
         show:
-          last_updated: true
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_badkamer_humidity
+        name: Humidity
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+  - type: vertical-stack
+    cards:
+    - square: true
+      columns: 2
+      type: grid
+      cards:
+      - type: thermostat
+        entity: climate.floor1_fen_rtv_na
+        name: Slaapkamer FeN
+      - show_name: false
+        show_icon: true
+        show_state: true
+        type: glance
+        state_color: false
+        columns: 1
+        entities:
+        - entity: sensor.floor1_fen_temperature
+        - entity: sensor.floor1_fen_humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 6
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.floor1_fen_rtv_na_temperature_wanted
+        name: Wanted Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_fen_temperature_auto_wanted
+        name: Auto Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_fen_temperature
+        name: Actual Temperature (Sensor)
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_fen_humidity
+        name: Humidity
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+  - type: vertical-stack
+    cards:
+    - square: true
+      columns: 2
+      type: grid
+      cards:
+      - type: thermostat
+        entity: climate.floor1_nikolai_rtv_na
+        name: Nikolaï
+      - show_name: false
+        show_icon: true
+        show_state: true
+        type: glance
+        state_color: false
+        columns: 1
+        entities:
+        - entity: sensor.floor1_nikolai_temperature
+        - entity: sensor.floor1_nikolai_humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 6
+      - id: humidity
+        opposite: true
+        min: 40
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.floor1_nikolai_rtv_na_temperature_wanted
+        name: Wanted Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_nikolai_temperature_auto_wanted
+        name: Auto Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_nikolai_temperature
+        name: Actual Temperature (Sensor)
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_nikolai_humidity
+        name: Humidity
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+  - type: vertical-stack
+    cards:
+    - square: true
+      columns: 2
+      type: grid
+      cards:
+      - type: thermostat
+        entity: climate.floor1_morgane_rtv_na
+        name: Morgane
+      - show_name: false
+        show_icon: true
+        show_state: true
+        type: glance
+        state_color: false
+        columns: 1
+        entities:
+        - entity: sensor.floor1_morgane_temperature
+        - entity: sensor.floor1_morgane_humidity
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 6
+      - id: humidity
+        opposite: true
+        min: 20
+        max: 100
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.floor1_morgane_rtv_na_temperature_wanted
+        name: Wanted Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_morgane_temperature_auto_wanted
+        name: Auto Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_morgane_temperature
+        name: Actual Temperature (Sensor)
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.floor1_morgane_humidity
+        name: Humidity
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: humidity
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    show:
+      last_updated: true
+    yaxis:
+    - id: temperature
+      min: 10
+      max: 26
+      apex_config:
+        forceNiceScale: true
+        decimalsInFloat: 0
+        tickAmount: 6
+    - id: humidity
+      opposite: true
+      min: 40
+      max: 100
+      apex_config:
+        forceNiceScale: false
+        decimalsInFloat: 0
+        tickAmount: 4
+    color_list:
+    - '#1a4c6e'
+    header:
+      show: true
+      title: Basement
+    series:
+    - entity: sensor.basement_basement_temperature
+      name: Actual Temperature (Sensor)
+      type: line
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: sensor.basement_basement_humidity
+      name: Humidity
+      type: line
+      color: black
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      yaxis_id: humidity
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    show:
+      last_updated: true
+    yaxis:
+    - id: temperature
+      apex_config:
+        forceNiceScale: true
+        decimalsInFloat: 0
+        tickAmount: 7
+    - id: humidity
+      opposite: true
+      apex_config:
+        forceNiceScale: false
+        decimalsInFloat: 0
+        tickAmount: 4
+    color_list:
+    - '#1a4c6e'
+    header:
+      show: true
+      title: Tuin (Noordkant)
+    series:
+    - entity: sensor.outdoor_temperature
+      name: Outdoor
+      type: line
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: sensor.garden_garden_temperature_grasmaaier_temperature
+      name: Grasmaaier
+      type: line
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 1
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: sensor.garden_garden_temperature_noordkant_temperature
+      name: Noordkant
+      type: line
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 1
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: sensor.outdoor_humidity
+      name: Humidity
+      type: line
+      color: black
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      yaxis_id: humidity
+    - entity: sensor.outdoor_temperature_24h_avg
+      name: Average
+      type: line
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      color: '#2772a5'
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+  - type: entities
+    entities:
+    - entity: sensor.floor0_bureau_rtv_na_battery
+    - entity: sensor.floor0_bureau_temperature_na_battery
+    - entity: sensor.floor0_keuken_rtv_na_battery
+    - entity: sensor.floor0_keuken_temperature_na_battery
+    - entity: sensor.floor0_living_rtv_vooraan_battery
+    - entity: sensor.floor0_living_rtv_achteraan_battery
+    - entity: sensor.floor0_living_temperature_na_battery
+    title: Battery
+    show_header_toggle: true
+  - type: entities
+    entities:
+    - entity: sensor.floor1_badkamer_rtv_na_battery
+    - entity: sensor.floor1_badkamer_temperature_na_battery
+    - entity: sensor.floor1_fen_rtv_na_battery
+    - entity: sensor.floor1_fen_temperature_na_battery
+    - entity: sensor.floor1_morgane_rtv_na_battery
+    - entity: sensor.floor1_morgane_temperature_na_battery
+    - entity: sensor.floor1_nikolai_rtv_na_battery
+    - entity: sensor.floor1_nikolai_temperature_na_battery
+    title: Battery
+    show_header_toggle: true
+  - type: entities
+    entities:
+    - entity: sensor.basement_basement_temperature_na_battery
+    - entity: sensor.garden_garden_temperature_noordkant_battery
+    title: Battery
+    show_header_toggle: true
+- theme: Backend-selected
+  icon: mdi:water-boiler
+  badges: []
+  cards:
+  - type: vertical-stack
+    cards:
+    - type: horizontal-stack
+      cards:
+      - type: thermostat
+        entity: climate.boiler
+      - type: grid
+        cards: []
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 7
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: climate.boiler
+        attribute: temperature
+        name: Desired Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: climate.boiler
+        attribute: current_temperature
+        name: Current Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+- title: CV
+  path: cv
+  icon: mdi:heat-wave
+  badges: []
+  cards:
+  - type: vertical-stack
+    cards:
+    - type: horizontal-stack
+      cards:
+      - type: thermostat
+        entity: climate.cv
+      - type: grid
+        cards:
+        - type: gauge
+          entity: sensor.heating_ebusd_bai_waterpressure_press
+          name: Waterdruk
+          min: 0
+          max: 3
+          needle: true
+          severity:
+            red: 0
+            yellow: 0.8
+            green: 1
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      show:
+        last_updated: true
+      yaxis:
+      - id: temperature
+        min: 10
+        max: 26
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 0
+          tickAmount: 7
+      - id: temperature_diff
+        opposite: true
+        min: -8
+        max: 8
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 0
+          tickAmount: 4
+      color_list:
+      - '#ff9800'
+      - '#e74c3c'
+      - '#3498db'
+      - '#1a4c6e'
+      header:
+        show: false
+      series:
+      - entity: sensor.heating_temperature_desired
+        name: Heating Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.indoor_temperature
+        name: House Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.outdoor_temperature
+        name: Outdoor Temperature
+        type: line
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 1
+        show:
+          header_color_threshold: true
+        yaxis_id: temperature
+      - entity: sensor.heating_temperature_diff_wanted
+        name: Temperature Diff Wanted
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 5m
+        stroke_width: 2
+        yaxis_id: temperature_diff
+  - type: custom:apexcharts-card
+    graph_span: 4h
+    show:
+      last_updated: true
+    yaxis:
+    - id: temperature
+      min: 10
+      max: 26
+      apex_config:
+        forceNiceScale: true
+        decimalsInFloat: 0
+        tickAmount: 7
+    - id: cv_temperature
+      opposite: false
+      min: 0
+      max: 100
+      apex_config:
+        forceNiceScale: false
+        decimalsInFloat: 0
+        tickAmount: 4
+    color_list:
+    - '#1a4c6e'
+    - '#2772a5'
+    - '#3498db'
+    - '#ff9800'
+    - '#f3721e'
+    - '#e74c3c'
+    header:
+      show: false
+    series:
+    - entity: sensor.ebusd_bai_returntemp_temp
+      name: Return Temperature (CV)
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: cv_temperature
+    - entity: sensor.ebusd_bai_flowtemp_temp
+      name: Flow Temperature (CV)
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: cv_temperature
+    - entity: sensor.ebusd_bai_flowtempdesired
+      name: Flow Temperature Desired (CV)
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: cv_temperature
+  - type: custom:apexcharts-card
+    graph_span: 4h
+    show:
+      last_updated: true
+    yaxis:
+    - id: temperature
+      min: 10
+      max: 26
+      apex_config:
+        forceNiceScale: true
+        decimalsInFloat: 0
+        tickAmount: 7
+    color_list:
+    - '#3498db'
+    - '#ff9800'
+    - '#f3721e'
+    - '#e74c3c'
+    header:
+      show: false
+    series:
+    - entity: sensor.heating_temperature_desired
+      name: Desired Temperature
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: climate.cv
+      attribute: temperature
+      name: Desired Temperature (CV)
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: climate.cv
+      attribute: current_temperature
+      name: Current Temperature (CV)
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+  - type: custom:apexcharts-card
+    graph_span: 36h
+    show:
+      last_updated: true
+    yaxis:
+    - id: temperature
+      apex_config:
+        forceNiceScale: true
+        decimalsInFloat: 0
+        tickAmount: 7
+    color_list:
+    - '#3498db'
+    - '#ff9800'
+    - '#f3721e'
+    - '#e74c3c'
+    header:
+      show: false
+    series:
+    - entity: sensor.heating_temperature_desired
+      name: Desired Temperature
+      type: column
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: climate.cv
+      attribute: temperature
+      name: Desired Temperature (CV)
+      type: line
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+    - entity: climate.cv
+      attribute: current_temperature
+      name: Current Temperature (CV)
+      type: line
+      group_by:
+        func: last
+        duration: 5m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      yaxis_id: temperature
+- title: Efficiency
+  path: efficiency
+  icon: mdi:calculator-variant
+  badges: []
+  cards:
+  - type: vertical-stack
+    cards:
+    - type: custom:apexcharts-card
+      graph_span: 1 month
+      header:
+        show: true
+        title: Gasverbruik laatste maand
+      apex_config:
         yaxis:
-          - id: temperature
-            apex_config:
-              forceNiceScale: true
-              decimalsInFloat: 0
-              tickAmount: 7
-        color_list:
-          - '#3498db'
-          - '#ff9800'
-          - '#f3721e'
-          - '#e74c3c'
-        header:
-          show: false
-        series:
-          - entity: sensor.heating_temperature_desired
-            name: Desired Temperature
-            type: column
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: climate.cv
-            attribute: temperature
-            name: Desired Temperature (CV)
-            type: line
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-          - entity: climate.cv
-            attribute: current_temperature
-            name: Current Temperature (CV)
-            type: line
-            group_by:
-              func: last
-              duration: 5m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            yaxis_id: temperature
-  - title: Efficiency
-    path: efficiency
-    icon: mdi:calculator-variant
-    badges: []
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 1
+          opposite: false
+          name: Gas
+      series:
+      - entity: sensor.gas_delivery_daily
+        unit: m3
+        type: column
+        name: gasverbruik
+        color: '#EF810E'
+        group_by:
+          func: max
+          duration: 1d
+        show:
+          datalabels: false
+          extremas: false
+    - type: custom:apexcharts-card
+      graph_span: 1 month
+      show:
+        last_updated: true
+      yaxis:
+      - id: dd
+        apex_config:
+          forceNiceScale: true
+          decimalsInFloat: 1
+          min: 0
+          max: 15
+      - id: gas_per_dd
+        opposite: true
+        min: 0
+        max: 2
+        apex_config:
+          forceNiceScale: false
+          decimalsInFloat: 2
+          tickAmount: 4
+      color_list:
+      - '#1a4c6e'
+      - '#3498db'
+      - '#f3721e'
+      header:
+        show: true
+        title: Degree Days
+      series:
+      - entity: sensor.gas_m3_per_degree_day
+        name: Gas m3 per DD
+        type: line
+        group_by:
+          func: last
+          duration: 1d
+        stroke_width: 2
+        yaxis_id: gas_per_dd
+      - entity: sensor.degree_day_daily
+        name: Degree Day
+        type: column
+        group_by:
+          func: last
+          duration: 1d
+        stroke_width: 2
+        show:
+          header_color_threshold: true
+        yaxis_id: dd
+      - entity: sensor.gas_m3_per_degree_day_occupancy_adjusted
+        name: Adjusted
+        type: line
+        group_by:
+          func: last
+          duration: 1d
+        stroke_width: 2
+        yaxis_id: gas_per_dd
+- title: Electric
+  path: electric
+  icon: mdi:lightning-bolt-outline
+  cards:
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          - type: custom:apexcharts-card
-            graph_span: 1 month
-            header:
-              show: true
-              title: Gasverbruik laatste maand
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 1
-                  opposite: false
-                  name: Gas
-            series:
-              - entity: sensor.gas_delivery_daily
-                unit: m3
-                type: column
-                name: gasverbruik
-                color: '#EF810E'
-                group_by:
-                  func: max
-                  duration: 1d
-                show:
-                  datalabels: false
-                  extremas: false
-          - type: custom:apexcharts-card
-            graph_span: 1 month
-            show:
-              last_updated: true
-            yaxis:
-              - id: dd
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 1
-                  min: 0
-                  max: 15
-              - id: gas_per_dd
-                opposite: true
-                min: 0
-                max: 2
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 2
-                  tickAmount: 4
-            color_list:
-              - '#1a4c6e'
-              - '#3498db'
-              - '#f3721e'
-            header:
-              show: true
-              title: Degree Days
-            series:
-              - entity: sensor.gas_m3_per_degree_day
-                name: Gas m3 per DD
-                type: line
-                group_by:
-                  func: last
-                  duration: 1d
-                stroke_width: 2
-                yaxis_id: gas_per_dd
-              - entity: sensor.degree_day_daily
-                name: Degree Day
-                type: column
-                group_by:
-                  func: last
-                  duration: 1d
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: dd
-              - entity: sensor.gas_m3_per_degree_day_occupancy_adjusted
-                name: Adjusted
-                type: line
-                group_by:
-                  func: last
-                  duration: 1d
-                stroke_width: 2
-                yaxis_id: gas_per_dd
-  - title: Electric
-    path: electric
-    icon: mdi:lightning-bolt-outline
+    - type: entities
+      entities:
+      - entity: sensor.electricity_grid_consumed_power_mean_1m
+      - entity: sensor.heating_number_of_rooms_in_need_of
+      - entity: binary_sensor.heating_use_electric
+      - entity: binary_sensor.energy_electricity_prefer_over_gas
+      - entity: binary_sensor.electricity_delivery_power_near_max_threshold
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          - type: entities
-            entities:
-              - entity: sensor.electricity_grid_consumed_power_mean_1m
-              - entity: sensor.heating_number_of_rooms_in_need_of
-              - entity: binary_sensor.heating_use_electric
-              - entity: binary_sensor.energy_electricity_prefer_over_gas
-              - entity: binary_sensor.electricity_delivery_power_near_max_threshold
-      - type: vertical-stack
-        cards:
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
-            entities:
-              - entity: sensor.system_wtw_metering_plug_verwarming_power
-                name: WTW
-              - entity: sensor.floor0_bureau_metering_plug_verwarming_power
-                name: Bureau
-              - entity: sensor.floor0_living_metering_plug_verwarming_power
-                name: Living
-              - entity: sensor.floor1_nikolai_metering_plug_verwarming_power
-                name: Nikolaï
-              - entity: sensor.floor1_badkamer_metering_plug_verwarming_power
-                name: Badkamer
-            stat_types:
-              - max
-            days_to_show: 0.5
-            hide_legend: false
-            logarithmic_scale: false
-          - type: history-graph
-            entities:
-              - entity: binary_sensor.system_wtw_metering_plug_verwarming_target
-                name: WTW
-              - entity: binary_sensor.floor0_bureau_metering_plug_verwarming_target
-                name: Bureau
-              - entity: binary_sensor.floor0_living_metering_plug_verwarming_target
-                name: Living
-              - entity: binary_sensor.floor1_nikolai_metering_plug_verwarming_target
-                name: Nikolaï
-              - entity: binary_sensor.floor1_badkamer_metering_plug_verwarming_target
-                name: Badkamer
-            hours_to_show: 2
-      - type: vertical-stack
-        cards:
-          - type: glance
-            entities:
-              - entity: sensor.floor1_fen_temperature_diff_wanted
-                name: FeN
-              - entity: sensor.floor0_bureau_temperature_diff_wanted
-                name: Bureau
-              - entity: sensor.floor0_keuken_temperature_diff_wanted
-                name: Keuken
-              - entity: sensor.floor0_living_temperature_diff_wanted
-                name: Living
-              - entity: sensor.floor1_morgane_temperature_diff_wanted
-                name: Morgane
-              - entity: sensor.floor1_nikolai_temperature_diff_wanted
-                name: Nikolaï
-              - entity: sensor.floor1_badkamer_temperature_diff_wanted
-                name: Badkamer
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
-            entities:
-              - entity: sensor.floor1_fen_temperature_diff_wanted
-                name: FeN
-              - entity: sensor.floor0_bureau_temperature_diff_wanted
-                name: Bureau
-              - entity: sensor.floor0_keuken_temperature_diff_wanted
-                name: Keuken
-              - entity: sensor.floor0_living_temperature_diff_wanted
-                name: Living
-              - entity: sensor.floor1_morgane_temperature_diff_wanted
-                name: Morgane
-              - entity: sensor.floor1_nikolai_temperature_diff_wanted
-                name: Nikolaï
-              - entity: sensor.floor1_badkamer_temperature_diff_wanted
-                name: Badkamer
-            stat_types:
-              - max
-            days_to_show: 0.125
-            hide_legend: false
-            logarithmic_scale: false
-          - type: grid
-            cards:
-              - name: Badkamer
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor1_badkamer_metering_plug_verwarming
-              - name: Living
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor0_living_metering_plug_verwarming
-              - name: Bureau
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor0_bureau_metering_plug_verwarming
-              - show_name: true
-                show_icon: true
-                name: Nikolaï
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor1_nikolai_metering_plug_verwarming
-              - name: WTW
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.system_wtw_metering_plug_verwarming
-            columns: 3
+    - chart_type: line
+      period: 5minute
+      type: statistics-graph
+      entities:
+      - entity: sensor.system_wtw_metering_plug_verwarming_power
+        name: WTW
+      - entity: sensor.floor0_bureau_metering_plug_verwarming_power
+        name: Bureau
+      - entity: sensor.floor0_living_metering_plug_verwarming_power
+        name: Living
+      - entity: sensor.floor1_nikolai_metering_plug_verwarming_power
+        name: Nikolaï
+      - entity: sensor.floor1_badkamer_metering_plug_verwarming_power
+        name: Badkamer
+      stat_types:
+      - max
+      days_to_show: 0.5
+      hide_legend: false
+      logarithmic_scale: false
+    - type: history-graph
+      entities:
+      - entity: binary_sensor.system_wtw_metering_plug_verwarming_target
+        name: WTW
+      - entity: binary_sensor.floor0_bureau_metering_plug_verwarming_target
+        name: Bureau
+      - entity: binary_sensor.floor0_living_metering_plug_verwarming_target
+        name: Living
+      - entity: binary_sensor.floor1_nikolai_metering_plug_verwarming_target
+        name: Nikolaï
+      - entity: binary_sensor.floor1_badkamer_metering_plug_verwarming_target
+        name: Badkamer
+      hours_to_show: 2
+  - type: vertical-stack
+    cards:
+    - type: glance
+      entities:
+      - entity: sensor.floor1_fen_temperature_diff_wanted
+        name: FeN
+      - entity: sensor.floor0_bureau_temperature_diff_wanted
+        name: Bureau
+      - entity: sensor.floor0_keuken_temperature_diff_wanted
+        name: Keuken
+      - entity: sensor.floor0_living_temperature_diff_wanted
+        name: Living
+      - entity: sensor.floor1_morgane_temperature_diff_wanted
+        name: Morgane
+      - entity: sensor.floor1_nikolai_temperature_diff_wanted
+        name: Nikolaï
+      - entity: sensor.floor1_badkamer_temperature_diff_wanted
+        name: Badkamer
+    - chart_type: line
+      period: 5minute
+      type: statistics-graph
+      entities:
+      - entity: sensor.floor1_fen_temperature_diff_wanted
+        name: FeN
+      - entity: sensor.floor0_bureau_temperature_diff_wanted
+        name: Bureau
+      - entity: sensor.floor0_keuken_temperature_diff_wanted
+        name: Keuken
+      - entity: sensor.floor0_living_temperature_diff_wanted
+        name: Living
+      - entity: sensor.floor1_morgane_temperature_diff_wanted
+        name: Morgane
+      - entity: sensor.floor1_nikolai_temperature_diff_wanted
+        name: Nikolaï
+      - entity: sensor.floor1_badkamer_temperature_diff_wanted
+        name: Badkamer
+      stat_types:
+      - max
+      days_to_show: 0.125
+      hide_legend: false
+      logarithmic_scale: false
+    - type: grid
+      cards:
+      - name: Badkamer
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor1_badkamer_metering_plug_verwarming
+      - name: Living
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor0_living_metering_plug_verwarming
+      - name: Bureau
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor0_bureau_metering_plug_verwarming
+      - show_name: true
+        show_icon: true
+        name: Nikolaï
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor1_nikolai_metering_plug_verwarming
+      - name: WTW
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.system_wtw_metering_plug_verwarming
+      columns: 3

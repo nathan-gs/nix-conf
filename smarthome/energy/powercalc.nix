@@ -1,57 +1,15 @@
 { config, pkgs, lib, ha, ... }:
 
 {
-
+  # Shared powercalc behaviour for every sensor in this config. The sensors
+  # themselves live with the device that owns them; the heating groups are in
+  # smarthome/hvac/electric_heating.nix.
   services.home-assistant.config = {
     powercalc = {
       discovery.enabled = false;
       energy_sensor_naming = "{}_energy";
       power_sensor_naming = "{}_power";
       energy_update_interval = 60;
-      sensors = [
-        {
-          create_group = "electric_heating_auxiliary";
-          entities = [
-            {
-              power_sensor_id = "sensor.floor0_living_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.floor0_living_metering_plug_verwarming_energy";
-            }
-            {
-              power_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_energy";
-            }
-            {
-              power_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_energy";
-            }
-          ];
-        }
-        {
-          create_group = "electric_heating";
-          entities = [
-            {
-              power_sensor_id = "sensor.floor0_living_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.floor0_living_metering_plug_verwarming_energy";
-            }
-            {
-              power_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.floor0_bureau_metering_plug_verwarming_energy";
-            }
-            {
-              power_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.floor1_nikolai_metering_plug_verwarming_energy";
-            }
-            {
-              power_sensor_id = "sensor.floor1_badkamer_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.floor1_badkamer_metering_plug_verwarming_energy";
-            }
-            {
-              power_sensor_id = "sensor.system_wtw_metering_plug_verwarming_power";
-              energy_sensor_id = "sensor.system_wtw_metering_plug_verwarming_energy";
-            }
-          ];
-        }
-      ];
     };
   };
 }

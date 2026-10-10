@@ -7,6 +7,7 @@
     ./appliances
     ./calendar.nix
     ./car
+    ./dashboards.nix
     ./doorbell.nix
     ./energy
     ./ha

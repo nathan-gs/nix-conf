@@ -1,282 +1,661 @@
+# YAML-mode dashboard, registered from smarthome/dashboards.nix.
+# Not editable in the UI: edit this file and switch.
+# Same URL as the existing sidebar dashboard, so the storage copy is hidden.
 views:
-  - title: Home
+- title: Home
+  cards:
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          - type: grid
-            cards:
-              - show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: call-service
-                  service: hon.start_program
-                  target:
-                    device_id: 6522a71c380d6b17f42bffd5b0645999
-                  data:
-                    parameters: '{''extraDry'':''1'',''openDoor'':''0'',''delayTime'':''0''}'
-                    program: intensive_rapid
-                name: Intensive Rapid (Extra Dry)
-                show_state: false
-                icon: mdi:dishwasher
-                entity: binary_sensor.dishwasher_status
-              - show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: call-service
-                  service: hon.start_program
-                  target:
-                    device_id: 6522a71c380d6b17f42bffd5b0645999
-                  data:
-                    parameters: '{''extraDry'':''0'',''openDoor'':''1'',''delayTime'':''0''}'
-                    program: intensive_rapid
-                name: Intensive Rapid (Open Door)
-                show_state: false
-                icon: mdi:dishwasher
-                entity: binary_sensor.dishwasher_status
-          - type: entities
-            entities:
-              - sensor.dishwasher_end_time
-              - sensor.dishwasher_error
-              - sensor.dishwasher_mode
-              - sensor.dishwasher_program
-              - sensor.dishwasher_program_phase
-              - sensor.dishwasher_remaining_time
-              - binary_sensor.dishwasher_remote_control
-              - binary_sensor.dishwasher_status
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
-            entities:
-              - sensor.dishwasher_power
-            stat_types:
-              - max
-            days_to_show: 1
-      - type: vertical-stack
-        cards:
-          - type: entities
-            entities:
-              - entity: sensor.aeg_wasmachine_wm1_timetoend_2
-              - entity: sensor.aeg_wasmachine_wm1_appliancestate_2
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
-            entities:
-              - sensor.floor1_waskot_metering_plug_wasmachine_power
-              - sensor.floor1_waskot_metering_plug_droogkast_power
-            stat_types:
-              - max
-            days_to_show: 1
-            hide_legend: false
-      - square: false
-        title: Elektrische Verwarming
-        type: grid
-        columns: 1
-        cards:
-          - type: custom:apexcharts-card
-            graph_span: 3h
-            header:
-              show: false
-              title: Verbruik laatste 3 uur
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  opposite: false
-                  name: Energie
-            all_series_config:
-              stroke_width: 1
-            series:
-              - entity: sensor.electric_heating_auxiliary_power
-                unit: W
-                type: line
-                name: Auxiliary
-                group_by:
-                  func: median
-                  duration: 1m
-                  fill: last
-                show:
-                  datalabels: false
-                  extremas: true
-              - entity: sensor.floor1_badkamer_metering_plug_verwarming_power
-                unit: W
-                type: line
-                name: Badkamer
-                group_by:
-                  func: median
-                  duration: 1m
-                  fill: last
-                show:
-                  datalabels: false
-                  extremas: true
-          - type: grid
-            cards:
-              - name: Badkamer
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor1_badkamer_metering_plug_verwarming
-              - name: Living
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor0_living_metering_plug_verwarming
-              - name: Bureau
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor0_bureau_metering_plug_verwarming
-              - name: Nikolaï
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.floor1_nikolai_metering_plug_verwarming
-              - name: WTW
-                show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.system_wtw_metering_plug_verwarming
-            columns: 3
-      - type: vertical-stack
-        cards:
-          - type: grid
-            cards:
-              - show_name: true
-                show_icon: true
-                type: button
-                tap_action:
-                  action: toggle
-                entity: switch.garden_garden_plug_pomp
-      - square: false
-        columns: 1
-        type: grid
-        cards:
-          - type: grid
-            cards:
-              - type: gauge
-                entity: sensor.floor0_keuken_metering_plug_airfryer_power
-                unit: W
-                needle: false
-                severity:
-                  green: 0
-                  yellow: 1000
-                  red: 2200
-              - type: gauge
-                entity: sensor.floor0_keuken_metering_plug_oven_power
-                unit: W
-                needle: false
-                severity:
-                  green: 0
-                  yellow: 1000
-                  red: 2200
-          - chart_type: line
-            period: 5minute
-            type: statistics-graph
-            entities:
-              - sensor.floor0_keuken_metering_plug_airfryer_power
-              - sensor.floor0_keuken_metering_plug_oven_power
-            stat_types:
-              - mean
-            days_to_show: 1
-            hide_legend: false
-      - square: false
-        columns: 1
-        type: grid
-        cards:
-          - type: grid
-            cards:
-              - type: gauge
-                entity: sensor.car_charger_grid_power
-                unit: W
-                needle: false
-                severity:
-                  green: 0
-                  yellow: 1900
-                  red: 2200
-              - type: gauge
-                entity: sensor.car_charger_solar_power
-                unit: W
-                needle: false
-                severity:
-                  green: 0
-                  yellow: 1900
-                  red: 2200
-          - type: custom:apexcharts-card
-            graph_span: 3h
-            header:
-              show: false
-              title: Verbruik laatste 3 uur
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  opposite: false
-                  name: Energie
-            all_series_config:
-              stroke_width: 1
-            series:
-              - entity: sensor.car_charger_grid_power
-                unit: W
-                type: line
-                name: Grid
-                show:
-                  datalabels: false
-                  extremas: true
-              - entity: sensor.car_charger_solar_power
-                unit: W
-                type: line
-                name: Solar
-                show:
-                  datalabels: false
-                  extremas: true
-      - square: false
-        columns: 1
-        type: grid
-        cards:
-          - type: gauge
-            entity: sensor.basement_basement_metering_plug_network_power
-            unit: W
-            needle: false
-            severity:
-              green: 24
-              yellow: 30
-              red: 40
-          - type: custom:apexcharts-card
-            graph_span: 3h
-            header:
-              show: false
-              title: Verbruik laatste 3 uur
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  opposite: false
-                  name: Energie
-            all_series_config:
-              stroke_width: 1
-            series:
-              - entity: sensor.basement_basement_metering_plug_network_power
-                unit: W
-                type: line
-                name: Power
-                group_by:
-                  func: median
-                  duration: 1m
-                  fill: last
-                show:
-                  datalabels: false
-                  extremas: true
+    - type: grid
+      cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: call-service
+          service: hon.start_program
+          target:
+            device_id: 6522a71c380d6b17f42bffd5b0645999
+          data:
+            parameters: "{'extraDry':'1','openDoor':'0','delayTime':'0'}"
+            program: intensive_rapid
+        name: Intensive Rapid (Extra Dry)
+        show_state: false
+        icon: mdi:dishwasher
+        entity: binary_sensor.dishwasher_status
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: call-service
+          service: hon.start_program
+          target:
+            device_id: 6522a71c380d6b17f42bffd5b0645999
+          data:
+            parameters: "{'extraDry':'0','openDoor':'1','delayTime':'0'}"
+            program: intensive_rapid
+        name: Intensive Rapid (Open Door)
+        show_state: false
+        icon: mdi:dishwasher
+        entity: binary_sensor.dishwasher_status
+      - type: gauge
+        entity: sensor.floor0_keuken_metering_plug_vaatwas_power
+        needle: false
+        name: Vaatwas
+    - type: entities
+      entities:
+      - sensor.dishwasher_end_time
+      - sensor.dishwasher_error
+      - sensor.dishwasher_mode
+      - sensor.dishwasher_program
+      - sensor.dishwasher_program_phase
+      - sensor.dishwasher_remaining_time
+      - binary_sensor.dishwasher_remote_control
+      - binary_sensor.dishwasher_status
+    - type: custom:apexcharts-card
+      graph_span: 3h
+      header:
+        show: false
+        title: Verbruik laatste 3 uur
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Energie
+      all_series_config:
+        stroke_width: 1
+      series:
+      - entity: sensor.floor0_keuken_metering_plug_vaatwas_power
+        unit: W
+        type: line
+        name: Vaatwas
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+      - entity: sensor.dishwasher_power
+        unit: W
+        type: line
+        name: Vaatwas
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+  - type: vertical-stack
+    cards:
+    - type: entities
+      entities:
+      - entity: sensor.aeg_wasmachine_timetoend_2
+      - entity: sensor.aeg_wasmachine_appliancestate_2
+      - entity: sensor.aeg_wasmachine_cyclephase_2
+      - entity: sensor.aeg_wasmachine_cyclesubphase_2
+    - type: custom:apexcharts-card
+      graph_span: 3h
+      header:
+        show: false
+        title: Verbruik laatste 3 uur
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Energie
+      all_series_config:
+        stroke_width: 1
+      series:
+      - entity: sensor.floor1_waskot_metering_plug_wasmachine_power
+        unit: W
+        type: line
+        name: Wasmachine
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+      - entity: sensor.floor1_waskot_metering_plug_droogkast_power
+        unit: W
+        type: line
+        name: Droogkast
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+  - square: false
+    title: Elektrische Verwarming
+    type: grid
+    columns: 1
+    cards:
+    - type: custom:apexcharts-card
+      graph_span: 3h
+      stacked: true
+      header:
+        show: false
+        title: Verbruik laatste 3 uur
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Energie
+      all_series_config:
+        stroke_width: 1
+        type: area
+      series:
+      - entity: sensor.electric_heating_auxiliary_solar_power
+        unit: W
+        name: Auxiliary solar
+        color: '#FFCA28'
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+      - entity: sensor.electric_heating_auxiliary_grid_power
+        unit: W
+        name: Auxiliary grid
+        color: '#78909C'
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+      - entity: sensor.floor1_badkamer_metering_plug_verwarming_power
+        unit: W
+        name: Badkamer
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+      - entity: sensor.system_wtw_metering_plug_verwarming_power
+        unit: W
+        name: WTW
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+    - type: grid
+      cards:
+      - name: Badkamer
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor1_badkamer_metering_plug_verwarming
+      - name: Living
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor0_living_metering_plug_verwarming
+      - name: Bureau
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor0_bureau_metering_plug_verwarming
+      - show_name: true
+        show_icon: true
+        name: Nikolaï
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.floor1_nikolai_metering_plug_verwarming
+      - name: WTW
+        show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.system_wtw_metering_plug_verwarming
+      columns: 3
+  - type: vertical-stack
+    cards:
+    - type: grid
+      cards:
+      - show_name: true
+        show_icon: true
+        type: button
+        tap_action:
+          action: toggle
+        entity: switch.garden_garden_plug_pomp
+  - square: false
+    columns: 1
+    type: grid
+    cards:
+    - type: grid
+      cards:
+      - type: gauge
+        entity: sensor.floor0_keuken_metering_plug_airfryer_power
+        unit: W
+        needle: false
+        severity:
+          green: 0
+          yellow: 1000
+          red: 2200
+      - type: gauge
+        entity: sensor.floor0_keuken_metering_plug_oven_power
+        unit: W
+        needle: false
+        severity:
+          green: 0
+          yellow: 1000
+          red: 2200
+    - chart_type: line
+      period: 5minute
+      type: statistics-graph
+      entities:
+      - sensor.floor0_keuken_metering_plug_airfryer_power
+      - sensor.floor0_keuken_metering_plug_oven_power
+      stat_types:
+      - mean
+      hide_legend: false
+      days_to_show: 0.25
+  - square: false
+    columns: 1
+    type: grid
+    cards:
+    - type: grid
+      cards:
+      - type: gauge
+        entity: sensor.car_charger_grid_power
+        unit: W
+        needle: false
+        severity:
+          green: 0
+          yellow: 1900
+          red: 2200
+      - type: gauge
+        entity: sensor.car_charger_solar_power
+        unit: W
+        needle: false
+        severity:
+          green: 0
+          yellow: 1900
+          red: 2200
+      - type: gauge
+        unit: W
+        needle: false
+        name: Laadpaal
+        entity: sensor.car_charger_power
+    - type: custom:apexcharts-card
+      graph_span: 3h
+      header:
+        show: false
+        title: Verbruik laatste 3 uur
+      stacked: true
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Energie
+      all_series_config:
+        stroke_width: 1
+        group_by:
+          func: avg
+          duration: 1m
+      series:
+      - entity: sensor.car_charger_grid_power
+        unit: W
+        type: line
+        name: Grid
+        show:
+          datalabels: false
+          extremas: true
+      - entity: sensor.car_charger_solar_power
+        unit: W
+        type: line
+        name: Solar
+        show:
+          datalabels: false
+          extremas: true
+  - square: false
+    columns: 1
+    type: grid
+    cards:
+    - type: gauge
+      entity: sensor.system_network_metering_plug_server_power
+      unit: W
+      needle: false
+      severity:
+        green: 24
+        yellow: 30
+        red: 40
+    - type: custom:apexcharts-card
+      graph_span: 3h
+      header:
+        show: false
+        title: Verbruik laatste 3 uur
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Energie
+      all_series_config:
+        stroke_width: 1
+      series:
+      - entity: sensor.system_network_metering_plug_server_power
+        unit: W
+        type: line
+        name: Power
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+  - square: false
+    columns: 1
+    type: grid
+    cards:
+    - type: grid
+      cards:
+      - type: gauge
+        entity: sensor.system_network_metering_plug_server_power
+        unit: W
+        needle: false
+        severity:
+          green: 24
+          yellow: 30
+          red: 40
+      - type: gauge
+        entity: sensor.floor1_nikolai_metering_plug_scherm_power
+        unit: W
+        needle: false
+        severity:
+          green: 24
+          yellow: 30
+          red: 40
+      - type: gauge
+        entity: sensor.floor0_bureau_metering_plug_pc_power
+        unit: W
+        needle: false
+        severity:
+          green: 80
+          yellow: 95
+          red: 120
+    - type: custom:apexcharts-card
+      graph_span: 3h
+      header:
+        show: false
+        title: Verbruik laatste 3 uur
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Power
+      all_series_config:
+        stroke_width: 1
+      series:
+      - entity: sensor.system_network_metering_plug_server_power
+        unit: W
+        type: line
+        name: Power
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+      - entity: sensor.floor1_nikolai_metering_plug_scherm_power
+        unit: W
+        type: line
+        name: Power
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+      - entity: sensor.floor0_bureau_metering_plug_pc_power
+        unit: W
+        type: line
+        name: Power
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+  - square: false
+    columns: 1
+    type: grid
+    cards:
+    - type: grid
+      cards:
+      - type: gauge
+        entity: sensor.basement_basement_metering_plug_diepvries_power
+        unit: W
+        needle: false
+        severity:
+          green: 24
+          yellow: 30
+          red: 40
+    - type: custom:apexcharts-card
+      graph_span: 3h
+      header:
+        show: false
+        title: Verbruik laatste 3 uur
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Power
+      all_series_config:
+        stroke_width: 1
+      series:
+      - entity: sensor.basement_basement_metering_plug_diepvries_power
+        unit: W
+        type: line
+        name: Power
+        group_by:
+          func: median
+          duration: 1m
+          fill: last
+        show:
+          datalabels: false
+          extremas: true
+  - chart_type: line
+    period: hour
+    type: statistics-graph
+    entities:
+    - sensor.floor1_fen_metering_plug_airco_power
+    stat_types:
+    - max
+    days_to_show: 0.5
+- type: sections
+  max_columns: 8
+  title: Tuin
+  path: tuin
+  icon: mdi:shovel
+  dense_section_placement: true
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Grasmaaier
+      heading_style: title
+      icon: mdi:robot-mower
+    - type: tile
+      entity: lawn_mower.indego_325608617
+    - type: tile
+      entity: sensor.indego_325608617_lawn_mowed
+    - type: tile
+      entity: sensor.indego_325608617_last_completed
+    - type: tile
+      entity: sensor.indego_325608617_battery_percentage
+    - type: tile
+      entity: sensor.indego_runtime_weekly
+    - type: tile
+      entity: sensor.indego_325608617_mower_state
+    - type: tile
+      entity: sensor.indego_325608617_mower_state_detail
+    - graph: line
+      type: sensor
+      detail: 1
+      entity: sensor.indego_325608617_lawn_mowed
+      hours_to_show: 72
+      name: Gras Gemaaid
+    - type: tile
+      entity: automation.garden_lawn_mower_turn_on
+      state_content: last_triggered
+      show_entity_picture: false
+      icon: mdi:robot-mower
+      color: disabled
+      tap_action:
+        action: navigate
+        navigation_path: /config/automation/trace/garden_lawn_mower_turn_on
+      icon_tap_action:
+        action: none
+      hold_action:
+        action: none
+  - type: grid
+    cards:
+    - type: heading
+      icon: mdi:pump
+      heading: Pomp
+      heading_style: title
+    - type: tile
+      entity: switch.garden_garden_plug_pomp
+  - type: grid
+    cards:
+    - type: heading
+      heading: New section
+    - graph: line
+      type: sensor
+      detail: 1
+      entity: sensor.outdoor_temperature
+      name: Temperatuur (Buiten)
+      icon: mdi:sun-thermometer
+      hours_to_show: 24
+- title: EV Kostennota Vorward BV
+  path: ev-kostennota
+  icon: mdi:file-document
+  type: masonry
+  cards:
+  - type: markdown
+    content: |
+      # **KOSTENNOTA**
+
+      **Terugbetaling thuislaadkosten elektrische bedrijfswagen – CREG-forfait**
+  - type: horizontal-stack
+    cards:
+    - type: markdown
+      content: "**Datum nota:** {{ now().strftime('%d %B %Y') }}  \n**Periode:** {{ (now().replace(day=1) | as_timestamp - 2592000) | timestamp_custom('%B %Y', true) }} *(vorige maand)*\n"
+    - type: markdown
+      content: "**Bedrijfswagen:**  \nAudi A6 e-tron Sportback  \nKenteken: **2JGB569**\n"
+  - type: horizontal-stack
+    cards:
+    - type: markdown
+      content: "**Indiener (bedrijfsleider):**  \nNathan Bijnens & Femke Verfaillie  \nSint-Kruis-Winkeldorp 84  \n9042 Gent  \nIBAN: **BE52 1430 8296 4609**\n\n**Vennootschap:**  \nVorward BV  \nSint-Kruis-Winkeldorp 84  \n9042 Gent  \nBTW BE1031038437\n"
+    - type: glance
+      columns: 3
+      show_name: true
+      show_icon: true
+      entities:
+      - entity: sensor.car_charger_energy_monthly
+        attribute: last_period
+        name: Verbruik
+        icon: mdi:ev-station
+      - entity: input_number.electricity_injection_creg_kwh
+        name: CREG-tarief
+        icon: mdi:currency-eur
+      - entity: sensor.car_charger_cost_monthly
+        attribute: last_period
+        name: Totaal
+        icon: mdi:hand-coin
+  - type: markdown
+    content: |
+      ---
+
+      ### Overzicht laadkosten (vorige maand)
+
+      | Omschrijving                          | Details                                              | Bedrag              |
+      |---------------------------------------|------------------------------------------------------|---------------------|
+      | Verbruik thuisladen EV                | {{ state_attr('sensor.car_charger_energy_monthly', 'last_period') | float | round(1) }} kWh |                     |
+      | Toegepast CREG-tarief                 | {{ states('input_number.electricity_injection_creg_kwh') }} €/kWh<br>(Vlaanderen - tarief vorige maand) |                     |
+      | **Totaal terug te betalen (ex-BTW)**  |                                                      | **€ {{ (state_attr('sensor.car_charger_energy_monthly', 'last_period') | float(0) * states('input_number.electricity_injection_creg_kwh') | float(0)) | round(2) }}** |
+  - type: markdown
+    content: "**Toelichting:**  \n• Verbruik en toegepast tarief betreffen de **volledig afgelopen maand**.  \n• CREG-tarief komt uit je input_number (update dit elk kwartaal).  \n• Bedrag is **exclusief BTW** en volledig aftrekbaar voor Vorward BV.  \n• Geen voordeel alle aard bij correcte toepassing.\n\n**Bewijsmateriaal:** Home Assistant utility meter (`last_period`) beschikbaar op verzoek.\n"
+  - type: markdown
+    content: "**Te betalen aan:** Nathan Bijnens & Femke Verfaillie  \nRekeningnummer: **BE52 1430 8296 4609**\n\n**Handtekening:**  \n_______________________________  \nNathan Bijnens & Femke Verfaillie – {{ now().strftime('%d/%m/%Y') }}\n"
+- type: sections
+  max_columns: 4
+  title: EV Laadkosten
+  path: ev-laadkosten
+  icon: mdi:ev-plug-ccs2
+  sections:
+  - type: grid
+    cards:
+    - type: markdown
+      content: |
+        # **KOSTENNOTA**
+
+        **Terugbetaling thuislaadkosten elektrische bedrijfswagen – CREG-forfait**
+      grid_options:
+        columns: 48
+        rows: 3
+    - type: markdown
+      content: "**Indiener (bedrijfsleider):**  \nNathan Bijnens & Femke Verfaillie  \nSint-Kruis-Winkeldorp 84  \n9042 Gent  \nIBAN: **BE52 1430 8296 4609**\n\n**Vennootschap:**  \nVorward BV  \nSint-Kruis-Winkeldorp 84  \n9042 Gent  \nBTW BE1031038437\n"
+      grid_options:
+        columns: 36
+        rows: auto
+    - type: horizontal-stack
+      cards:
+      - type: markdown
+        content: "**Datum nota:** {{ now().strftime('%d %B %Y') }}  \n**Periode:** {{ (now().replace(day=1) | as_timestamp - 2592000) | timestamp_custom('%B %Y', true) }} *(vorige maand)*\n"
+      - type: markdown
+        content: "**Bedrijfswagen:**  \nAudi A6 e-tron Sportback  \nKenteken: **2JGB569**\n"
+    - type: markdown
+      content: |+
+        ### Overzicht laadkosten (vorige maand)
+
+        | Omschrijving                          | Details                                              | Bedrag              |
+        |---------------------------------------|------------------------------------------------------|---------------------|
+        | Verbruik thuisladen EV                | {{ state_attr('sensor.car_charger_energy_monthly', 'last_period') | float | round(1) }} kWh |                     |
+        | Toegepast CREG-tarief                 | {{ states('input_number.electricity_injection_creg_kwh') }} €/kWh<br>(Vlaanderen - tarief vorige maand) |                     |
+        | **Totaal terug te betalen (ex-BTW)**  |                                                      | **€ {{ (state_attr('sensor.car_charger_energy_monthly', 'last_period') | float(0) * states('input_number.electricity_injection_creg_kwh') | float(0)) | round(2) }}** |
+
+      grid_options:
+        columns: full
+        rows: 8
+    - type: markdown
+      content: "**Toelichting:**  \n• Verbruik en toegepast tarief betreffen de **volledig afgelopen maand**.  \n• CREG-tarief komt uit je input_number (update dit elk kwartaal).  \n• Bedrag is **exclusief BTW** en volledig aftrekbaar voor Vorward BV.  \n• Geen voordeel alle aard bij correcte toepassing.\n\n**Bewijsmateriaal:** Home Assistant utility meter (`sensor.car_charger_energy_monthly`) beschikbaar op verzoek.\n"
+      grid_options:
+        columns: 48
+        rows: 4
+    - type: markdown
+      content: "**Te betalen aan:** Nathan Bijnens & Femke Verfaillie  \nRekeningnummer: **BE52 1430 8296 4609**\n\n**Handtekening:**  \n_______________________________  \nNathan Bijnens & Femke Verfaillie – {{ now().strftime('%d/%m/%Y') }}\n"
+      grid_options:
+        columns: full
+    column_span: 4

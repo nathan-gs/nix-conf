@@ -593,3 +593,25 @@ views:
                 show:
                   datalabels: false
                   extremas: true
+              - entity: sensor.electric_heating_auxiliary_solar_power
+                unit: W
+                type: line
+                name: Solar
+                group_by:
+                  func: median
+                  duration: 1m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true
+              - entity: sensor.electric_heating_auxiliary_grid_power
+                unit: W
+                type: line
+                name: Grid
+                group_by:
+                  func: median
+                  duration: 1m
+                  fill: last
+                show:
+                  datalabels: false
+                  extremas: true

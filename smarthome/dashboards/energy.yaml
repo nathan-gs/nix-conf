@@ -1,887 +1,920 @@
+# YAML-mode dashboard, registered from smarthome/dashboards.nix.
+# Not editable in the UI: edit this file and switch.
+# Same URL as the existing sidebar dashboard, so the storage copy is hidden.
 views:
-  - theme: Backend-selected
-    title: Home
-    type: panel
-    path: overview
-    badges: []
+- theme: Backend-selected
+  title: Home
+  type: panel
+  path: overview
+  badges: []
+  cards:
+  - square: false
+    columns: 1
+    type: grid
     cards:
-      - square: false
-        columns: 1
-        type: grid
+    - type: horizontal-stack
+      cards:
+      - type: gauge
+        entity: sensor.electricity_grid_consumed_power
+        min: 0
+        max: 2500
+        needle: false
+        severity:
+          green: 100
+          yellow: 400
+          red: 3000
+      - type: gauge
+        entity: sensor.electricity_grid_returned_power
+      - type: gauge
+        entity: sensor.electricity_total_power
+      - type: gauge
+        entity: sensor.electricity_battery_power
+      - type: gauge
+        entity: sensor.electricity_solar_power
+    - type: horizontal-stack
+      cards:
+      - type: vertical-stack
         cards:
-          - type: horizontal-stack
-            cards:
-              - type: gauge
-                entity: sensor.electricity_grid_consumed_power
-                min: 0
-                max: 2500
-                needle: false
-                severity:
-                  green: 100
-                  yellow: 400
-                  red: 3000
-              - type: gauge
-                entity: sensor.electricity_grid_returned_power
-              - type: gauge
-                entity: sensor.electricity_total_power
-              - type: gauge
-                entity: sensor.electricity_battery_power
-              - type: gauge
-                entity: sensor.electricity_solar_power
-          - type: horizontal-stack
-            cards:
-              - type: vertical-stack
-                cards:
-                  - type: horizontal-stack
-                    cards:
-                      - show_name: true
-                        show_icon: true
-                        type: button
-                        tap_action:
-                          action: toggle
-                        entity: switch.system_car_charger
-                        show_state: true
-                        name: Car Charger
-                        icon: mdi:ev-station
-                        icon_height: 30px
-                      - show_name: true
-                        show_icon: true
-                        type: tile
-                        name: Charge Target
-                        show_state: true
-                        icon_height: 30px
-                        entity: input_number.car_charge_grid_target
-                      - show_name: true
-                        show_icon: true
-                        type: tile
-                        name: Charge Override
-                        show_state: true
-                        icon_height: 30px
-                        entity: input_select.car_charge_override
-                      - show_name: true
-                        show_icon: true
-                        type: button
-                        name: Should Charge
-                        entity: binary_sensor.system_car_charger_should_charge
-                        show_state: true
-                        icon_height: 30px
-                  - type: entities
-                    entities:
-                      - entity: select.system_car_charger_charging_mode
-                      - entity: sensor.system_car_charger_target_current
-                        name: Target Current
-                      - entity: number.system_car_charger_charging_current
-                        name: Actual Current
-                      - entity: input_select.system_car_charger_current_override_a
-                        name: Current Override
-                      - entity: sensor.car_charger_power
-                        name: Power
-                  - type: entities
-                    entities:
-                      - entity: sensor.car_charger_revenue_monthly
-                        name: Revenue (month)
-                      - entity: sensor.car_charger_cost_monthly
-                        name: Cost (month)
-                  - type: entities
-                    entities:
-                      - entity: sensor.audi_a6_sportback_e_tron_state_of_charge
-                      - entity: sensor.audi_a6_sportback_e_tron_target_state_of_charge
-                      - entity: sensor.audi_a6_sportback_e_tron_range
-                      - entity: sensor.audi_a6_sportback_e_tron_charging_state
-                      - entity: sensor.audi_a6_sportback_e_tron_charging_power
-                      - entity: sensor.audi_a6_sportback_e_tron_charging_complete_time
-                      - entity: sensor.audi_a6_sportback_e_tron_remaining_charge_time
-                      - entity: >-
-                          sensor.audi_a6_sportback_e_tron_remaining_climatisation_time
-                  - type: entities
-                    entities:
-                      - entity: sensor.openweathermap_condition
-                      - entity: weather.sxw
-              - type: vertical-stack
-                cards:
-                  - type: entities
-                    entities:
-                      - entity: sensor.electricity_cost_peak_kwh
-                      - entity: >-
-                          input_number.electricity_cost_engie_drive_peak_kwh_energycomponent
-                        name: engie peak
-                      - entity: sensor.electricity_cost_offpeak_kwh
-                      - entity: >-
-                          input_number.electricity_cost_engie_drive_offpeak_kwh_energycomponent
-                        name: engie offpeak
-                      - entity: sensor.electricity_capacity_peak_12months
-                        name: capacity peak (12 months avg)
-                      - entity: sensor.electricity_cost_monthly_fixed
-                      - entity: sensor.electricity_fixed_cost_total
-                      - entity: sensor.electricity_injection_kwh
-                      - entity: >-
-                          input_number.electricity_injection_engie_drive_peak_kwh
-                        name: engie injection peak
-                      - entity: >-
-                          input_number.electricity_injection_engie_drive_offpeak_kwh
-                        name: engie injection offpeak
-                      - entity: input_number.electricity_injection_creg_kwh
-                      - entity: sensor.gas_cost_kwh
-                      - entity: input_number.gas_cost_engie_drive_kwh_energycomponent
-                        name: gas cost (engie)
-                      - entity: sensor.gas_cost_monthly_fixed
-                      - entity: sensor.gas_fixed_cost_total
-                      - entity: sensor.water_cost
-                      - entity: sensor.water_cost_monthly_fixed
-                      - entity: sensor.water_fixed_cost_total
-                      - entity: binary_sensor.electricity_high_usage
-              - type: vertical-stack
-                cards:
-                  - type: energy-distribution
-                  - type: entities
-                    entities:
-                      - entity: sensor.energy_production_today_remaining
-                      - entity: sensor.energy_production_today
-                      - entity: sensor.energy_production_tomorrow
-                  - type: horizontal-stack
-                    cards:
-                      - show_name: true
-                        show_icon: true
-                        type: button
-                        tap_action:
-                          action: toggle
-                        entity: input_boolean.solar_battery_charge_offpeak
-                        icon_height: 15px
-                        name: Charge Offpeak
-                      - show_name: true
-                        show_icon: true
-                        type: button
-                        tap_action:
-                          action: call-service
-                          service: automation.trigger
-                          target:
-                            entity_id: automation.solar_battery_charge
-                          data:
-                            skip_condition: true
-                        icon_height: 15px
-                        name: Charge Now
-                        show_state: false
-                        icon: mdi:battery
-                      - show_name: true
-                        show_icon: true
-                        type: button
-                        tap_action:
-                          action: call-service
-                          service: automation.trigger
-                          target:
-                            entity_id: automation.solar_battery_pylontech_rebalance_run
-                        icon_height: 15px
-                        name: Rebalance pack
-                        show_state: true
-                        entity: input_boolean.solar_battery_rebalance_active
-                        icon: mdi:battery-sync
-                      - show_name: true
-                        show_icon: true
-                        type: button
-                        tap_action:
-                          action: call-service
-                          service: automation.trigger
-                          target:
-                            entity_id: automation.solar_battery_pylontech_rebalance_cancel
-                        icon_height: 15px
-                        name: Cancel rebalance
-                        show_state: false
-                        icon: mdi:battery-remove
-                  - type: entities
-                    entities:
-                      - entity: sensor.system_house_pv_pv_power_1
-                      - entity: sensor.system_house_pv_pv_power_2
-                      - entity: sensor.system_house_pv_battery_soc
-                      - entity: number.system_house_pv_overdischarge_soc
-                      - entity: sensor.electricity_solar_power_mean_15m
-                  - type: entities
-                    entities:
-                      - entity: sensor.electricity_grid_consumed_power_mean_15m
-                      - entity: sensor.electricity_delivery_power_15m_estimated
-                      - entity: sensor.electricity_delivery_power_15m
-                      - entity: binary_sensor.electricity_high_usage
-          - type: energy-solar-graph
-          - type: energy-usage-graph
-  # panel = one root card uses full view width (masonry was stacking grids).
-  - title: Car
-    path: car
-    icon: mdi:car-electric
-    type: panel
-    badges: []
+        - type: horizontal-stack
+          cards:
+          - show_name: true
+            show_icon: true
+            type: button
+            tap_action:
+              action: toggle
+            entity: switch.system_car_charger
+            show_state: true
+            name: Car Charger
+            icon: mdi:ev-station
+            icon_height: 30px
+          - show_name: true
+            show_icon: true
+            type: tile
+            name: Charge Target
+            show_state: true
+            icon_height: 30px
+            entity: input_number.car_charge_grid_target
+          - show_name: true
+            show_icon: true
+            type: tile
+            name: Charge Override
+            show_state: true
+            icon_height: 30px
+            entity: input_select.car_charge_override
+          - show_name: true
+            show_icon: true
+            type: button
+            name: Should Charge
+            entity: binary_sensor.system_car_charger_should_charge
+            show_state: true
+            icon_height: 30px
+        - type: entities
+          entities:
+          - entity: select.system_car_charger_charging_mode
+          - entity: sensor.system_car_charger_target_current
+            name: Target Current
+          - entity: number.system_car_charger_charging_current
+            name: Actual Current
+          - entity: input_select.system_car_charger_current_override_a
+            name: Current Override
+          - entity: sensor.car_charger_power
+            name: Power
+        - type: entities
+          entities:
+          - entity: sensor.car_charger_revenue_monthly
+            name: Revenue (month)
+          - entity: sensor.car_charger_cost_monthly
+            name: Cost (month)
+        - type: entities
+          entities:
+          - entity: sensor.audi_a6_sportback_e_tron_state_of_charge
+          - entity: sensor.audi_a6_sportback_e_tron_target_state_of_charge
+          - entity: sensor.audi_a6_sportback_e_tron_range
+          - entity: sensor.audi_a6_sportback_e_tron_charging_state
+          - entity: sensor.audi_a6_sportback_e_tron_charging_power
+          - entity: sensor.audi_a6_sportback_e_tron_charging_complete_time
+          - entity: sensor.audi_a6_sportback_e_tron_remaining_charge_time
+          - entity: sensor.audi_a6_sportback_e_tron_remaining_climatisation_time
+        - type: entities
+          entities:
+          - entity: sensor.openweathermap_condition
+          - entity: weather.sxw
+      - type: vertical-stack
+        cards:
+        - type: entities
+          entities:
+          - entity: sensor.electricity_cost_peak_kwh
+          - entity: input_number.electricity_cost_engie_drive_peak_kwh_energycomponent
+            name: engie peak
+          - entity: sensor.electricity_cost_offpeak_kwh
+          - entity: input_number.electricity_cost_engie_drive_offpeak_kwh_energycomponent
+            name: engie offpeak
+          - entity: sensor.electricity_capacity_peak_12months
+            name: capacity peak (12 months avg)
+          - entity: sensor.electricity_cost_monthly_fixed
+          - entity: sensor.electricity_fixed_cost_total
+          - entity: sensor.electricity_injection_kwh
+          - entity: input_number.electricity_injection_engie_drive_peak_kwh
+            name: engie injection peak
+          - entity: input_number.electricity_injection_engie_drive_offpeak_kwh
+            name: engie injection offpeak
+          - entity: input_number.electricity_injection_creg_kwh
+          - entity: sensor.gas_cost_kwh
+          - entity: input_number.gas_cost_engie_drive_kwh_energycomponent
+            name: gas cost (engie)
+          - entity: sensor.gas_cost_monthly_fixed
+          - entity: sensor.gas_fixed_cost_total
+          - entity: sensor.water_cost
+          - entity: sensor.water_cost_monthly_fixed
+          - entity: sensor.water_fixed_cost_total
+          - entity: binary_sensor.electricity_high_usage
+      - type: vertical-stack
+        cards:
+        - type: energy-distribution
+        - type: entities
+          entities:
+          - entity: sensor.energy_production_today_remaining
+          - entity: sensor.energy_production_today
+          - entity: sensor.energy_production_tomorrow
+        - type: horizontal-stack
+          cards:
+          - show_name: true
+            show_icon: true
+            type: button
+            tap_action:
+              action: toggle
+            entity: input_boolean.solar_battery_charge_offpeak
+            icon_height: 15px
+            name: Charge Offpeak
+          - show_name: true
+            show_icon: true
+            type: button
+            tap_action:
+              action: call-service
+              service: automation.trigger
+              target:
+                entity_id: automation.solar_battery_charge
+              data:
+                skip_condition: true
+            icon_height: 15px
+            name: Charge Now
+            show_state: false
+            icon: mdi:battery
+          - show_name: true
+            show_icon: true
+            type: button
+            tap_action:
+              action: call-service
+              service: automation.trigger
+              target:
+                entity_id: automation.solar_battery_pylontech_rebalance_run
+            icon_height: 15px
+            name: Rebalance pack
+            show_state: true
+            entity: input_boolean.solar_battery_rebalance_active
+            icon: mdi:battery-sync
+          - show_name: true
+            show_icon: true
+            type: button
+            tap_action:
+              action: call-service
+              service: automation.trigger
+              target:
+                entity_id: automation.solar_battery_pylontech_rebalance_cancel
+            icon_height: 15px
+            name: Cancel rebalance
+            show_state: false
+            icon: mdi:battery-remove
+        - type: entities
+          entities:
+          - entity: sensor.system_house_pv_pv_power_1
+          - entity: sensor.system_house_pv_pv_power_2
+          - entity: sensor.system_house_pv_battery_soc
+          - entity: number.system_house_pv_overdischarge_soc
+          - entity: sensor.electricity_solar_power_mean_15m
+        - type: entities
+          entities:
+          - entity: sensor.electricity_grid_consumed_power_mean_15m
+          - entity: sensor.electricity_delivery_power_15m_estimated
+          - entity: sensor.electricity_delivery_power_15m
+          - entity: binary_sensor.electricity_high_usage
+    - type: energy-solar-graph
+    - type: energy-usage-graph
+- title: Car
+  path: car
+  icon: mdi:car-electric
+  type: panel
+  badges: []
+  cards:
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          # Row 1: this month | lifetime — full width
-          - type: horizontal-stack
-            cards:
-              - type: entities
-                title: This month
-                entities:
-                  - entity: sensor.car_charger_cost_monthly
-                    name: Cost
-                  - entity: sensor.car_charger_revenue_monthly
-                    name: Revenue (total)
-                  - entity: sensor.car_charger_solar_revenue_monthly
-                    name: Revenue (solar)
-                  - entity: sensor.car_charger_grid_revenue_monthly
-                    name: Revenue (grid)
-                  - entity: sensor.car_charger_energy_monthly
-                    name: Energy charged
-                  - entity: sensor.car_charger_grid_energy_monthly
-                    name: From grid
-                  - entity: sensor.car_charger_solar_energy_monthly
-                    name: From solar
-                  - entity: sensor.audi_a6_sportback_e_tron_mileage_monthly
-                    name: Mileage
-              - type: entities
-                title: Lifetime totals
-                entities:
-                  - entity: sensor.car_charger_cost
-                    name: Cost
-                  - entity: sensor.car_charger_revenue
-                    name: Revenue
-                  - entity: sensor.system_car_charger_energy
-                    name: Energy (hardware)
-                  - entity: sensor.audi_a6_sportback_e_tron_mileage
-                    name: Odometer
-          # Row 2: 3 charts — full width; monthly meters + LTS state
-          - type: horizontal-stack
-            cards:
-              - type: custom:apexcharts-card
-                graph_span: 1year
-                span:
-                  end: month
-                header:
-                  show: true
-                  show_states: true
-                  colorize_states: true
-                  title: Cost vs revenue
-                apex_config:
-                  legend:
-                    show: true
-                  yaxis:
-                    - id: first
-                      forceNiceScale: true
-                      decimalsInFloat: 0
-                series:
-                  - entity: sensor.car_charger_cost_monthly
-                    name: Cost
-                    type: column
-                    color: '#EF5350'
-                    statistics:
-                      type: state
-                      period: month
-                      # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                      align: start
-                    show:
-                      in_header: true
-                  - entity: sensor.car_charger_revenue_monthly
-                    name: Revenue
-                    type: column
-                    color: '#66BB6A'
-                    statistics:
-                      type: state
-                      period: month
-                      # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                      align: start
-                    show:
-                      in_header: true
-              - type: custom:apexcharts-card
-                graph_span: 1year
-                span:
-                  end: month
-                stacked: true
-                header:
-                  show: true
-                  show_states: true
-                  colorize_states: true
-                  title: Revenue (stacked) vs cost
-                apex_config:
-                  chart:
-                    stackOnlyBar: true
-                  legend:
-                    show: true
-                  yaxis:
-                    - id: first
-                      forceNiceScale: true
-                      decimalsInFloat: 0
-                series:
-                  - entity: sensor.car_charger_solar_revenue_monthly
-                    name: Solar
-                    type: column
-                    color: '#FFCA28'
-                    statistics:
-                      type: state
-                      period: month
-                      # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                      align: start
-                    show:
-                      in_header: true
-                  - entity: sensor.car_charger_grid_revenue_monthly
-                    name: Grid
-                    type: column
-                    color: '#42A5F5'
-                    statistics:
-                      type: state
-                      period: month
-                      # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                      align: start
-                    show:
-                      in_header: true
-                  - entity: sensor.car_charger_cost_monthly
-                    name: Cost
-                    type: line
-                    color: '#EF5350'
-                    stroke_width: 3
-                    statistics:
-                      type: state
-                      period: month
-                      # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                      align: start
-                    show:
-                      in_header: true
-              - type: custom:apexcharts-card
-                graph_span: 1year
-                span:
-                  end: month
-                stacked: true
-                header:
-                  show: true
-                  show_states: true
-                  title: Energy charged
-                apex_config:
-                  chart:
-                    stackOnlyBar: true
-                  legend:
-                    show: true
-                  yaxis:
-                    - id: first
-                      forceNiceScale: true
-                      decimalsInFloat: 0
-                series:
-                  - entity: sensor.car_charger_solar_energy_monthly
-                    name: Solar
-                    type: column
-                    color: '#FFCA28'
-                    statistics:
-                      type: state
-                      period: month
-                      # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                      align: start
-                    show:
-                      in_header: true
-                  - entity: sensor.car_charger_grid_energy_monthly
-                    name: Grid
-                    type: column
-                    color: '#78909C'
-                    statistics:
-                      type: state
-                      period: month
-                      # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                      align: start
-                    show:
-                      in_header: true
-          # Row 3: monthly mileage full width + 2083 km target line (25 000 km/year ÷ 12)
-          - type: custom:apexcharts-card
-            graph_span: 1year
-            span:
-              end: month
-            header:
-              show: true
-              show_states: true
-              colorize_states: true
-              title: Monthly mileage
-            apex_config:
-              legend:
-                show: true
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  min: 0
-              annotations:
-                yaxis:
-                  - 'y': 2083
-                    borderColor: '#EF5350'
-                    strokeDashArray: 0
-                    borderWidth: 2
-                    label:
-                      text: 2083 km
-                      borderColor: '#EF5350'
-                      style:
-                        color: '#fff'
-                        background: '#EF5350'
-            series:
-              - entity: sensor.audi_a6_sportback_e_tron_mileage_monthly
-                name: Mileage
-                type: column
-                color: '#5C6BC0'
-                statistics:
-                  type: state
-                  period: month
-                  # start: month period is 1st 00:00 local; end is next 1st (labels shift +1 month in CEST)
-                  align: start
-                show:
-                  in_header: true
-                  datalabels: true
-  - title: Utilities
-    path: utilities
-    icon: mdi:lightning-bolt-circle
-    badges: []
+    - type: horizontal-stack
+      cards:
+      - type: entities
+        title: This month
+        entities:
+        - entity: sensor.car_charger_cost_monthly
+          name: Cost
+        - entity: sensor.electricity_injection_creg_kwh
+          name: CREG rate
+        - entity: sensor.car_charger_revenue_monthly
+          name: Revenue (total)
+        - entity: sensor.car_charger_solar_revenue_monthly
+          name: Revenue (solar)
+        - entity: sensor.car_charger_grid_revenue_monthly
+          name: Revenue (grid)
+        - entity: sensor.car_charger_energy_monthly
+          name: Energy charged
+        - entity: sensor.car_charger_grid_energy_monthly
+          name: From grid
+        - entity: sensor.car_charger_solar_energy_monthly
+          name: From solar
+        - entity: sensor.audi_a6_sportback_e_tron_mileage_monthly
+          name: Mileage
+      - type: entities
+        title: Last month
+        entities:
+        - type: attribute
+          entity: sensor.car_charger_cost_monthly
+          attribute: last_period
+          name: Cost
+          suffix: " €"
+        - entity: sensor.electricity_injection_creg_kwh_previous
+          name: CREG rate
+        - type: attribute
+          entity: sensor.car_charger_revenue_monthly
+          attribute: last_period
+          name: Revenue (total)
+          suffix: " €"
+        - type: attribute
+          entity: sensor.car_charger_solar_revenue_monthly
+          attribute: last_period
+          name: Revenue (solar)
+          suffix: " €"
+        - type: attribute
+          entity: sensor.car_charger_grid_revenue_monthly
+          attribute: last_period
+          name: Revenue (grid)
+          suffix: " €"
+        - type: attribute
+          entity: sensor.car_charger_energy_monthly
+          attribute: last_period
+          name: Energy charged
+          suffix: " kWh"
+        - type: attribute
+          entity: sensor.car_charger_grid_energy_monthly
+          attribute: last_period
+          name: From grid
+          suffix: " kWh"
+        - type: attribute
+          entity: sensor.car_charger_solar_energy_monthly
+          attribute: last_period
+          name: From solar
+          suffix: " kWh"
+        - type: attribute
+          entity: sensor.audi_a6_sportback_e_tron_mileage_monthly
+          attribute: last_period
+          name: Mileage
+          suffix: " km"
+      - type: entities
+        title: Lifetime totals
+        entities:
+        - entity: sensor.car_charger_cost
+          name: Cost
+        - entity: sensor.car_charger_revenue
+          name: Revenue
+        - entity: sensor.system_car_charger_energy
+          name: Energy (hardware)
+        - entity: sensor.audi_a6_sportback_e_tron_mileage
+          name: Odometer
+    - type: horizontal-stack
+      cards:
+      - type: custom:apexcharts-card
+        graph_span: 1year
+        span:
+          end: month
+        header:
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Cost vs revenue
+        apex_config:
+          legend:
+            show: true
+          yaxis:
+          - id: first
+            forceNiceScale: true
+            decimalsInFloat: 0
+        series:
+        - entity: sensor.car_charger_cost_monthly
+          name: Cost
+          type: column
+          color: '#EF5350'
+          statistics:
+            type: state
+            period: month
+            align: start
+          show:
+            in_header: true
+        - entity: sensor.car_charger_revenue_monthly
+          name: Revenue
+          type: column
+          color: '#66BB6A'
+          statistics:
+            type: state
+            period: month
+            align: start
+          show:
+            in_header: true
+      - type: custom:apexcharts-card
+        graph_span: 1year
+        span:
+          end: month
+        stacked: true
+        header:
+          show: true
+          show_states: true
+          colorize_states: true
+          title: Revenue (stacked) vs cost
+        apex_config:
+          chart:
+            stackOnlyBar: true
+          legend:
+            show: true
+          yaxis:
+          - id: first
+            forceNiceScale: true
+            decimalsInFloat: 0
+        series:
+        - entity: sensor.car_charger_solar_revenue_monthly
+          name: Solar
+          type: column
+          color: '#FFCA28'
+          statistics:
+            type: state
+            period: month
+            align: start
+          show:
+            in_header: true
+        - entity: sensor.car_charger_grid_revenue_monthly
+          name: Grid
+          type: column
+          color: '#42A5F5'
+          statistics:
+            type: state
+            period: month
+            align: start
+          show:
+            in_header: true
+        - entity: sensor.car_charger_cost_monthly
+          name: Cost
+          type: line
+          color: '#EF5350'
+          stroke_width: 3
+          statistics:
+            type: state
+            period: month
+            align: start
+          show:
+            in_header: true
+      - type: custom:apexcharts-card
+        graph_span: 1year
+        span:
+          end: month
+        stacked: true
+        header:
+          show: true
+          show_states: true
+          title: Energy charged
+        apex_config:
+          chart:
+            stackOnlyBar: true
+          legend:
+            show: true
+          yaxis:
+          - id: first
+            forceNiceScale: true
+            decimalsInFloat: 0
+        series:
+        - entity: sensor.car_charger_solar_energy_monthly
+          name: Solar
+          type: column
+          color: '#FFCA28'
+          statistics:
+            type: state
+            period: month
+            align: start
+          show:
+            in_header: true
+        - entity: sensor.car_charger_grid_energy_monthly
+          name: Grid
+          type: column
+          color: '#78909C'
+          statistics:
+            type: state
+            period: month
+            align: start
+          show:
+            in_header: true
+    - type: custom:apexcharts-card
+      graph_span: 1year
+      span:
+        end: month
+      header:
+        show: true
+        show_states: true
+        colorize_states: true
+        title: Monthly mileage
+      apex_config:
+        legend:
+          show: true
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          min: 0
+        annotations:
+          yaxis:
+          - "y": 2083
+            borderColor: '#EF5350'
+            strokeDashArray: 0
+            borderWidth: 2
+            label:
+              text: 2083 km
+              borderColor: '#EF5350'
+              style:
+                color: '#fff'
+                background: '#EF5350'
+      series:
+      - entity: sensor.audi_a6_sportback_e_tron_mileage_monthly
+        name: Mileage
+        type: column
+        color: '#5C6BC0'
+        statistics:
+          type: state
+          period: month
+          align: start
+        show:
+          in_header: true
+          datalabels: true
+- title: Utilities
+  path: utilities
+  icon: mdi:lightning-bolt-circle
+  badges: []
+  cards:
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          - type: gauge
-            entity: sensor.dsmr_reading_electricity_currently_delivered
-            max: 5000
-            min: 0
-            needle: true
-            severity:
-              green: 0
-              yellow: 800
-              red: 1500
-            name: Huidige verbruik
-          - type: gauge
-            max: 5000
-            min: 0
-            needle: true
-            severity:
-              green: 0
-              yellow: 800
-              red: 1500
-            name: Huidige teruglevering
-            entity: sensor.dsmr_reading_electricity_currently_returned
-      - type: vertical-stack
-        cards:
-          - type: entities
-            entities:
-              - entity: sensor.dsmr_reading_electricity_delivered_2
-                icon: mdi:lightning-bolt
-                secondary_info: none
-              - entity: sensor.dsmr_reading_electricity_delivered_1
-              - entity: sensor.dsmr_reading_electricity_returned_1
-              - entity: sensor.dsmr_reading_electricity_returned_2
-              - entity: sensor.dsmr_consumption_gas_delivered
-                secondary_info: none
-                icon: mdi:fire
-              - entity: sensor.water_delivery
-                icon: mdi:water
-                name: Water usage
-              - entity: sensor.electricity_cost_peak_kwh
-              - entity: sensor.electricity_cost_offpeak_kwh
-              - entity: sensor.gas_cost_m3
-              - entity: sensor.water_cost
-      - type: custom:apexcharts-card
-        experimental:
-          color_threshold: true
-        graph_span: 1h
+    - type: gauge
+      entity: sensor.dsmr_reading_electricity_currently_delivered
+      max: 5000
+      min: 0
+      needle: true
+      severity:
+        green: 0
+        yellow: 800
+        red: 1500
+      name: Huidige verbruik
+    - type: gauge
+      max: 5000
+      min: 0
+      needle: true
+      severity:
+        green: 0
+        yellow: 800
+        red: 1500
+      name: Huidige teruglevering
+      entity: sensor.dsmr_reading_electricity_currently_returned
+  - type: vertical-stack
+    cards:
+    - type: entities
+      entities:
+      - entity: sensor.dsmr_reading_electricity_delivered_2
+        icon: mdi:lightning-bolt
+        secondary_info: none
+      - entity: sensor.dsmr_reading_electricity_delivered_1
+      - entity: sensor.dsmr_reading_electricity_returned_1
+      - entity: sensor.dsmr_reading_electricity_returned_2
+      - entity: sensor.dsmr_consumption_gas_delivered
+        secondary_info: none
+        icon: mdi:fire
+      - entity: sensor.water_delivery
+        icon: mdi:water
+        name: Water usage
+      - entity: sensor.electricity_cost_peak_kwh
+      - entity: sensor.electricity_cost_offpeak_kwh
+      - entity: sensor.gas_cost_m3
+      - entity: sensor.water_cost
+  - type: custom:apexcharts-card
+    experimental:
+      color_threshold: true
+    graph_span: 1h
+    show:
+      last_updated: true
+    header:
+      standard_format: false
+      show: true
+      show_states: true
+      colorize_states: true
+      title: Verbruik per fase laatste uur
+    series:
+    - entity: sensor.dsmr_reading_phase_currently_delivered_l1
+      type: line
+      group_by:
+        func: last
+        duration: 10s
+      stroke_width: 2
+      unit: Watt
+    - entity: sensor.dsmr_reading_phase_currently_delivered_l2
+      type: line
+      group_by:
+        func: last
+        duration: 10s
+      stroke_width: 2
+      unit: Watt
+    - entity: sensor.dsmr_reading_phase_currently_delivered_l3
+      type: line
+      group_by:
+        func: last
+        duration: 10s
+      stroke_width: 2
+      unit: Watt
+  - type: custom:apexcharts-card
+    experimental:
+      color_threshold: true
+    graph_span: 1h
+    show:
+      last_updated: true
+    header:
+      standard_format: false
+      show: true
+      show_states: true
+      colorize_states: true
+      title: Teruglevering per fase laatste uur
+    series:
+    - entity: sensor.dsmr_reading_phase_currently_returned_l1
+      type: line
+      group_by:
+        func: last
+        duration: 10s
+      stroke_width: 2
+      unit: Watt
+    - entity: sensor.dsmr_reading_phase_currently_returned_l2
+      type: line
+      group_by:
+        func: last
+        duration: 10s
+      stroke_width: 2
+      unit: Watt
+    - entity: sensor.dsmr_reading_phase_currently_returned_l3
+      type: line
+      group_by:
+        func: last
+        duration: 10s
+      stroke_width: 2
+      unit: Watt
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    span:
+      start: day
+    header:
+      show: true
+      title: Verbruik laatste 24 uur
+    apex_config:
+      yaxis:
+      - id: first
+        forceNiceScale: true
+        decimalsInFloat: 2
+        opposite: false
+        name: Energie
+    series:
+    - entity: sensor.electricity_delivery
+      unit: kW
+      type: column
+      name: levering piektarief
+      color: '#EF810E'
+      group_by:
+        func: max
+      show:
+        datalabels: false
+        extremas: false
+  - type: custom:apexcharts-card
+    graph_span: 24h
+    span:
+      start: day
+    header:
+      show: true
+      title: Teruglevering laatste 24 uur
+    apex_config:
+      yaxis:
+      - id: first
+        forceNiceScale: true
+        decimalsInFloat: 0
+        opposite: false
+        name: Water
+    series:
+    - entity: sensor.electricity_peak_return
+      unit: kW
+      type: column
+      name: piek
+      color: '#EF810E'
+      group_by:
+        func: max
+      show:
+        datalabels: false
+        extremas: false
+    - entity: sensor.electricity_peak_return
+      unit: kW
+      type: column
+      name: daltarief
+      color: '#053752'
+      group_by:
+        func: max
+      show:
+        datalabels: false
+        extremas: false
+  - type: custom:apexcharts-card
+    experimental:
+      color_threshold: true
+    graph_span: 24h
+    show:
+      last_updated: true
+    header:
+      standard_format: false
+      show: true
+      show_states: true
+      colorize_states: true
+      title: Spanning per fase laatste 24 uur
+    span:
+      start: day
+    series:
+    - entity: sensor.dsmr_reading_phase_voltage_l1
+      type: line
+      group_by:
+        func: last
+        duration: 15m
+      stroke_width: 5
+    - entity: sensor.dsmr_reading_phase_voltage_l2
+      type: line
+      group_by:
+        func: last
+        duration: 15m
+      stroke_width: 5
+    - entity: sensor.dsmr_reading_phase_voltage_l3
+      type: line
+      group_by:
+        func: last
+        duration: 15m
+      stroke_width: 5
+  - type: custom:apexcharts-card
+    experimental:
+      color_threshold: true
+    graph_span: 1h
+    show:
+      last_updated: true
+    apex_config:
+      yaxis:
+      - id: first
+        forceNiceScale: true
+        decimalsInFloat: 3
+    header:
+      standard_format: false
+      show: true
+      show_states: true
+      colorize_states: true
+      title: Current power usage
+    series:
+    - entity: sensor.dsmr_reading_electricity_currently_delivered
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      color_threshold:
+      - value: 0
+        color: '#F8CFC9'
+      - value: 0.5
+        color: '#EE8E81'
+      - value: 0.8
+        color: '#E44D3A'
+      - value: 1.5
+        color: '#BC2C1A'
+      - value: 3
+        color: '#7E1E11'
+    - entity: sensor.dsmr_reading_electricity_currently_returned
+      type: line
+      group_by:
+        func: median
+        duration: 1m
+      stroke_width: 2
+      show:
+        header_color_threshold: true
+      color_threshold:
+      - value: 0
+        color: '#D4ECE7'
+      - value: 0.5
+        color: '#9CD3C6'
+      - value: 0.8
+        color: '#71C1AE'
+      - value: 1.5
+        color: '#38806F'
+      - value: 3
+        color: '#19391'
+  - type: custom:apexcharts-card
+    experimental:
+      color_threshold: true
+    graph_span: 24h
+    show:
+      last_updated: true
+    header:
+      standard_format: false
+      show: true
+      show_states: true
+      colorize_states: true
+      title: Stroom per fase vandaag
+    span:
+      start: day
+    series:
+    - entity: sensor.dsmr_reading_phase_power_current_l1
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+    - entity: sensor.dsmr_reading_phase_power_current_l2
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+    - entity: sensor.dsmr_reading_phase_power_current_l3
+      type: line
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 2
+  - type: vertical-stack
+    cards:
+    - type: entities
+      entities:
+      - entity: sensor.dsmr_reading_electricity_currently_delivered
+      - entity: sensor.electricity_delivery_power_15m
+      - entity: sensor.electricity_delivery_power_daily_15m_max
+      - entity: sensor.electricity_delivery_power_monthly_15m_max
+      state_color: false
+      title: Capacity Tariffs
+    - type: custom:apexcharts-card
+      graph_span: 24h
+      span:
+        start: day
+      header:
+        show: true
+        title: Capacity Tariffs Peaks last day
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Energie
+      all_series_config:
+        stroke_width: 1
+      series:
+      - entity: sensor.electricity_delivery_power_15m
+        unit: W
+        type: column
+        name: 15m
+        stroke_width: 2
+        transform: return x * 1000;
+        group_by:
+          duration: 15m
+          func: last
         show:
-          last_updated: true
-        header:
-          standard_format: false
-          show: true
-          show_states: true
-          colorize_states: true
-          title: Verbruik per fase laatste uur
-        series:
-          - entity: sensor.dsmr_reading_phase_currently_delivered_l1
-            type: line
-            group_by:
-              func: last
-              duration: 10s
-            stroke_width: 2
-            unit: Watt
-          - entity: sensor.dsmr_reading_phase_currently_delivered_l2
-            type: line
-            group_by:
-              func: last
-              duration: 10s
-            stroke_width: 2
-            unit: Watt
-          - entity: sensor.dsmr_reading_phase_currently_delivered_l3
-            type: line
-            group_by:
-              func: last
-              duration: 10s
-            stroke_width: 2
-            unit: Watt
-      - type: custom:apexcharts-card
-        experimental:
-          color_threshold: true
-        graph_span: 1h
+          datalabels: false
+          extremas: true
+      - entity: sensor.electricity_delivery_power_monthly_15m_max
+        unit: W
+        type: line
+        name: monthly
+        transform: return x * 1000;
+        group_by:
+          duration: 15m
+          func: last
         show:
-          last_updated: true
-        header:
-          standard_format: false
-          show: true
-          show_states: true
-          colorize_states: true
-          title: Teruglevering per fase laatste uur
-        series:
-          - entity: sensor.dsmr_reading_phase_currently_returned_l1
-            type: line
-            group_by:
-              func: last
-              duration: 10s
-            stroke_width: 2
-            unit: Watt
-          - entity: sensor.dsmr_reading_phase_currently_returned_l2
-            type: line
-            group_by:
-              func: last
-              duration: 10s
-            stroke_width: 2
-            unit: Watt
-          - entity: sensor.dsmr_reading_phase_currently_returned_l3
-            type: line
-            group_by:
-              func: last
-              duration: 10s
-            stroke_width: 2
-            unit: Watt
-      - type: custom:apexcharts-card
-        graph_span: 24h
-        span:
-          start: day
-        header:
-          show: true
-          title: Verbruik laatste 24 uur
+          datalabels: false
+          extremas: false
+    - type: custom:apexcharts-card
+      graph_span: 31d
+      span:
+        start: month
+      header:
+        show: true
+        title: Capacity Tariffs Peaks last month
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 0
+          opposite: false
+          name: Energie
+      all_series_config:
+        stroke_width: 1
+      series:
+      - entity: sensor.electricity_delivery_power_daily_15m_max
+        unit: W
+        type: column
+        name: day
+        stroke_width: 4
+        transform: return x * 1000;
+        group_by:
+          duration: 1d
+          func: max
+        show:
+          datalabels: false
+          extremas: true
+      - entity: sensor.electricity_delivery_power_monthly_15m_max
+        unit: W
+        type: line
+        name: monthly
+        transform: return x * 1000;
+        group_by:
+          duration: 15m
+          func: last
+        show:
+          datalabels: false
+          extremas: false
+  - type: vertical-stack
+    cards:
+    - type: custom:apexcharts-card
+      graph_span: 1 month
+      span:
+        start: month
+      header:
+        show: true
+        title: Gasverbruik laatste maand
+      apex_config:
+        yaxis:
+        - id: first
+          forceNiceScale: true
+          decimalsInFloat: 3
+          opposite: false
+          name: Gas
+      series:
+      - entity: sensor.gas_delivery_hourly
+        unit: m3
+        type: column
+        name: gasverbruik
+        color: '#EF810E'
+        group_by:
+          func: max
+          duration: 1d
+        show:
+          datalabels: false
+          extremas: false
+    - type: custom:apexcharts-card
+      graph_span: 31d
+      span:
+        start: month
+      show:
+        last_updated: true
+      yaxis:
+      - id: dd
         apex_config:
-          yaxis:
-            - id: first
-              forceNiceScale: true
-              decimalsInFloat: 2
-              opposite: false
-              name: Energie
-        series:
-          - entity: sensor.electricity_delivery
-            unit: kW
-            type: column
-            name: levering piektarief
-            color: '#EF810E'
-            group_by:
-              func: max
-            show:
-              datalabels: false
-              extremas: false
-      - type: custom:apexcharts-card
-        graph_span: 24h
-        span:
-          start: day
-        header:
-          show: true
-          title: Teruglevering laatste 24 uur
+          forceNiceScale: true
+          decimalsInFloat: 1
+          min: 0
+          max: 15
+      - id: gas_per_dd
+        opposite: true
+        min: 0
+        max: 0.8
         apex_config:
-          yaxis:
-            - id: first
-              forceNiceScale: true
-              decimalsInFloat: 0
-              opposite: false
-              name: Water
-        series:
-          - entity: sensor.electricity_peak_return
-            unit: kW
-            type: column
-            name: piek
-            color: '#EF810E'
-            group_by:
-              func: max
-            show:
-              datalabels: false
-              extremas: false
-          - entity: sensor.electricity_peak_return
-            unit: kW
-            type: column
-            name: daltarief
-            color: '#053752'
-            group_by:
-              func: max
-            show:
-              datalabels: false
-              extremas: false
-      - type: custom:apexcharts-card
-        experimental:
-          color_threshold: true
-        graph_span: 24h
+          forceNiceScale: false
+          decimalsInFloat: 2
+          tickAmount: 4
+      color_list:
+      - '#1a4c6e'
+      header:
+        show: true
+        title: Degree Days
+      series:
+      - entity: sensor.degree_day_daily
+        name: Degree Day
+        type: line
+        group_by:
+          func: last
+          duration: 1d
+        stroke_width: 2
         show:
-          last_updated: true
-        header:
-          standard_format: false
-          show: true
-          show_states: true
-          colorize_states: true
-          title: Spanning per fase laatste 24 uur
-        span:
-          start: day
-        series:
-          - entity: sensor.dsmr_reading_phase_voltage_l1
-            type: line
-            group_by:
-              func: last
-              duration: 15m
-            stroke_width: 5
-          - entity: sensor.dsmr_reading_phase_voltage_l2
-            type: line
-            group_by:
-              func: last
-              duration: 15m
-            stroke_width: 5
-          - entity: sensor.dsmr_reading_phase_voltage_l3
-            type: line
-            group_by:
-              func: last
-              duration: 15m
-            stroke_width: 5
-      - type: custom:apexcharts-card
-        experimental:
-          color_threshold: true
-        graph_span: 1h
-        show:
-          last_updated: true
-        apex_config:
-          yaxis:
-            - id: first
-              forceNiceScale: true
-              decimalsInFloat: 3
-        header:
-          standard_format: false
-          show: true
-          show_states: true
-          colorize_states: true
-          title: Current power usage
-        series:
-          - entity: sensor.dsmr_reading_electricity_currently_delivered
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            color_threshold:
-              - value: 0
-                color: '#F8CFC9'
-              - value: 0.5
-                color: '#EE8E81'
-              - value: 0.8
-                color: '#E44D3A'
-              - value: 1.5
-                color: '#BC2C1A'
-              - value: 3
-                color: '#7E1E11'
-          - entity: sensor.dsmr_reading_electricity_currently_returned
-            type: line
-            group_by:
-              func: median
-              duration: 1m
-            stroke_width: 2
-            show:
-              header_color_threshold: true
-            color_threshold:
-              - value: 0
-                color: '#D4ECE7'
-              - value: 0.5
-                color: '#9CD3C6'
-              - value: 0.8
-                color: '#71C1AE'
-              - value: 1.5
-                color: '#38806F'
-              - value: 3
-                color: '#19391'
-      - type: custom:apexcharts-card
-        experimental:
-          color_threshold: true
-        graph_span: 24h
-        show:
-          last_updated: true
-        header:
-          standard_format: false
-          show: true
-          show_states: true
-          colorize_states: true
-          title: Stroom per fase vandaag
-        span:
-          start: day
-        series:
-          - entity: sensor.dsmr_reading_phase_power_current_l1
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-          - entity: sensor.dsmr_reading_phase_power_current_l2
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-          - entity: sensor.dsmr_reading_phase_power_current_l3
-            type: line
-            group_by:
-              func: last
-              duration: 1m
-            stroke_width: 2
-      - type: vertical-stack
-        cards:
-          - type: entities
-            entities:
-              - entity: sensor.dsmr_reading_electricity_currently_delivered
-              - entity: sensor.electricity_delivery_power_15m
-              - entity: sensor.electricity_delivery_power_daily_15m_max
-              - entity: sensor.electricity_delivery_power_monthly_15m_max
-            state_color: false
-            title: Capacity Tariffs
-          - type: custom:apexcharts-card
-            graph_span: 24h
-            span:
-              start: day
-            header:
-              show: true
-              title: Capacity Tariffs Peaks last day
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  opposite: false
-                  name: Energie
-            all_series_config:
-              stroke_width: 1
-            series:
-              - entity: sensor.electricity_delivery_power_15m
-                unit: W
-                type: column
-                name: 15m
-                stroke_width: 2
-                transform: return x * 1000;
-                group_by:
-                  duration: 15m
-                  func: last
-                show:
-                  datalabels: false
-                  extremas: true
-              - entity: sensor.electricity_delivery_power_monthly_15m_max
-                unit: W
-                type: line
-                name: monthly
-                transform: return x * 1000;
-                group_by:
-                  duration: 15m
-                  func: last
-                show:
-                  datalabels: false
-                  extremas: false
-          - type: custom:apexcharts-card
-            graph_span: 31d
-            span:
-              start: month
-            header:
-              show: true
-              title: Capacity Tariffs Peaks last month
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 0
-                  opposite: false
-                  name: Energie
-            all_series_config:
-              stroke_width: 1
-            series:
-              - entity: sensor.electricity_delivery_power_daily_15m_max
-                unit: W
-                type: column
-                name: day
-                stroke_width: 4
-                transform: return x * 1000;
-                group_by:
-                  duration: 1d
-                  func: max
-                show:
-                  datalabels: false
-                  extremas: true
-              - entity: sensor.electricity_delivery_power_monthly_15m_max
-                unit: W
-                type: line
-                name: monthly
-                transform: return x * 1000;
-                group_by:
-                  duration: 15m
-                  func: last
-                show:
-                  datalabels: false
-                  extremas: false
-      - type: vertical-stack
-        cards:
-          - type: custom:apexcharts-card
-            graph_span: 1 month
-            span:
-              start: month
-            header:
-              show: true
-              title: Gasverbruik laatste maand
-            apex_config:
-              yaxis:
-                - id: first
-                  forceNiceScale: true
-                  decimalsInFloat: 3
-                  opposite: false
-                  name: Gas
-            series:
-              - entity: sensor.gas_delivery_hourly
-                unit: m3
-                type: column
-                name: gasverbruik
-                color: '#EF810E'
-                group_by:
-                  func: max
-                  duration: 1d
-                show:
-                  datalabels: false
-                  extremas: false
-          - type: custom:apexcharts-card
-            graph_span: 31d
-            span:
-              start: month
-            show:
-              last_updated: true
-            yaxis:
-              - id: dd
-                apex_config:
-                  forceNiceScale: true
-                  decimalsInFloat: 1
-                  min: 0
-                  max: 15
-              - id: gas_per_dd
-                opposite: true
-                min: 0
-                max: 0.8
-                apex_config:
-                  forceNiceScale: false
-                  decimalsInFloat: 2
-                  tickAmount: 4
-            color_list:
-              - '#1a4c6e'
-            header:
-              show: true
-              title: Degree Days
-            series:
-              - entity: sensor.degree_day_daily
-                name: Degree Day
-                type: line
-                group_by:
-                  func: last
-                  duration: 1d
-                stroke_width: 2
-                show:
-                  header_color_threshold: true
-                yaxis_id: dd
-              - entity: sensor.gas_m3_per_degree_day
-                name: Gas m3 per DD
-                type: line
-                color: black
-                group_by:
-                  func: last
-                  duration: 1d
-                stroke_width: 2
-                yaxis_id: gas_per_dd
+          header_color_threshold: true
+        yaxis_id: dd
+      - entity: sensor.gas_m3_per_degree_day
+        name: Gas m3 per DD
+        type: line
+        color: black
+        group_by:
+          func: last
+          duration: 1d
+        stroke_width: 2
+        yaxis_id: gas_per_dd

@@ -310,10 +310,20 @@
           name = "car_charger_solar";
           unique_id = "car_charger_solar";
           entity_id = "binary_sensor.car_charger_charging";
-          fixed.power = ''            
+          # Auxiliary heating takes the sun first. This is the residual:
+          # grid import is absorbed by the car before it spills onto heating,
+          # so car_solar = max(0, car - import) still holds once heating's
+          # share is removed from the pool.
+          fixed.power = ''
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = (states('sensor.car_charger_power') | int(0)) %}
-            {% set power = (consumptionPower - import_from_grid) %}
+            {% set car = states('sensor.car_charger_power') | int(0) %}
+            {% set heating = states('sensor.electric_heating_auxiliary_power') | float(0) %}
+            {% set solar_pool = car + heating - import_from_grid %}
+            {% if solar_pool < 0 %}
+              {% set solar_pool = 0 %}
+            {% endif %}
+            {% set heating_solar = min(heating, solar_pool) %}
+            {% set power = min(car, solar_pool - heating_solar) %}
             {% if power < 0 %}
               {% set power = 0 %}
             {% endif %}
@@ -326,10 +336,11 @@
           name = "car_charger_grid";
           entity_id = "binary_sensor.car_charger_charging";
           unique_id = "car_charger_grid";
+          # Grid import lands here before auxiliary heating (heating keeps the sun).
           fixed.power = ''
             {% set import_from_grid = states('sensor.electricity_grid_consumed_power') | float(1500) %}
-            {% set consumptionPower = (states('sensor.car_charger_power') | int(0)) %}
-            {% set power = min(import_from_grid, consumptionPower) %}
+            {% set car = states('sensor.car_charger_power') | int(0) %}
+            {% set power = min(import_from_grid, car) %}
             {% if power < 0 %}
               {% set power = 0 %}
             {% endif %}

@@ -1,190 +1,305 @@
+# YAML-mode dashboard, registered from smarthome/dashboards.nix.
+# Not editable in the UI: edit this file and switch.
+# Same URL as the existing sidebar dashboard, so the storage copy is hidden.
 views:
-  - title: Home
+- title: Home
+  cards:
+  - type: vertical-stack
     cards:
-      - type: vertical-stack
-        cards:
-          - square: true
-            type: grid
-            cards:
-              - type: gauge
-                entity: sensor.irceline_sxw_air_quality_pm25
-                severity:
-                  green: 0
-                  yellow: 10
-                  red: 20
-                name: SXW
-                max: 50
-                needle: true
-              - type: gauge
-                entity: sensor.system_wtw_air_quality_inlet_pm25
-                severity:
-                  green: 0
-                  yellow: 10
-                  red: 20
-                name: Inlet
-                max: 50
-                needle: true
-              - type: gauge
-                entity: sensor.system_wtw_air_quality_to_house_pm25
-                severity:
-                  green: 0
-                  yellow: 5
-                  red: 10
-                name: To House
-                needle: true
-                max: 50
-            columns: 3
-          - chart_type: line
-            period: hour
-            type: statistics-graph
-            entities:
-              - entity: sensor.system_wtw_air_quality_inlet_pm25
-                name: inlet
-              - entity: sensor.irceline_sxw_air_quality_pm25
-                name: SXW
-              - entity: sensor.irceline_evergem_air_quality_pm25
-                name: Evergem
-              - entity: sensor.irceline_rieme_air_quality_pm25
-                name: Rieme
-              - entity: sensor.irceline_zelzate_air_quality_pm25
-                name: Zelzate
-            stat_types:
-              - mean
-            days_to_show: 7
-            hide_legend: true
-            title: PM2.5
-          - type: custom:map-card
-            x: 51.23
-            'y': 3.652
-            zoom: 8
-            card_size: 6
-            wms:
-              - url: https://geo.irceline.be/rioifdm/wms
-                options:
-                  layers: pm25_hmean
-                  transparent: true
-                  format: image/png
-                  opacity: 0.7
-                  tiled: true
-                  time: now
-                  attribution: IRCELINE
-            entities:
-              - zone.home
-      - type: vertical-stack
-        cards:
-          - square: true
-            type: grid
-            cards:
-              - type: gauge
-                entity: sensor.irceline_sxw_air_quality_no2
-                severity:
-                  green: 0
-                  yellow: 16
-                  red: 26
-                name: SXW
-                max: 75
-                needle: true
-            columns: 3
-          - chart_type: line
-            period: hour
-            type: statistics-graph
-            entities:
-              - entity: sensor.irceline_sxw_air_quality_no2
-                name: SXW
-              - entity: sensor.irceline_evergem_air_quality_no2
-                name: Evergem
-              - entity: sensor.irceline_zelzate_air_quality_no2
-                name: Zelzate
-              - entity: sensor.irceline_wachtebeke_air_quality_no2
-                name: Wachtebeke
-            stat_types:
-              - mean
-            days_to_show: 7
-            title: NO2
-            hide_legend: true
-          - type: custom:map-card
-            x: 51.23
-            'y': 3.652
-            zoom: 8
-            card_size: 6
-            wms:
-              - url: https://geo.irceline.be/rioifdm/wms
-                options:
-                  layers: no2_hmean
-                  transparent: true
-                  format: image/png
-                  opacity: 0.7
-                  tiled: true
-                  time: now
-                  attribution: IRCELINE
-            entities:
-              - zone.home
-      - type: vertical-stack
-        cards:
-          - square: true
-            type: grid
-            cards:
-              - type: gauge
-                entity: sensor.irceline_sxw_air_quality_ozone
-                severity:
-                  green: 0
-                  yellow: 66
-                  red: 151
-                name: SXW
-                max: 250
-                needle: true
-            columns: 3
-          - chart_type: line
-            period: hour
-            type: statistics-graph
-            entities:
-              - entity: sensor.irceline_sxw_air_quality_ozone
-                name: SXW
-            stat_types:
-              - mean
-            days_to_show: 7
-            hide_legend: true
-            title: Ozone
-          - type: custom:map-card
-            x: 51.23
-            'y': 3.652
-            zoom: 9
-            card_size: 6
-            wms:
-              - url: https://geo.irceline.be/rioifdm/wms
-                options:
-                  layers: o3_hmean
-                  transparent: true
-                  format: image/png
-                  opacity: 0.7
-                  tiled: true
-                  time: now
-                  attribution: IRCELINE
-            entities:
-              - zone.home
-      - type: vertical-stack
-        cards:
-          - type: iframe
-            url: >-
-              https://www.irceline.be/tables/forecast/model/belaqi.php?lang=en&format=html&fdays=2
-            aspect_ratio: 65%
-            title: Bel AQI
-      - type: vertical-stack
-        cards:
-          - type: custom:map-card
-            x: 51.23
-            'y': 3.652
-            zoom: 8
-            card_size: 6
-            wms:
-              - url: https://geo.irceline.be/rioifdm/wms
-                options:
-                  layers: bc_hmean
-                  transparent: true
-                  format: image/png
-                  opacity: 0.7
-                  tiled: true
-                  time: now
-                  attribution: IRCELINE
-            entities:
-              - zone.home
+    - square: true
+      type: grid
+      cards:
+      - type: gauge
+        entity: sensor.irceline_sint_kruiswinkel_pm25
+        severity:
+          green: 0
+          yellow: 10
+          red: 20
+        name: SXW
+        max: 50
+        needle: true
+      - type: gauge
+        entity: sensor.system_wtw_air_quality_inlet_pm25
+        severity:
+          green: 0
+          yellow: 10
+          red: 20
+        name: Inlet
+        max: 50
+        needle: true
+      - type: gauge
+        entity: sensor.system_wtw_air_quality_to_house_pm25
+        severity:
+          green: 0
+          yellow: 5
+          red: 10
+        name: To House
+        needle: true
+        max: 50
+      columns: 3
+    - chart_type: line
+      period: hour
+      type: statistics-graph
+      entities:
+      - entity: sensor.system_wtw_air_quality_inlet_pm25
+        name: inlet
+      - entity: sensor.irceline_sint_kruiswinkel_pm25
+        name: SXW
+      - entity: sensor.irceline_rieme_pm25
+        name: Rieme
+      - entity: sensor.irceline_gent_pm25
+        name: Gent
+      - entity: sensor.irceline_zelzate_pm25
+        name: Zelzate
+      - entity: sensor.irceline_destelbergen_pm25
+        name: Destelbergen
+      stat_types:
+      - mean
+      days_to_show: 7
+      hide_legend: true
+      title: PM2.5
+    - type: custom:map-card
+      x: 51.128
+      "y": 3.815
+      zoom: 10
+      card_size: 6
+      wms:
+      - url: https://geo.irceline.be/rioifdm/wms
+        options:
+          layers: pm25_hmean
+          transparent: true
+          format: image/png
+          opacity: 0.7
+          tiled: true
+          time: now
+          attribution: IRCELINE
+        history:
+          property: time
+          force_midnight: true
+      entities:
+      - entity: sensor.irceline_sint_kruiswinkel_pm25
+        display: state
+      - entity: sensor.irceline_rieme_pm25
+        display: state
+      - entity: sensor.irceline_gent_pm25
+        display: state
+      - entity: sensor.irceline_zelzate_pm25
+        display: state
+      - entity: sensor.irceline_destelbergen_pm25
+        display: state
+      - entity: sensor.irceline_moerkerke_pm25
+        display: state
+      debug: true
+      history_date_selection: true
+  - type: vertical-stack
+    cards:
+    - square: true
+      type: grid
+      cards:
+      - type: gauge
+        entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide
+        severity:
+          green: 0
+          yellow: 16
+          red: 26
+        name: SXW
+        max: 50
+        needle: true
+      columns: 3
+    - chart_type: line
+      period: hour
+      type: statistics-graph
+      entities:
+      - entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide
+        name: SXW
+      - entity: sensor.irceline_wachtebeke_nitrogen_dioxide
+        name: Wachtebeke
+      - entity: sensor.irceline_gent_nitrogen_dioxide
+        name: Gent
+      - entity: sensor.irceline_zelzate_nitrogen_dioxide
+        name: Zelzate
+      stat_types:
+      - mean
+      days_to_show: 7
+      hide_legend: true
+      title: NO2
+    - type: custom:map-card
+      x: 51.128
+      "y": 3.815
+      zoom: 10
+      card_size: 6
+      wms:
+      - url: https://geo.irceline.be/rioifdm/wms
+        options:
+          layers: no2_hmean
+          transparent: true
+          format: image/png
+          opacity: 0.7
+          tiled: true
+          time: now
+          attribution: IRCELINE
+      entities:
+      - entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide
+        display: state
+      - entity: sensor.irceline_wachtebeke_nitrogen_dioxide
+        display: state
+      - entity: sensor.irceline_gent_nitrogen_dioxide
+        display: state
+      - entity: sensor.irceline_zelzate_nitrogen_dioxide
+        display: state
+  - type: vertical-stack
+    cards:
+    - square: true
+      type: grid
+      cards:
+      - type: gauge
+        entity: sensor.irceline_gent_ozone
+        severity:
+          green: 0
+          yellow: 66
+          red: 151
+        name: Gent
+        needle: true
+      columns: 3
+    - chart_type: line
+      period: hour
+      type: statistics-graph
+      entities:
+      - entity: sensor.irceline_gent_ozone
+        name: Gent
+      - entity: sensor.irceline_destelbergen_ozone
+        name: Destelbergen
+      stat_types:
+      - mean
+      days_to_show: 7
+      hide_legend: true
+      title: Ozone
+    - type: custom:map-card
+      x: 51.128
+      "y": 3.815
+      zoom: 10
+      card_size: 6
+      wms:
+      - url: https://geo.irceline.be/rioifdm/wms
+        options:
+          layers: o3_hmean
+          transparent: true
+          format: image/png
+          opacity: 0.7
+          tiled: true
+          time: now
+          attribution: IRCELINE
+      entities:
+      - entity: sensor.irceline_gent_ozone
+        display: state
+      - entity: sensor.irceline_destelbergen_ozone
+        display: state
+  - type: vertical-stack
+    cards:
+    - type: iframe
+      url: https://www.irceline.be/tables/forecast/model/belaqi.php?lang=en&format=html&fdays=2
+      aspect_ratio: 65%
+      title: Bel AQI
+  - type: vertical-stack
+    cards:
+    - type: vertical-stack
+      cards:
+      - chart_type: line
+        period: hour
+        type: statistics-graph
+        entities:
+        - entity: sensor.irceline_gent_black_carbon
+          name: Gent
+        - entity: sensor.irceline_zelzate_black_carbon
+          name: Zelzate
+        - entity: sensor.irceline_gent_carlierlaan_black_carbon
+          name: Gent (Carlierlaan)
+        - entity: sensor.irceline_gent_lange_violettestraat_black_carbon
+          name: Gent (Lange Violetten)
+        stat_types:
+        - mean
+        days_to_show: 7
+        hide_legend: true
+        title: Black Carbon
+      - type: custom:map-card
+        x: 51.128
+        "y": 3.815
+        zoom: 10
+        card_size: 6
+        wms:
+        - url: https://geo.irceline.be/rioifdm/wms
+          options:
+            layers: bc_hmean
+            transparent: true
+            format: image/png
+            opacity: 0.7
+            tiled: true
+            time: now
+            attribution: IRCELINE
+        entities:
+        - entity: sensor.irceline_gent_black_carbon
+          display: state
+        - entity: sensor.irceline_zelzate_black_carbon
+          display: state
+        - entity: sensor.irceline_gent_carlierlaan_black_carbon
+          display: state
+        - entity: sensor.irceline_gent_lange_violettestraat_black_carbon
+          display: state
+  - type: vertical-stack
+    cards:
+    - chart_type: line
+      period: hour
+      type: statistics-graph
+      entities:
+      - entity: sensor.irceline_sint_kruiswinkel_pm1
+        name: SXW
+      - entity: sensor.irceline_gent_pm1
+        name: Gent
+      - entity: sensor.irceline_zelzate_pm1
+        name: Zelzate
+      stat_types:
+      - mean
+      days_to_show: 7
+      hide_legend: true
+      title: PM1
+    - type: custom:map-card
+      x: 51.128
+      "y": 3.815
+      zoom: 10
+      card_size: 6
+      entities:
+      - entity: sensor.irceline_sint_kruiswinkel_pm1
+        display: state
+      - entity: sensor.irceline_gent_pm1
+        display: state
+      - entity: sensor.irceline_zelzate_pm1
+        display: state
+  - type: energy-date-selection
+- type: sections
+  max_columns: 4
+  title: Rooms
+  path: rooms
+  sections:
+  - type: grid
+    cards:
+    - type: heading
+      heading: Bureau
+      heading_style: title
+    - type: gauge
+      entity: sensor.floor0_bureau_switchbot_carbon_dioxide
+      severity:
+        green: 0
+        yellow: 1000
+        red: 1400
+    - chart_type: line
+      period: 5minute
+      type: statistics-graph
+      entities:
+      - sensor.floor0_bureau_switchbot_carbon_dioxide
+      stat_types:
+      - mean
+      - min
+      - max
+      days_to_show: 0.5
+      grid_options:
+        columns: full
