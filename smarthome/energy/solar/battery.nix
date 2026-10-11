@@ -230,6 +230,12 @@ in
             unit_of_measurement = "%";
             device_class = "battery";
             state = ''
+              {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
+              {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
+              {# Capaciteitstarief floor is 2.5 kW — never deep-discharge to shave below that. #}
+              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5) %}
+              {% set capacity_threshold = [2.5, monthly_peak - 0.1] | max %}
+              {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
               {% set overdischargesoc = states('number.system_house_pv_overdischarge_soc') | int(20) %}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
@@ -237,16 +243,21 @@ in
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
               {% set overdischargesoc_solar_left = 15 %}
+              {# Deepest peak-shave floor. The inverter overshoots its floor by ~1 point, so 10 keeps
+                 the reading at 9 or above, clear of the 8% hard limit (force charge trips at 9). #}
+              {% set overdischargesoc_min = 10 %}
               {# Capacity Tweaks #}
-              {# There is deliberately NO peak-shaving deep-discharge branch. Dropping the floor to
-                 8% to absorb a grid peak let the car drain the pack 14% -> 7% in 12 minutes on
-                 2026-10-10 ~22:00 (it then drifted to 6%), and did the same to 10% on 2026-07-03.
-                 Peaks are shaved by throttling the car (system/car_charger/target_current), never
-                 by spending the battery below its normal floor. The floor therefore never goes
-                 below overdischargesoc_solar_left (15%); forcechargesoc_target is the safety net
-                 that keeps the pack at or above 8%. See docs/ev-battery-peak-coordination.md. #}
+              {# The battery DOES shave peaks, but never on behalf of the car: the car is throttled
+                 instead (system/car_charger/target_current), because the pack cannot keep up with it
+                 — on 2026-10-10 ~22:00 the car drained it 14% -> 7% in 12 minutes through this
+                 branch, and on 2026-07-03 to 10%. So it arms only while the car is NOT charging, and
+                 only on a real, billable (>= 2.5 kW) projected peak. The floor is
+                 overdischargesoc_min (10%), with forcechargesoc_target as the grid-charge safety net
+                 so the pack never reads below 8%. See docs/ev-battery-peak-coordination.md. #}
+              {% if not is_car_charging and (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
+                {{ overdischargesoc_min }}
               {# If solar left, prioritize to min even if car charging #}
-              {% if is_solar_left %}
+              {% elif is_solar_left %}
                 {{ overdischargesoc_solar_left }}
               {# If car charging and no solar left #}
               {% elif is_car_charging and is_solar_left == false %}

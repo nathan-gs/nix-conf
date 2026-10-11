@@ -135,8 +135,10 @@ The branch described above as removed was back in `overdischargesoc_target` (wit
 peak) it armed, dropped the floor to 8 %, and the battery covered the car: **14 % -> 7 % in 12
 minutes**, then idled down to 6 % before the 01:00 grid top-up. Changes made:
 
-- **Branch removed again.** Floor is now only ever 15 % (solar day) / 20 %. A comment in
-  `battery.nix` says why — do not re-add it.
+- **Battery still shaves peaks, but never for the car.** The deep-discharge branch is kept (the
+  battery *should* shave real peaks) but is gated on `not is_car_charging`, and its floor is
+  `overdischargesoc_min = 10 %` (was 8 %). While the car charges, the floor stays at 15 % / 20 %
+  and the car is throttled instead — the pack cannot keep up with it.
 - **Hard 8 % backstop.** `forcechargesoc_target` 7 -> 9. The inverter overshoots its floor by ~1
   point and idle load drifts another point, so the grid force-charge trips at 9 to keep the pack
   at or above 8 %.
