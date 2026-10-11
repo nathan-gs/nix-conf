@@ -9,6 +9,9 @@ Designs:
      of the quarter on target = peak - 0.1, capped at steady+0.5kW, 6A only if 8A would breach;
      capacity_pause (6A would breach, or battery peak-shaving and discharging; delay_off 5min),
      30s debounce, force-charge 8%.
+  D2 C + overnight spread (battery.nix overdischargesoc_target): while the car charges at night
+     the floor steps from the 22:00 SoC down to 15% at 07:00, 1% at a time.
+  D1 C + an ideal smooth battery discharge-power cap (reference only, not in D).
 Usage: python3 ev-peak-sim.py [det|mc|all] [nights]
 Battery logic (battery.nix overdischargesoc_target) is identical in all three.
 """
@@ -51,7 +54,7 @@ class Sim:
         s.pause = False; s.pause_ok_since = None
         s.should_prev = False; s.stop_at = None
         s.near_prev = False
-        s.recover = False
+        s.recover = False; s.soc0 = soc0; s.plim = 0.0
         # metrics
         s.car_j = 0.0; s.batt_out_j = 0.0; s.min_soc = soc0
         s.quarters = []; s.changes = 0; s.stops = 0; s.starts = 0; s.s6 = 0; s.net_j = 0.0
@@ -82,6 +85,10 @@ class Sim:
         near = max(2.2, s.peak - 0.3); thr = max(2.5, s.peak - 0.1)
         if p15 > near and est > thr:
             return 8
+        # D2: hold the battery for the car session, stepping the floor down from the 22:00 SoC to 20%
+        # by 07:00 (1% steps) so it releases its usable energy evenly instead of all at once.
+        if s.d == "D2" and s.car_need > 0 and s.soc0 > 15:
+            return max(15, math.ceil(15 + (s.soc0 - 15) * (1 - t / NIGHT_S)))
         if s.car_w > 20:
             return 20
         return 15 if s.soc_sensor < 12 else 20
@@ -207,8 +214,13 @@ class Sim:
             house_w = s.house_fn(t)
             load = house_w + car_w
             batt_w = 0.0
+            if s.d == 'D1' and t % 900 == 0:
+                # D1 (reference): smooth discharge-power cap = usable energy / hours to 07:00
+                s.plim = max(0.0, s.soc - 15.5) / 100 * CAP_WH / max((NIGHT_S - t) / 3600, 0.25)
             if s.soc > s.floor - 0.6:
                 batt_w = min(load, INV_MAX_W)
+                if s.d == 'D1' and s.car_need > 0 and s.floor >= 15:
+                    batt_w = min(batt_w, s.plim)
             elif s.soc < s.force_soc:
                 s.recover = True
             if s.recover:
@@ -282,12 +294,16 @@ def show(name, rows):
 
 if __name__ == '__main__':
     which = sys.argv[1] if len(sys.argv) > 1 else 'all'
-    D = ['A', 'B', 'C']
+    D = ['A', 'C', 'D2']
     if which in ('all', 'det'):
         # S1: last night — battery 14%, floor stuck at 8 for the first 28 min (observed), quiet house
         show("S1 replay 2026-10-10: battery 14%, floor 8% for 28 min, quiet house",
              [(d, Sim(d, base_load(1), 14, forced_floor=lambda t: 8 if t < 1680 else None).run()) for d in D])
         # S2: quiet night, battery 40%
+        wk = [(1800, 3600, 2.0), (2400, 1200, 2.0), (3600, 3600, 1.5), (7200, 900, 2.0), (9000, 900, 2.0), (600, 180, 2.2), (5400, 180, 2.2), (14400, 180, 2.2), (16200, 2700, 2.0)]
+        show("S6 weekend: oven 1h, washing 20min, dryer 1h, dishwasher 2x15min, kettles, 2nd oven, battery 40%", [(d, Sim(d, with_events(6, wk), 40).run()) for d in D])
+        show("S7 same weekend, battery 15%", [(d, Sim(d, with_events(6, wk), 15).run()) for d in D])
+        show("S2b quiet night, battery 60%", [(d, Sim(d, base_load(2), 60).run()) for d in D])
         show("S2 quiet night, battery 40%",
              [(d, Sim(d, base_load(2), 40).run()) for d in D])
         # S3: 2 kW load starting at minute 12 of a quarter (00:12 rel = 3600+720) for 10 min, battery 40%
