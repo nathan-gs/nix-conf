@@ -242,7 +242,6 @@ in
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
-              {% set overdischargesoc_with_car_charger_on = 40 %}
               {% set overdischargesoc_solar_left = 15 %}
               {# min is 10 #}
               {% set overdischargesoc_min = 8 %}
@@ -268,6 +267,17 @@ in
                  See docs/ev-battery-peak-coordination.md. #}
               {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
                 {{ overdischargesoc_min }}
+              {# Night car charge: spread the battery over the night instead of letting self-use
+                 dump it into the car in the first half hour (which leaves the grid peak budget
+                 unused meanwhile). The floor steps down from the 22:00 SoC to 15% at 07:00, 1% at
+                 a time; each step's ~83 Wh lets the car run a step higher under the same peak.
+                 A floor above the current SoC holds the pack, it does not grid-charge it.
+                 Simulated in docs/ev-battery-peak-coordination.md. #}
+              {% elif (now().hour >= 22 or now().hour < 7) and is_state('binary_sensor.system_car_charger_should_charge', 'on') %}
+                {% set start = states('sensor.solar_battery_soc_at_22h') | int(15) %}
+                {% set elapsed = (now() - today_at('22:00')).total_seconds() % 86400 %}
+                {% set fraction_left = [1 - elapsed / (9 * 3600), 0] | max %}
+                {{ [15, (15 + (start - 15) * fraction_left) | round(0, 'ceil') | int] | max }}
               {# If solar left, prioritize to min even if car charging #}
               {% elif is_solar_left %}
                 {{ overdischargesoc_solar_left }}
@@ -317,6 +327,20 @@ in
           (ha.trigger.time_pattern_minutes "/1")
         ];
         sensor = [ electricityBatteryPower ];
+      }
+      {
+        # Battery SoC at the start of the night, for the overnight spread in
+        # overdischargesoc_target. Trigger-based, so it survives an HA restart mid-night.
+        trigger = [ (ha.trigger.at "22:00:00") ];
+        sensor = [
+          {
+            name = "solar/battery/soc_at_22h";
+            unique_id = "solar_battery_soc_at_22h";
+            unit_of_measurement = "%";
+            device_class = "battery";
+            state = "{{ states('sensor.system_house_pv_battery_soc') | int(15) }}";
+          }
+        ];
       }
       {
         sensor = [ batteryChargingPower batteryDischargingPower ] ++ aggregates;

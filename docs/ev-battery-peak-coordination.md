@@ -202,3 +202,37 @@ peaks are house-only loads the battery is shaving, not the car. Findings that sh
 - Counting battery discharge as house load (tried first) is redundant once the car pauses while the
   battery peak-shaves — identical results, so it was dropped.
 - Target `peak - 0.03` instead of `- 0.1`: +0.6 kWh/night, but 2x the car-caused peaks and more pauses.
+
+## Overnight battery spread (D2)
+
+Self-use dumps whatever the battery holds above its floor into house + car in the first ~30 minutes
+after 22:00. Meanwhile grid import is ~0, so that half hour's peak budget is simply lost. Instead,
+while `should_charge` is on between 22:00 and 07:00, `overdischargesoc_target` steps the floor
+down from the 22:00 SoC (`sensor.solar_battery_soc_at_22h`) to 15 % at 07:00, 1 % at a time
+(40 % start: 39 at 22:30, 31 at 01:30, 20 at 05:30). Each step releases ~83 Wh, which the car rule
+turns into a higher current under the same peak. A floor above the SoC holds the pack; it does not
+grid-charge it (2026-10-10: floor 12-20 % with SoC at 7 % stayed put until force-charge). The
+peak-shave branch keeps priority, and the car pauses whenever it fires. ~25 floor writes a night.
+
+| scenario | C | D2 |
+|---|---|---|
+| quiet night, battery 40 % at 22:00 | 19.1 kWh car | 19.9 kWh |
+| quiet night, battery 60 % | 19.2 kWh | 20.6 kWh, 19 current changes (vs 96) |
+| battery <= 15 % (e.g. 2026-10-10) | 17.8 kWh | same — nothing to spread |
+| 150 random nights | 17.0 kWh | 17.4 kWh, 76 changes (vs 94) |
+
+A smooth discharge-power cap (D1, `number.system_house_pv_battery_discharge_limit_power`, unverified
+on this RHI in self-use) would give ~+0.6 kWh more on a 40 % night; the stepped floor uses only
+the register that is already written every night.
+
+**Weekends** (offpeak all day): oven 1 h + washing machine + dryer 1 h + dishwasher + kettles,
+overlapping, no solar (worst case):
+
+| | A (before) | C | D2 |
+|---|---|---|---|
+| battery 40 %: peak / car kWh / battery ends | 4.37 kW / 23.2 / 9 % | 2.89 kW / 14.6 / 9 % | 2.89 kW / 14.4 / 15 % |
+| battery 15 %: peak | 4.20 kW | 4.16 kW | 4.16 kW |
+
+With ~5.5 kW of house load the peak is set by the house; the car pausing (11-12 times over the
+busy hours) and the battery shaving keep it at 2.89 kW instead of 4.37. With an empty battery
+nothing in the car logic can stop it — that would need load control (e.g. the oven or dryer).
