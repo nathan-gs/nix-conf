@@ -300,7 +300,7 @@ in
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 19 %}
               {% set forcechargesoc_low = 10 %}
-              {% set forcechargesoc_min = 7 %}
+              {% set forcechargesoc_min = 8 %}
 
               {% set forcechargesoc_target = forcechargesoc_min %}
               {{ forcechargesoc_target }}              
