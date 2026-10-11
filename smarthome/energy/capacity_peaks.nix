@@ -178,7 +178,7 @@
             # Capaciteitstarief floor is 2.5 kW. Do NOT use electricity_delivery_power_15m_estimated
             # here: that assumes current power continues, and while the car is charging hard early
             # in the quarter the projection sits on the cap — even though tuya.nix will throttle
-            # (headroom + 8A/6A tail) and land under the peak. Alerts are for loads we cannot
+            # (capacity_headroom_current) and land under the peak. Alerts are for loads we cannot
             # auto-shave: project the quarter *excluding* the car charger, so we only fire when
             # the peak is still inevitable after the car scales down (or is already banked).
             name = "electricity_delivery_power_max_threshold";
@@ -216,21 +216,6 @@
               {% set monthly_peak = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max %}
               {% set threshold = [2.5, monthly_peak - 0.3] | max %}
               {{ (banked > 1.2) and (projected > threshold) }}
-            '';
-          }
-          {
-            # Hard last-resort safeguard, general (not car-specific) so any load can react to it.
-            # `max_threshold` above already projects the quarter *excluding* whatever the car is
-            # drawing right now — so if it's on, the cap is going to be breached by other load
-            # alone, no matter how far the car throttles (its 6A minimum is a floor, not zero).
-            # Only genuinely "critical" once the battery has nothing left to give either
-            # (solar/battery/sufficient off, its floor per docs/ev-battery-peak-coordination.md) —
-            # otherwise the battery is expected to cover the gap and this should stay quiet.
-            name = "electricity_capacity_critical";
-            unique_id = "electricity_capacity_critical";
-            icon = "mdi:transmission-tower-off";
-            state = ''
-              {{ is_state('binary_sensor.electricity_delivery_power_max_threshold', 'on') and not is_state('binary_sensor.solar_battery_sufficient', 'on') }}
             '';
           }
         ];
