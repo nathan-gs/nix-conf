@@ -267,17 +267,13 @@ in
                  See docs/ev-battery-peak-coordination.md. #}
               {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
                 {{ overdischargesoc_min }}
-              {# Night car charge: spread the battery over the night instead of letting self-use
-                 dump it into the car in the first half hour (which leaves the grid peak budget
-                 unused meanwhile). The floor steps down from the 22:00 SoC to 15% at 07:00, 1% at
-                 a time; each step's ~83 Wh lets the car run a step higher under the same peak.
+              {# Night car charge: the battery tops up the car's grid budget, quarter by quarter,
+                 down to 15% — then the regular cycle. Self-use would otherwise dump it into the car
+                 in the first half hour while the grid budget sits unused. See night_car_floor.
                  A floor above the current SoC holds the pack, it does not grid-charge it.
                  Simulated in docs/ev-battery-peak-coordination.md. #}
               {% elif (now().hour >= 22 or now().hour < 7) and is_state('binary_sensor.system_car_charger_should_charge', 'on') %}
-                {% set start = states('sensor.solar_battery_soc_at_22h') | int(15) %}
-                {% set elapsed = (now() - today_at('22:00')).total_seconds() % 86400 %}
-                {% set fraction_left = [1 - elapsed / (9 * 3600), 0] | max %}
-                {{ [15, (15 + (start - 15) * fraction_left) | round(0, 'ceil') | int] | max }}
+                {{ states('sensor.solar_battery_night_car_floor') | int(20) }}
               {# If solar left, prioritize to min even if car charging #}
               {% elif is_solar_left %}
                 {{ overdischargesoc_solar_left }}
@@ -329,16 +325,31 @@ in
         sensor = [ electricityBatteryPower ];
       }
       {
-        # Battery SoC at the start of the night, for the overnight spread in
-        # overdischargesoc_target. Trigger-based, so it survives an HA restart mid-night.
-        trigger = [ (ha.trigger.at "22:00:00") ];
+        # Battery floor for the coming quarter while the car charges at night (read by
+        # overdischargesoc_target). Latched at each quarter start: release just enough battery
+        # for the car to run at its mode cap with the quarter landing on the peak target —
+        #   n% = (car at cap + house - target) * 15 min / 83 Wh per %
+        # The battery covers house + car for the first few minutes, then holds; the car runs on
+        # the grid budget for the rest. Never below 15% (then it's the regular cycle).
+        trigger = [ (ha.trigger.time_pattern_minutes "/15") ];
         sensor = [
           {
-            name = "solar/battery/soc_at_22h";
-            unique_id = "solar_battery_soc_at_22h";
+            name = "solar/battery/night_car_floor";
+            unique_id = "solar_battery_night_car_floor";
             unit_of_measurement = "%";
             device_class = "battery";
-            state = "{{ states('sensor.system_house_pv_battery_soc') | int(15) }}";
+            state = ''
+              {% set soc = states('sensor.system_house_pv_battery_soc') | int(15) %}
+              {% set target_kw = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max - 0.1 %}
+              {% set car_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
+              {% set house_kw = [0, states('sensor.electricity_grid_consumed_power') | float(0) / 1000 - car_kw] | max %}
+              {% set cap_kw = states('sensor.system_car_charger_current_cap') | int(13) * 230 / 1000 %}
+              {% set need_pct = [0, cap_kw + house_kw - target_kw] | max * 250 / 83 %}
+              {# The inverter overshoots its floor by ~0.6%, so ask for that much less. Its floor
+                 register tops out at 40%: above that the battery simply covers house + car down
+                 to 40% first, and the per-quarter steering takes over from there. #}
+              {{ [40, [15, soc - [1, (need_pct - 0.6) | round(0) | int] | max] | max] | min }}
+            '';
           }
         ];
       }

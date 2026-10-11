@@ -9,9 +9,6 @@ Designs:
      of the quarter on target = peak - 0.1, capped at steady+0.5kW, 6A only if 8A would breach;
      capacity_pause (6A would breach, or battery peak-shaving and discharging; delay_off 5min),
      30s debounce, force-charge 8%.
-  D2 C + overnight spread (battery.nix overdischargesoc_target): while the car charges at night
-     the floor steps from the 22:00 SoC down to 15% at 07:00, 1% at a time.
-  D1 C + an ideal smooth battery discharge-power cap (reference only, not in D).
 Usage: python3 ev-peak-sim.py [det|mc|all] [nights]
 Battery logic (battery.nix overdischargesoc_target) is identical in all three.
 """
@@ -23,6 +20,9 @@ STEPS = [6, 8, 10, 13]          # auto mode cap 13A
 CAP_WH = 8300                   # US5000 + US3000C, ~83 Wh / %
 INV_MAX_W = 3000                # observed ~2.9 kW discharge 2026-10-10
 NIGHT_S = 9 * 3600              # 22:00 -> 07:00
+import os
+ALIGN = os.environ.get("ALIGN") == "1"
+CAPX = float(os.environ.get("CAPX", "0.5"))
 
 
 def quantize(a):
@@ -54,7 +54,7 @@ class Sim:
         s.pause = False; s.pause_ok_since = None
         s.should_prev = False; s.stop_at = None
         s.near_prev = False
-        s.recover = False; s.soc0 = soc0; s.plim = 0.0
+        s.recover = False; s.soc0 = soc0; s.plim = 0.0; s.ffloor = 20
         # metrics
         s.car_j = 0.0; s.batt_out_j = 0.0; s.min_soc = soc0
         s.quarters = []; s.changes = 0; s.stops = 0; s.starts = 0; s.s6 = 0; s.net_j = 0.0
@@ -87,14 +87,25 @@ class Sim:
             return 8
         # D2: hold the battery for the car session, stepping the floor down from the 22:00 SoC to 20%
         # by 07:00 (1% steps) so it releases its usable energy evenly instead of all at once.
+        if s.d == "F" and s.car_need > 0:
+            if t % 900 == 0:
+                house = max(0.0, s.grid_w - s.car_w) / 1000 if s.car_w > 0 else s.mean1m()
+                need_wh = max(0.0, 13 * V / 1000 + house - (max(2.5, s.peak) - 0.1)) * 250
+                # the inverter overshoots its floor by ~0.6%, so ask for that much less
+                s.ffloor = min(40, max(15, s.soc_sensor - max(1, round(need_wh / (CAP_WH / 100) - 0.6))))
+            return s.ffloor
         if s.d == "D2" and s.car_need > 0 and s.soc0 > 15:
-            return max(15, math.ceil(15 + (s.soc0 - 15) * (1 - t / NIGHT_S)))
+            tq = t - t % 900 if ALIGN else t
+            return max(15, math.ceil(15 + (s.soc0 - 15) * (1 - tq / NIGHT_S)))
         if s.car_w > 20:
             return 20
         return 15 if s.soc_sensor < 12 else 20
 
     # ---------- car headroom per design ----------
     def headroom(s, t):
+        # U: battery peak-shaves for the car while above 15% -> car runs at the mode cap
+        if s.d == "U" and s.car_need > 0 and s.soc_sensor > 15:
+            return 13
         peak = max(2.5, s.peak); car_kw = s.car_w / 1000
         peak_shaving = s.floor < 15
         batt_kw = max(0, s.batt_sensor_kw()) if peak_shaving else 0
@@ -117,7 +128,8 @@ class Sim:
         h = min(left, 120)
         eight = 8 * V / 1000
         allowed = ((target - banked) * 900 - (house + eight) * (left - h)) / max(h, 60) - house
-        allowed = min(allowed, target - house + 0.5)
+        capx = 0.9 if (s.d == "F" and s.car_need > 0 and s.soc_sensor > 15) else 0.5
+        allowed = min(allowed, target - house + capx)
         a = math.floor(allowed * 1000 / V)
         # 6A only as a last resort: if 8A to the end of the quarter still stays under the peak, use 8A
         if a < 8 and banked + (house + eight) * left / 900 <= peak:
@@ -217,7 +229,10 @@ class Sim:
             if s.d == 'D1' and t % 900 == 0:
                 # D1 (reference): smooth discharge-power cap = usable energy / hours to 07:00
                 s.plim = max(0.0, s.soc - 15.5) / 100 * CAP_WH / max((NIGHT_S - t) / 3600, 0.25)
-            if s.soc > s.floor - 0.6:
+            if s.d == "U" and s.car_need > 0 and s.soc > 15:
+                # inverter peak-shave mode: battery covers only the load above the grid target
+                batt_w = min(INV_MAX_W, max(0.0, load - (max(2.5, s.peak) - 0.1) * 1000))
+            elif s.soc > s.floor - 0.6:
                 batt_w = min(load, INV_MAX_W)
                 if s.d == 'D1' and s.car_need > 0 and s.floor >= 15:
                     batt_w = min(batt_w, s.plim)
@@ -294,7 +309,7 @@ def show(name, rows):
 
 if __name__ == '__main__':
     which = sys.argv[1] if len(sys.argv) > 1 else 'all'
-    D = ['A', 'C', 'D2']
+    D = ['A', 'C', 'D2', 'F']
     if which in ('all', 'det'):
         # S1: last night — battery 14%, floor stuck at 8 for the first 28 min (observed), quiet house
         show("S1 replay 2026-10-10: battery 14%, floor 8% for 28 min, quiet house",

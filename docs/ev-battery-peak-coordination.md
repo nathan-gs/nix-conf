@@ -203,36 +203,43 @@ peaks are house-only loads the battery is shaving, not the car. Findings that sh
   battery peak-shaves — identical results, so it was dropped.
 - Target `peak - 0.03` instead of `- 0.1`: +0.6 kWh/night, but 2x the car-caused peaks and more pauses.
 
-## Overnight battery spread (D2)
+## Night: the battery tops up the car, quarter by quarter
 
 Self-use dumps whatever the battery holds above its floor into house + car in the first ~30 minutes
-after 22:00. Meanwhile grid import is ~0, so that half hour's peak budget is simply lost. Instead,
-while `should_charge` is on between 22:00 and 07:00, `overdischargesoc_target` steps the floor
-down from the 22:00 SoC (`sensor.solar_battery_soc_at_22h`) to 15 % at 07:00, 1 % at a time
-(40 % start: 39 at 22:30, 31 at 01:30, 20 at 05:30). Each step releases ~83 Wh, which the car rule
-turns into a higher current under the same peak. A floor above the SoC holds the pack; it does not
-grid-charge it (2026-10-10: floor 12-20 % with SoC at 7 % stayed put until force-charge). The
-peak-shave branch keeps priority, and the car pauses whenever it fires. ~25 floor writes a night.
+after 22:00, while grid import is ~0 — that half hour's peak budget is lost. Instead, while
+`should_charge` is on between 22:00 and 07:00, `overdischargesoc_target` uses
+`sensor.solar_battery_night_car_floor`, latched at every quarter start:
 
-| scenario | C | D2 |
-|---|---|---|
-| quiet night, battery 40 % at 22:00 | 19.1 kWh car | 19.9 kWh |
-| quiet night, battery 60 % | 19.2 kWh | 20.6 kWh, 19 current changes (vs 96) |
-| battery <= 15 % (e.g. 2026-10-10) | 17.8 kWh | same — nothing to spread |
-| 150 random nights | 17.0 kWh | 17.4 kWh, 76 changes (vs 94) |
+```
+n%    = (car at its mode cap + house - target) * 15 min / 83 Wh per %  - 0.6 (inverter overshoot)
+floor = min(40, max(15, SoC - max(1, n%)))
+```
 
-A smooth discharge-power cap (D1, `number.system_house_pv_battery_discharge_limit_power`, unverified
-on this RHI in self-use) would give ~+0.6 kWh more on a 40 % night; the stepped floor uses only
-the register that is already written every night.
+The battery covers house + car for the first ~4 minutes of the quarter and then holds; the car runs
+at 13 A on the grid budget for the rest (the car rule allows 13 A while the battery is above 15 % at
+night). At 15 % it is the regular cycle. The floor register tops out at 40 %: above that the battery
+covers house + car down to 40 % first (as before), then the steering takes over. A floor above the
+SoC holds the pack; it does not grid-charge it (2026-10-10: floor 12-20 % with SoC at 7 % stayed put
+until force-charge). The peak-shave branch keeps priority, and the car pauses whenever it fires.
+~1 floor write per quarter while the battery lasts.
+
+| scenario | C (no spread) | linear schedule 22:00 SoC -> 15 % at 07:00 | **per quarter** | ideal: inverter caps grid import |
+|---|---|---|---|---|
+| quiet night, battery 40 % at 22:00 | 19.1 kWh car | 19.9 | **20.7** | 21.1 |
+| quiet night, battery 60 % | 19.2 | 20.6 | **21.3** (22.2 without the 40 % cap) | 22.8 |
+| quiet night, battery 80 % | 19.3 | | **21.7** | |
+| 2 kW load at minute 12, battery 40 % | 18.6 | 19.4 | **20.1** | |
+| battery <= 15 % | same | same | same | same |
+| weekend heavy loads, battery 40 %: peak | 2.89 kW | 2.89 kW | **2.50 kW** | |
+| 150 random nights | 17.0 kWh | 17.4 | **17.7**, same peaks | |
+
+Sizing each release from the house load at the start of the quarter means that on the heavy weekend
+the battery covers the oven too and no new peak is set. The linear schedule released 1 % wherever a
+step happened to fall — late in a quarter the car had already dropped to 8 A and the slack was lost
+at the rollover. The ideal (Solis grid peak-shaving mode or a discharge-power cap) is smoother but
+needs an inverter mode change never tested on this RHI.
 
 **Weekends** (offpeak all day): oven 1 h + washing machine + dryer 1 h + dishwasher + kettles,
-overlapping, no solar (worst case):
-
-| | A (before) | C | D2 |
-|---|---|---|---|
-| battery 40 %: peak / car kWh / battery ends | 4.37 kW / 23.2 / 9 % | 2.89 kW / 14.6 / 9 % | 2.89 kW / 14.4 / 15 % |
-| battery 15 %: peak | 4.20 kW | 4.16 kW | 4.16 kW |
-
-With ~5.5 kW of house load the peak is set by the house; the car pausing (11-12 times over the
-busy hours) and the battery shaving keep it at 2.89 kW instead of 4.37. With an empty battery
-nothing in the car logic can stop it — that would need load control (e.g. the oven or dryer).
+overlapping, no solar (worst case): with an empty battery the house alone sets ~4.2 kW in every
+design — only load control (oven, dryer) could stop that. This is night-only; weekend daytime is
+the regular cycle and was not simulated with solar.

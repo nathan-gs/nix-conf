@@ -183,8 +183,11 @@
               {% set h = [left, 120] | min %}
               {% set allowed_kw = ((target_kw - banked) * 900 - (house_kw + a8_kw) * (left - h)) / [h, 60] | max - house_kw %}
               {# At most ~one step above the steady rate, or it sprints to 13A at the start of every
-                 quarter and spends the rest stepping back down. #}
-              {% set allowed_kw = [allowed_kw, target_kw - house_kw + 0.5] | min %}
+                 quarter and spends the rest stepping back down. Except at night while the house
+                 battery is above 15%: it then tops up each quarter (night_car_floor in
+                 solar/battery.nix), and the car should use that at 13A. #}
+              {% set battery_phase = (now().hour >= 22 or now().hour < 7) and states('sensor.system_house_pv_battery_soc') | int(0) > 15 %}
+              {% set allowed_kw = [allowed_kw, target_kw - house_kw + (0.9 if battery_phase else 0.5)] | min %}
               {% set a = (allowed_kw * 1000 / 230) | round(0, 'floor') | int %}
               {% if a >= 8 %}
                 {{ a }}
