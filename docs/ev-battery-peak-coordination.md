@@ -141,30 +141,64 @@ The fix (car side only, battery logic untouched) led to the current design below
 ## Current design (2026-10-11) — one rule for the car, plus a pause
 
 Replaces section 2 above, `binary_sensor.system_car_charger_capacity_near` (the banked-threshold
-tail) and `binary_sensor.electricity_capacity_critical`.
+tail) and `binary_sensor.electricity_capacity_critical`. Battery logic (`battery.nix`) is unchanged.
 
-**`sensor.system_car_charger_capacity_headroom_current`** — for the whole quarter:
+**`sensor.system_car_charger_capacity_headroom_current`**, all quarter:
 
 ```
 peak    = max(2.5, this month's 15-min peak)
-target  = peak - 0.1                      # where the battery starts peak-shaving
-house   = grid import - car (+ battery discharge while its floor is < 15 %, i.e. peak-shaving)
-allowed = (target - banked) * 900 / seconds_left - house     # seconds_left floored at 60
-allowed = min(allowed, target - house + 0.5)                 # at most ~one step above steady
+target  = peak - 0.1                 # where the battery starts peak-shaving
+house   = grid import - car          # instantaneous, not the 1-min mean (see below)
+h       = min(seconds_left, 120)     # ~ how long set_current takes to react
+allowed = ((target - banked)*900 - (house + 8A)*(seconds_left - h)) / h - house
+allowed = min(allowed, target - house + 0.5)                     # ~one step above steady
+A       = allowed, else 8 if 8A to the end stays under peak, else 6 if 6A does, else 0
 ```
 
-The car gets whatever keeps this quarter's average on target if everything carries on as now.
-Aiming 0.1 kW under the peak means the car never makes the battery shave for it. Charging off the
-battery down to its normal 15/20 % floor is fine (it isn't counted until the floor drops below 15).
-The 0.5 kW cap stops the car sprinting to 13 A at the end of every under-used quarter. Typical
-shape: steady at the step just under target (often 8 A), lifting one step when room builds up.
+"Run `allowed` for the next 2 minutes, then 8 A to the end of the quarter, landing on target": the
+car front-loads at 10 A and finishes on 8 A. 6 A is a last resort — the car's fixed ~250 W overhead
+makes it the least efficient step.
 
-**`binary_sensor.system_car_charger_capacity_pause`** — on when `allowed` < 6 A (even the minimum
-would breach) **and** the house battery is <= 10 % (`solar_battery_sufficient` off). It turns
-`should_charge` off, so the charger stops. `delay_off` 5 min: it resumes only once the car has fitted
-for 5 minutes straight, so a long-running load holds the car off rather than restarting it every
-quarter. With battery left, the battery covers a late big load (peak-shave down to 8 %) and the car
-just sits at 6 A.
+**`binary_sensor.system_car_charger_capacity_pause`** stops the charger (via `should_charge`) when
+headroom is 0 (even 6 A would breach the peak), **or** when the battery is peak-shaving (floor < 15 %)
+and discharging. The second is the only thing that actually protects the battery: the inverter feeds
+whatever load is on, so a throttled car still drains it. Charging off the battery down to its normal
+15/20 % floor is fine and is not paused. `delay_off` 5 min, so a long load holds the car off rather
+than restarting it every quarter.
 
-`set_current` debounces the target for 30 s and steps every 45 s (E5, see
-`ev-charger-e5-overcurrent.md`).
+## Simulation (`manual/ev-peak-sim.py`)
+
+1 s time-step model of a 22:00-07:00 night: P1 15-min window, inverter self-use (3 kW max) with the
+`battery.nix` floor rules, 1 % overshoot below the floor, force-charge, the start/stop automations,
+30/60 s debounce and 45 s steps. Peak 2.56 kW, ~0.3 kW base load, 8.3 kWh pack.
+A = before 2026-10-11, B = 10/8 A-tail interim, C = this design.
+`nix-shell -p python3 --run 'python3 manual/ev-peak-sim.py all 150'`
+
+| scenario | design | car kWh (net of 250 W) | min at 6 A | battery out kWh | min SoC | max quarter kW | stops |
+|---|---|---|---|---|---|---|---|
+| 2026-10-10 replay (14 %, floor stuck at 8 % for 28 min) | A | 19.4 (17.1) | 63 | 0.55 | 7.4 % | 2.51 | 0 |
+| | C | 17.8 (15.7) | 0 | 0.15 | 12.2 % | 2.44 | 1 |
+| quiet night, battery 40 % | A | 19.9 (17.6) | 61 | 1.76 | 18.8 % | 2.48 | 0 |
+| | C | 19.1 (16.8) | 0 | 1.71 | 19.4 % | 2.43 | 0 |
+| 2 kW load from minute 12 for 1 h, battery 9 % | A | 18.1 (16.0) | 65 | 0.13 | 7.4 % | **2.87** | 6 |
+| | C | 16.7 (14.7) | 0 | 0.00 | 9.0 % | 2.44 | 1 |
+
+150 random nights (1-5 loads of 1-2.2 kW, battery starting 9-50 %):
+
+| design | car kWh (net) | min at 6 A | battery out kWh | nights SoC < 8 % | nights with car-caused new peak | avg peak rise | current changes | stops |
+|---|---|---|---|---|---|---|---|---|
+| A | 18.7 (16.5) | 103 | 1.21 | 65 | 66 | 0.163 kW | 129 | 2.1 |
+| B | 19.0 (16.7) | 81 | 1.21 | 10 | 71 | 0.220 kW | 126 | 2.2 |
+| C | 17.0 (15.0) | 0 | 0.74 | 3 | 1 | 0.032 kW | 94 | 3.6 |
+
+C trades ~1.5 kWh/night of car charge (it aims 0.1 kW lower and pauses during big house loads) for
+almost no car-caused peaks, no 6 A, and ~40 % less battery use. The remaining low-SoC nights and
+peaks are house-only loads the battery is shaving, not the car. Findings that shaped it:
+
+- A 1-min-mean house load against an instantaneous car power made the car oscillate to 6 A on
+  every step (~300 changes/night); instantaneous both fixes it.
+- Pausing only when the battery is <= 10 % left 10/150 nights with car-caused peaks: the battery
+  only starts shaving late in a quarter, so at 9-13 % it covers nothing early on.
+- Counting battery discharge as house load (tried first) is redundant once the car pauses while the
+  battery peak-shaves — identical results, so it was dropped.
+- Target `peak - 0.03` instead of `- 0.1`: +0.6 kWh/night, but 2x the car-caused peaks and more pauses.

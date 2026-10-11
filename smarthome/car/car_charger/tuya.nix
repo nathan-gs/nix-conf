@@ -150,8 +150,8 @@
           }
           {
             # How much current (A) the capaciteitstarief 15-min-average cap allows right now,
-            # ignoring solar-throttle and mode cap. Below 6A (even negative) means the car cannot
-            # fit at all — see binary_sensor.system_car_charger_capacity_pause.
+            # ignoring solar-throttle and mode cap. 0 means not even 6A fits under the peak — see
+            # binary_sensor.system_car_charger_capacity_pause. Simulated in
             # docs/ev-battery-peak-coordination.md.
             name = "system/car_charger/capacity_headroom_current";
             unique_id = "system_car_charger_capacity_headroom_current";
@@ -160,36 +160,41 @@
             state_class = "measurement";
             icon = "mdi:transmission-tower-import";
             state = ''
-              {# One rule for the whole quarter: the car gets whatever keeps this quarter's average
-                 import on target if everything carries on as it is now —
-                   car = (target - banked) * 900 / seconds_left - house
-                 Spare room early in the quarter lets it climb later; a load that starts late
-                 squeezes it down, below 6A if need be (then capacity_pause decides).
-                 Peak = max(2.5 kW billing floor, this month's peak). Target sits 0.1 kW under it —
-                 exactly where the house battery starts peak-shaving (overdischargesoc_target in
-                 solar/battery.nix) — so the car never makes the battery cover it. #}
+              {# One rule for the whole quarter. The car may run `allowed` for the next 2 minutes
+                 (about how long set_current takes to react) and then 8A to the end of the quarter,
+                 such that the quarter's average lands on target. So it front-loads (10A) and
+                 finishes on 8A; 6A only if 8A would breach the peak (the car's fixed ~250W overhead
+                 makes 6A the least efficient step), 0 if even 6A would.
+                 Peak = max(2.5 kW billing floor, this month's peak). Target sits 0.1 kW under it,
+                 where the house battery starts peak-shaving (overdischargesoc_target in
+                 solar/battery.nix), so the car never makes the battery cover it. #}
               {% set peak_kw = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max %}
               {% set target_kw = peak_kw - 0.1 %}
-              {% set seconds_left = (15 - now().minute % 15) * 60 - now().second %}
+              {% set left = (15 - now().minute % 15) * 60 - now().second %}
               {# power_15m still shows the previous quarter for ~10s after it rolls over. #}
-              {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) if seconds_left < 870 else 0 %}
-              {% set grid_kw = states('sensor.electricity_grid_consumed_power_mean_1m') | float(states('sensor.electricity_grid_consumed_power') | float(0)) / 1000 %}
+              {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) if left < 870 else 0 %}
+              {# Instantaneous, not the 1-min mean: car_charger_power steps instantly, a mean lags it
+                 and the mismatch made the simulated car oscillate down to 6A on every step. #}
+              {% set grid_kw = states('sensor.electricity_grid_consumed_power') | float(0) / 1000 %}
               {% set car_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
-              {# Running the car off the battery down to its normal 15/20% floor is fine. Once the
-                 inverter floor drops below 15% the battery is peak-shaving: count its discharge as
-                 house load, so the car throttles instead of draining it (2026-10-10 22:00: 14% -> 7%
-                 in 12 min, car held at 13A because the P1 meter read ~0). #}
-              {% set peak_shaving = states('number.system_house_pv_overdischarge_soc') | int(20) < 15 %}
-              {% set battery_kw = [states('sensor.electricity_battery_power') | float(0), 0] | max / 1000 if peak_shaving else 0 %}
-              {% set house_kw = [0, grid_kw - car_kw] | max + battery_kw %}
-              {# Floor seconds_left at 60: in the last minute the charger cannot step in time anyway,
-                 and dividing by ~0 would swing the target wildly. #}
-              {% set allowed_kw = (target_kw - banked) * 900 / [seconds_left, 60] | max - house_kw %}
-              {# Spare room may lift the car about one step (0.5 kW) above the steady rate, no more —
-                 otherwise it sprints to 13A at the end of every under-used quarter and has to step
-                 back down at the start of the next. #}
+              {% set house_kw = [0, grid_kw - car_kw] | max %}
+              {% set a8_kw = 8 * 230 / 1000 %}
+              {% set a6_kw = 6 * 230 / 1000 %}
+              {% set h = [left, 120] | min %}
+              {% set allowed_kw = ((target_kw - banked) * 900 - (house_kw + a8_kw) * (left - h)) / [h, 60] | max - house_kw %}
+              {# At most ~one step above the steady rate, or it sprints to 13A at the start of every
+                 quarter and spends the rest stepping back down. #}
               {% set allowed_kw = [allowed_kw, target_kw - house_kw + 0.5] | min %}
-              {{ (allowed_kw * 1000 / 230) | round(0, 'floor') | int }}
+              {% set a = (allowed_kw * 1000 / 230) | round(0, 'floor') | int %}
+              {% if a >= 8 %}
+                {{ a }}
+              {% elif banked + (house_kw + a8_kw) * left / 900 <= peak_kw %}
+                {{ 8 }}
+              {% elif banked + (house_kw + a6_kw) * left / 900 <= peak_kw %}
+                {{ 6 }}
+              {% else %}
+                {{ 0 }}
+              {% endif %}
             '';
           }
           {
@@ -232,17 +237,22 @@
         ];
         binary_sensor = [
           {
-            # Pause charging (should_charge off) when even the 6A minimum would push this quarter
-            # over the peak AND the house battery is too low to cover it (<= 10%) — e.g. a big
-            # load starting late in a quarter with an empty pack. Resumes only once the car has
-            # fitted again for 5 minutes straight (delay_off), so a load that keeps running holds
-            # the car off instead of restarting it every quarter.
+            # Pause charging (should_charge off) when
+            #  - even 6A would push this quarter over the peak (headroom 0), or
+            #  - the house battery is peak-shaving (floor < 15%) and discharging: the inverter
+            #    feeds whatever load is on, so a throttled car still drains it — only stopping the
+            #    car keeps the reserve for the house (2026-10-10 22:00: 14% -> 7% in 12 min).
+            # Charging off the battery down to its normal 15/20% floor is fine and not paused.
+            # Resumes once clear for 5 minutes straight (delay_off), so a load that keeps running
+            # holds the car off instead of restarting it every quarter.
             name = "system/car_charger/capacity_pause";
             unique_id = "system_car_charger_capacity_pause";
             icon = "mdi:transmission-tower-off";
             state = ''
-              {{ states('sensor.system_car_charger_capacity_headroom_current') | int(6) < 6
-                 and not is_state('binary_sensor.solar_battery_sufficient', 'on') }}
+              {% set no_room = states('sensor.system_car_charger_capacity_headroom_current') | int(6) == 0 %}
+              {% set peak_shaving = states('number.system_house_pv_overdischarge_soc') | int(20) < 15 %}
+              {% set discharging = states('sensor.electricity_battery_power') | float(0) > 100 %}
+              {{ no_room or (peak_shaving and discharging) }}
             '';
             delay_off = "00:05:00";
           }
@@ -364,9 +374,10 @@
               {% set rebalance_active = is_state('input_boolean.solar_battery_rebalance_active', 'on') %}
               {% set rebalance_grid = is_state('input_boolean.solar_battery_rebalance_using_grid', 'on') %}
               {% set rebalance = rebalance_active and (battery >= 97 or rebalance_grid) %}
-              {# Peak safeguard (capacity_pause): even 6A would breach the peak and the battery
-                 cannot cover it — stop rather than add to the overage. Applies over every mode,
-                 including low_soc: a few minutes without topping up is cheaper than a new peak. #}
+              {# Peak safeguard (capacity_pause): even 6A would breach the peak, or the battery is
+                 peak-shaving — stop rather than add to the overage or drain the reserve. Applies
+                 over every mode, including low_soc: a few minutes without topping up is cheaper
+                 than a new peak. #}
               {% set capacity_pause = is_state('binary_sensor.system_car_charger_capacity_pause', 'on') %}
               {{ override != 'off' and not rebalance and not capacity_pause and (low_soc or should_charge_offpeak or solar_eligible or force_on or morning_boost) }}
             '';
