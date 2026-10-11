@@ -128,28 +128,14 @@ setting, not this logic.
 - `sensor.electricity_delivery_power_15m_estimated` — projected final 15-min average import.
 - `binary_sensor.solar_battery_sufficient` — house battery > 10 %.
 
-## Incident 2 (2026-10-10, ~22:00) — the battery was masking the car from the car's own control
+## Incident 2 (2026-10-10, ~22:00) — car charged off a peak-shaving battery
 
-The battery *is* meant to shave peaks (the deep-discharge branch in `overdischargesoc_target` is
-intentional and stays; the battery logic knows nothing about the car). What went wrong was on the
-car side: at 22:00 the car started grid-charging at 13 A (~3 kW) with the battery's floor at 8 %,
-and the battery silently covered it. The P1 meter read ~0, so `capacity_headroom_current` saw
-18-24 A free and held the car at 13 A for 15 minutes while the pack went **14 % -> 7 %** (then
-drifted to 6 %). Only once the pack hit its floor did import jump and the car throttle — too late.
+The battery's floor was at 8 % (peak shaving) when the car started at 13 A. The battery covered
+the car, the P1 meter read ~0, and `capacity_headroom_current` saw 18-24 A of headroom, so the
+car stayed at 13 A while the pack went 14 % -> 7 % in 12 minutes.
 
-The car control must not be blinded by the battery. Changes, all in `tuya.nix`:
-
-- **Below the normal floor, battery discharge counts as grid import** in
-  `capacity_headroom_current`. Running the car off the battery down to its normal floor (15 % with
-  solar left today, 20 % otherwise) is fine. At or below that floor the battery is peak-shaving,
-  so `headroom = cap - (estimated_15m - car) - battery_discharge_kw`. The car is then sized against
-  what the house would pull without the battery, and the peak-shave reserve is left for real peaks.
-- **Aim 0.3 kW under the monthly peak** (was exactly at it).
-- **6 A tail arms earlier**: `monthly_peak - 0.8` (was `- 0.5`, floor 2.1 kW instead of 2.3).
-- **30 s debounce** on `set_current` (was 60 s; the E5 flap lasted ~2 s).
-
-Cost: a slower car charge once the battery is at or below its normal floor, particularly when it
-is also carrying house load. The car-side floor (15/20) mirrors `overdischargesoc_target`; if
-that split changes, change it here too.
-Check `sensor.electricity_battery_power` (W, positive = discharging) if the car sits at 6 A and
-you expect more.
+Fix, car side only (`tuya.nix`): when `number.system_house_pv_overdischarge_soc` < 15 (peak
+shaving), battery discharge counts as grid import in the headroom calc, so the car throttles.
+Above that, charging off the battery down to its normal 15/20 % floor is fine. The car also
+backs off earlier: it aims 0.3 kW under the peak, the 6 A tail arms at `peak - 0.8`, and
+`set_current` debounces for 30 s.

@@ -175,21 +175,12 @@
                    (scales with monthly_peak) rather than a fixed current. #}
                 {% set estimated_15m = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
                 {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
-                {# The car may run off the home battery down to its normal floor — 15% while there is
-                   solar left today, 20% otherwise (same split as overdischargesoc_target in
-                   solar/battery.nix). Below that the battery is peak-shaving, and the car must not
-                   lean on it: there, count battery discharge as if it were grid import. Otherwise
-                   the P1 meter reads ~0 while the battery covers the car, the estimate shows huge
-                   headroom and the car runs flat out into the peak-shave reserve (2026-10-10 22:00:
-                   14% -> 7% in 12 min, car at 13A the whole time) until the pack hits its floor and
-                   import jumps — minutes too late. Discharge only: charging adds no relief. #}
-                {% set solar_left = states('sensor.energy_production_today_remaining') | float(0) > 4 and now().hour >= 5 %}
-                {% set car_battery_floor = 15 if solar_left else 20 %}
-                {% set battery_soc = states('sensor.system_house_pv_battery_soc') | int(0) %}
-                {% set battery_kw = 0 %}
-                {% if battery_soc <= car_battery_floor %}
-                  {% set battery_kw = [states('sensor.electricity_battery_power') | float(0), 0] | max / 1000 %}
-                {% endif %}
+                {# Running the car off the battery down to its normal 15/20% floor is fine. But once
+                   the inverter floor drops below 15%, the battery is peak-shaving: count its discharge
+                   as grid import so the car throttles instead of draining it (2026-10-10 22:00:
+                   14% -> 7% in 12 min, car held at 13A because the P1 meter read ~0). #}
+                {% set peak_shaving = states('number.system_house_pv_overdischarge_soc') | int(20) < 15 %}
+                {% set battery_kw = [states('sensor.electricity_battery_power') | float(0), 0] | max / 1000 if peak_shaving else 0 %}
                 {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) - battery_kw %}
                 {{ (headroom_kw * 1000 / 230) | round(0) | int }}
               {% endif %}
@@ -475,9 +466,7 @@
               # in-flight step delay below and fires an immediate number.set_value. On 2026-08-29 a
               # fast-moving headroom estimate flapped the target 13->10->8->6A in ~2s, which sent
               # three step-down commands to the charger within that same window and it tripped
-              # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 30 seconds
-              # (was 1 minute; shortened 2026-10-11 so the car backs off sooner towards the peak.
-              # The flap that tripped E5 lasted ~2s, so 30s still sits far outside it).
+              # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 30 seconds.
               #
               # This debounce is specifically for the noisy front-of-quarter headroom branch
               # (already flagged there as chattery by design). The real capacity-tariff safety
