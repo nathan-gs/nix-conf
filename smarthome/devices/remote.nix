@@ -10,5 +10,6 @@ map
       name = "philips";
       ieee = "0x0017880109a53e85";
       floor = "roaming";
+      disabled = true;
     }
   ]

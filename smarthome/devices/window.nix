@@ -33,5 +33,6 @@ map
       name = "sonoff0";
       ieee = "0x00124b002397596e";
       floor = "roaming";
+      disabled = true;
     }
   ]

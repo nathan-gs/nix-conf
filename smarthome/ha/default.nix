@@ -3,8 +3,9 @@
 let
   # Zigbee devices marked `disabled = true` in smarthome/devices keep their HA
   # entities (z2m still publishes discovery for them), permanently unavailable.
-  # Every entity id is `<domain>.<z2m object_id>[_<feature>]`.
-  disabledZigbee = map (v: "${v.floor}_${v.zone}_${v.type}_${v.name}")
+  # Every entity id is `<domain>.<z2m object_id>[_<feature>]`, or the ieee for
+  # entities HA registered before the device got its friendly name.
+  disabledZigbee = lib.concatMap (v: [ "${v.floor}_${v.zone}_${v.type}_${v.name}" v.ieee ])
     (builtins.filter (v: v.disabled or false) (import ../devices));
   rejectDisabledZigbee = lib.optionalString (disabledZigbee != [ ])
     "|rejectattr('entity_id', 'match', '^[a-z_]+\\.(${lib.concatStringsSep "|" disabledZigbee})(_|$)')";
@@ -23,7 +24,7 @@ in
               {% set entities = state_attr(this.entity_id,'entity_id') %}
               {{ entities|count if entities != none else none }}
             '';
-            # TODO: remove nkeys_ floor1_fen_window & roaming_roaming
+            # TODO: remove nkeys_ floor1_fen_window
             attributes.entity_id = ''
               {% set ignore_seconds = 300 %}
               {% set ignore_ts = (now().timestamp() - ignore_seconds)|as_datetime %}
@@ -67,7 +68,6 @@ in
                   |rejectattr('entity_id', 'contains', 'floor1_nikolai_temperature_na_battery_low') 
                   |rejectattr('entity_id', 'contains', 'garden_garden_temperature_noordkant_battery_low') 
                   |rejectattr('entity_id', 'contains', 'garden_garden_temperature_grasmaaier_battery_low') 
-                  |rejectattr('entity_id', 'contains', 'roaming_roaming') 
                   |rejectattr('entity_id', 'contains', 'floor1_fen_metering_plug_deken')                 
                   |rejectattr('entity_id', 'contains', 'floor0_keuken_sonos')
                   |rejectattr('entity_id', 'contains', 'garden_garden_plug_pomp')
