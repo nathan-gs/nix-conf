@@ -163,24 +163,34 @@
               {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
               {# Aim at the peak itself: a margin here throttles the whole quarter (8A instead of 10A).
-                 Backing off is the 6A tail's job, see capacity_near. #}
+                 Backing off is the 8A tail's job, see capacity_near. #}
               {% set capacity_kw = max(monthly_peak, 2.5) %}
+              {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
+              {# Running the car off the battery down to its normal 15/20% floor is fine. But once
+                 the inverter floor drops below 15%, the battery is peak-shaving: count its discharge
+                 as grid import so the car throttles instead of draining it (2026-10-10 22:00:
+                 14% -> 7% in 12 min, car held at 13A because the P1 meter read ~0). #}
+              {% set peak_shaving = states('number.system_house_pv_overdischarge_soc') | int(20) < 15 %}
+              {% set battery_kw = [states('sensor.electricity_battery_power') | float(0), 0] | max / 1000 if peak_shaving else 0 %}
               {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
                  grid import, so we charge hard while little of the quarter is committed, then drop
-                 to 6A for the tail so the average lands under the cap. #}
+                 to 8A for the tail so the average lands under the cap — or to 6A if finishing the
+                 quarter at 8A (on top of the house load right now) would still breach it.
+                 The bar is the house battery's own peak-shave trigger (overdischargesoc_target in
+                 solar/battery.nix arms at max(2.5, peak - 0.1)), not the peak itself, so the car's
+                 tail never pushes the battery into covering it. #}
               {% if is_state('binary_sensor.system_car_charger_capacity_near', 'on') %}
-                {{ 6 }}
+                {% set seconds_left = (15 - now().minute % 15) * 60 - now().second %}
+                {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
+                {% set grid_kw = states('sensor.electricity_grid_consumed_power_mean_1m') | float(states('sensor.electricity_grid_consumed_power') | float(0)) / 1000 %}
+                {% set house_kw = [0, grid_kw - charger_kw] | max + battery_kw %}
+                {% set projected_8a = banked + (house_kw + 8 * 230 / 1000) * seconds_left / 900 %}
+                {% set battery_trigger_kw = [2.5, monthly_peak - 0.1] | max %}
+                {{ 8 if projected_8a < battery_trigger_kw else 6 }}
               {% else %}
                 {# front of the quarter: charge at whatever the cap allows, computed from headroom
                    (scales with monthly_peak) rather than a fixed current. #}
                 {% set estimated_15m = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-                {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
-                {# Running the car off the battery down to its normal 15/20% floor is fine. But once
-                   the inverter floor drops below 15%, the battery is peak-shaving: count its discharge
-                   as grid import so the car throttles instead of draining it (2026-10-10 22:00:
-                   14% -> 7% in 12 min, car held at 13A because the P1 meter read ~0). #}
-                {% set peak_shaving = states('number.system_house_pv_overdischarge_soc') | int(20) < 15 %}
-                {% set battery_kw = [states('sensor.electricity_battery_power') | float(0), 0] | max / 1000 if peak_shaving else 0 %}
                 {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) - battery_kw %}
                 {{ (headroom_kw * 1000 / 230) | round(0) | int }}
               {% endif %}
@@ -228,7 +238,7 @@
         binary_sensor = [
           {
             # Has this quarter's banked 15-min average import climbed close enough to the
-            # capaciteitstarief cap that the car needs to drop to its 6A tail?
+            # capaciteitstarief cap that the car needs to drop to its 8A (or 6A) tail?
             # `electricity_delivery_power_15m` (banked) only climbs within a quarter (and resets
             # each quarter) — it cannot un-cross this threshold once true, so unlike the
             # front-of-quarter headroom calc it is safe for set_current to react to immediately,
@@ -368,7 +378,7 @@
               {% set rebalance = rebalance_active and (battery >= 97 or rebalance_grid) %}
               {# Hard last-resort safeguard (electricity_capacity_critical, capacity_peaks.nix):
                  the quarter's cap is projected to be breached by non-car load alone AND the
-                 battery has nothing left to give — the car's 6A tail throttle can't fix this, so
+                 battery has nothing left to give — the car's 8A/6A tail throttle can't fix this, so
                  stop entirely rather than add to the overage. General, not car-specific, so it
                  applies uniformly like `rebalance` — including over low_soc, since a few minutes
                  without topping up a low car battery is a smaller cost than the tariff hit, and

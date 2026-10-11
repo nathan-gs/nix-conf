@@ -137,6 +137,8 @@ car stayed at 13 A while the pack went 14 % -> 7 % in 12 minutes.
 Fix, car side only (`tuya.nix`): when `number.system_house_pv_overdischarge_soc` < 15 (peak
 shaving), battery discharge counts as grid import in the headroom calc, so the car throttles.
 Above that, charging off the battery down to its normal 15/20 % floor is fine. The car also
-backs off earlier at the end of the quarter: the 6 A tail arms at `peak - 0.8` (was `- 0.5`), and
-`set_current` debounces for 30 s. Headroom still aims at the peak itself — a margin there (tried
+backs off earlier at the end of the quarter: the tail arms at `peak - 0.8` (was `- 0.5`) and runs at
+8 A, or 6 A if finishing the quarter at 8 A would cross the battery's own peak-shave trigger
+(`max(2.5, peak - 0.1)`), so the car's tail never makes the battery cover it. `set_current`
+debounces for 30 s. Headroom still aims at the peak itself — a margin there (tried
 0.3 kW) throttled the whole quarter to 8 A instead of 10 A.
