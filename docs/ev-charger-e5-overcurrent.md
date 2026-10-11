@@ -152,6 +152,10 @@ vehicle_connected = status not in ['available', 'fault_unplugged', 'unavailable'
 
 ## Safeguard: hard stop when the cap can't be avoided by throttling alone
 
+> **Superseded 2026-10-11.** `capacity_near` and `electricity_capacity_critical` are gone; the
+> single headroom rule and `binary_sensor.system_car_charger_capacity_pause` replace them — see
+> "Current design" in `ev-battery-peak-coordination.md`. The debounce is now 30 s, steps 45 s.
+
 The car's minimum current step is 6 A (~1.38 kW) — a *floor*, not zero. `target_current`'s
 `banked >= capacity_near` tail throttles down to it, but if house load *other than the car* is
 already enough to blow the quarter's capacity-tariff cap, throttling the car to 6 A doesn't help;

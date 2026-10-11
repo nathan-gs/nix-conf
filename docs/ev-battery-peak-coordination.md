@@ -64,6 +64,8 @@ to shave a peak. (This is the actual fix for 2026-07-03.)
 
 ### 2. Car — throttle to keep grid import under the cap (`tuya.nix`, `system/car_charger/target_current`)
 
+> **Superseded 2026-10-11** — see "Current design" at the end of this file.
+
 Once the battery is at its floor it no longer covers the car, so grid import jumps to
 car + house. The car then throttles so the 15-minute average stays under the cap:
 
@@ -134,11 +136,35 @@ The battery's floor was at 8 % (peak shaving) when the car started at 13 A. The 
 the car, the P1 meter read ~0, and `capacity_headroom_current` saw 18-24 A of headroom, so the
 car stayed at 13 A while the pack went 14 % -> 7 % in 12 minutes.
 
-Fix, car side only (`tuya.nix`): when `number.system_house_pv_overdischarge_soc` < 15 (peak
-shaving), battery discharge counts as grid import in the headroom calc, so the car throttles.
-Above that, charging off the battery down to its normal 15/20 % floor is fine. The car also
-backs off earlier at the end of the quarter: the tail arms at `peak - 0.8` (was `- 0.5`) and runs at
-8 A, or 6 A if finishing the quarter at 8 A would cross the battery's own peak-shave trigger
-(`max(2.5, peak - 0.1)`), so the car's tail never makes the battery cover it. `set_current`
-debounces for 30 s. Headroom still aims at the peak itself — a margin there (tried
-0.3 kW) throttled the whole quarter to 8 A instead of 10 A.
+The fix (car side only, battery logic untouched) led to the current design below.
+
+## Current design (2026-10-11) — one rule for the car, plus a pause
+
+Replaces section 2 above, `binary_sensor.system_car_charger_capacity_near` (the banked-threshold
+tail) and `binary_sensor.electricity_capacity_critical`.
+
+**`sensor.system_car_charger_capacity_headroom_current`** — for the whole quarter:
+
+```
+peak    = max(2.5, this month's 15-min peak)
+target  = peak - 0.1                      # where the battery starts peak-shaving
+house   = grid import - car (+ battery discharge while its floor is < 15 %, i.e. peak-shaving)
+allowed = (target - banked) * 900 / seconds_left - house     # seconds_left floored at 60
+allowed = min(allowed, target - house + 0.5)                 # at most ~one step above steady
+```
+
+The car gets whatever keeps this quarter's average on target if everything carries on as now.
+Aiming 0.1 kW under the peak means the car never makes the battery shave for it. Charging off the
+battery down to its normal 15/20 % floor is fine (it isn't counted until the floor drops below 15).
+The 0.5 kW cap stops the car sprinting to 13 A at the end of every under-used quarter. Typical
+shape: steady at the step just under target (often 8 A), lifting one step when room builds up.
+
+**`binary_sensor.system_car_charger_capacity_pause`** — on when `allowed` < 6 A (even the minimum
+would breach) **and** the house battery is <= 10 % (`solar_battery_sufficient` off). It turns
+`should_charge` off, so the charger stops. `delay_off` 5 min: it resumes only once the car has fitted
+for 5 minutes straight, so a long-running load holds the car off rather than restarting it every
+quarter. With battery left, the battery covers a late big load (peak-shave down to 8 %) and the car
+just sits at 6 A.
+
+`set_current` debounces the target for 30 s and steps every 45 s (E5, see
+`ev-charger-e5-overcurrent.md`).
