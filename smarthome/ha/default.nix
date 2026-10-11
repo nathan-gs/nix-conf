@@ -1,5 +1,14 @@
 { config, pkgs, lib, ha, ... }:
 
+let
+  # Zigbee devices marked `disabled = true` in smarthome/devices keep their HA
+  # entities (z2m still publishes discovery for them), permanently unavailable.
+  # Every entity id is `<domain>.<z2m object_id>[_<feature>]`.
+  disabledZigbee = map (v: "${v.floor}_${v.zone}_${v.type}_${v.name}")
+    (builtins.filter (v: v.disabled or false) (import ../devices));
+  rejectDisabledZigbee = lib.optionalString (disabledZigbee != [ ])
+    "|rejectattr('entity_id', 'match', '^[a-z_]+\\.(${lib.concatStringsSep "|" disabledZigbee})(_|$)')";
+in
 {
   services.home-assistant.config = {
     template = [
@@ -59,7 +68,6 @@
                   |rejectattr('entity_id', 'contains', 'garden_garden_temperature_noordkant_battery_low') 
                   |rejectattr('entity_id', 'contains', 'garden_garden_temperature_grasmaaier_battery_low') 
                   |rejectattr('entity_id', 'contains', 'roaming_roaming') 
-                  |rejectattr('entity_id', 'contains', '_kerstboom')                 
                   |rejectattr('entity_id', 'contains', 'floor1_fen_metering_plug_deken')                 
                   |rejectattr('entity_id', 'contains', 'floor0_keuken_sonos')
                   |rejectattr('entity_id', 'contains', 'garden_garden_plug_pomp')
@@ -85,7 +93,6 @@
                   |rejectattr('entity_id', 'contains', 'spotify_')
                   |rejectattr('entity_id', 'contains', 'sensor.all_standby_energy')
                   |rejectattr('entity_id', 'contains', '_power_outage_memory')
-                  |rejectattr('entity_id', 'contains', 'garden_voordeur_light_plug_cirkel')
                   |rejectattr('entity_id', 'contains', 'sensor.electricity_cost_engie_drive_offpeak_kwh_energycomponent')
                   |rejectattr('entity_id', 'contains', 'sensor.electricity_cost_engie_drive_peak_kwh_energycomponent')
                   |rejectattr('entity_id', 'contains', 'sensor.gas_cost_engie_drive_kwh_energycomponent')
@@ -131,6 +138,7 @@
                   |rejectattr('entity_id', 'contains', 'sensor.system_car_charger_power_a')
                   |rejectattr('entity_id', 'contains', 'sensor.system_car_charger_voltage_a')
                   |rejectattr('entity_id', 'contains', '_on_grid_')
+                  ${rejectDisabledZigbee}
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
             '';
