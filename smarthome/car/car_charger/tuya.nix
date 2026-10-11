@@ -162,10 +162,8 @@
             state = ''
               {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
-              {# Aim 0.3 kW UNDER the peak, not at it. The battery no longer shaves peaks (its floor
-                 never drops below 15%, see solar/battery.nix), so the car is the only thing keeping
-                 the quarter's average at or under the cap; aiming exactly at it left no room for
-                 house load rising mid-quarter and is what let the old deep-discharge branch fire. #}
+              {# Aim 0.3 kW UNDER the peak, not at it, so the car backs off before the average gets
+                 near the cap and leaves room for house load rising mid-quarter. #}
               {% set capacity_kw = max(monthly_peak, 2.5) - 0.3 %}
               {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
                  grid import, so we charge hard while little of the quarter is committed, then drop
@@ -177,7 +175,22 @@
                    (scales with monthly_peak) rather than a fixed current. #}
                 {% set estimated_15m = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
                 {% set charger_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
-                {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) %}
+                {# The car may run off the home battery down to its normal floor — 15% while there is
+                   solar left today, 20% otherwise (same split as overdischargesoc_target in
+                   solar/battery.nix). Below that the battery is peak-shaving, and the car must not
+                   lean on it: there, count battery discharge as if it were grid import. Otherwise
+                   the P1 meter reads ~0 while the battery covers the car, the estimate shows huge
+                   headroom and the car runs flat out into the peak-shave reserve (2026-10-10 22:00:
+                   14% -> 7% in 12 min, car at 13A the whole time) until the pack hits its floor and
+                   import jumps — minutes too late. Discharge only: charging adds no relief. #}
+                {% set solar_left = states('sensor.energy_production_today_remaining') | float(0) > 4 and now().hour >= 5 %}
+                {% set car_battery_floor = 15 if solar_left else 20 %}
+                {% set battery_soc = states('sensor.system_house_pv_battery_soc') | int(0) %}
+                {% set battery_kw = 0 %}
+                {% if battery_soc <= car_battery_floor %}
+                  {% set battery_kw = [states('sensor.electricity_battery_power') | float(0), 0] | max / 1000 %}
+                {% endif %}
+                {% set headroom_kw = capacity_kw - (estimated_15m - charger_kw) - battery_kw %}
                 {{ (headroom_kw * 1000 / 230) | round(0) | int }}
               {% endif %}
             '';
