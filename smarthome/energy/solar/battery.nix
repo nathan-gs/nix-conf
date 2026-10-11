@@ -230,46 +230,23 @@ in
             unit_of_measurement = "%";
             device_class = "battery";
             state = ''
-              {% set power15m = states('sensor.electricity_delivery_power_15m') | float(0) %}
-              {% set power15m_estimated = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {# Capaciteitstarief floor is 2.5 kW — never deep-discharge to shave below that. #}
-              {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(2.5) %}
-              {% set capacity_threshold = [2.5, monthly_peak - 0.1] | max %}
-              {% set capacity_near = [2.2, monthly_peak - 0.3] | max %}
               {% set overdischargesoc = states('number.system_house_pv_overdischarge_soc') | int(20) %}
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(20) %}
               {% set is_car_charging = states('sensor.car_charger_power') | int(0) > 20 %}
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
-              {% set overdischargesoc_with_car_charger_on = 40 %}
               {% set overdischargesoc_solar_left = 15 %}
-              {# min is 10 #}
-              {% set overdischargesoc_min = 8 %}
-              {#
-              Test values
-              {% set power15m = 2.1 %}
-              {% set power15m_estimated = 2.8 %}
-
-              Echo's
-              {{ power15m }}
-              {{ power15m_estimated }}
-              {{ overdischargesoc }}
-              #}
               {# Capacity Tweaks #}
-              {# Deep-discharge the battery to shave a peak only once it is imminent. Note the TWO
-                 guards: it arms only if power15m > capacity_near AND power15m_estimated >
-                 capacity_threshold. The car's charge control (system/car_charger/target_current)
-                 keeps its projected 15-min average (power15m_estimated) below capacity_threshold —
-                 the current steps snap down under the cap — so this second guard is never met while
-                 the car is charging, and the battery never discharges to mask the car (which is what
-                 drained it to 10% on 2026-07-03 ~04:00). This branch then fires only as a backstop
-                 for real peaks the car alone cannot hold (and only in the billable band ≥ 2.5 kW).
-                 See docs/ev-battery-peak-coordination.md. #}
-              {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
-                {{ overdischargesoc_min }}
+              {# There is deliberately NO peak-shaving deep-discharge branch. Dropping the floor to
+                 8% to absorb a grid peak let the car drain the pack 14% -> 7% in 12 minutes on
+                 2026-10-10 ~22:00 (it then drifted to 6%), and did the same to 10% on 2026-07-03.
+                 Peaks are shaved by throttling the car (system/car_charger/target_current), never
+                 by spending the battery below its normal floor. The floor therefore never goes
+                 below overdischargesoc_solar_left (15%); forcechargesoc_target is the safety net
+                 that keeps the pack at or above 8%. See docs/ev-battery-peak-coordination.md. #}
               {# If solar left, prioritize to min even if car charging #}
-              {% elif is_solar_left %}
+              {% if is_solar_left %}
                 {{ overdischargesoc_solar_left }}
               {# If car charging and no solar left #}
               {% elif is_car_charging and is_solar_left == false %}
@@ -300,7 +277,10 @@ in
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 19 %}
               {% set forcechargesoc_low = 10 %}
-              {% set forcechargesoc_min = 7 %}
+              {# Hard floor: the house battery must never read below 8%. The inverter overshoots its
+                 floor by ~1 point and idle load drifts it a further point on a long night (2026-10-10:
+                 8% floor -> 7% -> 6% with this at 7), so trip the grid force-charge at 9. #}
+              {% set forcechargesoc_min = 9 %}
 
               {% set forcechargesoc_target = forcechargesoc_min %}
               {{ forcechargesoc_target }}              

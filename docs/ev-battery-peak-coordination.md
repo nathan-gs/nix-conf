@@ -127,3 +127,22 @@ setting, not this logic.
   (climbs 0 → final over the window).
 - `sensor.electricity_delivery_power_15m_estimated` — projected final 15-min average import.
 - `binary_sensor.solar_battery_sufficient` — house battery > 10 %.
+
+## Incident 2 (2026-10-10, ~22:00) — the deep-discharge branch had crept back
+
+The branch described above as removed was back in `overdischargesoc_target` (with
+`overdischargesoc_min = 8`). During offpeak grid charging at 13 A (~3 kW, above the 2.56 kW monthly
+peak) it armed, dropped the floor to 8 %, and the battery covered the car: **14 % -> 7 % in 12
+minutes**, then idled down to 6 % before the 01:00 grid top-up. Changes made:
+
+- **Branch removed again.** Floor is now only ever 15 % (solar day) / 20 %. A comment in
+  `battery.nix` says why — do not re-add it.
+- **Hard 8 % backstop.** `forcechargesoc_target` 7 -> 9. The inverter overshoots its floor by ~1
+  point and idle load drifts another point, so the grid force-charge trips at 9 to keep the pack
+  at or above 8 %.
+- **Car backs off sooner.** Headroom aims 0.3 kW *under* the monthly peak (was exactly at it); the
+  6 A tail arms at `monthly_peak - 0.8` (was `- 0.5`, floor 2.1 kW instead of 2.3); `set_current`
+  debounces the target for 30 s (was 60 s; the E5 flap lasted ~2 s).
+
+Cost: a slightly slower overnight car charge, and the odd small peak is accepted rather than
+shaved by the battery.

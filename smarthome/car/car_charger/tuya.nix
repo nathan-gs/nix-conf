@@ -162,7 +162,11 @@
             state = ''
               {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
-              {% set capacity_kw = max(monthly_peak, 2.5) %}
+              {# Aim 0.3 kW UNDER the peak, not at it. The battery no longer shaves peaks (its floor
+                 never drops below 15%, see solar/battery.nix), so the car is the only thing keeping
+                 the quarter's average at or under the cap; aiming exactly at it left no room for
+                 house load rising mid-quarter and is what let the old deep-discharge branch fire. #}
+              {% set capacity_kw = max(monthly_peak, 2.5) - 0.3 %}
               {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
                  grid import, so we charge hard while little of the quarter is committed, then drop
                  to 6A for the tail so the average lands under the cap. #}
@@ -235,7 +239,7 @@
             icon = "mdi:meter-electric";
             state = ''
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
-              {% set capacity_near = [2.3, monthly_peak - 0.5] | max %}
+              {% set capacity_near = [2.1, monthly_peak - 0.8] | max %}
               {% set banked = states('sensor.electricity_delivery_power_15m') | float(0) %}
               {{ banked >= capacity_near }}
             '';
@@ -458,13 +462,15 @@
               # in-flight step delay below and fires an immediate number.set_value. On 2026-08-29 a
               # fast-moving headroom estimate flapped the target 13->10->8->6A in ~2s, which sent
               # three step-down commands to the charger within that same window and it tripped
-              # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 1 minute.
+              # (E5/SuspendedEVSE) 3s later. Only react once the target has held for 30 seconds
+              # (was 1 minute; shortened 2026-10-11 so the car backs off sooner towards the peak.
+              # The flap that tripped E5 lasted ~2s, so 30s still sits far outside it).
               #
               # This debounce is specifically for the noisy front-of-quarter headroom branch
               # (already flagged there as chattery by design). The real capacity-tariff safety
               # drop gets its own undebounced trigger below, since it can't flap and shouldn't
               # wait.
-              (ha.trigger.state_for "sensor.system_car_charger_target_current" "00:01:00")
+              (ha.trigger.state_for "sensor.system_car_charger_target_current" "00:00:30")
               # Capacity-tariff safety drop: react the instant this arms, no debounce.
               # binary_sensor.system_car_charger_capacity_near is monotonic within a quarter (see
               # its definition), so — unlike the headroom branch above — it can't flap and there's
