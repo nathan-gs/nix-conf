@@ -242,19 +242,31 @@ in
               {% set is_solar_left = ((states('sensor.energy_production_today_remaining') | float(0) > 4) and now().hour >= 5) %}
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
+              {% set overdischargesoc_with_car_charger_on = 40 %}
               {% set overdischargesoc_solar_left = 15 %}
-              {# Deepest peak-shave floor. The inverter overshoots its floor by ~1 point, so 10 keeps
-                 the reading at 9 or above, clear of the 8% hard limit (force charge trips at 9). #}
-              {% set overdischargesoc_min = 10 %}
+              {# min is 10 #}
+              {% set overdischargesoc_min = 8 %}
+              {#
+              Test values
+              {% set power15m = 2.1 %}
+              {% set power15m_estimated = 2.8 %}
+
+              Echo's
+              {{ power15m }}
+              {{ power15m_estimated }}
+              {{ overdischargesoc }}
+              #}
               {# Capacity Tweaks #}
-              {# The battery DOES shave peaks, but never on behalf of the car: the car is throttled
-                 instead (system/car_charger/target_current), because the pack cannot keep up with it
-                 — on 2026-10-10 ~22:00 the car drained it 14% -> 7% in 12 minutes through this
-                 branch, and on 2026-07-03 to 10%. So it arms only while the car is NOT charging, and
-                 only on a real, billable (>= 2.5 kW) projected peak. The floor is
-                 overdischargesoc_min (10%), with forcechargesoc_target as the grid-charge safety net
-                 so the pack never reads below 8%. See docs/ev-battery-peak-coordination.md. #}
-              {% if not is_car_charging and (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
+              {# Deep-discharge the battery to shave a peak only once it is imminent. Note the TWO
+                 guards: it arms only if power15m > capacity_near AND power15m_estimated >
+                 capacity_threshold. The car's charge control (system/car_charger/target_current)
+                 keeps its projected 15-min average (power15m_estimated) below capacity_threshold —
+                 the current steps snap down under the cap — so this second guard is never met while
+                 the car is charging, and the battery never discharges to mask the car (which is what
+                 drained it to 10% on 2026-07-03 ~04:00). This branch then fires only as a backstop
+                 for real peaks the car alone cannot hold (and only in the billable band ≥ 2.5 kW).
+                 See docs/ev-battery-peak-coordination.md. #}
+              {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
                 {{ overdischargesoc_min }}
               {# If solar left, prioritize to min even if car charging #}
               {% elif is_solar_left %}
@@ -288,10 +300,7 @@ in
               {% set is_offpeak = states('binary_sensor.electricity_is_offpeak') | bool(false) %}
               {% set forcechargesoc_high = 19 %}
               {% set forcechargesoc_low = 10 %}
-              {# Hard floor: the house battery must never read below 8%. The inverter overshoots its
-                 floor by ~1 point and idle load drifts it a further point on a long night (2026-10-10:
-                 8% floor -> 7% -> 6% with this at 7), so trip the grid force-charge at 9. #}
-              {% set forcechargesoc_min = 9 %}
+              {% set forcechargesoc_min = 7 %}
 
               {% set forcechargesoc_target = forcechargesoc_min %}
               {{ forcechargesoc_target }}              

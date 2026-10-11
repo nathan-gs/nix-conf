@@ -128,23 +128,28 @@ setting, not this logic.
 - `sensor.electricity_delivery_power_15m_estimated` — projected final 15-min average import.
 - `binary_sensor.solar_battery_sufficient` — house battery > 10 %.
 
-## Incident 2 (2026-10-10, ~22:00) — the deep-discharge branch had crept back
+## Incident 2 (2026-10-10, ~22:00) — the battery was masking the car from the car's own control
 
-The branch described above as removed was back in `overdischargesoc_target` (with
-`overdischargesoc_min = 8`). During offpeak grid charging at 13 A (~3 kW, above the 2.56 kW monthly
-peak) it armed, dropped the floor to 8 %, and the battery covered the car: **14 % -> 7 % in 12
-minutes**, then idled down to 6 % before the 01:00 grid top-up. Changes made:
+The battery *is* meant to shave peaks (the deep-discharge branch in `overdischargesoc_target` is
+intentional and stays; the battery logic knows nothing about the car). What went wrong was on the
+car side: at 22:00 the car started grid-charging at 13 A (~3 kW) with the battery's floor at 8 %,
+and the battery silently covered it. The P1 meter read ~0, so `capacity_headroom_current` saw
+18-24 A free and held the car at 13 A for 15 minutes while the pack went **14 % -> 7 %** (then
+drifted to 6 %). Only once the pack hit its floor did import jump and the car throttle — too late.
 
-- **Battery still shaves peaks, but never for the car.** The deep-discharge branch is kept (the
-  battery *should* shave real peaks) but is gated on `not is_car_charging`, and its floor is
-  `overdischargesoc_min = 10 %` (was 8 %). While the car charges, the floor stays at 15 % / 20 %
-  and the car is throttled instead — the pack cannot keep up with it.
-- **Hard 8 % backstop.** `forcechargesoc_target` 7 -> 9. The inverter overshoots its floor by ~1
-  point and idle load drifts another point, so the grid force-charge trips at 9 to keep the pack
-  at or above 8 %.
-- **Car backs off sooner.** Headroom aims 0.3 kW *under* the monthly peak (was exactly at it); the
-  6 A tail arms at `monthly_peak - 0.8` (was `- 0.5`, floor 2.1 kW instead of 2.3); `set_current`
-  debounces the target for 30 s (was 60 s; the E5 flap lasted ~2 s).
+The car control must not be blinded by the battery. Changes, all in `tuya.nix`:
 
-Cost: a slightly slower overnight car charge, and the odd small peak is accepted rather than
-shaved by the battery.
+- **Below the normal floor, battery discharge counts as grid import** in
+  `capacity_headroom_current`. Running the car off the battery down to its normal floor (15 % with
+  solar left today, 20 % otherwise) is fine. At or below that floor the battery is peak-shaving,
+  so `headroom = cap - (estimated_15m - car) - battery_discharge_kw`. The car is then sized against
+  what the house would pull without the battery, and the peak-shave reserve is left for real peaks.
+- **Aim 0.3 kW under the monthly peak** (was exactly at it).
+- **6 A tail arms earlier**: `monthly_peak - 0.8` (was `- 0.5`, floor 2.1 kW instead of 2.3).
+- **30 s debounce** on `set_current` (was 60 s; the E5 flap lasted ~2 s).
+
+Cost: a slower car charge once the battery is at or below its normal floor, particularly when it
+is also carrying house load. The car-side floor (15/20) mirrors `overdischargesoc_target`; if
+that split changes, change it here too.
+Check `sensor.electricity_battery_power` (W, positive = discharging) if the car sits at 6 A and
+you expect more.
