@@ -162,9 +162,9 @@
             state = ''
               {# Capaciteitstarief floor is 2.5 kW — no point throttling for a lower "peak". #}
               {% set monthly_peak = states('sensor.electricity_delivery_power_monthly_15m_max') | float(0) %}
-              {# Aim 0.3 kW UNDER the peak, not at it, so the car backs off before the average gets
-                 near the cap and leaves room for house load rising mid-quarter. #}
-              {% set capacity_kw = max(monthly_peak, 2.5) - 0.3 %}
+              {# Aim at the peak itself: a margin here throttles the whole quarter (8A instead of 10A).
+                 Backing off is the 6A tail's job, see capacity_near. #}
+              {% set capacity_kw = max(monthly_peak, 2.5) %}
               {# END-OF-QUARTER peak shaving. The capaciteitstarief peak is the 15-MINUTE AVERAGE of
                  grid import, so we charge hard while little of the quarter is committed, then drop
                  to 6A for the tail so the average lands under the cap. #}
