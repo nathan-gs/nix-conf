@@ -163,7 +163,7 @@ makes it the least efficient step.
 headroom is 0 (even 6 A would breach the peak), **or** when the battery is peak-shaving (floor < 15 %)
 and discharging. The second is the only thing that actually protects the battery: the inverter feeds
 whatever load is on, so a throttled car still drains it. Charging off the battery down to its normal
-15/20 % floor is fine and is not paused. `delay_off` 5 min, so a long load holds the car off rather
+15/20 % floor is fine and is not paused. `delay_off` 2 min, so a long load holds the car off rather
 than restarting it every quarter.
 
 ## Simulation (`manual/ev-peak-sim.py`)

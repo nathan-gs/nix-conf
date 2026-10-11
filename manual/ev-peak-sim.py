@@ -23,6 +23,8 @@ NIGHT_S = 9 * 3600              # 22:00 -> 07:00
 import os
 ALIGN = os.environ.get("ALIGN") == "1"
 CAPX = float(os.environ.get("CAPX", "0.5"))
+FAIL = float(os.environ.get("FAIL", "0"))
+HOLD = int(os.environ.get("HOLD", "120"))
 
 
 def quantize(a):
@@ -54,13 +56,16 @@ class Sim:
         s.pause = False; s.pause_ok_since = None
         s.should_prev = False; s.stop_at = None
         s.near_prev = False
-        s.recover = False; s.soc0 = soc0; s.plim = 0.0; s.ffloor = 20
+        s.recover = False; s.soc0 = soc0; s.plim = 0.0; s.ffloor = 20; s.frnd = random.Random(7)
         # metrics
         s.car_j = 0.0; s.batt_out_j = 0.0; s.min_soc = soc0
         s.quarters = []; s.changes = 0; s.stops = 0; s.starts = 0; s.s6 = 0; s.net_j = 0.0
         s.car_w = 0.0; s.grid_w = 0.0; s.batt_w = 0.0
 
     # ---------- sensors ----------
+    def write_fails(s):
+        return s.frnd.random() < FAIL
+
     def left(s, t):
         return 900 - (t % 900)
 
@@ -88,11 +93,22 @@ class Sim:
         # D2: hold the battery for the car session, stepping the floor down from the 22:00 SoC to 20%
         # by 07:00 (1% steps) so it releases its usable energy evenly instead of all at once.
         if s.d == "F" and s.car_need > 0:
-            if t % 900 == 0:
+            if t % 900 == 0 and not s.write_fails():
                 house = max(0.0, s.grid_w - s.car_w) / 1000 if s.car_w > 0 else s.mean1m()
                 need_wh = max(0.0, 13 * V / 1000 + house - (max(2.5, s.peak) - 0.1)) * 250
                 # the inverter overshoots its floor by ~0.6%, so ask for that much less
                 s.ffloor = min(40, max(15, s.soc_sensor - max(1, round(need_wh / (CAP_WH / 100) - 0.6))))
+            return s.ffloor
+        if s.d == "FE" and s.car_need > 0:
+            # end-of-quarter variant: hold at the quarter start, release at minute 11 exactly what
+            # the quarter is projected to overshoot by
+            if t % 900 == 0:
+                s.ffloor = min(40, max(15, s.soc_sensor))
+            if t % 900 == 660 and not s.write_fails():
+                left = s.left(t)
+                proj = s.banked(t) + (s.grid_w / 1000) * left / 900
+                over_wh = max(0.0, proj - (max(2.5, s.peak) - 0.1)) * 900 / 3.6
+                s.ffloor = min(40, max(15, s.soc_sensor - max(0, round(over_wh / (CAP_WH / 100) - 0.6))))
             return s.ffloor
         if s.d == "D2" and s.car_need > 0 and s.soc0 > 15:
             tq = t - t % 900 if ALIGN else t
@@ -129,6 +145,8 @@ class Sim:
         eight = 8 * V / 1000
         allowed = ((target - banked) * 900 - (house + eight) * (left - h)) / max(h, 60) - house
         capx = 0.9 if (s.d == "F" and s.car_need > 0 and s.soc_sensor > 15) else 0.5
+        if s.d == "FE" and s.car_need > 0 and s.soc_sensor > 15:
+            return 13   # car runs flat out, counting on the end-of-quarter release
         allowed = min(allowed, target - house + capx)
         a = math.floor(allowed * 1000 / V)
         # 6A only as a last resort: if 8A to the end of the quarter still stays under the peak, use 8A
@@ -160,7 +178,7 @@ class Sim:
         elif s.pause:
             if s.pause_ok_since is None:
                 s.pause_ok_since = t
-            elif t - s.pause_ok_since >= 300:
+            elif t - s.pause_ok_since >= HOLD:
                 s.pause = False
         return s.pause
 

@@ -246,8 +246,10 @@
             #    feeds whatever load is on, so a throttled car still drains it — only stopping the
             #    car keeps the reserve for the house (2026-10-10 22:00: 14% -> 7% in 12 min).
             # Charging off the battery down to its normal 15/20% floor is fine and not paused.
-            # Resumes once clear for 5 minutes straight (delay_off), so a load that keeps running
-            # holds the car off instead of restarting it every quarter.
+            # Resumes once clear for 2 minutes straight (delay_off), so a load that keeps running
+            # holds the car off instead of restarting it every quarter. 2 min, not 5: the pause only
+            # trips on a real breach, and simulation (cycling WTW heater + late 2 kW jumps) showed no
+            # flapping or extra peaks at 2 min, +0.3-0.7 kWh a night, ~1 extra stop.
             name = "system/car_charger/capacity_pause";
             unique_id = "system_car_charger_capacity_pause";
             icon = "mdi:transmission-tower-off";
@@ -257,7 +259,7 @@
               {% set discharging = states('sensor.electricity_battery_power') | float(0) > 100 %}
               {{ no_room or (peak_shaving and discharging) }}
             '';
-            delay_off = "00:05:00";
+            delay_off = "00:02:00";
           }
           {
             # Peak-hour emergency floor: charge only when SoC is critically low.
