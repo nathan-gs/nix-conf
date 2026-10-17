@@ -243,8 +243,9 @@ in
               {% set overdischargesoc_default = 20 %}
               {% set overdischargesoc_charge_to = 15 %}
               {% set overdischargesoc_solar_left = 15 %}
-              {# min is 10 #}
-              {% set overdischargesoc_min = 8 %}
+              {# Peak-shave floor. Force-charge is 8%, and Solis requires force < overdischarge,
+                 so this stays one point above it. #}
+              {% set overdischargesoc_min = 9 %}
               {#
               Test values
               {% set power15m = 2.1 %}
@@ -268,18 +269,17 @@ in
               {% if (power15m > capacity_near) and (power15m_estimated > capacity_threshold) %}
                 {{ overdischargesoc_min }}
               {# Night car charge: the battery tops up the car's grid budget, quarter by quarter,
-                 down to 15% — then the regular cycle. Self-use would otherwise dump it into the car
-                 in the first half hour while the grid budget sits unused. See night_car_floor.
-                 A floor above the current SoC holds the pack, it does not grid-charge it.
-                 Simulated in docs/ev-battery-peak-coordination.md. #}
+                 but never below 20%. Self-use would otherwise dump it into the car in the first
+                 half hour while the grid budget sits unused. See night_car_floor.
+                 A floor above the current SoC holds the pack, it does not grid-charge it. #}
               {% elif (now().hour >= 22 or now().hour < 7) and is_state('binary_sensor.system_car_charger_should_charge', 'on') %}
                 {{ states('sensor.solar_battery_night_car_floor') | int(20) }}
-              {# If solar left, prioritize to min even if car charging #}
+              {# House battery into the car stops at 20%, solar day or not. #}
+              {% elif is_car_charging %}
+                {{ overdischargesoc_default }}
+              {# If solar left and the car is not drawing, the house may use the pack down to 15%. #}
               {% elif is_solar_left %}
                 {{ overdischargesoc_solar_left }}
-              {# If car charging and no solar left #}
-              {% elif is_car_charging and is_solar_left == false %}
-                {{ overdischargesoc_default }}
               {% else %}
                 {% if battery < 12 %}
                   {{ overdischargesoc_charge_to }}
@@ -330,7 +330,7 @@ in
         # for the car to run at its mode cap with the quarter landing on the peak target —
         #   n% = (car at cap + house - target) * 15 min / 83 Wh per %
         # The battery covers house + car for the first few minutes, then holds; the car runs on
-        # the grid budget for the rest. Never below 15% (then it's the regular cycle).
+        # the grid budget for the rest. Never below 20%.
         trigger = [ (ha.trigger.time_pattern_minutes "/15") ];
         sensor = [
           {
@@ -339,7 +339,7 @@ in
             unit_of_measurement = "%";
             device_class = "battery";
             state = ''
-              {% set soc = states('sensor.system_house_pv_battery_soc') | int(15) %}
+              {% set soc = states('sensor.system_house_pv_battery_soc') | int(20) %}
               {% set target_kw = [2.5, states('sensor.electricity_delivery_power_monthly_15m_max') | float(0)] | max - 0.1 %}
               {% set car_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
               {% set house_kw = [0, states('sensor.electricity_grid_consumed_power') | float(0) / 1000 - car_kw] | max %}
@@ -348,7 +348,7 @@ in
               {# The inverter overshoots its floor by ~0.6%, so ask for that much less. Its floor
                  register tops out at 40%: above that the battery simply covers house + car down
                  to 40% first, and the per-quarter steering takes over from there. #}
-              {{ [40, [15, soc - [1, (need_pct - 0.6) | round(0) | int] | max] | max] | min }}
+              {{ [40, [20, soc - [1, (need_pct - 0.6) | round(0) | int] | max] | max] | min }}
             '';
           }
         ];
@@ -416,10 +416,34 @@ in
         ];
         mode = "queued";
       })
+      # Target is a constant 8%, so a state trigger never rewrites a register that
+      # read back as 7 (stuck there since the target moved 7 -> 8 on 2026-10-11).
+      # Startup and an hourly pass write it when it differs. Skipped while
+      # charge_offpeak is on: that 05:00 path raises force-charge on purpose.
       (ha.automation "solar/battery/forcechargesoc.control" {
-        triggers = [(ha.trigger.state_for "sensor.solar_battery_forcechargesoc_target" "00:00:15")];
+        triggers = [
+          (ha.trigger.state_for "sensor.solar_battery_forcechargesoc_target" "00:00:15")
+          {
+            platform = "homeassistant";
+            event = "start";
+          }
+          (ha.trigger.time_pattern_minutes "0")
+        ];
+        conditions = [
+          (ha.condition.off "input_boolean.solar_battery_charge_offpeak")
+          (ha.condition.template ''
+            {{ states('number.system_house_pv_force_charge_soc') | int(0)
+               != states('sensor.solar_battery_forcechargesoc_target') | int(8) }}
+          '')
+        ];
         actions = [
-          (ha.action.set_value "number.system_house_pv_force_charge_soc" ''{{ states('sensor.solar_battery_forcechargesoc_target') | int }}'')
+          {
+            wait_template = ''{{ states('number.system_house_pv_force_charge_soc') not in ['unknown', 'unavailable', 'none'] }}'';
+            timeout = "00:02:00";
+            continue_on_timeout = false;
+          }
+          (ha.action.delay "00:00:30")
+          (ha.action.set_value "number.system_house_pv_force_charge_soc" ''{{ states('sensor.solar_battery_forcechargesoc_target') | int(8) }}'')
         ];
         mode = "queued";
       })

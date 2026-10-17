@@ -78,6 +78,32 @@
       {
         sensor = [
           {
+            # SoC the charge gates actually read. Audi Connect is cloud-polled and, while it
+            # is down, sensor.audi_a6_sportback_e_tron_state_of_charge sits at unavailable.
+            # `float(100)` then reads as "already full" and should_charge_offpeak never
+            # starts. After the unknown flag has held (see audi_soc_unknown), report 50%.
+            # That is above the 35% emergency floor, so a missing reading does not
+            # grid-charge through the peak. Off-peak charging runs while
+            # car_charge_grid_target is above 50 (the 70 and 100 plans). The car stops
+            # at the target set in the myAudi app. A live reading is passed through
+            # unchanged.
+            name = "system/car_charger/audi_soc";
+            unique_id = "system_car_charger_audi_soc";
+            unit_of_measurement = "%";
+            icon = "mdi:battery-unknown";
+            state = ''
+              {% set raw = states('sensor.audi_a6_sportback_e_tron_state_of_charge') %}
+              {% if is_state('binary_sensor.system_car_charger_audi_soc_unknown', 'on') %}
+                {{ 50 }}
+              {% else %}
+                {{ raw | float(100) }}
+              {% endif %}
+            '';
+            attributes = {
+              assumed = "{{ is_state('binary_sensor.system_car_charger_audi_soc_unknown', 'on') }}";
+            };
+          }
+          {
             # Single source of truth for what each input_select.car_charge_override entry
             # actually does. force_on / boost / cap are the ONLY things that vary by mode —
             # everything else (low_soc, should_charge_offpeak, solar_eligible, morning_boost,
@@ -116,7 +142,7 @@
                    the next day's plan — the wrong signal for a live "is it sunny now" check. #}
                 {% set offpeak = is_state('binary_sensor.electricity_is_offpeak', 'on') %}
                 {% set sunny = is_state('binary_sensor.system_car_charger_solar_boost', 'on') %}
-                {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
+                {% set soc = states('sensor.system_car_charger_audi_soc') | float(100) %}
                 {% set target = states('input_number.car_charge_grid_target') | float(70) %}
                 {{ override in ['solar+grid boost', 'solar+grid 16a']
                    or (override == 'battery drain' and battery > 20)
@@ -184,9 +210,9 @@
               {% set allowed_kw = ((target_kw - banked) * 900 - (house_kw + a8_kw) * (left - h)) / [h, 60] | max - house_kw %}
               {# At most ~one step above the steady rate, or it sprints to 13A at the start of every
                  quarter and spends the rest stepping back down. Except at night while the house
-                 battery is above 15%: it then tops up each quarter (night_car_floor in
+                 battery is above 20%: it then tops up each quarter (night_car_floor in
                  solar/battery.nix), and the car should use that at 13A. #}
-              {% set battery_phase = (now().hour >= 22 or now().hour < 7) and states('sensor.system_house_pv_battery_soc') | int(0) > 15 %}
+              {% set battery_phase = (now().hour >= 22 or now().hour < 7) and states('sensor.system_house_pv_battery_soc') | int(0) > 20 %}
               {% set allowed_kw = [allowed_kw, target_kw - house_kw + (0.9 if battery_phase else 0.5)] | min %}
               {% set a = (allowed_kw * 1000 / 230) | round(0, 'floor') | int %}
               {% if a >= 8 %}
@@ -240,12 +266,26 @@
         ];
         binary_sensor = [
           {
+            # Audi Connect unavailable long enough that the last reading cannot be trusted.
+            # delay_on ignores the unavailable blip after an HA restart, when the integration
+            # has not polled yet; a real outage (hours) still trips. delay_off hands control
+            # back to the live SoC as soon as the API returns.
+            name = "system/car_charger/audi_soc_unknown";
+            unique_id = "system_car_charger_audi_soc_unknown";
+            icon = "mdi:cloud-off-outline";
+            state = ''
+              {{ states('sensor.audi_a6_sportback_e_tron_state_of_charge') in ['unknown', 'unavailable', 'none'] }}
+            '';
+            delay_on = "00:10:00";
+            delay_off = "00:02:00";
+          }
+          {
             # Pause charging (should_charge off) when
             #  - even 6A would push this quarter over the peak (headroom 0), or
             #  - the house battery is peak-shaving (floor < 15%) and discharging: the inverter
             #    feeds whatever load is on, so a throttled car still drains it — only stopping the
             #    car keeps the reserve for the house (2026-10-10 22:00: 14% -> 7% in 12 min).
-            # Charging off the battery down to its normal 15/20% floor is fine and not paused.
+            # Charging off the battery down to the 20% car floor is fine and not paused.
             # Resumes once clear for 2 minutes straight (delay_off), so a load that keeps running
             # holds the car off instead of restarting it every quarter. 2 min, not 5: the pause only
             # trips on a real breach, and simulation (cycling WTW heater + late 2 kW jumps) showed no
@@ -268,7 +308,7 @@
             unique_id = "system_car_charger_low_soc";
             icon = "mdi:battery-low";
             state = ''
-              {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
+              {% set soc = states('sensor.system_car_charger_audi_soc') | float(100) %}
               {{ soc < 35 }}
             '';
           }
@@ -277,7 +317,7 @@
             unique_id = "system_car_charger_should_charge_offpeak";
             icon = "mdi:clock-outline";
             state = ''
-              {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
+              {% set soc = states('sensor.system_car_charger_audi_soc') | float(100) %}
               {% set offpeak = is_state('binary_sensor.electricity_is_offpeak', 'on') %}
               {# Grid-charge ceiling is set the evening before via the plan_tomorrow flow
                  (60 sunny / 70 default / 100 long drive); falls back to 70. #}
@@ -313,7 +353,7 @@
             unique_id = "system_car_charger_solar_boost";
             icon = "mdi:solar-power-variant";
             state = ''
-              {% set soc = states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) %}
+              {% set soc = states('sensor.system_car_charger_audi_soc') | float(100) %}
               {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
               {{ soc <= 80 and solar > 1000 }}
             '';
@@ -829,7 +869,7 @@
                   {
                     condition = "template";
                     value_template = ''
-                      {{ states('sensor.audi_a6_sportback_e_tron_state_of_charge') | float(100) < 90 }}
+                      {{ states('sensor.system_car_charger_audi_soc') | float(100) < 90 }}
                     '';
                   }
                 ]
