@@ -52,7 +52,12 @@ in
             # The 370 runs in analogue control: it sets the flow temperature from
             # (this setpoint - living room temperature). So the setpoint is only
             # ever a small step either side of the living room:
-            #  - heating: at most +0.8 above it, so flow stays low and burns soft;
+            #  - heating: at most +0.8 above it, so flow stays low and burns soft.
+            #    Each step is held while the CV water circulates, so the other
+            #    rooms get time to heat up before the next push. Under analogue
+            #    control the pump can keep running at low modulation, so the
+            #    hold also ends once the living room is within 0.2 of the step,
+            #    which is about where a two-point 370 used to stop the pump;
             #  - not heating: 0.5-1.0 below it, so the 370 simply stays off.
             # It used to walk down 0.5 per controller read-back to eco, which
             # dropped 19.5 -> 15.5 within minutes and swung the full range in
@@ -66,8 +71,12 @@ in
             # nikolai still get their electric heaters, see heating_use_electric).
             state = ''
               ${autoWantedHeader}
+              {% set cv_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
               {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
               {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
+              {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
+              {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
+              {% set is_step_reached = current_temp >= cv_temp - 0.2 %}
               {% set max_desired_temp = 21 %}
               {% set target_temp = current_temp + temperature_diff_wanted %}
               {% set anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
@@ -84,9 +93,15 @@ in
               {% set is_gas_worth_it = is_living_short or rooms_short >= 2 or is_one_room_cold %}
               {% if anyone_home_or_coming %}
                 {% if is_gas_worth_it and is_heating_needed and is_large_deviation_between_forecast_and_target %}
-                  {# Gradually increase temperature #}
-                  {% set new_temp = min(current_temp + 0.8, max_desired_temp, target_temp) %}
-                  {% set new_temp = (new_temp * 2) | round(0) / 2 %}
+                  {% if is_cv_water_circulating and not is_large_increase_needed and not is_step_reached %}
+                    {# Hold the step: let the rooms heat up #}
+                    {% set new_temp = min(cv_temp, target_temp) %}
+                    {% set new_temp = (new_temp * 2) | round(0) / 2 %}
+                  {% else %}
+                    {# Gradually increase temperature #}
+                    {% set new_temp = min(current_temp + 0.8, max_desired_temp, target_temp) %}
+                    {% set new_temp = (new_temp * 2) | round(0) / 2 %}
+                  {% endif %}
                 {% else %}
                   {# Just below the room, rounded down: 0.5-1.0 under it #}
                   {% set new_temp = ((current_temp - 0.5) * 2) | round(0, 'floor') / 2 %}
