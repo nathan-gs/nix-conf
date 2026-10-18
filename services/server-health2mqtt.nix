@@ -19,7 +19,7 @@
 # fast  (default 5m): /proc, /sys and /run only — literally zero disk IO, so it
 #                     is safe to run often. Covers CPU + NVMe temperature (both
 #                     come from hwmon, not smartctl), load, memory, root fs
-#                     usage, failed units, reboot-required.
+#                     usage and free inodes, failed units, reboot-required.
 # slow  (default 2h): the only tier that forks smartctl/btrfs. Every smartctl
 #                     call uses `-n standby`, so a sleeping disk is skipped
 #                     rather than spun up — on a host whose disks are usually
@@ -299,6 +299,20 @@ let
         unit_of_measurement = "GB";
         device_class = "data_size";
         state_class = "measurement";
+      };
+    })
+    # Free, not used: the failure on a small ext4 root is the table filling
+    # while blocks remain, and "12% free" is the number you act on. Same
+    # fsWarnPct line as block usage (alert when free <= 100-fsWarnPct).
+    (mkSensor {
+      path = "${prefix}.root_inodes_free";
+      label = "Root inodes free";
+      topic = hostTopic;
+      field = "root_inodes_free_pct";
+      extra = hostExpire // {
+        unit_of_measurement = "%";
+        state_class = "measurement";
+        icon = "mdi:file-tree";
       };
     })
     (mkSensor {

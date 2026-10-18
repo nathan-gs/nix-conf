@@ -21,7 +21,7 @@
 #     `ts` survive — that `ts` is what HA turns into a "SMART data age" sensor.
 #
 # Modes:
-#   host   — uptime/load/memory/temps/root-fs/failed-units/reboot-required
+#   host   — uptime/load/memory/temps/root-fs/inodes/failed-units/reboot-required
 #   disks  — per-disk SMART + the btrfs filesystem (device errors, usage, scrub)
 #
 # Configuration comes from the environment; see services/server-health2mqtt.nix.
@@ -313,12 +313,24 @@ collect_host() {
     problems+="CPU temperature ${cpu_temp_c}°C"$'\n'
   fi
 
-  # statfs on an already-mounted fs: no device IO.
+  # statfs on an already-mounted fs: no device IO. Inode use is its own
+  # number: an ext4 inode table is fixed at mkfs and can hit 100% while
+  # blocks are still free (nnas, 2026-10-09).
   local root_used_pct root_free_b
   root_used_pct="$(df --output=pcent / | tail -1 | tr -dc '0-9')"
   root_free_b="$(df --output=avail -B1 / | tail -1 | tr -dc '0-9')"
   if [[ -n "$root_used_pct" && "$root_used_pct" -ge "$FS_WARN_PCT" ]]; then
     problems+="root filesystem ${root_used_pct}% full"$'\n'
+  fi
+
+  local root_inodes_total root_inodes_free root_inodes_free_pct=""
+  read -r root_inodes_total root_inodes_free < <(df --output=itotal,iavail / | awk 'NR==2 {print $1, $2}')
+  if [[ -n "$root_inodes_total" && "$root_inodes_total" -gt 0 && -n "$root_inodes_free" ]]; then
+    root_inodes_free_pct="$(awk -v t="$root_inodes_total" -v f="$root_inodes_free" 'BEGIN{printf "%.1f", f*100/t}')"
+    # Same fullness line as blocks: free% <= 100-FS_WARN_PCT.
+    if awk -v f="$root_inodes_free_pct" -v w="$FS_WARN_PCT" 'BEGIN{exit !(f+0 <= (100-w)+0)}'; then
+      problems+="root filesystem inodes ${root_inodes_free_pct}% free"$'\n'
+    fi
   fi
 
   local failed_names failed_count
@@ -361,6 +373,7 @@ collect_host() {
     --argjson fans "${fans:-{\}}" \
     --argjson root_used_pct "${root_used_pct:-null}" \
     --argjson root_free_b "${root_free_b:-null}" \
+    --argjson root_inodes_free_pct "${root_inodes_free_pct:-null}" \
     --argjson failed_units "$failed_count" \
     --arg failed_unit_names "$failed_names" \
     --argjson reboot_required "$reboot_required" \
@@ -373,6 +386,7 @@ collect_host() {
       cpu_temp_c:$cpu_temp_c, nvme_temp_c:$nvme_temp_c,
       chipset_temp_c:$chipset_temp_c, temps:$temps, fans:$fans,
       root_used_pct:$root_used_pct, root_free_b:$root_free_b,
+      root_inodes_free_pct:$root_inodes_free_pct,
       failed_units:$failed_units, failed_unit_names:$failed_unit_names,
       reboot_required:$reboot_required,
       problems:$problems, problem_count:($problems|length)}'

@@ -67,6 +67,9 @@ views:
             entity: sensor.system_network_server_nhtpc_root_fs_used
             name: Root fs
           - type: tile
+            entity: sensor.system_network_server_nhtpc_root_inodes_free
+            name: Inodes free
+          - type: tile
             entity: sensor.system_network_server_nhtpc_uptime
             name: Uptime
           - type: tile
@@ -164,6 +167,9 @@ views:
           - type: tile
             entity: sensor.system_network_server_nnas_root_fs_used
             name: Root fs
+          - type: tile
+            entity: sensor.system_network_server_nnas_root_inodes_free
+            name: Inodes free
           - type: tile
             entity: sensor.system_network_server_nnas_uptime
             name: Uptime
