@@ -87,7 +87,8 @@ views:
             name: Cost (month)
         - type: entities
           entities:
-          - entity: sensor.audi_a6_sportback_e_tron_state_of_charge
+          - entity: sensor.car_car_a6_battery
+            name: Battery
           - entity: sensor.audi_a6_sportback_e_tron_target_state_of_charge
           - entity: sensor.audi_a6_sportback_e_tron_range
           - entity: sensor.audi_a6_sportback_e_tron_charging_state
@@ -285,7 +286,7 @@ views:
           name: Revenue
         - entity: sensor.system_car_charger_energy
           name: Energy (hardware)
-        - entity: sensor.audi_a6_sportback_e_tron_mileage
+        - entity: sensor.car_car_a6_mileage
           name: Odometer
     - type: horizontal-stack
       cards:

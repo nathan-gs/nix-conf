@@ -78,21 +78,24 @@
       {
         sensor = [
           {
-            # SoC the charge gates actually read. Audi Connect is cloud-polled and, while it
-            # is down, sensor.audi_a6_sportback_e_tron_state_of_charge sits at unavailable.
-            # `float(100)` then reads as "already full" and should_charge_offpeak never
-            # starts. After the unknown flag has held (see audi_soc_unknown), report 50%.
-            # That is above the 35% emergency floor, so a missing reading does not
-            # grid-charge through the peak. Off-peak charging runs while
-            # car_charge_grid_target is above 50 (the 70 and 100 plans). The car stops
-            # at the target set in the myAudi app. A live reading is passed through
-            # unchanged.
+            # SoC the charge gates actually read. Source is the EU Data Act portal
+            # (sensor.car_car_a6_battery), which delivers a new snapshot about every
+            # 15 minutes and keeps the last value in between. While that entity is
+            # unavailable, `float(100)` would read as "already full" and
+            # should_charge_offpeak would never start. After the unknown flag has
+            # held (see audi_soc_unknown), report 50%. That is above the 35%
+            # emergency floor, so a missing reading does not grid-charge through the
+            # peak. Off-peak charging runs while car_charge_grid_target is above 50
+            # (the 70 and 100 plans). The car stops at the target set in the myAudi
+            # app. A live reading is passed through unchanged. Age of a held reading
+            # is not a fault: a parked car often has nothing newer than the last
+            # snapshot, and that SoC is still the right one.
             name = "system/car_charger/audi_soc";
             unique_id = "system_car_charger_audi_soc";
             unit_of_measurement = "%";
             icon = "mdi:battery-unknown";
             state = ''
-              {% set raw = states('sensor.audi_a6_sportback_e_tron_state_of_charge') %}
+              {% set raw = states('sensor.car_car_a6_battery') %}
               {% if is_state('binary_sensor.system_car_charger_audi_soc_unknown', 'on') %}
                 {{ 50 }}
               {% else %}
@@ -266,15 +269,17 @@
         ];
         binary_sensor = [
           {
-            # Audi Connect unavailable long enough that the last reading cannot be trusted.
-            # delay_on ignores the unavailable blip after an HA restart, when the integration
-            # has not polled yet; a real outage (hours) still trips. delay_off hands control
-            # back to the live SoC as soon as the API returns.
+            # EU Data Act battery sensor unavailable long enough that the last reading
+            # cannot be trusted. The portal itself is ~15 minutes behind while the
+            # entity stays available, so this does not look at age_minutes. delay_on
+            # ignores the unavailable blip after an HA restart, when the integration
+            # has not polled yet; a real outage (hours) still trips. delay_off hands
+            # control back to the live SoC as soon as the sensor returns.
             name = "system/car_charger/audi_soc_unknown";
             unique_id = "system_car_charger_audi_soc_unknown";
             icon = "mdi:cloud-off-outline";
             state = ''
-              {{ states('sensor.audi_a6_sportback_e_tron_state_of_charge') in ['unknown', 'unavailable', 'none'] }}
+              {{ states('sensor.car_car_a6_battery') in ['unknown', 'unavailable', 'none'] }}
             '';
             delay_on = "00:10:00";
             delay_off = "00:02:00";
