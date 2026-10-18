@@ -49,34 +49,47 @@ in
             unique_id = "heating_temperature_desired";
             unit_of_measurement = "°C";
             device_class = "temperature";
+            # The 370 runs in analogue control: it sets the flow temperature from
+            # (this setpoint - living room temperature). So the setpoint is only
+            # ever a small step either side of the living room:
+            #  - heating: at most +0.8 above it, so flow stays low and burns soft;
+            #  - not heating: 0.5-1.0 below it, so the 370 simply stays off.
+            # It used to walk down 0.5 per controller read-back to eco, which
+            # dropped 19.5 -> 15.5 within minutes and swung the full range in
+            # most heating hours of winter 2025/26 -- on/off control on top of
+            # the 370's modulation.
+            #
+            # Gas only runs for the living room, for two or more leading rooms,
+            # or for one room that is really cold. In winter 2025/26 45% of
+            # heating gas was burned with a single room short, mostly bureau,
+            # fen or nikolai on their own; those wait for company (bureau and
+            # nikolai still get their electric heaters, see heating_use_electric).
             state = ''
               ${autoWantedHeader}
-              {% set cv_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
               {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
               {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
               {% set max_desired_temp = 21 %}
               {% set target_temp = current_temp + temperature_diff_wanted %}
-              {% set new_temp = cv_temp %}
               {% set anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
               {% set forecast_temp = states('sensor.weather_today_temperature_max') | float(15) %}
               {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
               {% set is_heating_needed = is_state('binary_sensor.heating_use_gas', 'on') %}
-              {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
-              {% set is_sufficient_increase = temperature_diff_wanted > (temperature_heating_threshold + 0.1) %}
-              {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
-              {% set is_heat_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
+              {% set short_threshold = temperature_heating_threshold + 0.1 %}
+              {% set leading_diffs = [
+                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_diff_wanted') | float(0)") rooms.heatedLeading)}
+              ] %}
+              {% set rooms_short = leading_diffs | select('>', short_threshold) | list | count %}
+              {% set is_living_short = states('sensor.floor0_living_temperature_diff_wanted') | float(0) > short_threshold %}
+              {% set is_one_room_cold = temperature_diff_wanted > 1.5 %}
+              {% set is_gas_worth_it = is_living_short or rooms_short >= 2 or is_one_room_cold %}
               {% if anyone_home_or_coming %}
-                {% if is_sufficient_increase and is_heating_needed and is_large_deviation_between_forecast_and_target %}
-                  {% if (is_cv_water_circulating and not(is_large_increase_needed)) or is_heat_electric %}
-                    {# Do nothing #}
-                    {% set new_temp = cv_temp %}
-                  {% else %}
-                    {# Gradually increase temperature #}
-                    {% set new_temp = (current_temp + 0.8) %}
-                    {% set new_temp = min(new_temp, max_desired_temp, target_temp) %}
-                  {% endif %}
-                {% else %}          
-                  {% set new_temp = (cv_temp - 0.5) %}
+                {% if is_gas_worth_it and is_heating_needed and is_large_deviation_between_forecast_and_target %}
+                  {# Gradually increase temperature #}
+                  {% set new_temp = min(current_temp + 0.8, max_desired_temp, target_temp) %}
+                  {% set new_temp = (new_temp * 2) | round(0) / 2 %}
+                {% else %}
+                  {# Just below the room, rounded down: 0.5-1.0 under it #}
+                  {% set new_temp = ((current_temp - 0.5) * 2) | round(0, 'floor') / 2 %}
                   {% set new_temp = max(new_temp, temperature_eco) %}
                 {% endif %}
               {% elif far_away %}
@@ -84,7 +97,6 @@ in
               {% else %}
                 {% set new_temp = temperature_away %}
               {% endif %}
-              {% set new_temp = ((new_temp * 2) | round(0) / 2) %}
               {{ new_temp }}
             '';
             icon = ''
