@@ -5,6 +5,32 @@ let
   autoWantedHeader = import ./temperature_sets.nix;
   rooms = import ../rooms.nix;
 
+  # Inputs shared by heating_temperature_desired's state and its attributes,
+  # so the explanation shown on the dashboard can't drift from the decision.
+  desiredInputs = ''
+    ${autoWantedHeader}
+    {% set cv_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
+    {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
+    {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
+    {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
+    {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
+    {% set is_step_reached = current_temp >= cv_temp - 0.2 %}
+    {% set max_desired_temp = 21 %}
+    {% set target_temp = current_temp + temperature_diff_wanted %}
+    {% set anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
+    {% set forecast_temp = states('sensor.weather_today_temperature_max') | float(15) %}
+    {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
+    {% set is_heating_needed = is_state('binary_sensor.heating_use_gas', 'on') %}
+    {% set short_threshold = temperature_heating_threshold + 0.1 %}
+    {% set leading_diffs = [
+      ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_diff_wanted') | float(0)") rooms.heatedLeading)}
+    ] %}
+    {% set rooms_short = leading_diffs | select('>', short_threshold) | list | count %}
+    {% set is_living_short = states('sensor.floor0_living_temperature_diff_wanted') | float(0) > short_threshold %}
+    {% set is_one_room_cold = temperature_diff_wanted > 1.5 %}
+    {% set is_gas_worth_it = is_living_short or rooms_short >= 2 or is_one_room_cold %}
+  '';
+
 in
 {
 
@@ -70,27 +96,7 @@ in
             # fen or nikolai on their own; those wait for company (bureau and
             # nikolai still get their electric heaters, see heating_use_electric).
             state = ''
-              ${autoWantedHeader}
-              {% set cv_temp = state_attr("climate.cv", "temperature") | float(15.5) %}
-              {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
-              {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
-              {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
-              {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
-              {% set is_step_reached = current_temp >= cv_temp - 0.2 %}
-              {% set max_desired_temp = 21 %}
-              {% set target_temp = current_temp + temperature_diff_wanted %}
-              {% set anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
-              {% set forecast_temp = states('sensor.weather_today_temperature_max') | float(15) %}
-              {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
-              {% set is_heating_needed = is_state('binary_sensor.heating_use_gas', 'on') %}
-              {% set short_threshold = temperature_heating_threshold + 0.1 %}
-              {% set leading_diffs = [
-                ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_diff_wanted') | float(0)") rooms.heatedLeading)}
-              ] %}
-              {% set rooms_short = leading_diffs | select('>', short_threshold) | list | count %}
-              {% set is_living_short = states('sensor.floor0_living_temperature_diff_wanted') | float(0) > short_threshold %}
-              {% set is_one_room_cold = temperature_diff_wanted > 1.5 %}
-              {% set is_gas_worth_it = is_living_short or rooms_short >= 2 or is_one_room_cold %}
+              ${desiredInputs}
               {% if anyone_home_or_coming %}
                 {% if is_gas_worth_it and is_heating_needed and is_large_deviation_between_forecast_and_target %}
                   {% if is_cv_water_circulating and not is_large_increase_needed and not is_step_reached %}
@@ -113,6 +119,27 @@ in
                 {% set new_temp = temperature_away %}
               {% endif %}
               {{ new_temp }}
+            '';
+            # Why the setpoint is what it is, in the order the state checks it.
+            attributes.decision = ''
+              ${desiredInputs}
+              {% if not anyone_home_or_coming %}
+                {{ 'far away' if far_away else 'away' }}
+              {% elif not is_heating_needed %}
+                {{ 'electric heating' if is_state('binary_sensor.heating_use_electric', 'on') else 'no heat needed' }}
+              {% elif not is_gas_worth_it %}
+                {{ 'single room waits' if rooms_short == 1 else 'no room short' }}
+              {% elif not is_large_deviation_between_forecast_and_target %}
+                mild forecast
+              {% elif is_cv_water_circulating and not is_large_increase_needed and not is_step_reached %}
+                holding step
+              {% else %}
+                heating: {{ 'living' if is_living_short else ('2+ rooms' if rooms_short >= 2 else 'one room cold') }}
+              {% endif %}
+            '';
+            attributes.rooms_short = ''
+              ${desiredInputs}
+              {{ rooms_short }}
             '';
             icon = ''
               {% if (state_attr("climate.cv", "current_temperature") | float(19.5)) < (states('sensor.heating_temperature_desired') | float(19.5)) %}

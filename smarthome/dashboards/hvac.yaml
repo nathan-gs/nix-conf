@@ -51,8 +51,8 @@ views:
       - entity: binary_sensor.itho_wtw_valve
       - entity: binary_sensor.itho_wtw_is_summerday
       - entity: sensor.itho_wtw_airfilter
-      - entity: sensor.itho_wtw_inlet_temperature
-      - entity: sensor.itho_wtw_outlet_temperature
+      # The Itho's own inlet/outlet temperatures are unreliable; read the
+      # system_wtw_air_quality_* duct sensors instead.
       - entity: binary_sensor.system_wtw_metering_plug_verwarming_target
       - entity: switch.floor0_living_wtw_valve_main
     - chart_type: line
@@ -1241,8 +1241,33 @@ views:
       cards:
       - type: thermostat
         entity: climate.boiler
-      - type: grid
-        cards: []
+      - type: entities
+        show_header_toggle: false
+        entities:
+        - type: attribute
+          entity: climate.boiler
+          attribute: dhw_mode
+          name: Mode
+        - entity: sensor.ebusd_bai_storagetemp_temp
+          name: Tank (boiler sensor)
+        - entity: sensor.ebusd_bai_storagetempdesired
+          name: Tank max (boiler knob)
+        - entity: sensor.heating_ebusd_370_hwclegiostartday
+          name: Legionella day
+        - entity: sensor.heating_ebusd_370_hwclegiostarttime
+          name: Legionella time
+    # A week shows the weekly legionella peak and any dips between reloads.
+    - type: statistics-graph
+      title: Tank temperature, 7 days
+      chart_type: line
+      period: hour
+      days_to_show: 7
+      entities:
+      - entity: sensor.ebusd_bai_storagetemp_temp
+        name: Tank
+      stat_types:
+      - min
+      - max
     - type: custom:apexcharts-card
       graph_span: 24h
       show:
@@ -1306,6 +1331,35 @@ views:
             red: 0
             yellow: 0.8
             green: 1
+    # Why gas is (or is not) heating: attributes of heating_temperature_desired
+    # (smarthome/hvac/vaillant.nix). Flame/modulation are polled every 5 min.
+    - type: entities
+      title: Gas heating decision
+      show_header_toggle: false
+      entities:
+      - type: attribute
+        entity: sensor.heating_temperature_desired
+        attribute: decision
+        name: Decision
+      - type: attribute
+        entity: sensor.heating_temperature_desired
+        attribute: rooms_short
+        name: Leading rooms short
+      - entity: sensor.weather_today_temperature_max
+        name: Forecast max today
+      - entity: sensor.heating_ebusd_bai_flame
+        name: Flame
+      - entity: binary_sensor.cv_water_circulating
+        name: Pump
+      - entity: sensor.heating_ebusd_bai_modulationdesired
+        name: Modulation
+    - type: history-graph
+      hours_to_show: 24
+      entities:
+      - entity: sensor.heating_ebusd_bai_flame
+        name: Flame
+      - entity: binary_sensor.cv_water_circulating
+        name: Pump
     - type: custom:apexcharts-card
       graph_span: 24h
       show:
@@ -1432,6 +1486,17 @@ views:
       stroke_width: 2
       show:
         header_color_threshold: true
+      yaxis_id: cv_temperature
+    # % shares the 0-100 axis with the temperatures.
+    - entity: sensor.heating_ebusd_bai_modulationdesired
+      name: Modulation (%)
+      type: area
+      opacity: 0.2
+      curve: stepline
+      group_by:
+        func: last
+        duration: 1m
+      stroke_width: 1
       yaxis_id: cv_temperature
   - type: custom:apexcharts-card
     graph_span: 4h
@@ -1619,6 +1684,39 @@ views:
           duration: 1d
         stroke_width: 2
         yaxis_id: gas_per_dd
+  # Compare a month with the same month a year earlier. The monthly mean of the
+  # daily ratio matches gas/DD within ~0.04 in heating months; summer months
+  # (few DD, only hot water) are noisy. Capped because the Oct/Nov 2025 meter
+  # jump reads as 9-24 m3/DD.
+  - type: vertical-stack
+    cards:
+    - type: statistics-graph
+      title: Gas per degree day, monthly
+      chart_type: bar
+      period: month
+      days_to_show: 730
+      min_y_axis: 0
+      max_y_axis: 0.8
+      fit_y_data: false
+      entities:
+      - entity: sensor.gas_m3_per_degree_day
+        name: m³/DD
+      stat_types:
+      - mean
+    # Starts / burner hours = cycling. The counters move in steps of 100, so
+    # read this per month, not per day.
+    - type: statistics-graph
+      title: Burner starts and hours, monthly
+      chart_type: bar
+      period: month
+      days_to_show: 730
+      entities:
+      - entity: sensor.ebusd_bai_hcstarts
+        name: Starts
+      - entity: sensor.ebusd_bai_hchours
+        name: Burner hours
+      stat_types:
+      - change
 - title: Electric
   path: electric
   icon: mdi:lightning-bolt-outline
