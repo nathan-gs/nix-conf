@@ -88,7 +88,6 @@ in
                   |rejectattr('entity_id', 'contains', '_fire_alarm_main_test')
                   |rejectattr('entity_id', 'contains', '_linkage_alarm_state')
                   |rejectattr('entity_id', 'contains', 'sensor.garden_garden_button_pomp_battery')
-                  |rejectattr('entity_id', 'contains', 'sensor.rainfall_5d')
                   |rejectattr('entity_id', 'contains', 'indego_325608617')
                   |rejectattr('entity_id', 'contains', 'spotify_')
                   |rejectattr('entity_id', 'contains', 'sensor.all_standby_energy')
