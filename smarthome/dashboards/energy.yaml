@@ -81,21 +81,18 @@ views:
             name: Power
         - type: entities
           entities:
-          - entity: sensor.car_charger_revenue_monthly
-            name: Revenue (month)
-          - entity: sensor.car_charger_cost_monthly
-            name: Cost (month)
-        - type: entities
-          entities:
           - entity: sensor.car_car_a6_battery
             name: Battery
-          - entity: sensor.audi_a6_sportback_e_tron_target_state_of_charge
-          - entity: sensor.audi_a6_sportback_e_tron_range
-          - entity: sensor.audi_a6_sportback_e_tron_charging_state
-          - entity: sensor.audi_a6_sportback_e_tron_charging_power
-          - entity: sensor.audi_a6_sportback_e_tron_charging_complete_time
-          - entity: sensor.audi_a6_sportback_e_tron_remaining_charge_time
-          - entity: sensor.audi_a6_sportback_e_tron_remaining_climatisation_time
+          - entity: sensor.car_charger_revenue_monthly
+            name: Revenue (month)
+          - entity: sensor.car_charger_solar_revenue_monthly
+            name: Revenue solar (month)
+          - entity: sensor.car_charger_grid_revenue_monthly
+            name: Revenue grid (month)
+          - entity: sensor.audi_a6_sportback_e_tron_mileage_monthly
+            name: Mileage (month)
+          - entity: sensor.car_charger_cost_monthly
+            name: Cost (month)
         - type: entities
           entities:
           - entity: sensor.openweathermap_condition
