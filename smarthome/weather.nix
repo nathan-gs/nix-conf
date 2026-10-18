@@ -33,8 +33,8 @@
         ];
       }
       {
-        # Tomorrow's forecasted daily high, refreshed hourly (and on HA
-        # startup). Consumed by the WTW ventilation logic to hold off the
+        # Forecasted daily highs, refreshed hourly (and on HA startup).
+        # Tomorrow's is consumed by the WTW ventilation logic to hold off the
         # bypass-driven "high" stand on mild days where pre-cooling the house
         # isn't needed.
         triggers = [
@@ -50,6 +50,17 @@
           }
         ];
         sensor = [
+          # Today's forecasted daily high. Replaces the forecast sensors the
+          # openweathermap integration no longer creates; the CV setpoint logic
+          # compares it against the target temperature.
+          (ha.sensor.temperature "weather/today/temperature.max" ''
+            {% set fc_days = fc['weather.sxw'].forecast %}
+            {% set ns = namespace(val=fc_days[0].temperature | float(15)) %}
+            {% for f in fc_days %}
+              {% if as_datetime(f.datetime).date() == now().date() %}{% set ns.val = f.temperature | float(15) %}{% endif %}
+            {% endfor %}
+            {{ ns.val }}
+          '')
           (ha.sensor.temperature "weather/tomorrow/temperature.max" ''
             {% set t = (now() + timedelta(days=1)).date() %}
             {% set ns = namespace(val=30.0) %}
@@ -63,13 +74,32 @@
     ];
 
     sensor = [
+      # Observed rain (mm/h) accumulated into a running mm counter. The
+      # openweathermap integration no longer exposes forecast sensors, and
+      # summing forecast samples never measured rainfall anyway.
+      # max_sub_interval keeps it ticking while the rate sits at 0, so a shower
+      # is integrated from when it started rather than from the next change.
+      {
+        platform = "integration";
+        name = "weather/rain.total";
+        unique_id = ha.genId "weather/rain.total";
+        source = "sensor.openweathermap_rain";
+        method = "left";
+        unit_time = "h";
+        round = 2;
+        max_sub_interval.minutes = 5;
+      }
+      # Rain fallen over the last 5 days. keep_last_sample stops a dry week
+      # (the counter never changes, so no samples arrive) from emptying the
+      # buffer and going unknown instead of reporting 0.
       {
         platform = "statistics";
         name = "rainfall_5d";
-        entity_id = "sensor.openweathermap_forecast_precipitation";
-        state_characteristic = "total";
+        entity_id = "sensor.${ha.genId "weather/rain.total"}";
+        state_characteristic = "change";
         max_age.hours = 24 * 5;
-        sampling_size = 60 * 24 * 5;
+        keep_last_sample = true;
+        sampling_size = 12 * 24 * 5;
       }
     ];
   };

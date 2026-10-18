@@ -58,7 +58,7 @@ in
               {% set target_temp = current_temp + temperature_diff_wanted %}
               {% set new_temp = cv_temp %}
               {% set anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
-              {% set forecast_temp = states('sensor.openweathermap_forecast_temperature') | float(15) %}
+              {% set forecast_temp = states('sensor.weather_today_temperature_max') | float(15) %}
               {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
               {% set is_heating_needed = is_state('binary_sensor.heating_use_gas', 'on') %}
               {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
@@ -160,6 +160,11 @@ in
         alias = "cv.temperature_set";
         trigger = [
           (ha.trigger.state "sensor.heating_temperature_desired")
+          # Re-enabling heating does not change the desired temperature, and the
+          # mode condition below blocks every push made while it was off, so
+          # without this the controller keeps its stale setpoint until the
+          # desired temperature happens to move again.
+          (ha.trigger.state_to "climate.cv" "heat")
         ];
         condition = [
           (ha.condition.state "climate.cv" "heat")
