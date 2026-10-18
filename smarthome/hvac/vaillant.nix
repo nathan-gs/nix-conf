@@ -320,24 +320,34 @@ in
       }
       {
         name = "boiler";
-        max_temp = 90;
-        min_temp = 0;
+        # 370 DHW setpoint range.
+        max_temp = 70;
+        min_temp = 35;
         precision = 0.1;
         temp_step = 0.5;
-        # unfortunately mapping is not correct (Yet)
-        modes = [ "off" "on" "auto" "party" "load" "holiday" ];
-        mode_state_template = ''
-          {% set values = { 0:'off', 1:'on',  2:'auto', 3:'autosunday', 4:'party', 5: 'load', 7: 'holiday'} %}
-          {{ values[value] if value in values.keys() else 'auto' }}
-        '';
+        # HwcOPMode is read-only on the 370 (15.370.csv has no `w` row; the
+        # mode is "set implicitly" from the controller's own menu), so there is
+        # no mode command. Its raw values are not HA HVAC modes, so they are
+        # folded onto off/heat/auto here and the exact name is kept as the
+        # `dhw_mode` attribute.
+        modes = [ "off" "heat" "auto" ];
         mode_state_topic = "ebusd/370/HwcOPMode";
-        mode_command_template = ''
-          {% set values = { 'off':0, 'on':1,  'auto':2, 'autosunday':3, 'party':4, 'load':5, 'holiday':7} %}
-          {{ values[value] if value in values.keys() else 2 }}
+        mode_state_template = ''
+          {% set values = { 0:'off', 1:'heat', 2:'auto', 3:'auto', 4:'heat', 6:'heat', 7:'off' } %}
+          {% set v = value_json.value.value | int(-1) %}
+          {{ values[v] if v in values else 'auto' }}
         '';
-        mode_command_topic = "ebusd/370/HwcOPMode/set";
+        json_attributes_topic = "ebusd/370/HwcOPMode";
+        json_attributes_template = ''
+          {% set names = { 0:'off', 1:'on', 2:'auto', 3:'auto_sunday', 4:'party', 6:'one_time_tank_loading', 7:'holiday' } %}
+          {% set v = value_json.value.value | int(-1) %}
+          {{ { 'dhw_mode': names[v] if v in names else 'unknown' } | tojson }}
+        '';
         temperature_state_topic = "ebusd/370/HwcTempDesired";
         temperature_state_template = "{{ value_json.value.value }}";
+        # HwcTempDesired is writable at user level. Effective DHW temperature is
+        # still capped by the boiler's front knob.
+        temperature_command_topic = "ebusd/370/HwcTempDesired/set";
         current_temperature_topic = "ebusd/370/DisplayedHwcStorageTemp";
         current_temperature_template = "{{ value_json.value.value }}";
         temperature_unit = "C";
