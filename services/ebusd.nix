@@ -31,16 +31,42 @@ let
   # ebus.github.io being reachable and stay pinned to what this exact
   # boiler/controller actually expose.
   #
-  # One deliberate deviation from upstream: PumpPower (bai, b509/0d7300,
-  # "current" counterpart of PumpPowerDesired) ships with no unit/value map
-  # upstream, which makes mqtt-hassio.cfg assign device_class=power from the
-  # name alone and HA warn "native unit None is not valid for device class
-  # power". Given PumpPowerDesired (same message family) uses
-  # 0=auto;1=53;2=60;3=70;4=85;5=100 %, PumpPower was annotated to match —
-  # plausible, not vendor-confirmed (only ever observed reading 0, i.e. idle,
-  # same as PumpPowerDesired's auto). Revisit if a heating cycle shows a
-  # PumpPower value outside 0-5.
+  # PumpPower (bai, b509/0d7300) is the live PWM percent, 0-100. It is not the
+  # d.14 step list on PumpPowerDesired (0=auto;1=53;2=60;3=70;4=85;5=100).
+  # A value list makes mqtt-hassio.cfg publish an enum (device_class enum,
+  # options, no state_class). HA then refuses anything outside that list —
+  # 2026-10-18 the bus reported 52, logged "Ignoring invalid option … got '52'"
+  # — and long-term statistics stop because the state class is gone. ebusd
+  # republishes retained discovery on every restart and whenever HA comes
+  # back online, so a state class set by hand is wiped again. That is the
+  # recurrence.
+  #
+  # Leave the unit column empty too. The existing statistic
+  # (sensor.ebusd_bai_pumppower, statistics_meta id 979) is unit_class
+  # unitless with a null unit and an arithmetic mean. Unit "%" belongs to
+  # that same class and converts as value/100, so new points would land
+  # beside the old ones at a hundredth of the scale. The name contains
+  # "power", and mqtt-hassio.cfg's first matching rule would otherwise set
+  # device_class power (no unit: HA warns and the class is invalid) or, with
+  # a "%" unit, device_class power_factor. mqttHassioCfg pins this one field
+  # to state_class measurement and no device class. PumpPowerDesired keeps
+  # the step list.
   ebusdConfigPath = ./ebusd-csv;
+
+  # See the PumpPower note above. Fails the build if upstream renames the
+  # switch, rather than silently going back to device_class power.
+  mqttHassioCfg = pkgs.runCommand "ebusd-mqtt-hassio.cfg" { } ''
+    awk '
+      $0 == "type_switch-number =" {
+        print
+        print "    sensor,,measurement = ^PumpPowervalue,$"
+        found = 1
+        next
+      }
+      { print }
+      END { if (!found) exit 1 }
+    ' ${config.services.ebusd.package}/etc/ebusd/mqtt-hassio.cfg > "$out"
+  '';
 
   # Full-register probe (2026-08-30): read -f every "r," register in both
   # circuit CSVs live off the bus. 257/265 returned real data; only
@@ -260,6 +286,8 @@ in
       "--pollinterval=30"
       "--mqttvar=filter-name=${haFilterName}"
       "--mqttvar=filter-non-name=${haFilterNonName}"
+      # After the module's --mqttint; ebusd keeps the last one. See mqttHassioCfg.
+      "--mqttint=${mqttHassioCfg}"
     ];
   };
 
