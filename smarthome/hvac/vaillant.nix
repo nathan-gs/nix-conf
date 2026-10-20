@@ -76,19 +76,20 @@ in
             unit_of_measurement = "°C";
             device_class = "temperature";
             # The 370 runs in analogue control: it sets the flow temperature from
-            # (this setpoint - living room temperature). So the setpoint is only
-            # ever a small step either side of the living room:
-            #  - heating: at most +0.8 above it, so flow stays low and burns soft.
-            #    Each step is held while the CV water circulates, so the other
-            #    rooms get time to heat up before the next push. Under analogue
-            #    control the pump can keep running at low modulation, so the
-            #    hold also ends once the living room is within 0.2 of the step,
-            #    which is about where a two-point 370 used to stop the pump;
-            #  - not heating: 0.5-1.0 below it, so the 370 simply stays off.
-            # It used to walk down 0.5 per controller read-back to eco, which
-            # dropped 19.5 -> 15.5 within minutes and swung the full range in
-            # most heating hours of winter 2025/26 -- on/off control on top of
-            # the 370's modulation.
+            # (this setpoint - living room temperature).
+            #  - heating: at most +0.8 above the living room, so flow stays low
+            #    and burns soft. Each step is held while the CV water circulates,
+            #    so the other rooms get time to heat up before the next push.
+            #    Under analogue control the pump can keep running at low
+            #    modulation, so the hold also ends once the living room is
+            #    within 0.2 of the step, about where a two-point 370 stopped it;
+            #  - not heating: straight down to eco - 0.5. A small negative gap
+            #    does NOT switch an analogue 370 off: with the setpoint held
+            #    0.5-1.0 under the room (2026-10-19/20) it kept asking 26-33°C
+            #    flow, fired every 40-60 min and held the house at ~19°C all
+            #    night, ~0.9-1.2 m3/night against ~0.1 for spring 2026 nights at
+            #    the same outdoor temperature. It holds the room roughly 0.6-1.1
+            #    above the setpoint, hence the -0.5 to land near eco/night.
             #
             # Gas only runs for the living room, for two or more leading rooms,
             # or for one room that is really cold. In winter 2025/26 45% of
@@ -109,9 +110,8 @@ in
                     {% set new_temp = (new_temp * 2) | round(0) / 2 %}
                   {% endif %}
                 {% else %}
-                  {# Just below the room, rounded down: 0.5-1.0 under it #}
-                  {% set new_temp = ((current_temp - 0.5) * 2) | round(0, 'floor') / 2 %}
-                  {% set new_temp = max(new_temp, temperature_eco) %}
+                  {# Off: low enough that the analogue 370 stops heating #}
+                  {% set new_temp = temperature_eco - 0.5 %}
                 {% endif %}
               {% elif far_away %}
                 {% set new_temp = temperature_minimal %}
