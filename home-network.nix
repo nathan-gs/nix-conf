@@ -132,5 +132,10 @@
     { name = "appletv-woonkamer"; mac = "6c:4a:85:0c:1e:22"; ip = "192.168.0.74"; }
     { name = "fen-firetv"; mac = "88:29:bf:15:11:40"; ip = "192.168.0.75"; }
     { name = "fen-xgimi"; mac = "4c:24:ce:8c:13:f6"; ip = "192.168.0.76"; }
+
+    # Computers: .80-.99
+    # Femke's laptop; HA pings it (ping config entry, host "CP113907", its
+    # own DHCP hostname) to mark the living room in use on weekdays.
+    { name = "flaptop"; mac = "74:04:f1:48:e7:57"; ip = "192.168.0.80"; aliases = [ "cp113907" ]; }
   ];
 }
