@@ -133,9 +133,9 @@
     { name = "fen-firetv"; mac = "88:29:bf:15:11:40"; ip = "192.168.0.75"; }
     { name = "fen-xgimi"; mac = "4c:24:ce:8c:13:f6"; ip = "192.168.0.76"; }
 
-    # Computers: .80-.99
+    # Computers: .100-.119
     # Femke's laptop; HA pings it (ping config entry, host "flaptop") to mark
     # the living room in use on weekdays.
-    { name = "flaptop"; mac = "74:04:f1:48:e7:57"; ip = "192.168.0.80"; }
+    { name = "flaptop"; mac = "74:04:f1:48:e7:57"; ip = "192.168.0.100"; }
   ];
 }
