@@ -22,6 +22,10 @@ views:
       hours_to_show: 24
     - type: entities
       entities:
+      - entity: binary_sensor.house_co2_high
+        name: CO2 high
+      - entity: binary_sensor.wtw_high_cooldown
+        name: high cooldown
       - type: attribute
         name: house needs cooling and temp outside lower
         entity: sensor.wtw_target_fan

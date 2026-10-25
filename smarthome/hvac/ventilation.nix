@@ -182,7 +182,7 @@
             trigger = "state";
             entity_id = "sensor.wtw_target_fan";
             to = "high";
-            for.minutes = 10;
+            for.minutes = 40;
           }
         ];
         binary_sensor = [
