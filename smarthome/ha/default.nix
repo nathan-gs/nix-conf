@@ -138,6 +138,9 @@ in
                   |rejectattr('entity_id', 'contains', 'sensor.system_car_charger_voltage_a')
                   |rejectattr('entity_id', 'contains', '_on_grid_')
                   |rejectattr('entity_id', 'contains', 'sensor.car_car_a6_last_vehicle_update')
+                  |rejectattr('entity_id', 'contains', 'sensor.audi_a6_car_')
+                  |rejectattr('entity_id', 'contains', 'sensor.nphone_p10pro_car_')
+                  |rejectattr('entity_id', 'contains', 'notify.audi_a6')
                   ${rejectDisabledZigbee}
               %}
               {{ entities|map(attribute='entity_id')|reject('has_value')|list|sort }}
