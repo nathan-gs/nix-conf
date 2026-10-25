@@ -13,7 +13,6 @@ let
     {% set current_temp = state_attr("climate.cv", "current_temperature") | float(19.5) %}
     {% set temperature_diff_wanted = states("sensor.heating_temperature_diff_wanted") | float(0) %}
     {% set is_cv_water_circulating = is_state('binary_sensor.cv_water_circulating', 'on') %}
-    {% set is_large_increase_needed = temperature_diff_wanted > 1 %}
     {% set is_step_reached = current_temp >= cv_temp - 0.2 %}
     {% set max_desired_temp = 21 %}
     {% set target_temp = current_temp + temperature_diff_wanted %}
@@ -22,13 +21,81 @@ let
     {% set is_large_deviation_between_forecast_and_target = not ((forecast_temp + 2) >= target_temp and (forecast_temp - 3) <= target_temp) %}
     {% set is_heating_needed = is_state('binary_sensor.heating_use_gas', 'on') %}
     {% set short_threshold = temperature_heating_threshold + 0.1 %}
+    {% set release_threshold = 0.15 %}
+    {% set living_diff = states('sensor.floor0_living_temperature_diff_wanted') | float(0) %}
+    {% set living_wanted = states('sensor.floor0_living_temperature_auto_wanted') | float(19.5) %}
+    {# While the living room is on a real target, one step above it is enough
+       for the other rooms. A bedroom that stays short must not walk the
+       setpoint up to max_desired. Eco/night targets do not impose this cap. #}
+    {% set step_ceiling = (living_wanted + 0.8) if living_wanted >= temperature_comfort_low else max_desired_temp %}
     {% set leading_diffs = [
       ${builtins.concatStringsSep "," (map(v: "states('sensor.${v}_temperature_diff_wanted') | float(0)") rooms.heatedLeading)}
     ] %}
     {% set rooms_short = leading_diffs | select('>', short_threshold) | list | count %}
-    {% set is_living_short = states('sensor.floor0_living_temperature_diff_wanted') | float(0) > short_threshold %}
+    {% set rooms_still = leading_diffs | select('>', release_threshold) | list | count %}
+    {% set is_living_short = living_diff > short_threshold %}
     {% set is_one_room_cold = temperature_diff_wanted > 1.5 %}
     {% set is_gas_worth_it = is_living_short or rooms_short >= 2 or is_one_room_cold %}
+    {# cv_temp above eco means a burn already started. Finish it: the analogue
+       370 drops the loop the moment the setpoint falls to eco - 0.5, and the
+       next call pays the warmup again. A single room under 0.5°C does not
+       keep it, and a single room never starts one unless it is over 1.5°C. #}
+    {% set burn_in_progress = cv_temp > temperature_eco %}
+    {% set keep_burn = burn_in_progress and (living_diff > release_threshold or rooms_still >= 2 or temperature_diff_wanted > short_threshold) %}
+    {% set call_gas = is_gas_worth_it or keep_burn %}
+  '';
+
+  # Own sensor, not an attribute: the CV dashboard row opens this entity's
+  # history. An attribute click opens the parent temperature instead.
+  # Electric words follow binary_sensor.heating_use_electric (vaillant.nix)
+  # and the plug targets in electric_heating.nix. Surplus is a plug that is
+  # on without that gate. Labels stay categorical so the history does not
+  # track watts.
+  decisionText = ''
+    ${desiredInputs}
+    {% set electric_on = is_state('binary_sensor.heating_use_electric', 'on') %}
+    {% set enough_power = is_state('binary_sensor.electricity_delivery_power_near_max_threshold', 'off') %}
+    {% set prefer_electricity = is_state('binary_sensor.energy_electricity_prefer_over_gas', 'on') %}
+    {% set rooms_need = states('sensor.heating_number_of_rooms_in_need_of') | int(0) %}
+    {% set bureau_short = states('sensor.floor0_bureau_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
+    {% set nikolai_short = states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0) > temperature_heating_threshold %}
+    {% set solar_electric = states('sensor.system_house_pv_battery_soc') | float(10) > 32
+      and states('sensor.energy_production_today_remaining') | float(0) > 6
+      and states('sensor.electricity_grid_consumed_power_mean_1m') | float(1000) < 100 %}
+    {% set electric_line = 'electric: solar' if electric_on and solar_electric else (
+      'electric: bureau' if electric_on and bureau_short and not nikolai_short else (
+      'electric: nikolai' if electric_on and nikolai_short and not bureau_short else (
+      'electric: bureau+nikolai' if electric_on and bureau_short and nikolai_short else (
+      'electric on' if electric_on else "")))) %}
+    {% set living_on = is_state('binary_sensor.floor0_living_metering_plug_verwarming_target', 'on') %}
+    {% set bureau_on = is_state('binary_sensor.floor0_bureau_metering_plug_verwarming_target', 'on') %}
+    {% set nikolai_on = is_state('binary_sensor.floor1_nikolai_metering_plug_verwarming_target', 'on') %}
+    {% set badkamer_on = is_state('binary_sensor.floor1_badkamer_metering_plug_verwarming_target', 'on') %}
+    {% set living_note = "" if (not living_on) or ('living' in electric_line) else ('living' if electric_on and solar_electric else 'living surplus') %}
+    {% set bureau_note = "" if (not bureau_on) or ('bureau' in electric_line) else ('bureau' if electric_on and solar_electric else 'bureau surplus') %}
+    {% set nikolai_note = "" if (not nikolai_on) or ('nikolai' in electric_line) else ('nikolai' if electric_on and solar_electric else 'nikolai surplus') %}
+    {% set badkamer_note = "" if (not badkamer_on) or ('bathroom' in electric_line) else 'bathroom' %}
+    {% set capacity_note = 'electric blocked, capacity' if (
+      not electric_on and not enough_power and prefer_electricity and anyone_home_or_coming
+      and rooms_need == 1 and (bureau_short or nikolai_short)
+    ) else "" %}
+    {% set suffix = [living_note, bureau_note, nikolai_note, badkamer_note, capacity_note] | select('!=', "") | join(', ') %}
+    {%- if not anyone_home_or_coming -%}
+      {{ 'far away' if far_away else 'away' }}
+    {%- elif not is_heating_needed -%}
+      {{ electric_line if electric_line != "" else 'no heat needed' }}
+    {%- elif not call_gas -%}
+      {{ 'single room waits' if rooms_short == 1 else 'no room short' }}
+    {%- elif not is_large_deviation_between_forecast_and_target -%}
+      mild forecast
+    {%- elif is_cv_water_circulating and not is_step_reached -%}
+      holding step
+    {%- elif keep_burn and not is_gas_worth_it -%}
+      finishing burn
+    {%- else -%}
+      heating: {{ 'living' if is_living_short else ('2+ rooms' if rooms_short >= 2 else 'one room cold') }}
+    {%- endif -%}
+    {%- if suffix != "" %} · {{ suffix }}{% endif -%}
   '';
 
 in
@@ -79,10 +146,15 @@ in
             # (this setpoint - living room temperature).
             #  - heating: at most +0.8 above the living room, so flow stays low
             #    and burns soft. Each step is held while the CV water circulates,
-            #    so the other rooms get time to heat up before the next push.
+            #    including when the deficit is over 1°C. Skipping that hold on a
+            #    large deficit (the morning climb from ~17°C back to 19.5) kept
+            #    a full 0.8 gap the whole way up, and the 370 answered with
+            #    65-85°C flow. The hold still ends once the living room is
+            #    within 0.2 of the step, then the next +0.8 is allowed, so a
+            #    cold start climbs in a few soft steps instead of one chase.
             #    Under analogue control the pump can keep running at low
-            #    modulation, so the hold also ends once the living room is
-            #    within 0.2 of the step, about where a two-point 370 stopped it;
+            #    modulation, which is why the hold ends on that 0.2 gap, about
+            #    where a two-point 370 stopped it;
             #  - not heating: straight down to eco - 0.5. A small negative gap
             #    does NOT switch an analogue 370 off: with the setpoint held
             #    0.5-1.0 under the room (2026-10-19/20) it kept asking 26-33°C
@@ -91,22 +163,26 @@ in
             #    the same outdoor temperature. It holds the room roughly 0.6-1.1
             #    above the setpoint, hence the -0.5 to land near eco/night.
             #
-            # Gas only runs for the living room, for two or more leading rooms,
+            # Gas only starts for the living room, for two or more leading rooms,
             # or for one room that is really cold. In winter 2025/26 45% of
             # heating gas was burned with a single room short, mostly bureau,
             # fen or nikolai on their own; those wait for company (bureau and
             # nikolai still get their electric heaters, see heating_use_electric).
+            # A burn that has already started keeps going until those rooms are
+            # back within 0.15°C (two of them, or the living room) or the
+            # coldest is back under the 0.5°C start threshold. 23 Oct 2026
+            # dropped the setpoint to 15.0 three times during the afternoon
+            # and paid 0.2-0.4 m³ to start again each time. Comfort stays 19.5.
             state = ''
               ${desiredInputs}
               {% if anyone_home_or_coming %}
-                {% if is_gas_worth_it and is_heating_needed and is_large_deviation_between_forecast_and_target %}
-                  {% if is_cv_water_circulating and not is_large_increase_needed and not is_step_reached %}
-                    {# Hold the step: let the rooms heat up #}
-                    {% set new_temp = min(cv_temp, target_temp) %}
+                {% if call_gas and is_heating_needed and is_large_deviation_between_forecast_and_target %}
+                  {% if is_cv_water_circulating and not is_step_reached %}
+                    {# Hold the step: let the rooms heat up. #}
+                    {% set new_temp = min(cv_temp, target_temp, step_ceiling) %}
                     {% set new_temp = (new_temp * 2) | round(0) / 2 %}
                   {% else %}
-                    {# Gradually increase temperature #}
-                    {% set new_temp = min(current_temp + 0.8, max_desired_temp, target_temp) %}
+                    {% set new_temp = min(current_temp + 0.8, max_desired_temp, target_temp, step_ceiling) %}
                     {% set new_temp = (new_temp * 2) | round(0) / 2 %}
                   {% endif %}
                 {% else %}
@@ -120,23 +196,6 @@ in
               {% endif %}
               {{ new_temp }}
             '';
-            # Why the setpoint is what it is, in the order the state checks it.
-            attributes.decision = ''
-              ${desiredInputs}
-              {% if not anyone_home_or_coming %}
-                {{ 'far away' if far_away else 'away' }}
-              {% elif not is_heating_needed %}
-                {{ 'electric heating' if is_state('binary_sensor.heating_use_electric', 'on') else 'no heat needed' }}
-              {% elif not is_gas_worth_it %}
-                {{ 'single room waits' if rooms_short == 1 else 'no room short' }}
-              {% elif not is_large_deviation_between_forecast_and_target %}
-                mild forecast
-              {% elif is_cv_water_circulating and not is_large_increase_needed and not is_step_reached %}
-                holding step
-              {% else %}
-                heating: {{ 'living' if is_living_short else ('2+ rooms' if rooms_short >= 2 else 'one room cold') }}
-              {% endif %}
-            '';
             attributes.rooms_short = ''
               ${desiredInputs}
               {{ rooms_short }}
@@ -149,6 +208,12 @@ in
               {% endif %}
             '';
             state_class = "measurement";            
+          }
+          {
+            name = "heating_decision";
+            unique_id = "heating_decision";
+            state = decisionText;
+            icon = "mdi:comment-text-outline";
           }
         ];
         binary_sensor = [

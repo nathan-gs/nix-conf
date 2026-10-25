@@ -1331,15 +1331,14 @@ views:
             red: 0
             yellow: 0.8
             green: 1
-    # Why gas is (or is not) heating: attributes of heating_temperature_desired
-    # (smarthome/hvac/vaillant.nix). Flame/modulation are polled every 5 min.
+    # sensor.heating_decision is the gas and electric decision. A click opens
+    # its history. Flame/modulation are polled every 5 min. Text comes from
+    # smarthome/hvac/vaillant.nix.
     - type: entities
-      title: Gas heating decision
+      title: Heating decision
       show_header_toggle: false
       entities:
-      - type: attribute
-        entity: sensor.heating_temperature_desired
-        attribute: decision
+      - entity: sensor.heating_decision
         name: Decision
       - type: attribute
         entity: sensor.heating_temperature_desired
