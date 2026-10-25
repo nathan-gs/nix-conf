@@ -145,29 +145,38 @@
         ];
       }
       {
-        trigger = [
-          {
-            trigger = "numeric_state";
-            entity_id = "sensor.house_co2_max";
-            above = 1000;
-          }
-        ];
+        # Stays on while the house is stuffy, with hysteresis so a reading
+        # hovering around 1000 ppm does not chatter. The fan template does
+        # not run high the whole time this is on: wtw_high_cooldown below
+        # duty-cycles that boost. A one-shot auto_off here never re-armed
+        # while CO2 stayed above 1000, so the boost ran once and stopped.
         binary_sensor = [
           {
             name = "house/co2/high";
             unique_id = "house_co2_high";
-            state = ''{{ states('sensor.house_co2_max') | int(700) >= 1000 }}'';
-            auto_off.minutes = 15;
+            state = ''
+              {% set co2 = states('sensor.house_co2_max') | float(none) %}
+              {% if co2 is none %}
+                {{ this.state if this.state in ['on', 'off'] else 'off' }}
+              {% elif co2 >= 1000 %}
+                on
+              {% elif co2 < 800 %}
+                off
+              {% else %}
+                {{ this.state if this.state in ['on', 'off'] else 'off' }}
+              {% endif %}
+            '';
             device_class = "safety";
           }
         ];
       }
       {
-        # Caps non-cooling "high" runs: when wtw_target_fan stays high for 10
-        # minutes, this flips on for 20 minutes, during which the target
-        # template downgrades non-cooling high requests to medium. Cooling
-        # clauses (bypass + outside cooler, or dewpoint-driven) bypass the
-        # cooldown and stay high.
+        # Duty-cycles a non-cooling "high". After wtw_target_fan has been
+        # high for 10 minutes this stays on for 20, and the template above
+        # drops the target to medium (the normal occupied speed). When it
+        # releases, a still-latched house_co2_high starts another 10 minutes
+        # on high. Cooling (bypass and outside cooler) is decided before
+        # this and stays high.
         trigger = [
           {
             trigger = "state";
