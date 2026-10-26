@@ -145,38 +145,26 @@
         ];
       }
       {
-        # Stays on while the house is stuffy, with hysteresis so a reading
-        # hovering around 1000 ppm does not chatter. The fan template does
-        # not run high the whole time this is on: wtw_high_cooldown below
-        # duty-cycles that boost. A one-shot auto_off here never re-armed
-        # while CO2 stayed above 1000, so the boost ran once and stopped.
+        # On only while the house maximum is still at or above 1000 ppm.
+        # Releasing at 800 kept the 40-minute high bursts going for hours
+        # after CO2 had already fallen under 1000. wtw_high_cooldown
+        # duty-cycles the boost for as long as this stays on.
         binary_sensor = [
           {
             name = "house/co2/high";
             unique_id = "house_co2_high";
-            state = ''
-              {% set co2 = states('sensor.house_co2_max') | float(none) %}
-              {% if co2 is none %}
-                {{ this.state if this.state in ['on', 'off'] else 'off' }}
-              {% elif co2 >= 1000 %}
-                on
-              {% elif co2 < 800 %}
-                off
-              {% else %}
-                {{ this.state if this.state in ['on', 'off'] else 'off' }}
-              {% endif %}
-            '';
+            state = ''{{ states('sensor.house_co2_max') | float(0) >= 1000 }}'';
             device_class = "safety";
           }
         ];
       }
       {
         # Duty-cycles a non-cooling "high". After wtw_target_fan has been
-        # high for 10 minutes this stays on for 20, and the template above
+        # high for 40 minutes this stays on for 20, and the template above
         # drops the target to medium (the normal occupied speed). When it
-        # releases, a still-latched house_co2_high starts another 10 minutes
-        # on high. Cooling (bypass and outside cooler) is decided before
-        # this and stays high.
+        # releases, a still-on house_co2_high starts another 40 minutes on
+        # high. Cooling (bypass and outside cooler) is decided before this
+        # and stays high.
         trigger = [
           {
             trigger = "state";
