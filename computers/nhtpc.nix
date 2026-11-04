@@ -59,7 +59,7 @@
   # nhtpc is the WireGuard hub, so it is the only host that can see peer state.
   # Only nnas alerts: it is the site-to-site link that carries the offsite
   # backup, journal upload and auto-upgrade push, so a quiet one is a real
-  # fault. The phones and the laptop roam — they are reported but never alert.
+  # fault. The phones, the tablet and the laptop roam — they are reported but never alert.
   wireguard2mqtt = {
     enable = true;
     password = config.secrets.mqtt.users.wireguard2mqtt.password;
@@ -204,7 +204,7 @@
   # router to nhtpc's LAN IP on UDP 51820 (chosen to differ from the
   # fritzbox's old port 58578).
   #
-  # nnas + nphone/nlaptop/fphone all live on the same 10.73.221.0/24 WG
+  # nnas + nphone/nlaptop/fphone/ntab all live on the same 10.73.221.0/24 WG
   # subnet, NATed out to the LAN/internet via nhtpc. Only nhtpc talks to
   # nnas (no other LAN host needs to reach it), so it doesn't need a
   # LAN-shaped address or proxy-ARP — hosts.nix/media-rsync/auto-upgrade
@@ -258,6 +258,12 @@
         publicKey = config.secrets.wireguard.fphone.public;
         presharedKey = config.secrets.wireguard.fphone.preshared;
         allowedIPs = [ "10.73.221.12/32" ];
+      }
+      {
+        name = "ntab";
+        publicKey = config.secrets.wireguard.ntab.public;
+        presharedKey = config.secrets.wireguard.ntab.preshared;
+        allowedIPs = [ "10.73.221.13/32" ];
       }
     ];
   };
