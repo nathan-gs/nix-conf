@@ -22,8 +22,10 @@ views:
       hours_to_show: 24
     - type: entities
       entities:
+      - entity: binary_sensor.house_co2_boost
+        name: CO2 boost
       - entity: binary_sensor.house_co2_high
-        name: CO2 high
+        name: CO2 1200
       - entity: binary_sensor.wtw_high_cooldown
         name: high cooldown
       - type: attribute

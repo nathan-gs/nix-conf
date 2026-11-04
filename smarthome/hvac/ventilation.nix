@@ -20,6 +20,7 @@
               "sensor.indoor_humidity_max"
               "binary_sensor.electricity_delivery_power_max_threshold"
               "binary_sensor.house_co2_high"
+              "binary_sensor.house_co2_boost"
               "binary_sensor.wtw_high_cooldown"
             ];
           }
@@ -42,7 +43,7 @@
           electricity_delivery_power_near_max_threshold = ''{{ states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false) }}'';
           is_not_electricity_delivery_power_max_threshold = ''{{ not (states('binary_sensor.electricity_delivery_power_max_threshold') | bool(false)) }}'';
           is_hot_outside = ''{{ states('sensor.outdoor_temperature') | float(19) > 27 }}'';
-          is_high_co2 = ''{{ is_state('binary_sensor.house_co2_high', 'on') }}'';
+          is_high_co2 = ''{{ is_state('binary_sensor.house_co2_boost', 'on') or is_state('binary_sensor.house_co2_high', 'on') }}'';
           cooldown = ''{{ is_state('binary_sensor.wtw_high_cooldown', 'on') }}'';
         };
         sensor = [
@@ -145,15 +146,65 @@
         ];
       }
       {
-        # On only while the house maximum is still at or above 1000 ppm.
-        # Releasing at 800 kept the 40-minute high bursts going for hours
-        # after CO2 had already fallen under 1000. wtw_high_cooldown
-        # duty-cycles the boost for as long as this stays on.
+        # One stuffy episode per rise through 1000 ppm. It stays latched
+        # until the house maximum falls under 900, so a bureau hovering
+        # around 980–1050 does not count as a new episode.
+        trigger = [
+          {
+            trigger = "numeric_state";
+            entity_id = "sensor.house_co2_max";
+            above = 1000;
+          }
+          {
+            trigger = "numeric_state";
+            entity_id = "sensor.house_co2_max";
+            below = 900;
+          }
+        ];
+        binary_sensor = [
+          {
+            name = "house/co2/episode";
+            unique_id = "house_co2_episode";
+            state = ''{{ states('sensor.house_co2_max') | float(0) >= 1000 }}'';
+          }
+        ];
+      }
+      {
+        # The first response to an episode: high for 40 minutes, then
+        # medium, even if CO2 is still between 1000 and 1200. A new episode
+        # (CO2 fell under 900, then crossed 1000 again) may boost once more.
+        trigger = [
+          {
+            id = "start";
+            trigger = "state";
+            entity_id = "binary_sensor.house_co2_episode";
+            to = "on";
+          }
+          {
+            id = "stop";
+            trigger = "state";
+            entity_id = "binary_sensor.house_co2_episode";
+            to = "off";
+          }
+        ];
+        binary_sensor = [
+          {
+            name = "house/co2/boost";
+            unique_id = "house_co2_boost";
+            state = ''{{ trigger.id == 'start' }}'';
+            auto_off.minutes = 40;
+          }
+        ];
+      }
+      {
+        # Repeating high/medium cycles are only for a house maximum that
+        # has reached 1200 ppm. Below that, house_co2_boost is the one
+        # 40-minute attempt.
         binary_sensor = [
           {
             name = "house/co2/high";
             unique_id = "house_co2_high";
-            state = ''{{ states('sensor.house_co2_max') | float(0) >= 1000 }}'';
+            state = ''{{ states('sensor.house_co2_max') | float(0) >= 1200 }}'';
             device_class = "safety";
           }
         ];
@@ -161,10 +212,11 @@
       {
         # Duty-cycles a non-cooling "high". After wtw_target_fan has been
         # high for 40 minutes this stays on for 20, and the template above
-        # drops the target to medium (the normal occupied speed). When it
-        # releases, a still-on house_co2_high starts another 40 minutes on
-        # high. Cooling (bypass and outside cooler) is decided before this
-        # and stays high.
+        # drops the target to medium. When it releases, a still-on
+        # house_co2_high (CO2 at or above 1200) starts another 40 minutes
+        # on high. The one-shot 1000 ppm boost has already turned off by
+        # then, so it does not. Cooling (bypass and outside cooler) is
+        # decided before this and stays high.
         trigger = [
           {
             trigger = "state";
