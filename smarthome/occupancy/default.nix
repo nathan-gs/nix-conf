@@ -96,8 +96,20 @@ in
             device_class = "occupancy";
           }
           {
-            # Pure distance, ignoring coming_home: the heating still caps itself
-            # at away temperatures while coming_home is up but nobody is
+            # Drives the 370's holiday mode (hvac/vaillant.nix).
+            name = "far_away";
+            unique_id = "far_away";
+            state = ''
+              {% set override = is_state('input_boolean.coming_home', 'on') %}
+              {{ not(override) and states('sensor.sxw_nearest_distance') | float(0) >= 200000 }}
+            '';
+            device_class = "occupancy";
+            delay_on.minutes = 10;
+            delay_off.minutes = 10;
+          }
+          {
+            # Pure distance, ignoring coming_home: the CV setpoint stays capped
+            # at temperature_away while coming_home is up but nobody is
             # actually close yet (temperature_sets.nix, coming_home_from_far).
             name = "far_from_home";
             unique_id = "far_from_home";
@@ -107,18 +119,6 @@ in
             device_class = "occupancy";
             delay_on.minutes = 10;
             delay_off.minutes = 10;
-          }
-          {
-            # Drives the 370's holiday mode (hvac/vaillant.nix). No delay of its
-            # own: far_from_home already debounces the distance, and
-            # coming_home must end the holiday at once, not 10 minutes later.
-            name = "far_away";
-            unique_id = "far_away";
-            state = ''
-              {% set override = is_state('input_boolean.coming_home', 'on') %}
-              {{ not(override) and is_state('binary_sensor.far_from_home', 'on') }}
-            '';
-            device_class = "occupancy";
           }
         ];
         sensor = [
