@@ -108,6 +108,12 @@ with lib;
           default = "";
           type = types.str;
         };
+        # systemd OnCalendar for the monthly scrub. Stagger it per host so
+        # two machines never scrub (and risk going unreachable) at once.
+        scrubStartAt = mkOption {
+          default = "*-*-08 23:00:00";
+          type = types.str;
+        };
         snapshots = {
           monthly = {
             volumes = mkOption {
@@ -242,7 +248,7 @@ with lib;
         # long or the box still struggles under load.
         ${pkgs.btrfs-progs}/bin/btrfs scrub start ${scrubLimitFlag} -B -d /media/${lib.head dataVolumes}
       '';
-      startAt = "*-*-08 23:00:00";
+      startAt = disks.btrfs.scrubStartAt;
       serviceConfig = {
         CPUQuota = "20%";
         Nice = 19;

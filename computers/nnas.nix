@@ -89,6 +89,8 @@
       # Weaker/busier box than nhtpc; keep scrub gentler so it doesn't
       # starve wg0/ssh again.
       scrubLimit = "30M";
+      # Two weeks after nhtpc (the 8th): never scrub both hosts at once.
+      scrubStartAt = "*-*-22 23:00:00";
       snapshots = {
         monthly.volumes = [
          "documents"
