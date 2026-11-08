@@ -6,9 +6,17 @@ let
 
   heatedRooms = rooms.heated;
 
+  # Every room's wanted temperature is capped at temperature_away while
+  # coming_home is up from far away; otherwise the room's own value passes
+  # through untouched.
   temperatureSets = content: ''
     ${temperatureHeader}
-    ${content}
+    {% set room_wanted %}${content}{% endset %}
+    {% if coming_home_from_far %}
+      {{ [room_wanted | trim | float(temperature_away), temperature_away] | min }}
+    {% else %}
+      {{ room_wanted | trim }}
+    {% endif %}
   '';
 
   inUse = sensor: right: ''

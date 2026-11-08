@@ -79,7 +79,8 @@ let
       not electric_on and not enough_power and prefer_electricity and anyone_home_or_coming
       and rooms_need == 1 and (bureau_short or nikolai_short)
     ) else "" %}
-    {% set suffix = [living_note, bureau_note, nikolai_note, badkamer_note, capacity_note] | select('!=', "") | join(', ') %}
+    {% set far_note = 'capped: coming from far' if coming_home_from_far else "" %}
+    {% set suffix = [far_note, living_note, bureau_note, nikolai_note, badkamer_note, capacity_note] | select('!=', "") | join(', ') %}
     {%- if not anyone_home_or_coming -%}
       {{ 'far away' if far_away else 'away' }}
     {%- elif not is_heating_needed -%}
@@ -188,6 +189,12 @@ in
                 {% else %}
                   {# Off: low enough that the analogue 370 stops heating #}
                   {% set new_temp = temperature_eco - 0.5 %}
+                {% endif %}
+                {# The rooms are already capped (room.nix), but the step logic
+                   targets the living room plus the largest room deficit, so
+                   cap the setpoint itself too. #}
+                {% if coming_home_from_far %}
+                  {% set new_temp = min(new_temp, temperature_away) %}
                 {% endif %}
               {% elif far_away %}
                 {% set new_temp = temperature_minimal %}
@@ -374,6 +381,54 @@ in
           (ha.action.delay "0:00:05")
           # VTI -> HH:MM:SS
           (ha.action.mqtt_publish "ebusd/370/Time/set" "{{ now().strftime('%H:%M:%S') }}" false)
+        ];
+        mode = "single";
+      }
+      {
+        # Far away: put the 370 in holiday mode, which takes both the heating
+        # circuit (frost protection) and the hot water off. Only the holiday
+        # dates are writable over ebus -- Hc1SFMode and HwcOPMode are
+        # read-only and follow from them -- so the period is re-armed as
+        # today .. today+7 every night and the holiday never runs out while
+        # we're gone. End is written first so start never lands after it.
+        id = "cv_holiday_far_away";
+        alias = "cv.holiday_far_away";
+        trigger = [
+          (ha.trigger.on "binary_sensor.far_away")
+          (ha.trigger.at "00:05:00")
+          { platform = "homeassistant"; event = "start"; }
+        ];
+        condition = [
+          (ha.condition.state "binary_sensor.far_away" "on")
+        ];
+        action = [
+          # HDA:3 -> dd.mm.yyyy
+          (ha.action.mqtt_publish "ebusd/370/Hc1HolidayEndPeriod/set" "{{ (now() + timedelta(days=7)).strftime('%d.%m.%Y') }}" false)
+          (ha.action.delay "0:00:05")
+          (ha.action.mqtt_publish "ebusd/370/Hc1HolidayStartPeriod/set" "{{ now().strftime('%d.%m.%Y') }}" false)
+        ];
+        mode = "single";
+      }
+      {
+        # Back from far away (coming_home, or simply back within range): end
+        # the holiday by moving the whole period to yesterday. The end date is
+        # inclusive, so ending it "today" would keep the 370 on frost
+        # protection until midnight. Only on a real on -> off, so an HA restart
+        # never rewrites a holiday that was set by hand on the 370.
+        id = "cv_holiday_end";
+        alias = "cv.holiday_end";
+        trigger = [
+          {
+            platform = "state";
+            entity_id = "binary_sensor.far_away";
+            from = "on";
+            to = "off";
+          }
+        ];
+        action = [
+          (ha.action.mqtt_publish "ebusd/370/Hc1HolidayStartPeriod/set" "{{ (now() - timedelta(days=1)).strftime('%d.%m.%Y') }}" false)
+          (ha.action.delay "0:00:05")
+          (ha.action.mqtt_publish "ebusd/370/Hc1HolidayEndPeriod/set" "{{ (now() - timedelta(days=1)).strftime('%d.%m.%Y') }}" false)
         ];
         mode = "single";
       }
