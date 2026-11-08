@@ -190,9 +190,8 @@ in
                   {# Off: low enough that the analogue 370 stops heating #}
                   {% set new_temp = temperature_eco - 0.5 %}
                 {% endif %}
-                {# The rooms are already capped (room.nix), but the step logic
-                   targets the living room plus the largest room deficit, so
-                   cap the setpoint itself too. #}
+                {# coming_home while still far from home: preheat, but no
+                   further than away temperature. #}
                 {% if coming_home_from_far %}
                   {% set new_temp = min(new_temp, temperature_away) %}
                 {% endif %}
