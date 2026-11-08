@@ -11,5 +11,6 @@
     ./vaillant.nix
     ./ventilation.nix
     ./ventilation_valve.nix
+    ./itho_temperature_offset.nix
   ];
 }

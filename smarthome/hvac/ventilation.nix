@@ -132,7 +132,16 @@
               {% set raw = states('sensor.itho_wtw_inlet_temperature_raw') | float(0) %}
               {% set outdoor = states('sensor.outdoor_temperature') | float(0) %}
               {% set prev = states('sensor.itho_wtw_inlet_temperature_correction') | float(none) %}
-              {% if outdoor > 0.5 %}
+              {# The pre-heater sits upstream of the Itho's intake NTC, so
+                 while it runs (and while the duct cools down after) the
+                 Itho reads heated air. Learning from that would inflate
+                 the offset, raise the frost setpoint written back by
+                 itho_temperature_offset.nix and run the heater longer: a
+                 positive feedback loop. Hold the last value instead. #}
+              {% set heater = states.switch.system_wtw_metering_plug_verwarming %}
+              {% set heater_quiet = heater is not none and heater.state == 'off'
+                   and (now() - heater.last_changed).total_seconds() > 900 %}
+              {% if outdoor > 0.5 and heater_quiet %}
                 {{ (outdoor - raw) | round(2) }}
               {% else %}
                 {% if prev is not none %}
@@ -396,16 +405,14 @@
         {
           name = "itho_wtw_inlet_temperature";
           state_topic = "itho/ithostatus";
-          # Correction based on: https://chatgpt.com/c/6741c1b6-0cf4-800a-a77b-38ffac6e98c6
-          #value_template = ''            
-          #  {% set raw = value_json['Outdoor temp (°C)'] | float %}
-          #  {#{{ (0.84 * raw - 1.85) | round(2) }}#}
-          #  {% set correction = states('sensor.itho_wtw_inlet_temperature_correction') | float(-13) %}
-          #  {{ ((raw + correction) - 0.5) | round(2) }}
-          #'';
-          value_template = ''            
+          # The Itho's intake NTC reads ~2-3 °C warm (it picks up heat from
+          # the unit; more so in the cold). Corrected with the smoothed
+          # offset from itho_temperature_offset.nix. Anything that must be
+          # compared against the Itho's own setpoints uses _raw instead.
+          value_template = ''
             {% set raw = value_json['Outdoor temp (°C)'] | float %}
-            {{ raw }}
+            {% set offset = states('sensor.itho_wtw_inlet_temperature_offset') | float(0) %}
+            {{ (raw + offset) | round(2) }}
           '';
           unit_of_measurement = "°C";
           unique_id = "itho_wtw_inlet_temperature";
