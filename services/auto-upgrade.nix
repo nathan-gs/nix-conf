@@ -716,7 +716,7 @@ in
         default = [ ];
         example = [
           { url = "http://127.0.0.1:8123/"; }
-          { url = "http://127.0.0.1:8080/"; }
+          { url = "http://127.0.0.1:45338/"; }
         ];
         description = "Optional HTTP readiness probes (in addition to units).";
       };
