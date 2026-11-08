@@ -10,7 +10,7 @@ views:
       type: grid
       cards:
       - type: gauge
-        entity: sensor.irceline_sint_kruiswinkel_pm25
+        entity: sensor.irceline_sint_kruiswinkel_pm25_pm2_5
         severity:
           green: 0
           yellow: 10
@@ -43,15 +43,15 @@ views:
       entities:
       - entity: sensor.system_wtw_air_quality_inlet_pm25
         name: inlet
-      - entity: sensor.irceline_sint_kruiswinkel_pm25
+      - entity: sensor.irceline_sint_kruiswinkel_pm25_pm2_5
         name: SXW
-      - entity: sensor.irceline_rieme_pm25
+      - entity: sensor.irceline_rieme_pm25_pm2_5
         name: Rieme
-      - entity: sensor.irceline_gent_pm25
+      - entity: sensor.irceline_gent_pm25_pm2_5
         name: Gent
-      - entity: sensor.irceline_zelzate_pm25
+      - entity: sensor.irceline_zelzate_pm25_pm2_5
         name: Zelzate
-      - entity: sensor.irceline_destelbergen_pm25
+      - entity: sensor.irceline_destelbergen_pm25_pm2_5
         name: Destelbergen
       stat_types:
       - mean
@@ -77,17 +77,17 @@ views:
           property: time
           force_midnight: true
       entities:
-      - entity: sensor.irceline_sint_kruiswinkel_pm25
+      - entity: sensor.irceline_sint_kruiswinkel_pm25_pm2_5
         display: state
-      - entity: sensor.irceline_rieme_pm25
+      - entity: sensor.irceline_rieme_pm25_pm2_5
         display: state
-      - entity: sensor.irceline_gent_pm25
+      - entity: sensor.irceline_gent_pm25_pm2_5
         display: state
-      - entity: sensor.irceline_zelzate_pm25
+      - entity: sensor.irceline_zelzate_pm25_pm2_5
         display: state
-      - entity: sensor.irceline_destelbergen_pm25
+      - entity: sensor.irceline_destelbergen_pm25_pm2_5
         display: state
-      - entity: sensor.irceline_moerkerke_pm25
+      - entity: sensor.irceline_moerkerke_pm25_pm2_5
         display: state
       debug: true
       history_date_selection: true
@@ -97,7 +97,7 @@ views:
       type: grid
       cards:
       - type: gauge
-        entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide
+        entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide_nitrogen_dioxide
         severity:
           green: 0
           yellow: 16
@@ -110,13 +110,13 @@ views:
       period: hour
       type: statistics-graph
       entities:
-      - entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide
+      - entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide_nitrogen_dioxide
         name: SXW
-      - entity: sensor.irceline_wachtebeke_nitrogen_dioxide
+      - entity: sensor.irceline_wachtebeke_nitrogen_dioxide_nitrogen_dioxide
         name: Wachtebeke
-      - entity: sensor.irceline_gent_nitrogen_dioxide
+      - entity: sensor.irceline_gent_nitrogen_dioxide_nitrogen_dioxide
         name: Gent
-      - entity: sensor.irceline_zelzate_nitrogen_dioxide
+      - entity: sensor.irceline_zelzate_nitrogen_dioxide_nitrogen_dioxide
         name: Zelzate
       stat_types:
       - mean
@@ -139,13 +139,13 @@ views:
           time: now
           attribution: IRCELINE
       entities:
-      - entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide
+      - entity: sensor.irceline_sint_kruiswinkel_nitrogen_dioxide_nitrogen_dioxide
         display: state
-      - entity: sensor.irceline_wachtebeke_nitrogen_dioxide
+      - entity: sensor.irceline_wachtebeke_nitrogen_dioxide_nitrogen_dioxide
         display: state
-      - entity: sensor.irceline_gent_nitrogen_dioxide
+      - entity: sensor.irceline_gent_nitrogen_dioxide_nitrogen_dioxide
         display: state
-      - entity: sensor.irceline_zelzate_nitrogen_dioxide
+      - entity: sensor.irceline_zelzate_nitrogen_dioxide_nitrogen_dioxide
         display: state
   - type: vertical-stack
     cards:
@@ -153,7 +153,7 @@ views:
       type: grid
       cards:
       - type: gauge
-        entity: sensor.irceline_gent_ozone
+        entity: sensor.irceline_gent_ozone_ozone
         severity:
           green: 0
           yellow: 66
@@ -165,9 +165,9 @@ views:
       period: hour
       type: statistics-graph
       entities:
-      - entity: sensor.irceline_gent_ozone
+      - entity: sensor.irceline_gent_ozone_ozone
         name: Gent
-      - entity: sensor.irceline_destelbergen_ozone
+      - entity: sensor.irceline_destelbergen_ozone_ozone
         name: Destelbergen
       stat_types:
       - mean
@@ -190,9 +190,9 @@ views:
           time: now
           attribution: IRCELINE
       entities:
-      - entity: sensor.irceline_gent_ozone
+      - entity: sensor.irceline_gent_ozone_ozone
         display: state
-      - entity: sensor.irceline_destelbergen_ozone
+      - entity: sensor.irceline_destelbergen_ozone_ozone
         display: state
   - type: vertical-stack
     cards:
@@ -208,13 +208,11 @@ views:
         period: hour
         type: statistics-graph
         entities:
-        - entity: sensor.irceline_gent_black_carbon
+        - entity: sensor.irceline_gent_black_carbon_mqtt_sensor
           name: Gent
-        - entity: sensor.irceline_zelzate_black_carbon
+        - entity: sensor.irceline_zelzate_black_carbon_mqtt_sensor
           name: Zelzate
-        - entity: sensor.irceline_gent_carlierlaan_black_carbon
-          name: Gent (Carlierlaan)
-        - entity: sensor.irceline_gent_lange_violettestraat_black_carbon
+        - entity: sensor.irceline_gent_lange_violettestraat_black_carbon_mqtt_sensor
           name: Gent (Lange Violetten)
         stat_types:
         - mean
@@ -237,13 +235,11 @@ views:
             time: now
             attribution: IRCELINE
         entities:
-        - entity: sensor.irceline_gent_black_carbon
+        - entity: sensor.irceline_gent_black_carbon_mqtt_sensor
           display: state
-        - entity: sensor.irceline_zelzate_black_carbon
+        - entity: sensor.irceline_zelzate_black_carbon_mqtt_sensor
           display: state
-        - entity: sensor.irceline_gent_carlierlaan_black_carbon
-          display: state
-        - entity: sensor.irceline_gent_lange_violettestraat_black_carbon
+        - entity: sensor.irceline_gent_lange_violettestraat_black_carbon_mqtt_sensor
           display: state
   - type: vertical-stack
     cards:
@@ -251,11 +247,11 @@ views:
       period: hour
       type: statistics-graph
       entities:
-      - entity: sensor.irceline_sint_kruiswinkel_pm1
+      - entity: sensor.irceline_sint_kruiswinkel_pm1_pm1
         name: SXW
-      - entity: sensor.irceline_gent_pm1
+      - entity: sensor.irceline_gent_pm1_pm1
         name: Gent
-      - entity: sensor.irceline_zelzate_pm1
+      - entity: sensor.irceline_zelzate_pm1_pm1
         name: Zelzate
       stat_types:
       - mean
@@ -268,11 +264,11 @@ views:
       zoom: 10
       card_size: 6
       entities:
-      - entity: sensor.irceline_sint_kruiswinkel_pm1
+      - entity: sensor.irceline_sint_kruiswinkel_pm1_pm1
         display: state
-      - entity: sensor.irceline_gent_pm1
+      - entity: sensor.irceline_gent_pm1_pm1
         display: state
-      - entity: sensor.irceline_zelzate_pm1
+      - entity: sensor.irceline_zelzate_pm1_pm1
         display: state
   - type: energy-date-selection
 - type: sections
