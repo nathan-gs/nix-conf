@@ -612,7 +612,7 @@ in
                   (ha.action.off rebalanceUsingGridEntity)
                   (ha.action.on rebalanceActiveEntity)
                   (ha.action.delay "00:00:05")
-                  (ha.action.off carChargerSwitch)
+                  (ha.action.off_retry carChargerSwitch { })
                   (ha.action.conditional
                     [ (ha.condition.on rebalanceSolarEnoughEntity) ]
                     [

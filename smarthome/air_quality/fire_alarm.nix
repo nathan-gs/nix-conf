@@ -179,8 +179,9 @@ let
   # and keeps routing. Verified on this system: floor0/living's verwarming plug
   # routes for the living room alarm at LQI 69 with zero ping failures while its
   # relay has been off all summer.
+  carCharger = "switch.system_car_charger";
   largeLoads = [
-    "switch.system_car_charger"
+    carCharger
     "switch.floor1_waskot_metering_plug_droogkast"
     "switch.floor1_waskot_metering_plug_wasmachine"
   ];
@@ -324,7 +325,11 @@ in
       # and under mode=single a second alarm during the wait would be dropped.
       (ha.automation "system/fire_alarm.shed_loads" {
         triggers = [ (ha.trigger.on_for fireActive loadShedGrace) ];
-        actions = map ha.action.off largeLoads;
+        # The car charger does not always act on the first turn_off, so it is retried - and
+        # sent last, so a stuck charger's retries never hold up shedding the other loads.
+        actions =
+          (map ha.action.off (lib.remove carCharger largeLoads))
+          ++ [ (ha.action.off_retry carCharger { }) ];
       })
 
       # Physical test: hold the button on any alarm ~5s and every siren should sound.
