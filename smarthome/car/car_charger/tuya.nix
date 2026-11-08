@@ -599,7 +599,7 @@
               (ha.condition.on "switch.system_car_charger")
             ];
             actions = [
-              (ha.action.off "switch.system_car_charger")
+              (ha.action.off_retry "switch.system_car_charger" { })
               (ha.action.delay "00:00:05")
               (ha.action.set_value "number.system_car_charger_timer" 6)
               (ha.action.delay "00:00:05")
@@ -624,7 +624,7 @@
               (ha.condition.on "switch.system_car_charger")
             ];
             actions = [
-              (ha.action.off "switch.system_car_charger")
+              (ha.action.off_retry "switch.system_car_charger" { })
               (ha.action.delay "00:00:05")
               (ha.action.set_value "number.system_car_charger_charging_current" 8)
             ];

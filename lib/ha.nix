@@ -237,7 +237,36 @@ let
       service = "input_number.increment";
       target.entity_id = entity;
     };
-    
+
+    # turn_off for a device that does not always act on the first command: send it, wait for
+    # the state to actually read off, and resend up to `attempts` times. The `while` guard is
+    # checked before *every* send, including the first, so it never commands a device that
+    # already reads off - for devices where off-while-off flips them on (the Tuya car charger)
+    # that is required, not just tidy. `timeout` should cover the device's state-report lag, or
+    # a slow-but-successful first command gets a second one sent after it.
+    off_retry = entity: { attempts ? 3, timeout ? "00:00:20" }: {
+      repeat = {
+        "while" = [
+          (condition.on entity)
+          {
+            condition = "template";
+            value_template = "{{ repeat.index <= ${toString attempts} }}";
+          }
+        ];
+        sequence = [
+          {
+            service = "${lib.head (lib.strings.splitString "." entity)}.turn_off";
+            target.entity_id = entity;
+          }
+          {
+            wait_template = "{{ is_state('${entity}', 'off') }}";
+            timeout = timeout;
+            continue_on_timeout = true;
+          }
+        ];
+      };
+    };
+
   };
 
   trigger = rec {
