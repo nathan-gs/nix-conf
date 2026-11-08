@@ -96,6 +96,10 @@ in
       # Keep in step with the archive timer above.
       matomo-console config:set --section=General \
         --key=time_before_today_archive_considered_outdated --value=300
+      # Keep archiving performance metrics forever (default: 180 days).
+      # 0 disables the cleanup task entirely.
+      matomo-console config:set --section=ArchivingMetrics \
+        --key=retention_days --value=0
     fi
   '';
 }
