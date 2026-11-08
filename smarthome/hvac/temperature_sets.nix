@@ -3,6 +3,9 @@
   {% set anyone_home = is_state('binary_sensor.anyone_home', 'on') %}
   {% set anyone_home_or_coming = is_state('binary_sensor.anyone_home_or_coming_home', 'on') %}
   {% set far_away = is_state('binary_sensor.far_away', 'on') %}
+  {# coming_home was put up while still far from home: heat as if home, but
+     never above temperature_away until someone is actually close. #}
+  {% set coming_home_from_far = is_state('input_boolean.coming_home', 'on') and is_state('binary_sensor.far_from_home', 'on') %}
   {% set temperature_away = 15 %}
   {% set temperature_eco = 15.5 %}
   {% set temperature_night = 16 %}
