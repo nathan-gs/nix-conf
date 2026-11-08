@@ -66,9 +66,16 @@ in
             unique_id = "system_wtw_metering_plug_verwarming_target";
             state = ''
               {% set inlet_temp_aq = states('sensor.system_wtw_air_quality_inlet_temperature') | float(5) %}
-              {% set inlet_temp_wtw = states('sensor.itho_wtw_inlet_temperature') | float(5) %}
+              {# Compared in the Itho's own (biased) reading against its own
+                 frost setpoint, so the NTC's offset cancels out: the heater
+                 starts just before the Itho's frost protection would. That
+                 setpoint is kept at a true ~1 °C by itho_temperature_offset.nix.
+                 This NTC is downstream of the heater, which keeps it a
+                 feedback loop on the air actually entering the unit. #}
+              {% set inlet_temp_wtw = states('sensor.itho_wtw_inlet_temperature_raw') | float(5) %}
+              {% set frost_setpoint = states('sensor.itho_wtw_setting_frost_temperature') | float(3.5) %}
               {% set not_overheating = inlet_temp_aq < 41 %}
-              {% if inlet_temp_wtw < 0.1 and not_overheating %}
+              {% if inlet_temp_wtw < frost_setpoint + 0.5 and not_overheating %}
                 true
               {% else %}
                 false
