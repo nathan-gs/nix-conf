@@ -122,7 +122,7 @@
     # SwitchBot hub + relay for the same physical robot vacuum.
     { name = "switchbot-robot-k10"; mac = "ec:31:4a:05:55:e9"; ip = "192.168.0.39"; }
     { name = "vacuum"; mac = "88:57:1d:cb:18:fb"; ip = "192.168.0.40"; }
-    { name = "fotokader"; mac = "58:67:1a:ca:38:78"; ip = "192.168.0.41"; }
+    { name = "fotokader"; mac = "88:00:33:77:48:83"; ip = "192.168.0.41"; }
 
     # Media: .70-.79
     { name = "sonos-tv"; mac = "48:a6:b8:32:27:b5"; ip = "192.168.0.70"; }
