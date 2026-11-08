@@ -25,6 +25,9 @@ in
               {{ entities|count if entities != none else none }}
             '';
             # TODO: remove nkeys_ floor1_fen_window
+            # _do_not_disturb / _action_reporting / raam_zuid_led_enable: zigbee2mqtt config switches it
+            # never holds a value for (Tuya bulbs never report do_not_disturb; Niko action_reporting and
+            # led_enable are only known after an explicit /get), so they sit `unknown` forever.
             attributes.entity_id = ''
               {% set ignore_seconds = 300 %}
               {% set ignore_ts = (now().timestamp() - ignore_seconds)|as_datetime %}
@@ -125,7 +128,9 @@ in
                   |rejectattr('entity_id', 'contains', '_type_button')
                   |rejectattr('entity_id', 'contains', '_led_color')
                   |rejectattr('entity_id', 'contains', 'sensor.afvalbeheer_recycleapp_grofvuil')
-                  |rejectattr('entity_id', 'contains', 'switch.floor0_living_light_tv_do_not_disturb')
+                  |rejectattr('entity_id', 'contains', '_do_not_disturb')
+                  |rejectattr('entity_id', 'contains', '_action_reporting')
+                  |rejectattr('entity_id', 'contains', 'switch.floor0_living_light_switch_raam_zuid_led_enable')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_complete_time')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_rate')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_service_inspection_time')
