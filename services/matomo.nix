@@ -72,6 +72,15 @@ in
 
   services.matomo.periodicArchiveProcessing = true;
 
+  # Archive every 5 minutes instead of the module's hourly default. A run on
+  # nhtpc costs ~0.5s CPU for the four sites, and past days are archived once
+  # and never again, so the cadence only changes how stale *today* is.
+  # Matomo skips re-archiving today while the existing archive is younger
+  # than time_before_today_archive_considered_outdated (default 900s), so
+  # that is lowered to match below — otherwise 2 of every 3 runs are no-ops.
+  systemd.timers.matomo-archive-processing.timerConfig.OnCalendar =
+    lib.mkForce "*:0/5";
+
   # Increase PHP memory limit for Matomo archive processing
   # Default 128M causes empty responses on week/month/year report archiving
   services.phpfpm.pools.matomo.phpOptions = lib.mkAfter ''
@@ -84,6 +93,9 @@ in
        grep -q -F "[database]" /var/lib/matomo/config/config.ini.php; then
       matomo-console plugin:activate McpServer
       matomo-console plugin:activate Provider
+      # Keep in step with the archive timer above.
+      matomo-console config:set --section=General \
+        --key=time_before_today_archive_considered_outdated --value=300
     fi
   '';
 }
