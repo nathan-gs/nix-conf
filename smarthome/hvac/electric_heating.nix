@@ -82,7 +82,7 @@ in
             unique_id = "floor0_living_metering_plug_verwarming_target";
             state = ''
               ${autoWantedHeader}
-              {% set sensor = states('floor0_living_metering_plug_verwarming_power') | float(0) %}
+              {% set sensor = states('sensor.floor0_living_metering_plug_verwarming_power') | float(0) %}
               {% set house_return = states('sensor.electricity_grid_returned_power_min_1m') | float(0) %}
               {% set indoor_temp = states('sensor.floor0_living_temperature') | float(21) %}
               {% set power_available = (house_return + sensor) %}
@@ -94,10 +94,12 @@ in
               {% set start_on_solar = battery_charged and solar_power_available %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
               {% set needs_heating = (states('sensor.floor0_living_temperature_diff_wanted') | float(0)) > 0.7 %}
-              {% if far_away %}
+              {# Far away: export surplus only. start_on_solar may draw on the
+                 battery, which is left alone while nobody is around. #}
+              {% if (power_available > 760 or (start_on_solar and not far_away)) and indoor_temp < temperature_max %}
+                true
+              {% elif far_away %}
                 false
-              {% elif (power_available > 760 or start_on_solar) and indoor_temp < temperature_max %}
-                true  
               {% elif needs_heating and use_electric %}
                 true
               {% else %}
@@ -121,10 +123,11 @@ in
               {% set power_available = (house_return + sensor) %}
               {% set needs_heating = (states('sensor.floor1_nikolai_temperature_diff_wanted') | float(0)) > 0.7 %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
-              {% if far_away %}
+              {# Export surplus heats even when far away; the grid never does. #}
+              {% if power_available > 750 and indoor_temp < temperature_max %}
+                true
+              {% elif far_away %}
                 false
-              {% elif power_available > 750 and indoor_temp < temperature_max %}
-                true 
               {% elif needs_heating and use_electric %}
                 true
               {% else %}
@@ -157,10 +160,11 @@ in
               {% set power_available = (house_return + sensor) %}      
               {% set needs_heating = (states('sensor.floor0_bureau_temperature_diff_wanted') | float(0)) > 0.7 %}
               {% set use_electric = is_state('binary_sensor.heating_use_electric', 'on') %}
-              {% if far_away %}
+              {# Export surplus heats even when far away; the grid never does. #}
+              {% if power_available > 700 and indoor_temp < temperature_max %}
+                true
+              {% elif far_away %}
                 false
-              {% elif power_available > 700 and indoor_temp < temperature_max %}
-                true  
               {% elif needs_heating and use_electric %}
                 true
               {% else %}
