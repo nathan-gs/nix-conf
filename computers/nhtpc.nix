@@ -87,7 +87,7 @@
       ];
       httpProbes = [
         { url = "http://127.0.0.1:8123/"; } # Home Assistant UI
-        { url = "http://127.0.0.1:8080/"; } # Zigbee2MQTT frontend
+        { url = "http://127.0.0.1:${toString config.services.zigbee2mqtt.settings.frontend.port}/"; } # Zigbee2MQTT frontend
       ];
       # HA package upgrades often need several minutes to become ready.
       timeoutSec = 600;
