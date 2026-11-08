@@ -91,7 +91,10 @@
             unique_id = "calendar_weekend_afternoon";
             state = ''
               {% set weekend = (now().isoweekday() > 5) %}
-              {{ weekend and 13 < now().hour < 18 }}
+              {# 13 <= : morning_and_lunch ends before 13, so a strict
+                 13 < left 13:00-13:59 in neither window and living went
+                 "not in use" (WTW valve closed) at lunch every weekend. #}
+              {{ weekend and 13 <= now().hour < 18 }}
             '';
             icon = ''
               {% set is_set = is_state('binary_sensor.calendar_weekend_afternoon', 'on') %}
