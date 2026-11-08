@@ -32,6 +32,7 @@ let
       # is that the pre-heater (electric_heating.nix) now starts 0.5 °C
       # above this, i.e. before frost protection instead of at ~-3 °C.
       want = 1.0;
+      step = 0.5; # "type": "float" on the unit
       min = 0;
       max = 7;
     }
@@ -39,6 +40,7 @@ let
       index = 10;
       key = "summer_temperature";
       want = 19.0;
+      step = 1; # "type": "int" on the unit: send whole degrees only
       min = 15;
       max = 25;
     }
@@ -107,24 +109,27 @@ in
           { delay.minutes = 2; }
           {
             repeat.for_each = map (s: {
-              inherit (s) index key want min max;
+              inherit (s) index key want step min max;
             }) setpoints;
             repeat.sequence = [
               {
                 variables = {
                   offset = "{{ states('sensor.itho_wtw_inlet_temperature_offset') | float }}";
-                  # Half-degree steps: finer than the NTC can be trusted,
-                  # and it keeps EEPROM writes to the odd day.
+                  # Rounded to the setting's own step: no finer than the
+                  # NTC can be trusted, and it keeps EEPROM writes rare.
+                  # An int setting gets a bare integer ("21", not "21.0").
                   target = ''
-                    {% set t = ((repeat.item.want - offset) * 2) | round(0) / 2 %}
-                    {{ [repeat.item.max, [repeat.item.min, t] | max] | min }}
+                    {% set s = repeat.item.step %}
+                    {% set t = ((repeat.item.want - offset) / s) | round(0) * s %}
+                    {% set t = [repeat.item.max, [repeat.item.min, t] | max] | min %}
+                    {{ t | int if s >= 1 else t }}
                   '';
                   current = "{{ states('sensor.itho_wtw_setting_' ~ repeat.item.key) | float(none) }}";
                 };
               }
               {
                 "if" = [
-                  (ha.condition.template ''{{ current is none or (target | float - current) | abs >= 0.5 }}'')
+                  (ha.condition.template ''{{ current is none or (target | float - current) | abs >= repeat.item.step }}'')
                 ];
                 "then" = [
                   {
