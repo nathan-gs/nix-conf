@@ -6,9 +6,11 @@ let
   # Marketplace installs write into the Matomo tree; that is immutable in
   # the Nix store. Bake plugins into the package instead.
   mcpServer = pkgs.callPackage ../pkgs/matomo-plugin-mcp-server.nix { };
+  provider = pkgs.callPackage ../pkgs/matomo-plugin-provider.nix { };
   matomoWithPlugins = pkgs.nixpkgs-unstable.matomo.overrideAttrs (old: {
     postInstall = (old.postInstall or "") + ''
       cp -a ${mcpServer}/share/plugins/McpServer $out/share/plugins/McpServer
+      cp -a ${provider}/share/plugins/Provider $out/share/plugins/Provider
     '';
   });
 in
@@ -81,6 +83,7 @@ in
     if test -f /var/lib/matomo/config/config.ini.php &&
        grep -q -F "[database]" /var/lib/matomo/config/config.ini.php; then
       matomo-console plugin:activate McpServer
+      matomo-console plugin:activate Provider
     fi
   '';
 }
