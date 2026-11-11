@@ -81,7 +81,7 @@ views:
             name: Power
         - type: entities
           entities:
-          - entity: sensor.car_car_a6_battery
+          - entity: sensor.car_audi_a6_battery
             name: Battery
           - entity: sensor.car_charger_revenue_monthly
             name: Revenue (month)
@@ -283,7 +283,7 @@ views:
           name: Revenue
         - entity: sensor.system_car_charger_energy
           name: Energy (hardware)
-        - entity: sensor.car_car_a6_mileage
+        - entity: sensor.car_audi_a6_mileage
           name: Odometer
     - type: horizontal-stack
       cards:
