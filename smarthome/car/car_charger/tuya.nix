@@ -78,9 +78,10 @@
       {
         sensor = [
           {
-            # SoC the charge gates actually read. Source is the EU Data Act portal
-            # (sensor.car_car_a6_battery), which delivers a new snapshot about every
-            # 15 minutes and keeps the last value in between. While that entity is
+            # SoC the charge gates actually read. Source is car/audi-a6/battery
+            # (smarthome/car/audi-a6.nix), which picks the fresher of Audi Connect
+            # and the EU Data Act portal by car-captured timestamp and keeps the
+            # last value in between snapshots. While that entity is
             # unavailable, `float(100)` would read as "already full" and
             # should_charge_offpeak would never start. After the unknown flag has
             # held (see audi_soc_unknown), report 50%. That is above the 35%
@@ -95,7 +96,7 @@
             unit_of_measurement = "%";
             icon = "mdi:battery-unknown";
             state = ''
-              {% set raw = states('sensor.car_car_a6_battery') %}
+              {% set raw = states('sensor.car_audi_a6_battery') %}
               {% if is_state('binary_sensor.system_car_charger_audi_soc_unknown', 'on') %}
                 {{ 50 }}
               {% else %}
@@ -269,9 +270,10 @@
         ];
         binary_sensor = [
           {
-            # EU Data Act battery sensor unavailable long enough that the last reading
-            # cannot be trusted. The portal itself is ~15 minutes behind while the
-            # entity stays available, so this does not look at age_minutes. delay_on
+            # car/audi-a6/battery unavailable (both Audi Connect and the EU Data Act
+            # portal down) long enough that the last reading cannot be trusted. The
+            # sources lag while the entity stays available, so this does not look at
+            # age_minutes. delay_on
             # ignores the unavailable blip after an HA restart, when the integration
             # has not polled yet; a real outage (hours) still trips. delay_off hands
             # control back to the live SoC as soon as the sensor returns.
@@ -279,7 +281,7 @@
             unique_id = "system_car_charger_audi_soc_unknown";
             icon = "mdi:cloud-off-outline";
             state = ''
-              {{ states('sensor.car_car_a6_battery') in ['unknown', 'unavailable', 'none'] }}
+              {{ states('sensor.car_audi_a6_battery') in ['unknown', 'unavailable', 'none'] }}
             '';
             delay_on = "00:10:00";
             delay_off = "00:02:00";
