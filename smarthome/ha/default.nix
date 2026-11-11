@@ -134,6 +134,11 @@ in
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_complete_time')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_charging_rate')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_service_inspection_time')
+                  {# Audi Connect 2.5.2 (2026-11-11): the Auth0 session no longer serves the
+                     legacy trip-data endpoints, so the four trip sensors sit unavailable. Drop
+                     this line if they come back. #}
+                  |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_shortterm_trip_')
+                  |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_longterm_trip_')
                   |rejectattr('entity_id', 'contains', 'light.floor0_living_light_tv')
                   |rejectattr('entity_id', 'contains', 'switch.fritz_box_7530_ax_port_forward_wireguard')
                   |rejectattr('entity_id', 'contains', 'sensor.fritz_box_7530_ax_cpu_temperature')
