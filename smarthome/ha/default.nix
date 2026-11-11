@@ -31,6 +31,8 @@ in
             # audi_a6_sportback_e_tron_{shortterm,longterm}_trip_: Audi Connect 2.5.2 (2026-11-11)
             # runs on an Auth0 session that does not serve the legacy trip-data endpoints, so the
             # four trip sensors sit unavailable. Drop those two lines if they come back.
+            # sensor.park_time: Audi Connect 2.5's "Park Time" (registered without the car prefix);
+            # the position itself is served but this field never is.
             # No Jinja {# #} comments inside the set block below: it is one statement.
             attributes.entity_id = ''
               {% set ignore_seconds = 300 %}
@@ -140,6 +142,7 @@ in
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_service_inspection_time')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_shortterm_trip_')
                   |rejectattr('entity_id', 'contains', 'sensor.audi_a6_sportback_e_tron_longterm_trip_')
+                  |rejectattr('entity_id', 'eq', 'sensor.park_time')
                   |rejectattr('entity_id', 'contains', 'light.floor0_living_light_tv')
                   |rejectattr('entity_id', 'contains', 'switch.fritz_box_7530_ax_port_forward_wireguard')
                   |rejectattr('entity_id', 'contains', 'sensor.fritz_box_7530_ax_cpu_temperature')
