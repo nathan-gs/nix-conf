@@ -496,15 +496,25 @@
               # switch on, since writing to it while off is known to flip the switch back on.
               (ha.action.set_value "number.system_car_charger_charging_current" 8)
               (ha.action.delay "00:00:15")
+              # This sequence runs ~50s, and should_charge can drop inside it (solar
+              # eligibility flaps), at which point car_charger.stop turns the switch off. Each
+              # step below is guarded so the rest is abandoned rather than run against an off
+              # switch: a write while off flips it back on, and the trailing turn_on used to
+              # override stop outright (2026-11-14 13:30:27, 36s after stop had run).
+              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
+              (ha.condition.on "switch.system_car_charger")
               # Gradually ramp current to target
               {
                 service = "automation.trigger";
                 target.entity_id = "automation.system_car_charger_set_current";
               }
               (ha.action.delay "00:00:10")
+              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
+              (ha.condition.on "switch.system_car_charger")
               # Set to immediate charging
               (ha.action.set_value "select.system_car_charger_charging_mode" "immediate")
               (ha.action.delay "00:00:10")
+              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
               (ha.action.on "switch.system_car_charger")
               (ha.action.delay "00:00:15")
             ];
@@ -534,6 +544,9 @@
               {
                 repeat = {
                   while = [
+                    # Re-checked every 45s step: stop may have turned the switch off since the
+                    # trigger, and a current write to an off switch flips it back on.
+                    (ha.condition.on "switch.system_car_charger")
                     {
                       condition = "template";
                       value_template = ''
@@ -600,12 +613,16 @@
               # Odd bug, if you call this while off, it puts it on.
               (ha.condition.on "switch.system_car_charger")
             ];
+            # Timer + mode are written *before* the turn_off, while the switch is still on:
+            # writing either while it is off flips it back on. Written after, they re-enabled
+            # the charger 5-10s after every stop (2026-11-14 13:30:37: off at :27, timer write
+            # at :37, on again).
             actions = [
-              (ha.action.off_retry "switch.system_car_charger" { })
-              (ha.action.delay "00:00:05")
               (ha.action.set_value "number.system_car_charger_timer" 6)
               (ha.action.delay "00:00:05")
               (ha.action.set_value "select.system_car_charger_charging_mode" "delayed_charge")
+              (ha.action.delay "00:00:05")
+              (ha.action.off_retry "switch.system_car_charger" { })
             ];
           }
       )
@@ -625,10 +642,12 @@
               # know it's actually on right now.
               (ha.condition.on "switch.system_car_charger")
             ];
+            # Current reset before the turn_off, while still on — a write while off flips the
+            # switch back on (see car_charger.stop).
             actions = [
-              (ha.action.off_retry "switch.system_car_charger" { })
-              (ha.action.delay "00:00:05")
               (ha.action.set_value "number.system_car_charger_charging_current" 8)
+              (ha.action.delay "00:00:05")
+              (ha.action.off_retry "switch.system_car_charger" { })
             ];
           }
       )
