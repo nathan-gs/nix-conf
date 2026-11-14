@@ -211,14 +211,34 @@ unaffected.
 
   The poke is a `{"smoke": ""}` read (`battery` is not GET-able - `e.battery()`
   carries no `ea.STATE_GET`). `system/fire_alarm.probe_floor2_hallway_fire_alarm_main`
-  publishes it at 09:00, and again when
+  publishes it at 09:20, when
   `binary_sensor.floor2_hallway_fire_alarm_main_smoke` has been `unavailable`
   for 2 minutes — that is z2m marking the device offline, so a dropped link is
-  read when it happens instead of waiting for the next morning. A read, so
+  read when it happens instead of waiting for the next morning — and then
+  hourly at :20 for as long as it stays unavailable. Each run waits a minute for
+  the entity to come back and resends up to 3 times if it does not. A read, so
   nothing is committed to the cell's flash. The trigger only counts a change
   from `on`/`off`, and the 2 minutes skips the availability republish every z2m
-  restart does. A failed read leaves `lastSeen` where it is, so the entity stays
-  unavailable and the offline trigger does not re-fire; the next try is 09:00.
+  restart does.
+
+  **A lost read fails silently — do not expect an error in the z2m log.** The
+  Aqara is a sleeping end device: the read is parked at its parent router for
+  ~7.7 s and only lands if the device polls inside that window. When it does
+  not, zigbee-herdsman does not fail the request; because the device carries a
+  `checkinInterval` (3600) in `database.db`, the timed-out read is re-queued
+  "until the device next speaks" and only rejected the next time the device
+  sends anything. This device never sends anything unprompted, so the promise
+  simply hangs and z2m logs nothing at all. That is how it looked 2026-11-12..14:
+  HA's traces show the publish every morning at 09:00:0x, z2m shows neither a
+  reply nor an error, and the device went offline 25 h after its last answer.
+  All three were at the top of the hour, where the z2m log shows other scheduled
+  Zigbee writes timing out too; a hand-run read at 14:52 answered first time
+  (in 18 s). Hence the :20 schedule, the confirm-and-resend loop, and the hourly
+  retry — each new publish makes a fresh immediate radio attempt before herdsman
+  queues it, so resending from HA is not merely adding to a stuck queue. One
+  lost read *was* logged once (2026-10-23, `Timeout after 10000ms`), so the
+  error path does exist; why that one surfaced and the November ones did not is
+  not established.
 
   The detection chamber and local buzzer are autonomous hardware, so smoke in
   the attic sounds that device whatever Zigbee, the NIKO or HA are doing. A long
