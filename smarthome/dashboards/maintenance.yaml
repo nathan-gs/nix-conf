@@ -71,3 +71,23 @@ views:
         method: state
       card:
         type: entities
+- title: Links
+  path: links
+  icon: mdi:link-variant
+  cards:
+  - type: entities
+    title: Device web interfaces
+    # Hostnames from home-network.nix; resolved by blocky under l.nathan.gs.
+    entities:
+    - type: weblink
+      name: WTW (Itho WiFi add-on)
+      url: http://wtw-itho.l.nathan.gs/
+      icon: mdi:fan
+    - type: weblink
+      name: SmartGateways P1 (electricity / gas)
+      url: http://smartgatewayp1.l.nathan.gs/
+      icon: mdi:meter-electric
+    - type: weblink
+      name: SmartGateways Water
+      url: http://smartgatewaywater.l.nathan.gs/
+      icon: mdi:water
