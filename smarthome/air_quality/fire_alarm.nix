@@ -80,22 +80,52 @@ let
   # nice property that a successful probe proves the safety-critical attribute is
   # retrievable, not merely that the radio answered.
   #
-  # Two ways in, one read:
-  #   - 09:00, so a device that stays quiet is still touched once a day.
+  # A single read is a coin toss, and a lost one is lost silently. The device is a
+  # sleeping end device: the coordinator hands the read to its parent router, which
+  # holds it for ~7.7s, and it only arrives if the device polls its parent inside
+  # that window. Miss it and herdsman does NOT report a failure - the device has a
+  # checkinInterval in z2m's database, so a timed-out request is re-queued "until
+  # the device next speaks" and only rejected the next time the device sends
+  # anything. This device never speaks unprompted, so the promise hangs, z2m logs
+  # nothing, and the 25h availability timeout runs out a day later. Three daily
+  # probes in a row vanished that way (2026-11-12..14, traces confirm HA published
+  # each one), all at 09:00:0x - right in the top-of-the-hour burst where other
+  # scheduled Zigbee writes fail too. A hand-run read at 14:52 the same day
+  # answered on the first try. Hence:
+  #
+  #   - every probe is confirmed by the entity leaving `unavailable`, and resent up
+  #     to `probeAttempts` times a minute apart when it does not. Each publish
+  #     makes a fresh immediate radio attempt before herdsman queues it, so
+  #     resending from here is not just adding to a stuck queue.
+  #   - the schedule sits at :20, away from the :00 traffic.
+  #   - while the entity is unavailable, the probe is retried hourly instead of
+  #     waiting for the next morning.
+  #
+  # Three ways in, one read loop:
+  #   - 09:20, so a device that stays quiet is still touched once a day. The
+  #     device is online then, so the loop ends after one read - there is nothing
+  #     to confirm against while it is already available.
   #   - its smoke entity sitting unavailable. z2m flips that 25h after the last
   #     answer (availability.timeout on the device entry), which is exactly when
-  #     the daily read was missed or the link dropped. Probe then, instead of
-  #     leaving it offline until the next morning.
+  #     the daily read was missed or the link dropped.
+  #   - hourly at :20 for as long as it stays unavailable.
   # `from` is on/off so a startup `unknown` is not a dropped link. `for` skips
-  # the few seconds every z2m restart spends republishing availability — each
-  # probe spends a sealed cell, so a restart must not become one. A failed probe
-  # leaves lastSeen where it is, the entity stays unavailable, and this trigger
-  # does not re-fire; the next attempt is the following 09:00.
+  # the few seconds every z2m restart spends republishing availability - each
+  # probe spends a sealed cell, so a restart must not become one. Worst case,
+  # with the link truly dead, is probeAttempts reads an hour; a read is a few
+  # bytes each way, far below what the device's own hourly check-in costs.
   probeOfflineFor = "00:02:00";
+  probeAttempts = 3;
+  probeAttemptWait = "00:01:00";
+  probeKeepaliveAt = "09:20:00";
+  probeRetryMinute = "20";
   probeAutomations = map
     (a: ha.automation "system/fire_alarm.probe_${ha.genId a.probe}" {
+      # A retry burst already in flight is the right answer to any new trigger,
+      # so an overlapping one is simply dropped without a log warning.
+      max_exceeded = "silent";
       triggers = [
-        (ha.trigger.at "09:00:00")
+        (ha.trigger.at probeKeepaliveAt)
         {
           platform = "state";
           entity_id = a.smoke;
@@ -103,8 +133,32 @@ let
           to = "unavailable";
           for = probeOfflineFor;
         }
+        (ha.trigger.time_pattern_minutes probeRetryMinute)
       ];
-      actions = [ (ha.action.mqtt_publish "zigbee2mqtt/${a.probe}/get" ''{"smoke":""}'' false) ];
+      conditions = [
+        # The hourly tick is a retry, not a keepalive: let it through only while
+        # the device is actually offline. The other two triggers always run.
+        (ha.condition.template "{{ trigger.platform != 'time_pattern' or is_state('${a.smoke}', 'unavailable') }}")
+      ];
+      actions = [
+        {
+          repeat = {
+            sequence = [
+              (ha.action.mqtt_publish "zigbee2mqtt/${a.probe}/get" ''{"smoke":""}'' false)
+              {
+                # Success is the entity coming back; a slow-but-successful read
+                # answered in 18s when measured, so a minute is comfortable.
+                wait_template = "{{ not is_state('${a.smoke}', 'unavailable') }}";
+                timeout = probeAttemptWait;
+                continue_on_timeout = true;
+              }
+            ];
+            until = [
+              (ha.condition.template "{{ not is_state('${a.smoke}', 'unavailable') or repeat.index >= ${toString probeAttempts} }}")
+            ];
+          };
+        }
+      ];
     })
     (lib.filter (a: a ? probe) alarms);
 
