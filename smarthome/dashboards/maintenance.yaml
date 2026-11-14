@@ -91,3 +91,14 @@ views:
       name: SmartGateways Water
       url: http://smartgatewaywater.l.nathan.gs/
       icon: mdi:water
+    - type: weblink
+      name: Zigbee2MQTT
+      url: https://z2m.l.nathan.gs/
+      icon: mdi:zigbee
+    - type: button
+      name: Zigbee2MQTT via WireGuard
+      icon: mdi:vpn
+      action_name: Open
+      tap_action:
+        action: url
+        url_path: https://z2m.wg.nathan.gs/
