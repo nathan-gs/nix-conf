@@ -348,11 +348,27 @@
             name = "system/car_charger/solar_charge_eligible";
             unique_id = "system_car_charger_solar_charge_eligible";
             icon = "mdi:solar-power";
+            # "Would the house import without the car?" — the car's own load is excluded, or
+            # starting it knocks out its own eligibility. That is what happened on 2026-11-14,
+            # ~40 start/stop cycles in a day when this read electricity_delivery_power_15m_estimated:
+            # a 2.3 kW car on 2.3 kW of sun pushed the estimate from 0.10 past 0.4 within a
+            # minute of every start. The estimate can't simply have the car subtracted: its
+            # banked part already holds the car's energy for the quarter, and its 1-min mean lags
+            # car_charger_power (computed from the set current, it steps ~2s after the switch,
+            # while DSMR follows ~8-10s later), so every current step-down would read as house
+            # import. Instantaneous grid minus car is the target_current pattern for the same
+            # reason. delay_off absorbs that DSMR lag and short house spikes (kettle, oven
+            # preheat); a real loss of surplus still stops the car a minute later. Quarter-peak
+            # protection does not rely on this — max_threshold and target_current's peak budget
+            # cover it.
+            delay_off = "00:01:00";
             state = ''
               {% set battery = states('sensor.system_house_pv_battery_soc') | int(10) %}
               {% set solar = states('sensor.electricity_solar_power_mean_15m') | float(0) %}
-              {% set delivery = states('sensor.electricity_delivery_power_15m_estimated') | float(0) %}
-              {{ solar > 1400 and delivery < 0.4 and battery > 15 }}
+              {% set grid_kw = states('sensor.electricity_grid_consumed_power') | float(0) / 1000 %}
+              {% set car_kw = states('sensor.car_charger_power') | int(0) / 1000 %}
+              {% set house_import_kw = [0, grid_kw - car_kw] | max %}
+              {{ solar > 1400 and house_import_kw < 0.4 and battery > 15 }}
             '';
           }
           {
@@ -496,15 +512,25 @@
               # switch on, since writing to it while off is known to flip the switch back on.
               (ha.action.set_value "number.system_car_charger_charging_current" 8)
               (ha.action.delay "00:00:15")
+              # This sequence runs ~50s, and should_charge can drop inside it (solar
+              # eligibility flaps), at which point car_charger.stop turns the switch off. Each
+              # step below is guarded so the rest is abandoned rather than run against an off
+              # switch: a write while off flips it back on, and the trailing turn_on used to
+              # override stop outright (2026-11-14 13:30:27, 36s after stop had run).
+              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
+              (ha.condition.on "switch.system_car_charger")
               # Gradually ramp current to target
               {
                 service = "automation.trigger";
                 target.entity_id = "automation.system_car_charger_set_current";
               }
               (ha.action.delay "00:00:10")
+              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
+              (ha.condition.on "switch.system_car_charger")
               # Set to immediate charging
               (ha.action.set_value "select.system_car_charger_charging_mode" "immediate")
               (ha.action.delay "00:00:10")
+              (ha.condition.on "binary_sensor.system_car_charger_should_charge")
               (ha.action.on "switch.system_car_charger")
               (ha.action.delay "00:00:15")
             ];
@@ -534,6 +560,9 @@
               {
                 repeat = {
                   while = [
+                    # Re-checked every 45s step: stop may have turned the switch off since the
+                    # trigger, and a current write to an off switch flips it back on.
+                    (ha.condition.on "switch.system_car_charger")
                     {
                       condition = "template";
                       value_template = ''
@@ -600,12 +629,16 @@
               # Odd bug, if you call this while off, it puts it on.
               (ha.condition.on "switch.system_car_charger")
             ];
+            # Timer + mode are written *before* the turn_off, while the switch is still on:
+            # writing either while it is off flips it back on. Written after, they re-enabled
+            # the charger 5-10s after every stop (2026-11-14 13:30:37: off at :27, timer write
+            # at :37, on again).
             actions = [
-              (ha.action.off_retry "switch.system_car_charger" { })
-              (ha.action.delay "00:00:05")
               (ha.action.set_value "number.system_car_charger_timer" 6)
               (ha.action.delay "00:00:05")
               (ha.action.set_value "select.system_car_charger_charging_mode" "delayed_charge")
+              (ha.action.delay "00:00:05")
+              (ha.action.off_retry "switch.system_car_charger" { })
             ];
           }
       )
@@ -625,10 +658,12 @@
               # know it's actually on right now.
               (ha.condition.on "switch.system_car_charger")
             ];
+            # Current reset before the turn_off, while still on — a write while off flips the
+            # switch back on (see car_charger.stop).
             actions = [
-              (ha.action.off_retry "switch.system_car_charger" { })
-              (ha.action.delay "00:00:05")
               (ha.action.set_value "number.system_car_charger_charging_current" 8)
+              (ha.action.delay "00:00:05")
+              (ha.action.off_retry "switch.system_car_charger" { })
             ];
           }
       )
